@@ -409,7 +409,7 @@ namespace ERPMVC.Controllers
                 UnitOfMeasureName = dto.UnitOfMeasureName,
                 WarehouseId = dto.WarehouseId,
                 WarehouseName = dto.WarehouseName,
-                Observacion = dto.Observacion,
+                Observaciones = dto.Observaciones,
                 ProductoPesado = dto.ProductoPesado,
                 _Boleto_Ent = dto._Boleto_Ent
             };
