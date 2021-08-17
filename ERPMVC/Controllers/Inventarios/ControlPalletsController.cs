@@ -240,7 +240,8 @@ namespace ERPMVC.Controllers
                 }
                 else
                 {
-                    return await Task.Run(() => BadRequest("No se encontro la boleta de peso, cierre el proceso"));
+                    return Json(_ControlPallets);
+                    // return await Task.Run(() => BadRequest("No se encontro la boleta de peso, cierre el proceso"));
                 }
 
             }
