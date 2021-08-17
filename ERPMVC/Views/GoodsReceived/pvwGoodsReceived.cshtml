@@ -144,39 +144,59 @@
                                                                         $("#Name").val(data.Motorista);
                                                                         $("#Placa").val(data.Placa);
                                                                         $("#Marca").val(data.Marca);
-
-                                                                        $("#Comments").val(data._Boleto_Ent.Boleto_Sal.observa_s);
-                                                                        $("#TaraCamion").data("kendoNumericTextBox").value(data.taracamion);
-                                                                        $("#TaraUnidadMedida").data("kendoNumericTextBox").value(data.Tara);
-
-
-
-                                                                        $("#PesoBruto").data("kendoNumericTextBox").value(data.pesobruto);
-                                                                        $("#PesoNeto").data("kendoNumericTextBox").value(data.pesoneto);
-                                                                        $("#PesoNeto2").data("kendoNumericTextBox").value(data.pesoneto2);
-
-                                                                        $("#WeightBallot").data("kendoNumericTextBox").value(data.WeightBallot);
                                                                         var grid = $("#gridGoodsReceivedDetail").data("kendoGrid");
                                                                         var datasource = grid.dataSource;
-                                                                        var raw = datasource._data;
-                                                                        for (i = datasource._data.length - 1; i >= 0; i--) {
-                                                                            item = raw[i];
-                                                                            datasource.remove(item);
+                                                                        if (data._Boleto_Ent != null) {
+                                                                            $("#Comments").val(data._Boleto_Ent.Boleto_Sal.observa_s);
+                                                                            $("#TaraCamion").data("kendoNumericTextBox").value(data.taracamion);
+                                                                            $("#TaraUnidadMedida").data("kendoNumericTextBox").value(data.Tara);
+                                                                            $("#PesoBruto").data("kendoNumericTextBox").value(data.pesobruto);
+                                                                            $("#PesoNeto").data("kendoNumericTextBox").value(data.pesoneto);
+                                                                            $("#PesoNeto2").data("kendoNumericTextBox").value(data.pesoneto2);
+                                                                            $("#WeightBallot").data("kendoNumericTextBox").value(data.WeightBallot);
+                                                                            
+                                                                            var raw = datasource._data;
+                                                                            for (i = datasource._data.length - 1; i >= 0; i--) {
+                                                                                item = raw[i];
+                                                                                datasource.remove(item);
+                                                                            }
+                                                                            console.log(data);
+                                                                            datasource.insert({
+                                                                                GoodsReceiveLinedId: 1, GoodsReceivedId: 0
+                                                                                , UnitOfMeasureName: data.UnitOfMeasureName
+                                                                                , UnitOfMeasureId: data.UnitOfMeasureId
+                                                                                , SubProductId: data.SubProductId
+                                                                                , SubProductName: data.SubProductName
+                                                                                , Quantity: data.pesoneto2
+                                                                                , QuantitySacos: data.TotalSacos
+                                                                                , WareHouseId: data.WarehouseId
+                                                                                , WareHouseName: data.WarehouseName
+                                                                                , ControlPalletsId: data.PalletId
+
+                                                                            });
+                                                                            GetBoletaPeso();
+                                                                        } else {
+                                                                            console.log(data);
+                                                                            let lineas = data._ControlPalletsLine.map((item) => {
+                                                                                return {
+                                                                                    GoodsReceiveLinedId: 1, GoodsReceivedId: 0
+                                                                                    , UnitOfMeasureName: item.UnitofMeasureName
+                                                                                    , UnitOfMeasureId: item.UnitofMeasureId
+                                                                                    , SubProductId: item.SubProductId
+                                                                                    , SubProductName: item.SubProductName
+                                                                                    , Quantity: item.Qty
+                                                                                    , QuantitySacos: item.TotalSacos
+                                                                                    , WareHouseId: item.WarehouseId
+                                                                                    , WareHouseName: item.WarehouseName
+                                                                                    , ControlPalletsId: item.PalletId
+                                                                                }
+                                                                            })
+                                                                            //$.merge(data._ControlPalletsLine, datasource._data);
+                                                                            datasource.data(lineas);
+                                                                            
                                                                         }
-                                                                        console.log(data);
-                                                                        datasource.insert({
-                                                                            GoodsReceiveLinedId: 1, GoodsReceivedId: 0
-                                                                            , UnitOfMeasureName: data.UnitOfMeasureName, UnitOfMeasureId: data.UnitOfMeasureId
-                                                                            , SubProductId: data.SubProductId, SubProductName: data.SubProductName
-                                                                            , Quantity: data.pesoneto2
-                                                                            , QuantitySacos: data.TotalSacos, WareHouseId: data.WarehouseId ,WareHouseName : data.WarehouseName
-                                                                            , ControlPalletsId: data.PalletId
 
-                                                                        });
-
-                                                                        GetBoletaPeso();
-
-
+                                                                       
                                                                         Deshabilitarcampos();
 
 
@@ -306,11 +326,12 @@
                                 <div class="row">
                                     <div class="col-md-2">
                                         <div class="form-group">
-                                            <label asp-for="GoodsReceivedId" class="control-label" style="width:100%"></label>
+                                            <label asp-for="GoodsReceivedId" class="control-label" style="width:100%">Recibo de Mercaderías No.</label>
                                             <kendo-numerictextbox name="GoodsReceivedId"
                                                                   min="0"
                                                                   decimals="0"
                                                                   readonly
+                                                                  format="d"
                                                                   spinners="false"
                                                                   max="99999999"
                                                                   step="1"
@@ -324,10 +345,11 @@
 
                                     <div class="col-md-2">
                                         <div class="form-group">
-                                            <label asp-for="ControlId" class="control-label" style="width:100%"></label>
+                                            <label asp-for="ControlId" class="control-label" style="width:100%">Control Ingresos No.</label>
                                             <kendo-numerictextbox name="ControlId"
                                                                   min="0"
                                                                   decimals="0"
+                                                                  format="d"
                                                                   readonly
                                                                   spinners="false"
                                                                   max="99999999"
@@ -517,9 +539,9 @@
                                                          });
                                                     }
                                             </script>
-                                            <label asp-for="WeightBallot" class="control-label" style="width:100%"></label>
+                                            <label asp-for="WeightBallot" class="control-label" style="width:100%">Boleta Peso No.</label>
                                             <kendo-numerictextbox name="WeightBallot"
-                                                                  format="n"
+                                                                  format="d"
                                                                   enable="false"
                                                                   min="0"
                                                                   onchange="return GetBoletaPeso();"
@@ -604,13 +626,14 @@
 
                                     <div class="col-md-2">
                                         <div class="form-group">
-                                            <label asp-for="ExitTicket" class="control-label" style="width:100%"></label>
+                                            <label asp-for="ExitTicket" class="control-label" style="width:100%">Boleta de Salida No.</label>
                                             <kendo-numerictextbox name="ExitTicket"
-                                                                  format="n"
+                                                                  format="d"
                                                                   min="0"
                                                                   enable="false"
                                                                   max="99999999"
                                                                   step="1"
+                                                                  spinners="false"
                                                                   style="width: 100%;"
                                                                   value="Model.ExitTicket" />
                                             <span asp-validation-for="ExitTicket" class="text-danger"></span>

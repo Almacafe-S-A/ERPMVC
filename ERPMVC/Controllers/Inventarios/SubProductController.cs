@@ -281,6 +281,35 @@ namespace ERPMVC.Controllers
             return Json(_SubProducto);
         }
 
+
+        public async Task<ActionResult<UnitOfMeasure>> GetProductoUnitOfMeasure(int SubProductId,int CustomerId)
+        {
+            UnitOfMeasure _UnitOfMeasure = new UnitOfMeasure();
+            try
+            {
+                //int ProductId = dto.SubProductId;
+                //int customerId = dto.CustomerId;
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + $"api/UnitOfMeasure/GetProductoUnitOfMeasure/{SubProductId}/{CustomerId}");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _UnitOfMeasure = JsonConvert.DeserializeObject<UnitOfMeasure>(valorrespuesta);
+                    //_UnitOfMeasure = _UnitOfMeasure.OrderByDescending(q => q.SubproductId).ToList();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+            return Json(_UnitOfMeasure);
+        }
+
         [HttpPost("[action]")]
         public async Task<ActionResult> pvwAddSubProduct([FromBody]SubProductDTO _sarpara)
 

@@ -76,6 +76,11 @@ namespace ERPMVC.Models
         [Display(Name = "Activo/Inactivo ")]
         public Int64? IdEstado { get; set; }
 
+        public int? UnitOfMeasurePreference { get; set; }
+        [ForeignKey("UnitOfMeasurePreference")]
+
+        public UnitOfMeasure UnitOfMeasure { get; set; }
+
         public string Estado { get; set; }
 
         [Display(Name = "Grupo económico")]
