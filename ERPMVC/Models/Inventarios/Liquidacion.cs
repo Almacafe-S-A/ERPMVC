@@ -32,6 +32,11 @@ namespace ERPMVC.Models
         public string ProductName { get; set; }
         public string Recibos { get; set; }
 
+
+        public string NoFactura { get; set; }
+
+        public string NoPoliza { get; set; }
+
         public decimal TasaCambio { get; set; }
 
         public decimal DerechosImportacion { get; set; }
@@ -46,6 +51,8 @@ namespace ERPMVC.Models
         public decimal Seguro { get; set; }
 
         public decimal Otros { get; set; }
+
+        public decimal? TotalOtrosImpuestos { get; set; }
 
         public decimal Total { get; set; }
 
