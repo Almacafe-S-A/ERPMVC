@@ -16,18 +16,22 @@ namespace ERPMVC.Models
         [ForeignKey("LiquidacionId")]
         public Liquidacion Liqudacion { get; set; }
 
-        public Int64 GoodsReceivedLineId { get; set; }
+        public Int64? GoodsReceivedLineId { get; set; }
 
         [ForeignKey("GoodsReceivedLineId")]
         public GoodsReceivedLine GoodsReceivedLine { get; set; }
 
-        public Int64 SubProductId { get; set; }
+        public Int64? SubProductId { get; set; }
         [ForeignKey("SubProductId")]
         public SubProduct SubProduct { get; set; }
 
         public string SubProductName { get; set; }
 
-        public decimal Cantidad { get; set; }
+        public string UOM { get; set; }
+
+        public decimal? Cantidad { get; set; }
+
+        public decimal CantidadRecibida { get; set; }
 
         [Column(TypeName = "decimal(18,2)")]
         public decimal TotalFOB { get; set; }
@@ -47,6 +51,10 @@ namespace ERPMVC.Models
         public decimal TotalCIFDerechosImp { get; set; }
 
         public decimal ValorSelectivoConsumo { get; set; }
+
+        public decimal? ValorUnitarioDerechos { get; set; }
+
+        public decimal TotalDerechos { get; set; }
 
         public decimal OtrosImpuestos { get; set; }
 

@@ -56,7 +56,7 @@ namespace ERPMVC.Controllers
                 }
                 else {
                     _Liquidacion.FechaLiquidacion = DateTime.Now;
-                    _Liquidacion.EstadoId = 103;
+                    _Liquidacion.EstadoId = 5;
                 }
                 return PartialView(_Liquidacion);
             }
@@ -123,32 +123,25 @@ namespace ERPMVC.Controllers
 
 
 
-        public async Task<ActionResult> Aprobar([FromBody] Liquidacion _transfer, bool aprobacion)
+        public async Task<ActionResult> Aprobar([FromBody] Liquidacion _Liquidacion)
         {
-
-            if (_transfer.EstadoId == 6)
-            {
-                aprobacion = true;
-            }
-            else
-            {
-                aprobacion = false;
-            }
+            bool aprobacion = _Liquidacion.EstadoId == 6 ;
+            
             try
             {
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + $"api/Liquidaciones/Aprobar/{_transfer.Id}/{aprobacion}");
+                var result = await _client.GetAsync(baseadress + $"api/Liquidaciones/Aprobar/{_Liquidacion.Id}/{aprobacion}");
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _transfer = JsonConvert.DeserializeObject<Liquidacion>(valorrespuesta);
+                    _Liquidacion = JsonConvert.DeserializeObject<Liquidacion>(valorrespuesta);
                 }
                 else
                 {
-                    return BadRequest($"Error este cheque ya habia sido Aprobado o Rechazado.");
+                    return BadRequest($"Error este Liquidacion ya habia sido Aprobado o Rechazado.");
                 }
             }
 
@@ -389,6 +382,8 @@ namespace ERPMVC.Controllers
 
             return new ObjectResult(new DataSourceResult { Data = new[] { _Liquidacion }, Total = 1 });
         }
+
+        
 
 
 
