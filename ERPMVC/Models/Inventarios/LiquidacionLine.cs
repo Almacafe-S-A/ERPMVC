@@ -64,6 +64,12 @@ namespace ERPMVC.Models
 
         public decimal TotalFinal { get; set; }
 
+        public decimal? PrecioUnitarioCIF { get; set; }
+
+        public decimal? ValorTotalDerechos { get; set; }
+
+        public decimal? ValorTotalCIF { get; set; }
+
 
 
 
