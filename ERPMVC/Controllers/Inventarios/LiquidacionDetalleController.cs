@@ -97,6 +97,10 @@ namespace ERPMVC.Controllers.Inventarios
                 decimal totalciflpsitems = 0;
                 foreach (var item in liquidacionLines)
                 {
+                    if (item.Cantidad ==0 )
+                    {
+                        return BadRequest($"La Cantidad en factura del item {item.SubProductName} no puede ser cero");
+                    }
                     var totalCIF = +total / totalfob * item.TotalFOB;
                     item.TotalCIB = totalCIF;
                     item.TotalCIFLPS = totalCIF * _Liquidacion.TasaCambio;
@@ -109,8 +113,11 @@ namespace ERPMVC.Controllers.Inventarios
                     item.TotalImpuestoVentas = (item.TotalCIFDerechosImp+ item.ValorSelectivoConsumo) * isv;
                     item.TotalDerechosmasImpuestos = item.ValorDerechosImportacion+item.OtrosImpuestos+item.TotalImpuestoVentas + item.ValorSelectivoConsumo;
                     item.TotalDerechos = item.TotalCIFLPS + item.TotalDerechosmasImpuestos;
-                    item.ValorUnitarioDerechos = item.TotalDerechos / item.Cantidad;
-                    item.TotalFinal = (decimal)item.ValorUnitarioDerechos * item.CantidadRecibida;
+                    item.PrecioUnitarioCIF = item.TotalCIFLPS / item.Cantidad;
+                    item.ValorUnitarioDerechos = item.TotalDerechosmasImpuestos / item.Cantidad;
+                    item.ValorTotalCIF = (decimal)item.PrecioUnitarioCIF * item.CantidadRecibida;
+                    item.ValorTotalDerechos = item.ValorUnitarioDerechos * item.CantidadRecibida;
+                    item.TotalFinal = (decimal)item.ValorTotalCIF +  (decimal)item.ValorTotalDerechos;
                     totalciflpsitems += item.TotalCIFLPS;
                 }
                     foreach (var item in liquidacionLines)

@@ -57,6 +57,8 @@ namespace ERPMVC.Controllers
                 else {
                     _Liquidacion.FechaLiquidacion = DateTime.Now;
                     _Liquidacion.EstadoId = 5;
+                    _Liquidacion.TotalOtrosImpuestos = 0;
+
                 }
                 return PartialView(_Liquidacion);
             }

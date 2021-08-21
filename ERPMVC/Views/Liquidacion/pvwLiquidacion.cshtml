@@ -3,6 +3,8 @@
     var messages = new Dictionary<string, string>() { { "custom", "Ingrese un valor correcto." },
            {"required","Valor requerido" }
         };
+
+    var editable = (Model.EstadoId == 5 || Model.Id == 0 || Model.EstadoId == 7);
 }
 
 
@@ -171,7 +173,7 @@
 
                                             <div class="col-md-3">
                                                 <label class="control-label" style="min-width:100%">Impuesto sobre Ventas </label>
-                                                <kendo-numerictextbox for="ImpuestoSobreVentas" spinners="false" min="0" style="min-width:100%" format="n2" />
+                                                <kendo-numerictextbox for="ImpuestoSobreVentas" spinners="false" min="0" max="100" style="min-width:100%" format="n2" />
                                             </div>
 
 
@@ -238,7 +240,10 @@
     // command.Custom("Eliminar").Text(" ").IconClass("fa fa-trash-alt").Click("Delete");
     //command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditControlPalletDetalle");
     }).Title("Acciones").Width(120);*/
-    columns.Command(command => { command.Edit().Text(" ").IconClass("fa fa-edit"); command.Destroy().Text(" ").IconClass("fa fa-trash-alt"); }).Width(120);
+    if (editable)
+    {
+        columns.Command(command => { command.Destroy().Text(" ").IconClass("fa fa-trash-alt"); }).Width(120);
+    }
     columns.Bound(p => p.Id).Title("Id").Width(150).Visible(false);
     //columns.Bound(p => p.GoodsReceivedLine.GoodsReceivedId).Title("Recibo No").Width(120).ClientFooterTemplate("Totales");
     columns.Bound(p => p.SubProductName).Title("Producto").Width(200);
@@ -255,14 +260,21 @@
     columns.Bound(p => p.TotalImpuestoVentas).Title("Total ISV").Width(150).ClientFooterTemplate("#=totalColumnas(8,1)#").Format("{0:C2}");
     columns.Bound(p => p.TotalDerechosmasImpuestos).Title("Total Derechos + Imptos").Width(200).ClientFooterTemplate("#=totalColumnas(12,1)#").Format("{0:C2}");
     columns.Bound(p => p.TotalDerechos).Title("Total Final").Width(250).ClientFooterTemplate("#=totalColumnas(15,1)#").Format("{0:C2}");
-    columns.Bound(p => p.ValorUnitarioDerechos).Title("Valor Unitario Derechos").Width(250).ClientFooterTemplate("#=totalColumnas(14,1)#").Format("{0:C2}");
+    columns.Bound(p => p.PrecioUnitarioCIF).Title("Precio Unitario CIF").Width(250).ClientFooterTemplate("#=totalColumnas(14,1)#").Format("{0:C2}");
+    columns.Bound(p => p.ValorUnitarioDerechos).Title("Valor Unitario Derechos").Width(250).ClientFooterTemplate("#=totalColumnas(16,1)#").Format("{0:C2}");
+    columns.Bound(p => p.ValorTotalCIF).Title("Valor Total CIF").Width(250).ClientFooterTemplate("#=totalColumnas(18,1)#").Format("{0:C2}");
+    columns.Bound(p => p.ValorTotalDerechos).Title("Valor Total Derechos").Width(250).ClientFooterTemplate("#=totalColumnas(17,1)#").Format("{0:C2}");
     columns.Bound(p => p.TotalFinal).Width(150).Title("Valor Total Final").ClientFooterTemplate("#=totalColumnas(10,1)#").Format("{0:C2}");
 })
 .Editable(e => e.Mode(GridEditMode.InCell))
 .Resizable(resize => resize.Columns(true))
 .ToolBar(toolbar => {
-    toolbar.Custom().Text("Validar ").IconClass("fa fa-check").HtmlAttributes(new { onclick = "Calcular()" });
-    toolbar.Create().Text("Agregar");
+
+    if (editable)
+    {
+        toolbar.Custom().Text("Validar ").IconClass("fa fa-check").HtmlAttributes(new { onclick = "Calcular()" });
+        toolbar.Create().Text("Agregar");
+    }
 })
     .Sortable()
     .AutoBind(true)
@@ -310,7 +322,7 @@
 
 
                                         </div>
-                                        @if (Model.EstadoId == 5 || Model.Id == 0 || Model.EstadoId == 7)
+                                        @if (editable)
                                         {
                                             <div class="row">
                                                 <div class="col-md-12">
@@ -366,7 +378,7 @@
         var SelectivoConsumo = $("#SelectivoConsumo").val();
         var DerechosImportacion = $("#DerechosImportacion").val();
         var TasaCambio = $("#TasaCambio").val();
-        if (ISV == 0 || SelectivoConsumo == 0 || DerechosImportacion == 0 || TasaCambio == 0) {
+        if (ISV == 0 ||  DerechosImportacion == 0 || TasaCambio == 0) {
             $.toast({
                 heading: 'Error',
                 text: "Faltan Valores Requeridos",
@@ -496,6 +508,15 @@
                 break;
             case 15: 
                 data.forEach(r => total += r.TotalDerechos);
+                break;
+            case 16:
+                data.forEach(r => total += r.ValorUnitarioDerechos);
+                break;
+            case 17:
+                data.forEach(r => total += r.ValorTotalDerechos);
+                break;
+            case 18:
+                data.forEach(r => total += r.ValorTotalCIF);
                 break;
             
 
