@@ -239,8 +239,7 @@ namespace ERPMVC.Controllers
                 {
                     var result = await _client.GetAsync(baseadress + "api/Liquidaciones/GetLiquidacionById/" + _Liquidacion.Id);
                     string valorrespuesta = "";
-                    _Liquidacion.FechaModificacion = DateTime.Now;
-                    _Liquidacion.UsuarioModificacion = HttpContext.Session.GetString("user");
+                   
                     if (result.IsSuccessStatusCode)
                     {
 
@@ -252,6 +251,11 @@ namespace ERPMVC.Controllers
 
                     if (_Liquidacion.Id > 0)
                     {
+
+                        _LiquidacionS.FechaModificacion = DateTime.Now;
+                        _LiquidacionS.UsuarioModificacion = HttpContext.Session.GetString("user");
+                        _LiquidacionS.UsuarioCreacion = _Liquidacion.UsuarioCreacion;
+                        _LiquidacionS.FechaCreacion = _Liquidacion.FechaCreacion;
 
                         var updateresult = await Update(_LiquidacionS);
                         if (updateresult.Result is BadRequestObjectResult)
