@@ -106,23 +106,60 @@ namespace ERPMVC.Controllers.Inventarios
                     item.TotalCIFLPS = totalCIF * _Liquidacion.TasaCambio;
                     var totalciflps = totalCIF * _Liquidacion.TasaCambio;
 
+                    //item.ValorDerechosImportacion = item.TotalCIFLPS * derecchosImportacion;
+                    //item.TotalCIFDerechosImp = item.ValorDerechosImportacion + item.TotalCIFLPS;
+                    //item.ValorSelectivoConsumo = item.TotalCIFDerechosImp * selectivoConsumo;
+                    //item.OtrosImpuestos = 0;
+                    //item.TotalImpuestoVentas = (item.TotalCIFDerechosImp+ item.ValorSelectivoConsumo) * isv;
+                    //item.TotalDerechosmasImpuestos = item.ValorDerechosImportacion+item.OtrosImpuestos+item.TotalImpuestoVentas + item.ValorSelectivoConsumo;
+                    //item.TotalDerechos = item.TotalCIFLPS + item.TotalDerechosmasImpuestos;
+                    //if (_Liquidacion.ProductId == 2)
+                    //{
+                    //    item.PrecioUnitarioCIF = item.TotalCIFLPS / item.Cantidad;
+                    //}
+                    //else
+                    //{
+                    //    item.PrecioUnitarioCIF = item.TotalFinal / item.Cantidad;
+                    //}
+                    
+                    //item.ValorUnitarioDerechos = item.TotalDerechosmasImpuestos / item.Cantidad;
+                    
+                    
+                    //item.ValorTotalCIF = (decimal)item.PrecioUnitarioCIF * item.CantidadRecibida;
+                    //item.ValorTotalDerechos = item.ValorUnitarioDerechos * item.CantidadRecibida;
+                    //item.TotalFinal = (decimal)item.ValorTotalCIF +  (decimal)item.ValorTotalDerechos;
+                    //totalciflpsitems += item.TotalCIFLPS;
+                }
+                totalciflpsitems = _Liquidacion.detalleliquidacion.Sum(s => s.TotalCIFLPS);
+                foreach (var item in liquidacionLines)
+                {
                     item.ValorDerechosImportacion = item.TotalCIFLPS * derecchosImportacion;
                     item.TotalCIFDerechosImp = item.ValorDerechosImportacion + item.TotalCIFLPS;
                     item.ValorSelectivoConsumo = item.TotalCIFDerechosImp * selectivoConsumo;
-                    item.OtrosImpuestos = 0;
-                    item.TotalImpuestoVentas = (item.TotalCIFDerechosImp+ item.ValorSelectivoConsumo) * isv;
-                    item.TotalDerechosmasImpuestos = item.ValorDerechosImportacion+item.OtrosImpuestos+item.TotalImpuestoVentas + item.ValorSelectivoConsumo;
-                    item.TotalDerechos = item.TotalCIFLPS + item.TotalDerechosmasImpuestos;
-                    item.PrecioUnitarioCIF = item.TotalCIFLPS / item.Cantidad;
-                    item.ValorUnitarioDerechos = item.TotalDerechosmasImpuestos / item.Cantidad;
-                    item.ValorTotalCIF = (decimal)item.PrecioUnitarioCIF * item.CantidadRecibida;
-                    item.ValorTotalDerechos = item.ValorUnitarioDerechos * item.CantidadRecibida;
-                    item.TotalFinal = (decimal)item.ValorTotalCIF +  (decimal)item.ValorTotalDerechos;
-                    totalciflpsitems += item.TotalCIFLPS;
-                }
-                    foreach (var item in liquidacionLines)
-                {
                     item.OtrosImpuestos = ((decimal)_Liquidacion.TotalOtrosImpuestos / totalciflpsitems)* item.TotalCIFLPS ;
+                    item.TotalImpuestoVentas = (item.TotalCIFDerechosImp + item.ValorSelectivoConsumo) * isv;
+                    item.TotalDerechosmasImpuestos = item.ValorDerechosImportacion + item.OtrosImpuestos + item.TotalImpuestoVentas + item.ValorSelectivoConsumo;
+                    item.TotalDerechos = item.TotalCIFLPS + item.TotalDerechosmasImpuestos;
+                    if (_Liquidacion.ProductId == 2)
+                    {
+                        item.PrecioUnitarioCIF = item.TotalCIFLPS / item.Cantidad;
+                        item.ValorTotalCIF = (decimal)item.PrecioUnitarioCIF * item.CantidadRecibida;
+                        item.TotalFinal = (decimal)item.ValorTotalCIF + (decimal)item.ValorTotalDerechos;
+                    }
+                    else
+                    {
+                        item.PrecioUnitarioCIF = item.TotalFinal / item.Cantidad;
+                        item.TotalFinal = (decimal)item.PrecioUnitarioCIF * item.CantidadRecibida;
+                        item.ValorTotalCIF = (decimal)item.TotalCIFLPS + (decimal)item.TotalDerechosmasImpuestos;
+                    }
+
+                    item.ValorUnitarioDerechos = item.TotalDerechosmasImpuestos / item.Cantidad;
+
+
+                    
+                    item.ValorTotalDerechos = item.ValorUnitarioDerechos * item.CantidadRecibida;
+                    
+                    //totalciflpsitems += item.TotalCIFLPS;
                 }
             }
             catch (DivideByZeroException)
