@@ -131,7 +131,7 @@ namespace ERPMVC.Controllers.Inventarios
                     //totalciflpsitems += item.TotalCIFLPS;
                 }
                 totalciflpsitems = _Liquidacion.detalleliquidacion.Sum(s => s.TotalCIFLPS);
-                foreach (var item in liquidacionLines)
+                    foreach (var item in liquidacionLines)
                 {
                     item.ValorDerechosImportacion = item.TotalCIFLPS * derecchosImportacion;
                     item.TotalCIFDerechosImp = item.ValorDerechosImportacion + item.TotalCIFLPS;
@@ -140,15 +140,18 @@ namespace ERPMVC.Controllers.Inventarios
                     item.TotalImpuestoVentas = (item.TotalCIFDerechosImp + item.ValorSelectivoConsumo) * isv;
                     item.TotalDerechosmasImpuestos = item.ValorDerechosImportacion + item.OtrosImpuestos + item.TotalImpuestoVentas + item.ValorSelectivoConsumo;
                     item.TotalDerechos = item.TotalCIFLPS + item.TotalDerechosmasImpuestos;
+                    decimal valortotalderechos = item.ValorTotalDerechos == null ? 0 : (decimal)item.ValorTotalDerechos;
                     if (_Liquidacion.ProductId == 2)
                     {
+                        item.ValorUnitarioDerechos = item.TotalDerechosmasImpuestos / item.Cantidad;
+                        item.ValorTotalDerechos = item.ValorUnitarioDerechos * item.CantidadRecibida;
                         item.PrecioUnitarioCIF = item.TotalCIFLPS / item.Cantidad;
-                        item.ValorTotalCIF = (decimal)item.PrecioUnitarioCIF * item.CantidadRecibida;
-                        item.TotalFinal = (decimal)item.ValorTotalCIF + (decimal)item.ValorTotalDerechos;
+                        item.ValorTotalCIF = (decimal)item.PrecioUnitarioCIF * item.CantidadRecibida; ;
+                        item.TotalFinal = (decimal)item.ValorTotalDerechos + (decimal)item.ValorTotalCIF;
                     }
                     else
                     {
-                        item.PrecioUnitarioCIF = item.TotalFinal / item.Cantidad;
+                        item.PrecioUnitarioCIF = item.TotalDerechos / item.Cantidad;
                         item.TotalFinal = (decimal)item.PrecioUnitarioCIF * item.CantidadRecibida;
                         item.ValorTotalCIF = (decimal)item.TotalCIFLPS + (decimal)item.TotalDerechosmasImpuestos;
                     }
