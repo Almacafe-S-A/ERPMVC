@@ -390,7 +390,7 @@ namespace ERPMVC.Controllers
                 {
                     case "Almacen Fiscal":
                     case "Almacen General":
-                        Contrato = "ContratoAlmacenaje.docx";
+                        Contrato = "CONTRATOALMACENGENERAL.docx";
                         break;
                     case "Bodega Habilitada":
                         Contrato = "ContratoHabilitacionBodegas.docx";
@@ -424,23 +424,25 @@ namespace ERPMVC.Controllers
                         })
                         .ToArray(); 
 
-                //Performs the mail merge.
                 document.MailMerge.Execute(fieldNames, fieldValues);
                 //Saves and closes the WordDocument instance
                 MemoryStream stream = new MemoryStream();
 
                 document.Save(stream, FormatType.Docx);
+
                 DocIORenderer render = new DocIORenderer();
 
-                //  document.Save(stream, FormatType.Rtf);
-                //  PdfDocument pdfDocument = render.ConvertToPDF(document);
+                document.Close();
+                stream.Position = 0;
+                //Download Word document in the browser
+                return File(stream, "application/msword", $"{_customercontract.CustomerContractId}{_customercontract.ProductName}-{_customercontract.CustomerName}.docx");
+
+
+
                 PdfDocument pdfDocument = new PdfDocument();
                 await Task.Run( () =>  {  pdfDocument = render.ConvertToPDF(document); });
                 
        
-
-                //using (FileStream file = new FileStream(basePath + "/ContratosTemplate/file.docx", FileMode.Create, System.IO.FileAccess.Write))
-                //    stream.WriteTo(file);
                
                 document.Close();
 
@@ -456,20 +458,10 @@ namespace ERPMVC.Controllers
 
                 using (FileStream file = new FileStream(completepath, FileMode.Create, System.IO.FileAccess.Write))
                     outputStream.WriteTo(file);
-
-                //if (System.IO.File.Exists(_CustomerDocument.Path))
-                //{
                     var stream1 = new FileStream(completepath, FileMode.Open);
                     return new FileStreamResult(stream1, "application/pdf");
-                
-                //else
-                //{
-                //    return await Task.Run(() => BadRequest($"No se encontro el archivo."));
-                //}
 
-                ViewBag.pathcontrato = completepath; //$"/ContratosTemplate/Contrato_Cliente_{_customercontract.CustomerName}_ContratoNumero_{_customercontract.CustomerContractId}.pdf";//_SFPrintContract.path = completepath;
-
-                //Closes the instance of PDF document object
+                ViewBag.pathcontrato = completepath; 
 
                 pdfDocument.Close();
             }

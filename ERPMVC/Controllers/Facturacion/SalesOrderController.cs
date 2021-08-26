@@ -550,12 +550,13 @@ namespace ERPMVC.Controllers
 
 
         [HttpPost("[action]")]
-        public async Task<ActionResult<SalesOrder>> GenerarContrato([FromBody]SalesOrderDTO _SalesOrderp)
+        public async Task<ActionResult<CustomerContract>> GenerarContrato([FromBody]SalesOrderDTO _SalesOrderp)
         //  public async Task<ActionResult<SalesOrder>> GenerarContrato([FromBody]dynamic dto)
         {
 
             //     _SalesOrder = JsonConvert.DeserializeObject<SalesOrderDTO>(dto.ToString());           
-            SalesOrder _SalesOrdermodel = new SalesOrder();
+            //SalesOrder _SalesOrdermodel = new SalesOrder();
+            CustomerContract customerContract = new CustomerContract();
             if (_SalesOrderp != null)
             {
                 try
@@ -565,101 +566,28 @@ namespace ERPMVC.Controllers
                     HttpClient _client = new HttpClient();
 
                     _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                    var result = await _client.GetAsync(baseadress + "api/SalesOrder/GetSalesOrderById/" + _SalesOrderp.SalesOrderId);
+                    var result = await _client.GetAsync(baseadress + "api/CustomerContract/GenerarContrato/" + _SalesOrderp.SalesOrderId);
                     string valorrespuesta = "";
                     if (result.IsSuccessStatusCode)
                     {
                         valorrespuesta = await (result.Content.ReadAsStringAsync());
-                        _SalesOrdermodel = JsonConvert.DeserializeObject<SalesOrder>(valorrespuesta);
-                    }
-
-                    CustomerContract _customercontract = new CustomerContract();
-                    _customercontract.SalesOrderId = _SalesOrderp.SalesOrderId;
-
-                    try
-                    {
-                        _customercontract.UsedArea = _SalesOrdermodel.SalesOrderLines
-                    .Where(q => q.SubProductName.Contains("Almacenaje")).Select(q => q.Price).FirstOrDefault();
-
-                        _customercontract.UnitOfMeasureId = _SalesOrdermodel.SalesOrderLines
-                          .Where(q => q.SubProductName.Contains("Almacenaje")).Select(q => q.UnitOfMeasureId).FirstOrDefault();
-
-                        _customercontract.UnitOfMeasureName = _SalesOrdermodel.SalesOrderLines
-                        .Where(q => q.SubProductName.Contains("Almacenaje")).Select(q => q.UnitOfMeasureName).FirstOrDefault();
-
-                       
-                    }
-                    catch (Exception)
-                    {
-                        return await Task.Run(() => BadRequest("Asegurese que la cotización tenga los elementos necesarios para generar un contrato  como: Almacenaje,Seguro,Bascula,Banda,Monta carga,Papeleria,Horas Extras,Alimentación,Transporte"));
-
-                    }
-                  
-
-
-                    _logger.LogInformation($"Despues del transporte");
-
-                    CustomerConditions _cc = new CustomerConditions();
-                    List<CustomerConditions> _cclist = new List<CustomerConditions>();
-                    _cc.DocumentId = _SalesOrdermodel.SalesOrderId;
-                    _cc.IdTipoDocumento = 12;
-                    _client = new HttpClient();
-
-                    _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                    result = await _client.PostAsJsonAsync(baseadress + "api/CustomerConditions/GetCustomerConditionsByClass", _cc);
-                    valorrespuesta = "";
-                    if (result.IsSuccessStatusCode)
-                    {
-                        valorrespuesta = await (result.Content.ReadAsStringAsync());
-                        _cclist = JsonConvert.DeserializeObject<List<CustomerConditions>>(valorrespuesta);
-                    }
-
-                    _logger.LogInformation($"Despues de consultar las condiciones del cliente Cantidad de condiciones: {_cclist.Count}");
-
-                   
-                    _customercontract.CustomerId = (long)_SalesOrdermodel.CustomerId;
-                    _customercontract.CustomerName = _SalesOrdermodel.CustomerName;
-                    _customercontract.ProductId = _SalesOrdermodel.ProductId;
-                    _customercontract.ProductName = _SalesOrdermodel.ProductName;
-
-
-                    _logger.LogInformation($"Antes de recuperar la empresa");
-                    CompanyInfo _company = new CompanyInfo { CompanyInfoId = 1 };
-                    _client = new HttpClient();
-                    _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                    result = await _client.GetAsync(baseadress + "api/CompanyInfo/GetCompanyInfoById/" + _company.CompanyInfoId);
-                    valorrespuesta = "";
-                    if (result.IsSuccessStatusCode)
-                    {
-                        valorrespuesta = await (result.Content.ReadAsStringAsync());
-                        _company = JsonConvert.DeserializeObject<CompanyInfo>(valorrespuesta);
-                    }
-
-                    _customercontract.Manager = _company.Manager;
-                    _customercontract.RTNMANAGER = _company.RTNMANAGER;
-
-                    _logger.LogInformation($"Despues de manager");
-
-                    _client = new HttpClient();
-                    _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                    result = await _client.PostAsJsonAsync(baseadress + "api/CustomerContract/Insert", _customercontract);
-
-                    _logger.LogInformation($"Despues del insertar el contrato!");
-                    valorrespuesta = "";
-                    if (result.IsSuccessStatusCode)
-                    {
-                        valorrespuesta = await (result.Content.ReadAsStringAsync());
-                        _customercontract = JsonConvert.DeserializeObject<CustomerContract>(valorrespuesta);
-                        _logger.LogInformation($"Fue satisfactorio la generacion!");
+                        customerContract = JsonConvert.DeserializeObject<CustomerContract>(valorrespuesta);
+                        return await Task.Run(() => Json(customerContract));
                     }
                     else
                     {
-                        string request = await result.Content.ReadAsStringAsync();
-                        return await Task.Run(() => BadRequest(request));
+                        return BadRequest();
                     }
 
+                    CustomerContract _customercontract = new CustomerContract();
+                    _customercontract.SalesOrderId = _SalesOrderp.SalesOrderId;              
+                  
 
-                    return await Task.Run(() => Json(_customercontract));
+
+               
+
+
+                    return await Task.Run(() => Json(customerContract));
                 }
 
                 catch (Exception ex)
