@@ -5,6 +5,7 @@
                                         {"required","Valor requerido" }
                                     };
     var rules = new Dictionary<string, string>() { { "custom", "customFunction" } };
+    var editar = 1;
 }
 
 
@@ -142,7 +143,7 @@
                                             <div class="col-md-3">
                                                 <div class="form-group">
                                                     <label asp-for="CustomerContractId" class="  control-label" style="width:100%">Plazo</label>
-                                                    <input type="number" asp-for="CustomerContractId"  class="k-textbox" style="min-width:100%" name="CustomerContractId" value="@Model.CustomerContractId" />
+                                                    <input type="number" asp-for="CustomerContractId" class="k-textbox" style="min-width:100%" name="CustomerContractId" value="@Model.CustomerContractId" />
 
                                                     <span asp-validation-for="CustomerContractId" class="text-danger"></span>
                                                 </div>
@@ -239,7 +240,7 @@
                                             <div class="col-md-3">
                                                 <div class="form-group">
                                                     <label asp-for="WareHouses" class="  control-label" style="width:100%"></label>
-                                                    <input type="text" id="WareHouses" asp-for="WareHouses" class="k-textbox"style="min-width:100%" />
+                                                    <input type="text" id="WareHouses" asp-for="WareHouses" class="k-textbox" style="min-width:100%" />
                                                     <span asp-validation-for="WareHouses" class="text-danger"></span>
                                                 </div>
                                             </div>
@@ -253,7 +254,7 @@
                                         </div>
 
 
-                                        <div class="row">                                            
+                                        <div class="row">
                                             <div class="col-md-3">
                                                 <div class="form-group">
                                                     <script>
@@ -289,8 +290,104 @@
                                                 </div>
                                             </div>
                                         </div>
+                                        <div class="box">
+                                            <div class="box-body">
 
-                                       
+                                                @(Html.Kendo().Grid<ERPMVC.Models.CustomerContractLines>()
+                                                                  .Name("gridCotizacionesDetail")
+                                                                  .Columns(columns =>
+                                                                  {
+                                                                      columns.Bound(p => p.Id).Title("Id Line").Width(150).Visible(false);
+                                                                      columns.Bound(p => p.CustomerContractId).Title("Cotización Id").Width(150).Visible(false);
+                                                                      columns.Bound(p => p.SubProductId).Title("IdServicio").Width(150).Visible(false);
+                                                                      columns.Bound(p => p.SubProductName).Title("Subservicio").Width(120);
+                                                                      columns.Bound(p => p.Description).Title("Descripción").Width(120);
+                                                                      columns.Bound(p => p.UnitOfMeasureName).Format("{0:n2}").Title("Unidad de medida").Width(100);
+                                                                      columns.Bound(p => p.UnitOfMeasureId).Format("{0:n2}").Title("Unidad de medida").Width(180).Visible(false);
+                                                                      columns.Bound(p => p.Price).Format("{0:n2}").Title("Precio").Width(80).HtmlAttributes(new { @style = "text-align:right" });
+                                                                      columns.Bound(p => p.Quantity).Format("{0:n2}").Title("Cantidad").Width(80).HtmlAttributes(new { @style = "text-align:right" });
+                                                                      columns.Bound(p => p.TipoCobroName).Title("Tipo de Cobro").Width(80);
+                                                                      columns.Bound(p => p.TipoCobroId).Title("Tipo de Cobro Id").Width(80).Visible(false);
+                                                                      columns.Bound(p => p.PeriodoCobro).Format("{0:d}").Title("Plazo").Width(80);
+
+
+
+
+                                                                  })
+                                                                      .Filterable(f => f.Operators(o => o.ForString(s => s
+                                                               .Clear()
+                                                               .Contains("Contiene")
+                                                               .DoesNotContain("No contiene")
+                                                               .EndsWith("Termina con")
+                                                               .IsEqualTo("Es igual a")
+                                                               .IsNotEqualTo("No es igual a")
+                                                               .IsNull("Es nulo")
+                                                               .StartsWith("Inicia con")
+
+
+                                                                     )
+                                                                     .ForNumber(n => n
+                                                                       .Clear()
+                                                                       .IsEqualTo("Es igual a")
+                                                                       .IsGreaterThan("Es mayor que")
+                                                                       .IsLessThan("Es menor que")
+                                                                       .IsNull("Es nulo")
+                                                                       .IsLessThanOrEqualTo("Es menor o igual que")
+                                                                       .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                                                     )
+                                                                     .ForDate(d => d
+                                                                     .Clear()
+                                                                     .IsEqualTo("Es igual que")
+                                                                     .IsGreaterThan("Es mayor que")
+                                                                     .IsLessThan("Es menor que")
+                                                                     .IsLessThanOrEqualTo("Es menor o igual que")
+                                                                     .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                                                     .IsNotEqualTo("No es igual que")
+                                                                      )
+                                                                   ))
+                                                                  //.Events(e => e.DataBound("CalcularTotalDocumento"))
+                                                                   .Editable(e => e.Mode(GridEditMode.PopUp))
+                                                                    .Sortable()
+                                                                    .AutoBind(true)
+                                                                    //.Pageable()
+                                                                    .Filterable()
+                                                                    .Scrollable()
+                                                                    // .ClientDetailTemplateId("template")
+                                                                    .Pdf(pdf => pdf.FileName("Cotización_Detalle_Reporte" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                                                    + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+                                                                    .ProxyURL(Url.Action("Export", "Home")).AllPages())
+                                                                      .Excel(excel => excel.FileName("Cotización_Detalle_Reporte_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                                                    + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+                                                                    .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+                                                                    //.Events(e=>e.Save("onsave"))
+                                                                    .DataSource(dataSource =>
+
+                                                                   dataSource
+                                                                   //.Ajax()
+                                                                   .WebApi()
+
+                                                                    .ServerOperation(false)
+                                                                    .Model(model =>
+                                                                    {
+                                                                        model.Id(p => p.Id);
+                                                                        model.Field(p => p.CustomerContractId).Editable(false);
+
+                                                                    })
+                                                                    .Events(events =>
+                                                                    {
+                                                                        events.Error("error_handler");
+                                                                        //events.upda("EditHandler");
+
+                                                                    })
+                                                            .Read(read => read.Action("GetCustomerContractLines", "CustomerContractLines").Data("GetCustomerContractId"))
+                                                              )
+        )
+
+                                            </div>
+                                        </div>
+
+
+
                                     </form>
 
                                     <div class="row">
@@ -311,6 +408,23 @@
 
 
 <script>
+
+
+    function GetCustomerContractId() {
+        
+
+        id = $("#CustomerContractId").val();
+
+        var dataObject = {
+            CustomerContractId: id,
+
+
+        };
+        console.log(dataObject)
+
+
+        return dataObject;
+    }
     function SaveCustomerContract(e) {
 
         var notification = $("#notification").data("kendoNotification");
@@ -340,7 +454,7 @@
             'Reception': $("#Reception").val(),
             'Correo1': $("#Correo1").val(),
             'Correo2': $("#Correo2").val(),
-            'Correo3': $("#Correo3").val(),          
+            'Correo3': $("#Correo3").val(),
             'BandaTransportadora': $("#BandaTransportadora").val(),
             'ExtraHours': $("#ExtraHours").val(),
             'FoodPayment': $("#FoodPayment").val(),
