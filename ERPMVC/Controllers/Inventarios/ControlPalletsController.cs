@@ -401,7 +401,7 @@ namespace ERPMVC.Controllers
                 Marca = dto.Marca,
                 //SacosDevueltos = dto.SacosDevueltos,
                 SubTotal = dto.SubTotal==null ? 0 : dto.SubTotal,
-                TotalSacos = dto.TotalSacos,
+                TotalSacos =  dto.TotalSacos,
                 Motorista = dto.Motorista,
                 Tara = dto.Tara,
                 TotalSacosPolietileno = dto.TotalSacosPolietileno,
@@ -450,11 +450,12 @@ namespace ERPMVC.Controllers
         [HttpPost("[action]")]
         public async Task<ActionResult<ControlPallets>> SaveControlPallets([FromBody]dynamic dto)
         {
-            ControlPalletsDTO _ControlPalletsDTO = new ControlPalletsDTO();
+            ControlPallets _ControlPalletsDTO = new ControlPalletsDTO();
             try
             {
-                
+
                 _ControlPalletsDTO = ToControlPallets(dto);
+               // _ControlPalletsDTO = dto;
                 if (_ControlPalletsDTO != null)
                 {
                     ControlPallets _listControlPallets = new ControlPallets();
@@ -502,7 +503,7 @@ namespace ERPMVC.Controllers
         // POST: ControlPallets/Insert
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult<ControlPalletsDTO>> Insert(ControlPalletsDTO _ControlPallets)
+        public async Task<ActionResult<ControlPalletsDTO>> Insert(ControlPallets _ControlPallets)
         {
             try
             {

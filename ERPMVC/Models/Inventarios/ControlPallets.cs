@@ -58,7 +58,7 @@ namespace ERPMVC.Models
         public int SubTotal { get; set; }
 
         [Display(Name = "Total Sacos")]
-        public int TotalSacos { get; set; }
+        public double TotalSacos { get; set; }
 
         public string Observaciones { get; set; }
 
