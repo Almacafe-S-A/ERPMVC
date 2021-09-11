@@ -410,19 +410,32 @@ namespace ERPMVC.Controllers
                 FileStream fs = new FileStream(basePath + "/ContratosTemplate/"+Contrato, FileMode.Open, FileAccess.Read);
 
                 WordDocument document = new WordDocument(fs, FormatType.Docx);
-                string[] fieldNames = _customercontract.GetType()
+                List<string> nombres = _customercontract.GetType()
                         .GetProperties()
-                        .Select(q => q.Name)                       
-                        .ToArray(); 
+                        .Select(q => q.Name).ToList();
 
-                string[] fieldValues = _customercontract.GetType()
+
+
+                List<string> valores = _customercontract.GetType()
                         .GetProperties()
                         .Select(p =>
                         {
                             object value = p.GetValue(_customercontract, null);
                             return value == null ? null : value.ToString();
-                        })
-                        .ToArray(); 
+                        }).ToList();
+
+                foreach (var item in _customercontract.customerContractLinesTerms.OrderBy(o => o.Position))
+                {
+                    //fieldNames.Append<string>("");
+                    nombres.Add($"ClausulaTitulo{item.Position}");
+                    valores.Add(item.TermTitle);
+                    nombres.Add($"Clausula{item.Position}");
+                    valores.Add(item.Term);
+                }
+
+                string[] fieldNames = nombres.ToArray();
+                string[] fieldValues = valores.ToArray();
+
 
                 document.MailMerge.Execute(fieldNames, fieldValues);
                 //Saves and closes the WordDocument instance
@@ -430,40 +443,30 @@ namespace ERPMVC.Controllers
 
                 document.Save(stream, FormatType.Docx);
 
-                DocIORenderer render = new DocIORenderer();
 
-                document.Close();
-                stream.Position = 0;
-                //Download Word document in the browser
-                return File(stream, "application/msword", $"{_customercontract.CustomerContractId}{_customercontract.ProductName}-{_customercontract.CustomerName}.docx");
-
-
-
-                PdfDocument pdfDocument = new PdfDocument();
-                await Task.Run( () =>  {  pdfDocument = render.ConvertToPDF(document); });
                 
-       
-               
+                stream.Position = 0;
+                //return File(stream, "application/msword", $"{_customercontract.CustomerContractId}{_customercontract.ProductName}-{_customercontract.CustomerName}.docx");
+                MemoryStream outputStream = new MemoryStream();
+                
+                await Task.Run( () =>  {
+                    DocIORenderer render = new DocIORenderer();
+                    PdfDocument pdfDocument = new PdfDocument();
+                    pdfDocument = render.ConvertToPDF(document);
+                    pdfDocument.Save(outputStream);
+                    render.Dispose();
+
+                });
                 document.Close();
 
-                render.Dispose();
-                MemoryStream outputStream = new MemoryStream();
-
-                pdfDocument.Save(outputStream);
-
-               
-                document.Dispose();
-                string completepath = basePath + $"/ContratosTemplate/Contrato_Cliente_{_customercontract.CustomerName}_ContratoNumero_{_customercontract.CustomerContractId}.pdf";
 
 
-                using (FileStream file = new FileStream(completepath, FileMode.Create, System.IO.FileAccess.Write))
-                    outputStream.WriteTo(file);
-                    var stream1 = new FileStream(completepath, FileMode.Open);
-                    return new FileStreamResult(stream1, "application/pdf");
+                //pdfDocument.Close();
+                //document.Dispose();
+                outputStream.Position = 0;
+                    return  File(outputStream, "application/pdf" , $"{_customercontract.CustomerContractId}{_customercontract.ProductName}-{_customercontract.CustomerName}.pdf");
 
-                ViewBag.pathcontrato = completepath; 
-
-                pdfDocument.Close();
+                
             }
             catch (Exception ex)
             {

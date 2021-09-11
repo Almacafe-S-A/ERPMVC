@@ -97,6 +97,42 @@ namespace ERPMVC.Controllers
                 return _CustomerContractsLines.ToDataSourceResult(request);
         }
 
+
+
+
+        [HttpGet("[action]")]
+        public async Task<DataSourceResult> GetCustomerContractLinesTerms([DataSourceRequest] DataSourceRequest request, CustomerContractLines _CustomerContractLines)
+        {
+            List<CustomerContractLinesTerms> _CustomerContractsLines = new List<CustomerContractLinesTerms>();
+
+            try
+            {
+                string baseadress = _config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+
+                var result = await _client.GetAsync(baseadress + "api/CustomerContract/GetCustomerContractLinesTerms/" + _CustomerContractLines.CustomerContractId);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _CustomerContractsLines = JsonConvert.DeserializeObject<List<CustomerContractLinesTerms>>(valorrespuesta);
+
+                }
+
+
+            }
+            catch (Exception ex)
+            {
+                //return BadRequest();
+
+            }
+
+
+
+            return _CustomerContractsLines.ToDataSourceResult(request);
+        }
+
         [HttpPost("[action]")]
         public async Task<ActionResult<CustomerContractLines>> SaveCustomerContractLines([FromBody]CustomerContractLines _CustomerContractLines)
         {
