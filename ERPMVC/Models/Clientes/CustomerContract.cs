@@ -96,6 +96,11 @@ namespace ERPMVC.Models
 
         public string Observcion { get; set; }
 
+
+        public List<CustomerContractLines> customerContractLines { get; set; }
+
+        public List<CustomerContractLinesTerms> customerContractLinesTerms { get; set; }
+
         [Display(Name = "Estado")]
         public Int64? IdEstado { get; set; }
 

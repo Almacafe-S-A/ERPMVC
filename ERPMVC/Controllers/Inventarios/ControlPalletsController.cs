@@ -272,6 +272,48 @@ namespace ERPMVC.Controllers
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _ControlPallets = JsonConvert.DeserializeObject<List<ControlPallets>>(valorrespuesta);
                     _ControlPallets = _ControlPallets.OrderByDescending(q => q.ControlPalletsId).ToList();
+                    _ControlPallets = (from c in _ControlPallets
+                                       select new ControlPallets
+                                       {
+                                           BranchId = c.BranchId,
+                                           BranchName = c.BranchName,
+                                           ControlPalletsId = c.ControlPalletsId,
+                                           CustomerId = c.CustomerId,
+                                           CustomerName = c.CustomerName,
+                                           DescriptionProduct = c.DescriptionProduct,
+                                           DocumentDate = Convert.ToDateTime(c.DocumentDate.ToString("dd/MM/yyyy")),
+                                           EsIngreso = c.EsIngreso,
+                                           EsSalida = c.EsSalida,
+                                           Estado = c.Estado,
+                                           FechaCreacion = c.FechaCreacion,
+                                           FechaModificacion  = c.FechaModificacion,
+                                           GoodsDeliveryAuthorizationId = c.GoodsDeliveryAuthorizationId,
+                                           IdEstado = c.IdEstado,
+                                           Impreso = c.Impreso,
+                                           Marca = c.Marca,
+                                           Motorista = c.Motorista,
+                                           Observaciones = c.Observaciones,
+                                           PalletId = c.PalletId,
+                                           Placa = c.Placa,
+                                           ProductId = c.ProductId,
+                                           ProductName = c.ProductName,
+                                           ProductoPesado = c.ProductoPesado,
+                                           QQPesoBruto = c.QQPesoBruto,
+                                           QQPesoFinal = c.QQPesoFinal,
+                                           QQPesoNeto = c.QQPesoNeto,
+                                           TotalSacos = c.TotalSacos,
+                                           UnitOfMeasureName = c.UnitOfMeasureName,
+                                           UsuarioCreacion = c.UsuarioCreacion,
+                                           WarehouseName = c.WarehouseName,
+                                           SubProductName = c.SubProductName,
+                                           UsuarioModificacion = c.UsuarioModificacion,
+                                           
+
+
+                                           
+
+
+                                       }).ToList();
                 }
 
             }
