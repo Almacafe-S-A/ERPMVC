@@ -17,7 +17,7 @@ namespace ERPMVC.Models
         [ForeignKey("GoodsReceivedId")]
         public GoodsReceived GoodsReceived { get; set; }
         [Display(Name = "Unidad de Medida")]
-        public Int64 UnitOfMeasureId { get; set; }
+        public Int64? UnitOfMeasureId { get; set; }
 
         [Display(Name = "Unidad de Medida")]
         public string UnitOfMeasureName { get; set; }
@@ -29,7 +29,7 @@ namespace ERPMVC.Models
         public string ProductName { get; set; }
 
         [Display(Name = "Producto Cliente")]
-        public Int64 SubProductId { get; set; }
+        public Int64? SubProductId { get; set; }
 
         [Display(Name = "Producto Cliente")]
         public string SubProductName { get; set; }
@@ -41,7 +41,7 @@ namespace ERPMVC.Models
         [Display(Name = "Cantidad")]
         public double Quantity { get; set; }
         [Display(Name = "Sacos")]
-        public int? QuantitySacos { get; set; }
+        public double? QuantitySacos { get; set; }
 
         [Display(Name = "Precio")]
         public double Price { get; set; }

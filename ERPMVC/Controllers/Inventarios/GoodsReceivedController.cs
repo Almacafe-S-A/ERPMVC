@@ -381,12 +381,83 @@ namespace ERPMVC.Controllers
 
         }
 
+        GoodsReceived ToGoodsReceived(dynamic dto) {
+            try
+            {
+                GoodsReceived goodsReceived = new GoodsReceived
+                {
+                    GoodsReceivedId = dto.GoodsReceivedId,
+                    CustomerId = dto.CustomerId,
+                    CustomerName = dto.CustomerName,
+                    ControlId = dto.ControlId,
+                    CountryId = dto.CountryId,
+                    VigilanteId = dto.VigilanteId,
+                    VigilanteName = dto.VigilanteName,
+                    CountryName = dto.CountryName,
+                    BranchId = dto.BranchId,
+                    BranchName = dto.BranchName,
+                    WarehouseId = dto.WarehouseId,
+                    WarehouseName = dto.WarehouseName,
+                    ProductId = dto.ProductId,
+                    ProductName = dto.ProductName,
+                    SubProductId = dto.SubProductId,
+                    SubProductName = dto.SubProductName,
+                    OrderDate = dto.OrderDate,
+                    DocumentDate = dto.DocumentDate,
+                    ExpirationDate = dto.ExpirationDate,
+                    Name = dto.Name,
+                    Reference = dto.Reference,
+                    ExitTicket = dto.ExitTicket,
+                    Placa = dto.Placa,
+                    Marca = dto.Marca,
+                    IdEstado = dto.IdEstado,
+                    Estado = dto.Estado,
+                    WeightBallot = dto.WeightBallot,
+                    PesoBruto = dto.PesoBruto,
+                    TaraTransporte = dto.TaraTransporte,
+                    TaraCamion = dto.TaraCamion,
+                    PesoNeto = dto.PesoNeto,
+                    TaraUnidadMedida = dto.TaraUnidadMedida,
+                    PesoNeto2 = dto.PesoNeto2,
+                    Comments = dto.Comments,
+                    FechaCreacion = dto.FechaCreacion,
+                    FechaModificacion = dto.FechaModificacion,
+                    UsuarioCreacion = dto.UsuarioCreacion,
+                    UsuarioModificacion = dto.UsuarioModificacion,
+                    _GoodsReceivedLine = dto._GoodsReceivedLine,
+
+
+
+
+                };
+
+                return goodsReceived;
+            }
+            catch (Exception ex )
+            {
+
+                throw;
+            }
+           
+
+
+
+
+            
+        
+        
+        }
+
 
         [HttpPost("[controller]/[action]")]
-       public async Task<ActionResult<GoodsReceived>> SaveGoodsReceived([FromBody]GoodsReceivedDTO _GoodsReceived)
+       public async Task<ActionResult<GoodsReceived>> SaveGoodsReceived([FromBody] GoodsReceived dto)
         {
             try
             {
+
+                //GoodsReceived _GoodsReceived = ToGoodsReceived(dto);
+                GoodsReceived _GoodsReceived = dto;
+
                 if (_GoodsReceived == null)
                 {
                     return BadRequest("No llego correctamente el modelo!");                   
@@ -439,7 +510,8 @@ namespace ERPMVC.Controllers
             catch (Exception ex)
             {
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
-                throw ex;
+                //throw ex;
+                return BadRequest("Error al Guardar");
             }
 
         }
@@ -447,7 +519,7 @@ namespace ERPMVC.Controllers
         // POST: GoodsReceived/Insert
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult<GoodsReceived>> Insert(GoodsReceivedDTO _GoodsReceived)
+        public async Task<ActionResult<GoodsReceived>> Insert(GoodsReceived _GoodsReceived)
         {
             try
             {

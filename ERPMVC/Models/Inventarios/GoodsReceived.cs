@@ -43,7 +43,7 @@ namespace ERPMVC.Models
         public string BranchName { get; set; }
 
         [Display(Name = "Bodega")]
-        public int WarehouseId { get; set; }
+        public int? WarehouseId { get; set; }
 
         [Display(Name = "Bodega")]
         public string WarehouseName { get; set; }
@@ -55,7 +55,7 @@ namespace ERPMVC.Models
         public string ProductName { get; set; }
 
         [Display(Name = "Producto Cliente")]
-        public Int64 SubProductId { get; set; }
+        public Int64? SubProductId { get; set; }
 
         [Display(Name = "Producto Cliente")]
         public string SubProductName { get; set; }
@@ -67,7 +67,7 @@ namespace ERPMVC.Models
         public DateTime DocumentDate { get; set; }
 
         [Display(Name = "Fecha de vencimiento")]
-        public DateTime ExpirationDate { get; set; }
+        public DateTime? ExpirationDate { get; set; }
 
         [Display(Name = "Recibimos de")]
         public string Name { get; set; }
@@ -80,34 +80,29 @@ namespace ERPMVC.Models
         public string Marca { get; set; }
 
         [Display(Name = "Estado")]
-        public Int64 IdEstado { get; set; }
+        public Int64? IdEstado { get; set; }
         [Display(Name = "Estado")]
         public string Estado { get; set; }
 
-        [Display(Name = "Moneda")]
-        public int CurrencyId { get; set; }
-
-        [Display(Name = "Moneda tasa")]
-        public double Currency { get; set; }
 
         [Display(Name = "Boleta de peso")]
         public Int64 WeightBallot { get; set; }
 
         [Display(Name = "Peso bruto del vehículo")]
-        public double PesoBruto { get; set; }
+        public double? PesoBruto { get; set; }
 
         [Display(Name = "Tara de transporte")]
-        public double TaraTransporte { get; set; }
+        public double? TaraTransporte { get; set; }
 
         [Display(Name = "Tara de Vehículo")]
-        public double TaraCamion { get; set; }
+        public double? TaraCamion { get; set; }
 
         [Display(Name = "Peso Neto")]
-        public double PesoNeto { get; set; }
+        public double? PesoNeto { get; set; }
         [Display(Name = "Tara unidad de medida")]
-        public double TaraUnidadMedida { get; set; }
+        public double? TaraUnidadMedida { get; set; }
         [Display(Name = "Peso Neto")]
-        public double PesoNeto2 { get; set; }
+        public double? PesoNeto2 { get; set; }
 
         [Display(Name = "Comentarios")]
         public string Comments { get; set; }
