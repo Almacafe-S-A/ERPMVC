@@ -16,25 +16,27 @@ namespace ERPMVC.Models
         [Display(Name = "Cliente")]
         public Int64 CustomerId { get; set; }
 
+        [ForeignKey("CustomerId")]
+
+        public Customer Customer { get; set; }
+
         [Display(Name = "Cliente")]
         public string CustomerName { get; set; }
 
         [Display(Name = "Control Id")]
         public Int64 ControlId { get; set; }
 
-
         [Display(Name = "País de origen")]
         public Int64 CountryId { get; set; }
 
-        [Display(Name = "Vigilante")]
-        public Int64 VigilanteId { get; set; }
-
-        [Display(Name = "Vigilante")]
-        public string VigilanteName { get; set; }
-
-
         [Display(Name = "País de origen")]
         public string CountryName { get; set; }
+
+        [Display(Name = "Fecha")]
+        public DateTime OrderDate { get; set; }
+        [Display(Name = "Fecha de documento")]
+        public DateTime DocumentDate { get; set; }
+
 
         [Display(Name = "Sucursal")]
         public Int64 BranchId { get; set; }
@@ -48,70 +50,71 @@ namespace ERPMVC.Models
         [Display(Name = "Bodega")]
         public string WarehouseName { get; set; }
 
-        [Display(Name = "Servicio")]
-        public Int64 ProductId { get; set; }
-
-        [Display(Name = "Servicio")]
-        public string ProductName { get; set; }
-
         [Display(Name = "Producto Cliente")]
         public Int64? SubProductId { get; set; }
 
         [Display(Name = "Producto Cliente")]
         public string SubProductName { get; set; }
 
-        [Display(Name = "Fecha")]
-        public DateTime OrderDate { get; set; }
+        [Display(Name = "Producto")]
+        public Int64 ProductId { get; set; }
 
-        [Display(Name = "Fecha de documento")]
-        public DateTime DocumentDate { get; set; }
+        [Display(Name = "Producto")]
+        public string ProductName { get; set; }
 
-        [Display(Name = "Fecha de vencimiento")]
-        public DateTime? ExpirationDate { get; set; }
+        [Display(Name = "Vigilante")]
+        public Int64 VigilanteId { get; set; }
+
+        [Display(Name = "Vigilante")]
+        public string VigilanteName { get; set; }
 
         [Display(Name = "Recibimos de")]
-        public string Name { get; set; }
-        [Display(Name = "Referencia")]
-        public string Reference { get; set; }
+        public string Motorista { get; set; }
 
         [Display(Name = "Boleta de salida")]
-        public Int64 ExitTicket { get; set; }
+        public Int64 BoletaSalidaId { get; set; }
         public string Placa { get; set; }
         public string Marca { get; set; }
-
-        [Display(Name = "Estado")]
-        public Int64? IdEstado { get; set; }
-        [Display(Name = "Estado")]
-        public string Estado { get; set; }
-
 
         [Display(Name = "Boleta de peso")]
         public Int64 WeightBallot { get; set; }
 
-        [Display(Name = "Peso bruto del vehículo")]
+        [Display(Name = "Peso bruto")]
         public double? PesoBruto { get; set; }
 
         [Display(Name = "Tara de transporte")]
         public double? TaraTransporte { get; set; }
 
-        [Display(Name = "Tara de Vehículo")]
-        public double? TaraCamion { get; set; }
-
         [Display(Name = "Peso Neto")]
         public double? PesoNeto { get; set; }
+
         [Display(Name = "Tara unidad de medida")]
         public double? TaraUnidadMedida { get; set; }
-        [Display(Name = "Peso Neto")]
+
+        [Display(Name = "Peso Neto 2")]
         public double? PesoNeto2 { get; set; }
 
         [Display(Name = "Comentarios")]
         public string Comments { get; set; }
+
+        [Display(Name = "Tara de camión")]
+        public double? TaraCamion { get; set; }
+
+        [Display(Name = "Fecha de creación")]
         public DateTime? FechaCreacion { get; set; }
+        [Display(Name = "Fecha de modificación")]
         public DateTime? FechaModificacion { get; set; }
+
+        [Display(Name = "Usuario de creación")]
         public string UsuarioCreacion { get; set; }
+
+        [Display(Name = "Usuario de modificación")]
         public string UsuarioModificacion { get; set; }
 
-        public List<GoodsReceivedLine> _GoodsReceivedLine = new List<GoodsReceivedLine>();
+
+        //  public List<GoodsReceivedLine> _GoodsReceivedLine = new List<GoodsReceivedLine>();
+        public List<GoodsReceivedLine> _GoodsReceivedLine { get; set; } = new List<GoodsReceivedLine>();
+
     }
 
 

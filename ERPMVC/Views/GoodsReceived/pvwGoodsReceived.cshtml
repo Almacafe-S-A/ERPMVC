@@ -1,4 +1,4 @@
-﻿@model ERPMVC.DTO.GoodsReceivedDTO
+﻿@model ERPMVC.Models.GoodsReceived
 @using System.Security.Claims
 @{ Layout = null;
     var messages = new Dictionary<string, string>() { { "custom", "Ingrese un valor correcto." },
@@ -43,7 +43,7 @@
             return false;
         }
 
-        if (input.attr('name') === "ExitTicket" && input.val() == 0) {
+        if (input.attr('name') === "BoletaSalidaId" && input.val() == 0) {
             return false;
         }
 
@@ -75,7 +75,7 @@
                     @if (Model.GoodsReceivedId != 0)
                     {
                         <button class="btnmitoolbar" onclick="ImprimirGoodsReceived(null,'@Model.GoodsReceivedId')"><i class="fa fa-print"></i> Imprimir Recibo </button>
-                        <button class="btnmitoolbar" onclick="ImprimirBoletaDeSalida(null,'@Model.ExitTicket')"><i class="mdi mdi-printer"></i> Boleta Salida </button>
+                        <button class="btnmitoolbar" onclick="ImprimirBoletaDeSalida(null, '@Model.BoletaSalidaId')"><i class="mdi mdi-printer"></i> Boleta Salida </button>
                     }
 
                 </h4>
@@ -142,7 +142,7 @@
                                                                         $("#ControlId").data("kendoNumericTextBox").value(data.ControlPalletsId);
                                                                         record = 0;
                                                                         console.log(data);
-                                                                        $("#Name").val(data.Motorista);
+                                                                        $("#Motorista").val(data.Motorista);
                                                                         $("#Placa").val(data.Placa);
                                                                         $("#Marca").val(data.Marca);
                                                                         var grid = $("#gridGoodsReceivedDetail").data("kendoGrid");
@@ -202,7 +202,7 @@
                                                                             datasource.data(lineas);
                                                                             
                                                                         }
-
+                                                                        $("#Comments").prop("readonly", false);
                                                                        
                                                                         Deshabilitarcampos();
 
@@ -247,10 +247,9 @@
                                                             var dropdownlist2 = $("#ProductId").data("kendoDropDownList");
                                                             dropdownlist2.enable(false);
                                                             //$("#ProductId").prop("disabled", "disabled");
-                                                            $("#Name").prop("disabled", "disabled");
+                                                            $("#Motorista").prop("disabled", "disabled");
                                                             $("#Placa").prop("disabled", "disabled");
                                                             $("#Marca").prop("disabled", "disabled");
-                                                            $("#Comments").prop("disabled", "disabled");
                                                             $("#TaraCamion").prop("disabled", "disabled");
                                                             $("#PesoBruto").prop("disabled", "disabled");
                                                             $("#PesoNeto").prop("disabled", "disabled");
@@ -295,7 +294,7 @@
                                             </script>
                                             <input type="hidden" id="singuardar" value="0" />
 
-                                            @if (Model.editar == 1)
+                                            @if (Model.GoodsReceivedId == 0)
                                             {
                                                 <label for="cbxBuscar" class="control-label" style="width:100%">Asociar control de ingresos</label>
                                                 @(Html.Kendo().DropDownList()
@@ -519,8 +518,8 @@
                                                                 }
 
                                                                 
-                                                                //$("#Name").val(resultados.conductor);
-                                                                //$("#Placa").val(resultados.placas);
+                                                                
+
 
                                                                 //console.log(resultados.Boleto_Sal.peso_s);
                                                                 if (result != 0 && resultados.Boleto_Sal.peso_s > resultados.peso_e) {
@@ -607,8 +606,8 @@
                                     </div>
                                     <div class="col-md-2">
                                         <div class="form-group">
-                                            <label asp-for="Name" class="control-label" style="width: 100%;"></label>
-                                            <input type="text" id="Name" required class="k-textbox" style="min-width:100%;" asp-for="Name" />
+                                            <label asp-for="Motorista" class="control-label" style="width: 100%;"></label>
+                                            <input type="text" id="Motorista" required class="k-textbox" style="min-width:100%;" asp-for="Motorista" />
                                         </div>
                                     </div>
 
@@ -650,8 +649,8 @@
 
                                     <div class="col-md-2">
                                         <div class="form-group">
-                                            <label asp-for="ExitTicket" class="control-label" style="width:100%">Boleta de Salida No.</label>
-                                            <kendo-numerictextbox name="ExitTicket"
+                                            <label asp-for="BoletaSalidaId" class="control-label" style="width:100%">Boleta de Salida No.</label>
+                                            <kendo-numerictextbox name="BoletaSalidaId"
                                                                   format="d"
                                                                   min="0"
                                                                   enable="false"
@@ -659,8 +658,8 @@
                                                                   step="1"
                                                                   spinners="false"
                                                                   style="width: 100%;"
-                                                                  value="Model.ExitTicket" />
-                                            <span asp-validation-for="ExitTicket" class="text-danger"></span>
+                                                                  value="Model.BoletaSalidaId" />
+                                            <span asp-validation-for="BoletaSalidaId" class="text-danger"></span>
                                         </div>
 
                                     </div>
@@ -699,7 +698,7 @@
                                     <div class="col-md-12">
                                         <div class="form-group">
                                             <label asp-for="Comments" class="control-label" style="width: 100%;"></label>
-                                            <textarea asp-for="Comments" class="k-textarea" rows="2" style="min-width:100%"></textarea>
+                                            <textarea asp-for="Comments" class="k-textarea" rows="2" style="min-width:100%" readonly></textarea>
                                             @*<input type="text" id="Comments" required class="form-control" style="min-width: 100%;" asp-for="Comments" />*@
                                         </div>
                                     </div>
@@ -831,7 +830,7 @@
                         </form>
 
                         <div class="row">
-                            @if (Model.editar == 1)
+                            @if (Model.GoodsReceivedId ==0)
                             {
                                 <button id="btnSaveControlEstiba" type="submit" class="form-control btn-miboton" onclick="SaveGoodsReceived(this);">Guardar</button>
                             }
@@ -903,16 +902,16 @@
                 'SubProductId': $("#SubProductId").val(),
                 'OrderDate': $("#DocumentDate").getKendoDateTimePicker().value().toJSON(),
                 'DocumentDate': $("#DocumentDate").getKendoDateTimePicker().value().toJSON(),
-                'Name': $("#Name").val(),
-                'Reference': $("#Reference").val(),
-                'ExitTicket': $("#ExitTicket").val(),
+                'Motorista': $("#Motorista").val(),
+                'BoletaSalidaId': $("#BoletaSalidaId").val(),
                 'Comments': $("#Comments").val(),
                 'CountryId': $("#CountryId").val(),
                 'CountryName': $("#CountryId").data("kendoDropDownList").text(),
                 'VigilanteId': $("#VigilanteId").data("kendoDropDownList").value(),
                 'VigilanteName': $("#VigilanteId").data("kendoDropDownList").text(),
                 'PesoBruto': $("#PesoBruto").val(),
-                'PesoNeto': $("#PesoNeto").val(),
+                'PesoNeto': $("#PesoNeto").val(), 
+                'TaraUnidadMedida': $("#TaraUnidadMedida").val(),
                 'PesoNeto2': $("#PesoNeto2").val(),
                 '_GoodsReceivedLine': displayedData,
                 'TaraCamion': $("#TaraCamion").val(),
@@ -948,9 +947,9 @@
                         success: function (data) {
 
                             $("#GoodsReceivedId").data("kendoNumericTextBox").value(data.GoodsReceivedId);
-                            $("#ExitTicket").data("kendoNumericTextBox").value(data.ExitTicket);
+                            $("#BoletaSalidaId").data("kendoNumericTextBox").value(data.BoletaSalidaId);
                             ImprimirGoodsReceived(null, data.GoodsReceivedId);
-                            ImprimirBoletaDeSalida(null, data.ExitTicket);
+                            ImprimirBoletaDeSalida(null, data.BoletaSalidaId);
 
                             $.toast({
                                 heading: 'Satisfactorio',

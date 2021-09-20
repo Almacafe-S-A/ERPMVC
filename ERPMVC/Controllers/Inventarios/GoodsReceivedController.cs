@@ -42,33 +42,28 @@ namespace ERPMVC.Controllers
         }
 
         [HttpPost("[controller]/[action]")]
-        public async Task<ActionResult> pvwGoodsReceived([FromBody]GoodsReceivedDTO _GoodsReceivedDTO)
+        public async Task<ActionResult> pvwGoodsReceived([FromBody]GoodsReceived _GoodsReceived)
         {
-            GoodsReceivedDTO _GoodsReceived = new GoodsReceivedDTO();
+            //GoodsReceived _GoodsReceived = new GoodsReceived();
             try
             {
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/GoodsReceived/GetGoodsReceivedById/" + _GoodsReceivedDTO.GoodsReceivedId);
+                var result = await _client.GetAsync(baseadress + "api/GoodsReceived/GetGoodsReceivedById/" + _GoodsReceived.GoodsReceivedId);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _GoodsReceived = JsonConvert.DeserializeObject<GoodsReceivedDTO>(valorrespuesta);
+                    _GoodsReceived = JsonConvert.DeserializeObject<GoodsReceived>(valorrespuesta);
 
                 }
 
                 if (_GoodsReceived == null)
                 {
-                    _GoodsReceived = new GoodsReceivedDTO {  DocumentDate=DateTime.Now, ExpirationDate=DateTime.Now,OrderDate=DateTime.Now,editar=1
-                    ,
-                        BranchId = Convert.ToInt64(HttpContext.Session.GetString("BranchId"))
+                    _GoodsReceived = new GoodsReceived { DocumentDate = DateTime.Now, OrderDate = DateTime.Now 
+                        ,BranchId = Convert.ToInt64(HttpContext.Session.GetString("BranchId"))
                     };
-                }
-                else
-                {
-                    _GoodsReceived.editar = 0;
                 }
                 ViewData["permisos"] = _principal;
             }
@@ -102,6 +97,47 @@ namespace ERPMVC.Controllers
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _GoodsReceived = JsonConvert.DeserializeObject<List<GoodsReceived>>(valorrespuesta);
                     _GoodsReceived = _GoodsReceived.OrderByDescending(q => q.GoodsReceivedId).ToList();
+                    _GoodsReceived = (from c in _GoodsReceived
+                                      select new GoodsReceived
+                                      {
+                                          GoodsReceivedId= c.GoodsReceivedId,
+                                          BranchId = c.BranchId,
+                                          BranchName = c.BranchName,
+                                          ControlId = c.ControlId,
+                                          CustomerId = c.CustomerId,
+                                          CustomerName = c.CustomerName,
+                                          Motorista = c.Motorista,
+                                          DocumentDate = Convert.ToDateTime(c.DocumentDate.ToString("dd/MM/yyyy")),
+                                          Comments = c.Comments,
+                                          BoletaSalidaId = c.BoletaSalidaId,
+                                          FechaCreacion = c.FechaCreacion,
+                                          FechaModificacion = c.FechaModificacion,
+                                          OrderDate = Convert.ToDateTime(c.OrderDate.ToString("dd/MM/yyyy")),
+                                          CountryName = c.CountryName,
+                                          Marca = c.Marca,
+                                          VigilanteName = c.VigilanteName,
+                                          WeightBallot = c.WeightBallot,
+                                          TaraUnidadMedida = c.TaraCamion,
+                                          Placa = c.Placa,
+                                          ProductId = c.ProductId,
+                                          ProductName = c.ProductName,
+                                          TaraCamion = c.TaraCamion,
+                                          //QQPesoBruto = c.QQPesoBruto,
+                                          //QQPesoFinal = c.QQPesoFinal,
+                                          //QQPesoNeto = c.QQPesoNeto,
+                                          //TotalSacos = c.TotalSacos,
+                                          //UnitOfMeasureName = c.UnitOfMeasureName,
+                                          UsuarioCreacion = c.UsuarioCreacion,
+                                          WarehouseName = c.WarehouseName,
+                                          SubProductName = c.SubProductName,
+                                          UsuarioModificacion = c.UsuarioModificacion,
+
+
+
+
+
+
+                                      }).ToList();
                 }
 
 
@@ -160,9 +196,9 @@ namespace ERPMVC.Controllers
         public ActionResult SFGoodsReceived(Int32 id)
         {
 
-            GoodsReceivedDTO _GoodsReceivedDTO = new GoodsReceivedDTO { GoodsReceivedId = id, }; //token = HttpContext.Session.GetString("token") };
+            GoodsReceived _GoodsReceived = new GoodsReceived { GoodsReceivedId = id, }; //token = HttpContext.Session.GetString("token") };
 
-            return View(_GoodsReceivedDTO);
+            return View(_GoodsReceived);
         }
 
 
@@ -404,14 +440,10 @@ namespace ERPMVC.Controllers
                     SubProductName = dto.SubProductName,
                     OrderDate = dto.OrderDate,
                     DocumentDate = dto.DocumentDate,
-                    ExpirationDate = dto.ExpirationDate,
-                    Name = dto.Name,
-                    Reference = dto.Reference,
-                    ExitTicket = dto.ExitTicket,
+                    Motorista = dto.Motorista,
+                    BoletaSalidaId = dto.BoletaSalidaId,
                     Placa = dto.Placa,
                     Marca = dto.Marca,
-                    IdEstado = dto.IdEstado,
-                    Estado = dto.Estado,
                     WeightBallot = dto.WeightBallot,
                     PesoBruto = dto.PesoBruto,
                     TaraTransporte = dto.TaraTransporte,
@@ -489,7 +521,7 @@ namespace ERPMVC.Controllers
                     _GoodsReceived.UsuarioCreacion = HttpContext.Session.GetString("user");
                     var insertresult = await Insert(_GoodsReceived);
                     var value = (insertresult.Result as ObjectResult).Value;
-                    _GoodsReceived = ((GoodsReceivedDTO)(value));
+                    _GoodsReceived = ((GoodsReceived)(value));
                     if (_GoodsReceived.GoodsReceivedId == 0)
                     {
                         return await Task.Run(() => BadRequest("No se genero el documento!"));
@@ -534,7 +566,7 @@ namespace ERPMVC.Controllers
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _GoodsReceived = JsonConvert.DeserializeObject<GoodsReceivedDTO>(valorrespuesta);
+                    _GoodsReceived = JsonConvert.DeserializeObject<GoodsReceived>(valorrespuesta);
                 }
 
             }
