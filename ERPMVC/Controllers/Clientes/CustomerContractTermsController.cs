@@ -75,6 +75,9 @@ namespace ERPMVC.Controllers
         }
 
 
+
+
+
         [HttpGet("[controller]/[action]")]
         public async Task<DataSourceResult> Get([DataSourceRequest]DataSourceRequest request)
         {
@@ -202,10 +205,18 @@ namespace ERPMVC.Controllers
                     _CustomerContractTerms.FechaCreacion = DateTime.Now;
                     _CustomerContractTerms.UsuarioCreacion = HttpContext.Session.GetString("user");
                     var insertresult = await Insert(_CustomerContractTerms);
+                    if (insertresult.Result is BadRequestResult)
+                    {
+                        return BadRequest("Ya existe un termino en esta posición");
+                    }
                 }
                 else
                 {
                     var updateresult = await Update(_CustomerContractTerms.Id, _CustomerContractTerms);
+                    if (updateresult.Result is BadRequestResult)
+                    {
+                        return BadRequest("Ya existe un termino en esta posición");
+                    }
                 }
 
             }
@@ -240,6 +251,10 @@ namespace ERPMVC.Controllers
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _CustomerContractTerms = JsonConvert.DeserializeObject<CustomerContractTerms>(valorrespuesta);
                 }
+                else
+                {
+                    return BadRequest();
+                }
 
             }
             catch (Exception ex)
@@ -251,8 +266,11 @@ namespace ERPMVC.Controllers
             // return new ObjectResult(new DataSourceResult { Data = new[] { _CustomerContractTerms }, Total = 1 });
         }
 
+
+       
+
         [HttpPut("{CenterCostId}")]
-        public async Task<IActionResult> Update(Int64 CustomerContractTermsId, CustomerContractTerms _CustomerContractTerms)
+        public async Task<ActionResult<CustomerContractTerms>> Update(Int64 CustomerContractTermsId, CustomerContractTerms _CustomerContractTerms)
         {
             try
             {
@@ -267,6 +285,10 @@ namespace ERPMVC.Controllers
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _CustomerContractTerms = JsonConvert.DeserializeObject<CustomerContractTerms>(valorrespuesta);
                 }
+                else
+                {
+                    return BadRequest();
+                }
 
             }
             catch (Exception ex)
@@ -274,7 +296,7 @@ namespace ERPMVC.Controllers
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 return BadRequest($"Ocurrio un Error{ex.Message}");
             }
-            return new ObjectResult(new DataSourceResult { Data = new[] { _CustomerContractTerms }, Total = 1 });
+            return _CustomerContractTerms;
         }
 
         [HttpPost("[action]")]
@@ -287,6 +309,129 @@ namespace ERPMVC.Controllers
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
 
                 var result = await _client.PostAsJsonAsync(baseadress + "api/CustomerContractTerms/Delete", _CustomerContractTerms);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _CustomerContractTerms = JsonConvert.DeserializeObject<CustomerContractTerms>(valorrespuesta);
+                }
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                return BadRequest($"Ocurrio un Error: {ex.Message}");
+            }
+
+
+
+            return new ObjectResult(new DataSourceResult { Data = new[] { _CustomerContractTerms }, Total = 1 });
+        }
+
+        [HttpPost("[action]")]
+        public async Task<ActionResult<CustomerContractTerms>> SaveCustomerContractLinesTerms([FromBody] CustomerContractLinesTerms _CustomerContractTerms)
+        {
+
+            try
+            {
+                CustomerContractLinesTerms _listCustomerContractTerms = new CustomerContractLinesTerms();
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/CustomerContractTerms/GetCustomerContractTermsById/" + _CustomerContractTerms.Id);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _listCustomerContractTerms = JsonConvert.DeserializeObject<CustomerContractLinesTerms>(valorrespuesta);
+                }
+                if (_CustomerContractTerms.Id == 0)
+                {
+                    var insertresult = await InsertContractTerm(_CustomerContractTerms);
+                }
+                else
+                {
+                    var updateresult = await UpdateContractTerm(_CustomerContractTerms.Id, _CustomerContractTerms);
+                }
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                return BadRequest($"Ocurrio un Error{ex.Message}");
+
+                throw ex;
+            }
+
+            return Json(_CustomerContractTerms);
+        }
+
+        // POST: CustomerContractTerms/Insert
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult<CustomerContractTerms>> InsertContractTerm(CustomerContractLinesTerms _CustomerContractTerms)
+        {
+            try
+            {
+                // TODO: Add insert logic here
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.PostAsJsonAsync(baseadress + "api/CustomerContractLinesTerms/Insert", _CustomerContractTerms);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _CustomerContractTerms = JsonConvert.DeserializeObject<CustomerContractLinesTerms>(valorrespuesta);
+                }
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                return BadRequest($"Ocurrio un Error{ex.Message}");
+            }
+            return Ok(_CustomerContractTerms);
+            // return new ObjectResult(new DataSourceResult { Data = new[] { _CustomerContractTerms }, Total = 1 });
+        }
+
+
+        [HttpPut("{CenterCostId}")]
+        public async Task<IActionResult> UpdateContractTerm(Int64 CustomerContractTermsId, CustomerContractLinesTerms _CustomerContractTerms)
+        {
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+
+                var result = await _client.PutAsJsonAsync(baseadress + "api/CustomerContractLinesTerms/Update", _CustomerContractTerms);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _CustomerContractTerms = JsonConvert.DeserializeObject<CustomerContractLinesTerms>(valorrespuesta);
+                }
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                return BadRequest($"Ocurrio un Error{ex.Message}");
+            }
+            return new ObjectResult(new DataSourceResult { Data = new[] { _CustomerContractTerms }, Total = 1 });
+        }
+
+        [HttpPost("[action]")]
+        public async Task<ActionResult<CustomerContractTerms>> DeleteContractTerm([FromBody] CustomerContractTerms _CustomerContractTerms)
+        {
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+
+                var result = await _client.PostAsJsonAsync(baseadress + "api/CustomerContractLinesTerms/Delete", _CustomerContractTerms);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
