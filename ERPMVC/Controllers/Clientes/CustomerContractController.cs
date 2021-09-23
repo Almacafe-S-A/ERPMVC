@@ -87,6 +87,41 @@ namespace ERPMVC.Controllers
         }
 
 
+
+        public async Task<ActionResult> pvwCustomerContractLinesTerms([FromBody] CustomerContractTerms _sarpara)
+        {
+            CustomerContractLinesTerms _CustomerContractTerms = new CustomerContractLinesTerms();
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/CustomerContract/CustomerContractLinesTermsById/" + _sarpara.Id);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _CustomerContractTerms = JsonConvert.DeserializeObject<CustomerContractLinesTerms>(valorrespuesta);
+
+                }
+
+                if (_CustomerContractTerms == null)
+                {
+                    _CustomerContractTerms = new CustomerContractLinesTerms();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+
+
+            return PartialView(_CustomerContractTerms);
+
+        }
+
         [HttpGet]
         public async Task<DataSourceResult> Get([DataSourceRequest]DataSourceRequest request)
         {

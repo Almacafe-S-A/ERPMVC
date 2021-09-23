@@ -129,6 +129,37 @@ namespace ERPMVC.Controllers
 
         }
 
+
+
+        [HttpGet("[controller]/[action]")]
+        public async Task<ActionResult> GetElementoByIdConfiguracionJson([DataSourceRequest] DataSourceRequest request, Int64 Id, string Estado = "Activo")
+        {
+            List<ElementoConfiguracion> _ElementoConfiguracion = new List<ElementoConfiguracion>();
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/ElementoConfiguracion/GetElementoConfiguracionByIdConfiguracion/" + Id);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _ElementoConfiguracion = JsonConvert.DeserializeObject<List<ElementoConfiguracion>>(valorrespuesta);
+                    _ElementoConfiguracion = _ElementoConfiguracion.Where(q => q.IdEstado == 1).ToList();
+                }
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+            return Json(_ElementoConfiguracion);
+
+        }
+
         [HttpGet]
         public async Task<DataSourceResult> Get([DataSourceRequest]DataSourceRequest request)
         {
