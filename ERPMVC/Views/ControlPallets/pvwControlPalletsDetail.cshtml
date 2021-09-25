@@ -6,11 +6,38 @@
 
 <script>
 
+    function validarduplicado() {
+        debugger;
+        var displayedData = $("#gridControlPalletsDetail").data().kendoGrid.dataSource.data();
+        var pesado = $("#ProductoPesado").data("kendoSwitch").check();
+        var producto = $("#SubProductIddet").val();
+        var bodega = $("#WarehouseIddet").val();
+        var uom = $("#UnitofMeasureIddet").val();
+        for (var i = 0; i < displayedData.length; i++) {
+            if (!pesado && displayedData[i].SubProductId == producto && displayedData[i].WarehouseId == bodega && displayedData[i].UnitofMeasureId == uom) {
+                $.toast({
+                    heading: 'Error',
+                    text: 'No puede duplicar el producto en la misma Bodega',
+                    position: 'top-right',
+                    loaderBg: '#ff6849',
+                    icon: 'error',
+                    hideAfter: 30000,
+                    stack: 6
+                });
+                return true;
+
+            } else return false;
+
+        }
+        
+    }
+
 
     function GetControlPalletsId() {
-        debugger;
+        //debugger;
+        
         CambioOpciones();
-
+        
         if ($("#Totallinea").val() > 0 || @Model.ControlPalletsId > 0 || $("#Cantidad").val() > 0 ) {
             var displayedData = $("#gridControlPalletsDetail").data().kendoGrid.dataSource.data();
             var pesado = $("#ProductoPesado").data("kendoSwitch").check();
@@ -18,6 +45,22 @@
             var producto = $("#SubProductIddet").val() ;
             var bodega = $("#WarehouseIddet").val();
             var uom = $("#UnitofMeasureIddet").val();
+            for (var i = 0; i < displayedData.length; i++) {
+                if (!pesado && displayedData[i].SubProductId == producto && displayedData[i].WarehouseId == bodega && displayedData[i].UnitofMeasureId == uom) {
+                    $.toast({
+                        heading: 'Error',
+                        text: 'No puede duplicar el producto en la misma Bodega',
+                        position: 'top-right',
+                        loaderBg: '#ff6849',
+                        icon: 'error',
+                        hideAfter: 30000,
+                        stack: 6
+                    });
+                    return true;
+
+                } else return false;
+
+            }
 
             // debugger;
             var controllineid = Number($("#ControlPalletsLineId").val());
@@ -30,19 +73,7 @@
                         //console.log('Linea:' + id);
                         if (displayedData[i].ControlPalletsLineId > id)
                             id = displayedData[i].ControlPalletsLineId;
-                        if (!pesado && displayedData[i].SubProductId == producto && displayedData[i].WarehouseId == bodega) {
-                            $.toast({
-                                heading: 'Error',
-                                text: 'Ya existe un producto para esta bodega',
-                                position: 'top-right',
-                                loaderBg: '#ff6849',
-                                icon: 'error',
-                                hideAfter: 30000,
-                                stack: 6
-                            });
-                            return;
-
-                        }
+                        
 
                     }
 
@@ -63,7 +94,8 @@
             } else {
                 total = $("#Cantidad").val();
             }
-            id = nuevo && control > 0  ? 0 : id;
+            id = nuevo && control > 0 ? 0 : id;
+
 
              return {
                  'ControlPalletsLineId': id,
@@ -227,7 +259,7 @@
                 stack: 6
             });
         }
-            
+        CalcularTotal();
 
     }
 
@@ -307,6 +339,8 @@
 
         $('#myModalControlPalletsLine').modal('show');
 
+        CalcularTotal();
+
     }
 
         function Delete(e) {
@@ -368,6 +402,9 @@
 
         @(Html.Kendo().Grid<ERPMVC.Models.ControlPalletsLine>()
                                                                   .Name("gridControlPalletsDetail")
+                                                                  .Events(e =>
+                                                                    e.DataBound("CalcularTotalDocumento")
+                                                                  )
                                                                   .Columns(columns =>
                                                                   {
                                                                       if (Model.Estado!="Recibido")
@@ -388,7 +425,7 @@
                                                                       columns.Bound(p => p.SubProductId).Visible(false);
                                                                       columns.Bound(p => p.UnitofMeasureId).Visible(false);
                                                                       columns.Bound(p => p.WarehouseId).Visible(false);
-                                                                      columns.Bound(p => p.Qty).Width(100).Title("Cant").Visible(!Model.ProductoPesado).Format("{0:N2}");
+                                                                      columns.Bound(p => p.Qty).Width(100).Title("Cantidad").Visible(!Model.ProductoPesado).Format("{0:N2}");
 
                                                                       columns.Bound(p => p.Alto).Title("Alto").Width(150).Visible(Model.ProductoPesado );
                                                                       columns.Bound(p => p.Ancho).Title("Ancho").Width(150).Visible(Model.ProductoPesado);
@@ -429,7 +466,7 @@
                                                                     .Events(events =>
                                                                     {
                                                                         events.Error("error_handler");
-                                                                        //events.upda("EditHandler");
+                                                                        
 
                                                                     })
                                                                     .Read(read => read.Action("GetControlPalletsLineByControlPalletId", "ControlPalletsLine").Data("GetControlPalletsId"))
