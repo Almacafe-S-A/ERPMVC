@@ -39,6 +39,10 @@ namespace ERPMVC.Controllers
         public async Task<ActionResult> pvwControlPalletsDetailMant([FromBody]ControlPalletsLine _ControlPalletsLinep)
         {
             ControlPalletsLine _ControlPalletsLine = new ControlPalletsLine();
+            if (_ControlPalletsLinep.ControlPalletsId == 0) 
+            {
+                return PartialView("~/Views/ControlPallets/pvwControlPalletsDetailMant.cshtml",_ControlPalletsLinep);
+            }
             try
             {
                 string baseadress = config.Value.urlbase;
@@ -154,6 +158,7 @@ namespace ERPMVC.Controllers
                             obj.UnitofMeasureId = _ControlPalletsLinep.UnitofMeasureId;
                             obj.UnitofMeasureName = _ControlPalletsLinep.UnitofMeasureName;
                             obj.Qty = _ControlPalletsLinep.Qty;
+                            obj.Observacion = _ControlPalletsLinep.Observacion;
                             //obj. = _ControlPalletsLinep.TotalCantidad;
 
                         }
