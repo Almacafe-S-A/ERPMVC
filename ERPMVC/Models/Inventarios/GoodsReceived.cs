@@ -88,6 +88,12 @@ namespace ERPMVC.Models
         [Display(Name = "Peso Neto")]
         public double? PesoNeto { get; set; }
 
+        public int? CustomerUnitOfMeasureId { get; set; }
+        [ForeignKey("CustomerUnitOfMeasureId")]
+        public UnitOfMeasure UnitOfMeasure { get; set; }
+
+        public string CustomerUnitOfMeasure { get; set; }
+
         [Display(Name = "Tara unidad de medida")]
         public double? TaraUnidadMedida { get; set; }
 
