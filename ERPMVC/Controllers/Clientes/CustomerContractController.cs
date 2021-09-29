@@ -326,6 +326,50 @@ namespace ERPMVC.Controllers
         }
 
 
+
+        [HttpPost("[action]")]
+        public async Task<ActionResult<CustomerContract>> ActivarContrato([FromBody] CustomerContract _CustomerContract)
+        {
+            CustomerContract CustomerContract = new CustomerContract();
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+
+                var result = await _client.GetAsync(baseadress + "api/CustomerContract/GetCustomerContractById/" + _CustomerContract.CustomerContractId);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    CustomerContract = JsonConvert.DeserializeObject<CustomerContract>(valorrespuesta);
+                    CustomerContract.FechaInicioContrato = _CustomerContract.FechaInicioContrato;
+                    CustomerContract.FechaVencimiento = ((DateTime)CustomerContract.FechaInicioContrato).AddMonths((int)CustomerContract.Plazo);
+                    CustomerContract.Estado = "Vigente";
+                    CustomerContract.IdEstado = 7;
+                    CustomerContract.FechaModificacion = DateTime.Now;
+                    CustomerContract.UsuarioModificacion = HttpContext.Session.GetString("user");
+                }
+
+                var result2 = await _client.PutAsJsonAsync(baseadress + "api/CustomerContract/Update", CustomerContract);                
+                if (result2.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result2.Content.ReadAsStringAsync());
+                    _CustomerContract = JsonConvert.DeserializeObject<CustomerContract>(valorrespuesta);
+                }
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                return BadRequest($"Ocurrio un error{ex.Message}");
+            }
+
+            return new ObjectResult(new DataSourceResult { Data = new[] { _CustomerContract }, Total = 1 });
+        }
+
+
         [HttpPost("[controller]/[action]")]
         public async Task<ActionResult<CustomerContract>> Anular([FromBody]CustomerContract _CustomerContract)
         {
@@ -345,7 +389,7 @@ namespace ERPMVC.Controllers
                         valorrespuesta = await (result.Content.ReadAsStringAsync());
                         _cc = JsonConvert.DeserializeObject<CustomerContract>(valorrespuesta);
                         _cc.IdEstado = 7;
-                        _cc.Estado = "Rechazado";
+                        _cc.Estado = "Terminado";
                         _cc.Observcion = _CustomerContract.Observcion;
                         var resultcustomerc = await Update(_cc.CustomerContractId, _cc);
 

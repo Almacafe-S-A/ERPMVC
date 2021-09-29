@@ -25,7 +25,8 @@
           });
     }
 
-     function AnularContrato(e) {
+    function AnularContrato() {
+        debugger;
          console.log('id', $("#AnularContrato").val())
         console.log('observacion',$("#ObservacionAnular").val())
 
@@ -34,7 +35,7 @@
 
 
             var dataObject = {
-                CustomerContractId: $("#AnularContrato").val(),
+                CustomerContractId: contratoseleccionado,
                 Observcion: $("#ObservacionAnular").val(),
 
                 editar: 0
@@ -52,7 +53,7 @@
                     $('#ModalAnular').modal('hide');
                     $.toast({
                         heading: 'Satisfactorio',
-                        text: 'Cotización anulada correctamente.',
+                        text: 'Contrato Terminado correctamente.',
                         position: 'top-right',
                         loaderBg: '#ff6849',
                         icon: 'success',
@@ -60,7 +61,7 @@
                         stack: 6
                     });
 
-                    RefrescarGrid();
+                    RefreshGridCustomerContract();
 
                 },
                 error: function (XMLHttpRequest, textStatus, errorThrown) {
@@ -77,12 +78,9 @@
         }
 
     function Anular(e) {
-
-
         var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
-        $("#AnularContrato").val(dataItem.CustomerContractId)
-                $("#btnSaveCotizacion").show();
-                $('#ModalAnular').modal('show');
+        contratoseleccionado = dataItem.CustomerContractId;                
+        $('#ModalAnular').modal('show');
 
             }
 
@@ -112,6 +110,7 @@
                 //RefreshCotizacionesDetail();
                 // $("#btnSaveCotizacion").show();
                 $('#myModalCustomerContract').modal('show');
+                RefreshGridCustomerContract();
             },
              error: function (XMLHttpRequest, textStatus, errorThrown) {
                     alert(textStatus + ": " + XMLHttpRequest.responseText);
@@ -152,6 +151,73 @@
         });
     }
 
+    var contratoseleccionado = 0;
+
+
+    function ModalActivarContrato(e) {
+        e.preventDefault();
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        
+        contratoseleccionado = dataItem.CustomerContractId;
+        $('#ModalActivar').modal('show');
+       
+    }
+
+
+    function ActivarContrato(e) {
+               
+
+        var dataObject = {
+            CustomerContractId: contratoseleccionado,
+            FechaInicioContrato: $("#FechaInicio").getKendoDateTimePicker().value().toJSON(),
+            editar : 0
+        };
+
+        $.ajax({
+            url: '@Url.Action("ActivarContrato", "CustomerContract")',
+            method: 'POST',
+            datatype: "json",
+            contentType: 'application/json',
+            async: false,
+            data: JSON.stringify(dataObject),
+            success: function (result) {
+                $('#ModalPresupuestoFijo').modal('Hide');
+                RefrescarGrid();
+                $.toast({
+                    heading: 'Satisfactorio',
+                    text: 'Se ha cambiado el estado de contrato a Vigente',
+                    position: 'top-right',
+                    loaderBg: '#ff6849',
+                    icon: 'success',
+                    hideAfter: 7000,
+                    stack: 6
+                });
+                $('#ModalActivar').modal('hide');
+                RefreshGridCustomerContract();
+            },
+             error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+              }
+        });
+    }
+
+    function dataBound(e) {
+        $.each(this.dataSource.data(), function () {
+            if (this.Estado != "Generado") {
+                $('[data-uid=' + this.uid + ']').find('.k-grid-Activar').hide();
+
+            }
+            if (this.Estado == "Terminado") {
+                $('[data-uid=' + this.uid + ']').find('.k-grid-Anular').hide();
+            }
+        })
+    }
+
+    function RefrescarGrid() {
+        var grid = $("#gridCustomerContract").getKendoGrid();
+        grid.dataSource.read();
+
+    }
 
       function ImprimirContrato(e) {
         e.preventDefault();
@@ -164,34 +230,69 @@
 
 </script>
 
+
+<div id="ModalAnular" style="width: 300px; height: 300px; position: absolute; left: 50%; top: 50%; margin-left: -150px; margin-top: -150px;" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+
+        <!-- Modal content-->
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Observaciones</h4>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+
+                <div class="col-md-12">
+                    <div class="form-group">
+                        <form id="frmObservacion" kendo-validator="true" 
+                              data-ajax-method="post"
+                              data-ajax-begin="AnularContrato"
+                              class="validation-wizard wizard-circle">
+                            <label class="control-label" style="width:100%">Observacion</label>
+                            <input type="text" id="ObservacionAnular" class="k-text" style="min-width: 100%" />
+
+                            <button id="btnobservacion" type="button" onclick="AnularContrato()" class="form-control btn-miboton">Anular</button>
+                        </form>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
 @(Html.Kendo().Grid<ERPMVC.Models.CustomerContract>()
                               .Name("gridCustomerContract")
                               .Columns(columns =>
                               {
-                                  
-                                      columns.Command(command =>
-                                      {
-                                          
-                                              command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditCustomerContractSignature");
-                                          
-                                         
-                                              command.Custom("Imprimir").Text(" ").IconClass("fa fa-print").Click("ImprimirContrato");
-                                          
-                                         
-                                              command.Custom("Anular").Text(" ").IconClass("fa fa-ban").Click("Anular");
-                                          
-                                          // command.Custom("Ver detalles").Click("Detalles");
-                                          // command.Edit(); command.Destroy();
-                                      }).Title("Acciones").Width(150);
-                                  
+
+                                  columns.Command(command =>
+                                  {
+
+                                      command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditCustomerContractSignature");
+
+
+                                      command.Custom("Imprimir").Text(" ").IconClass("fa fa-print").Click("ImprimirContrato");
+
+                                      command.Custom("Activar").Text(" ").IconClass("fa fa-check").Click("ModalActivarContrato");
+                                      command.Custom("Anular").Text(" ").IconClass("fa fa-ban").Click("Anular");
+
+                                      // command.Custom("Ver detalles").Click("Detalles");
+                                      // command.Edit(); command.Destroy();
+                                  }).Title("Acciones").Width(200);
+
                                   columns.Bound(p => p.CustomerContractId).Width(100);
                                   columns.Bound(p => p.CustomerId).Visible(false).Width(100);
-                                  columns.Bound(p => p.CustomerName).Width(150);
+                                  columns.Bound(p => p.ProductName).Title("Servicio").Width(200);
+                                  columns.Bound(p => p.TypeInvoiceName).Title("Servicio").Width(200);
+                                  columns.Bound(p => p.CustomerName).Width(300);
                                   columns.Bound(p => p.CustomerManager).Width(230);
-                                  columns.Bound(p => p.Manager).Width(180);
-                                  columns.Bound(p => p.Estado).Width(100);
+                                  columns.Bound(p => p.Plazo).Title("Plazo Meses").Width(150);
+                                  //columns.Bound(p => p.Manager).Width(180);
+                                  columns.Bound(p => p.Estado).Width(150);
+                                  columns.Bound(p => p.FechaInicioContrato).Width(200).Format("{0:dd/MM/yyyy}").Title("Fecha Inicio");
+                                  columns.Bound(p => p.FechaVencimiento).Width(200).Format("{0:dd/MM/yyyy}");
                                   columns.Bound(p => p.Observcion).Title("Observación").Width(200);
-                                  columns.Bound(p => p.StorageTime).Width(250);
 
 
                               })
@@ -231,9 +332,9 @@
                                   //tools.Create();
                                   //tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
                                   //                          .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddCustomerContractSignature();" });
-                                      tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
-                                      tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
-                                  
+                                  tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
+                                  tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
+
 
                               })
                               .Editable(e => e.Mode(GridEditMode.PopUp).ConfirmDelete("¿Esta seguro que desea eliminar este registro?"))
@@ -262,14 +363,53 @@
                                     .Update(update => update.Action("Put", "CustomerContract", new { id = "{0}" }))
                                     .Destroy(destroy => destroy.Action("Delete", "CustomerContract", new { id = "{0}" }))
                               )
-                                .Events(e =>
-                                {
-                                    //e.Save("onsave");
-                                })
+                                .Events(e => e.DataBound("dataBound"))
 )
 
 <div id="CustomerContract">
     @await Html.PartialAsync("pvwCustomerContract", new ERPMVC.Models.CustomerContract { CustomerContractId = 0 })
+</div>
+
+
+<div id="ModalActivar" style="width: 300px; height: 300px; position: absolute; left: 50%; top: 50%; margin-left: -150px; margin-top: -150px;" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+
+        <!-- Modal content-->
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Seleccione fecha de Incio</h4>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+
+                
+                    <div class="form-group">
+                        <form id="frmActivar"
+                              data-ajax="true"
+                              data-ajax-method="post"
+                              data-ajax-begin="ActivarContrato"
+                              class="validation-wizard wizard-circle">
+                            
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label class=" control-label" style="width: 100%;">Fecha Inicio</label>
+                                    <kendo-datetimepicker name="FechaInicio"
+                                                          style="width: 100%;"
+                                                          format="dd/MM/yyyy hh:mm:ss"
+                                                          time-format="hh:mm:ss"                                                          
+                                                          data-val-required="La fecha es requerida"
+                                                          value="DateTime.Now" />
+                                </div>
+                            </div>
+
+                            <button id="btnobservacion" type="submit" class="form-control btn-miboton">Activar Contrato</button>
+                        </form>
+                    </div>
+                
+
+            </div>
+        </div>
+    </div>
 </div>
 
 <script>
@@ -290,4 +430,6 @@
     setRowButtonTooltip(".k-grid-Imprimir", "Imprimir registro");
     setRowButtonTooltip(".k-grid-Editar", "Editar registro");
     setRowButtonTooltip(".k-grid-Anular", "Anular registro");
+
+    setRowButtonTooltip(".k-grid-Activar", "Activar Contrato");
 </script>

@@ -87,7 +87,9 @@ namespace ERPMVC.Models
 
         public bool? PolizaPropia { get; set; }
 
-
+        public Int64? CustomerContractId_Source { get; set; }
+        [ForeignKey("CustomerContractId_Source")]
+        public CustomerContract CustomerContractSource { get; set; }
 
         [Display(Name = "Id")]
         public Int64 ProductId { get; set; }

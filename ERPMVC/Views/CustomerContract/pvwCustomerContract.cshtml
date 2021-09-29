@@ -62,41 +62,11 @@
 </script>
 
 
-<div id="ModalAnular" style="padding-left:50%; padding-bottom:50%;" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-
-        <!-- Modal content-->
-        <div class="modal-content">
-            <div class="modal-header">
-                <h4 class="modal-title">Observaciones</h4>
-                <button type="button" class="close" data-dismiss="modal">&times;</button>
-            </div>
-            <div class="modal-body">
-
-                <div class="col-md-12">
-                    <div class="form-group">
-                        <form id="frmObservacion" kendo-validator="true" kendo-messages="messages" kendo-rules="rules"
-                              data-ajax="true"
-                              data-ajax-method="post"
-                              data-ajax-begin="AnularContrato"
-                              class="validation-wizard wizard-circle">
-                            <label asp-for="Observcion" class="control-label" style="width:100%"></label>
-                            <input type="text" id="ObservacionAnular" required class="form-control required " style="min-width: 100%" />
-                            <input type="text" id="AnularContrato" hidden />
-                            <span asp-validation-for="Observcion" class="text-danger"></span>
-                            <button id="btnobservacion" type="submit" class="form-control btn-miboton">Guardar</button>
-                        </form>
-                    </div>
-                </div>
-
-            </div>
-        </div>
-    </div>
-</div>
 
 
 
-<div id="myModalCustomerContract" class="modal fade"  role="dialog">
+
+<div id="myModalCustomerContract" class="modal fade" role="dialog">
     <div class="modal-dialog modal-lg" role="document">
 
         <!-- Modal content-->
@@ -264,7 +234,7 @@
                                         <div class="row">
 
 
-                                           
+
                                             <div class="col-md-3">
                                                 <div class="form-group">
                                                     <label asp-for="FechaVencimiento" class=" control-label" style="width: 100%;">Fecha Vencimiento</label>
@@ -385,7 +355,7 @@
                                                 </div>
                                             </div>
                                         </div>
-                                        
+
 
                                         <div class="row">
                                             <div class="col-md-12">
@@ -484,7 +454,7 @@
                                 .Name("gridNumeracionCustomerContractTerms")
                                 .Columns(columns =>
                                 {
-                                    if (true || User.HasClaim("Contabilidad.Centros de Costos.Editar", "true"))
+                                    if (true || User.HasClaim("Contabilidad.Centros de Costos.Editar", "true") && Model.Estado == "Generado")
                                     {
                                         columns.Command(command =>
                                         {
@@ -528,7 +498,7 @@
                                                    ))
                                 .ToolBar(tools =>
                                 {
-                                    if (true)
+                                    if (Model.Estado == "Generado")
                                     {
                                         tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
                                                                                        .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddCustomerContractTerms()" });
@@ -561,11 +531,15 @@
                                 )
 )
                                     </form>
-                                    <div class="row">
-                                        <div class="col-md-12">
-                                            <button id="btnSaveCustomerContract" type="submit" class="form-control btn-miboton" style="min-width:80%" onclick="SaveCustomerContract(this);">Guardar</button>
-                                        </div>
-                                    </div>
+                                    @if (Model.Estado == "Generado")
+	                                    {
+                                                                    <div class="row">
+                                                                        <div class="col-md-12">
+                                                                            <button id="btnSaveCustomerContract" type="submit" class="form-control btn-miboton" style="min-width:80%" onclick="SaveCustomerContract(this);">Guardar</button>
+                                                                        </div>
+                                                                    </div>
+	                                    }
+                                    
 
                                 </div>
                             </div>
@@ -580,16 +554,29 @@
 
 
 <div id="NumCustomerContractTerms">
-    @await Html.PartialAsync("pvwCustomerContractLinesTerms", new ERPMVC.Models.CustomerContractLinesTerms { Id = 0, CustomerContractId = 0  })
+    @await Html.PartialAsync("pvwCustomerContractLinesTerms", new ERPMVC.Models.CustomerContractLinesTerms { Id = 0, CustomerContractId = 0 })
 </div>
+
+
+
+<script>
+    function onClose() {
+        $("#showDialogBtn").fadeIn();
+    }
+
+    function onOpen() {
+        $("#showDialogBtn").fadeOut();
+    }
+
+    function showDialog() {
+        $('#dialog').data("kendoDialog").open();
+    }
+</script>
+
+
 
 <script>
     function AddCustomerContractTerms() {
-       // $('#ModalCustomerContractTerms').find(':input').not(':submit').val('');
-
-       // $('#ModalCustomerContractTerms').modal('show');
-        //$("#CustomerContractTermsId").val('0');
-
         var dataObject = {
             CustomerContractTermsId: 0,
             CustomerContractId: @Model.CustomerContractId
@@ -676,7 +663,7 @@
             'SalesOrderId': $("#SalesOrderId").val(),
             'Manager': $("#Manager").val(),
             'RTNMANAGER': $("#RTNMANAGER").val(),
-            'StorageTime': $("#StorageTime").val(),          
+            'StorageTime': $("#StorageTime").val(),
             'WareHouses': $("#WareHouses").val(),
             'ComisionMax': $("#ComisionMax").val(),
             'ComisionMin': $("#ComisionMin").val(),
