@@ -243,6 +243,7 @@
                             <script>
                                                         function SetCustomerName(e) {
                                                            // console.log(e);
+                                                            $("#CustomerContractId_Source").data("kendoDropDownList").dataSource.read();
                                                             if ($("#CustomerId").val() > 0) {
                                                                 //$("#SalesOrderName").prop('disabled', true);
                                                                 $("#SalesOrderName").val($("#CustomerId").data("kendoDropDownList").text());
@@ -389,7 +390,7 @@
                 </div>
 
                 <div class="row">
-                    <div class="col-md-6">
+                    <div class="col-md-4">
                         <div class="form-group">
                             <label asp-for="Direccion" class="control-label" style="width:100%">Dirección</label>
                             <textarea asp-for="Direccion" required class="form-control required " data-required-msg="La Dirección es requerida." style="min-width: 100% !important;">@Model.Direccion</textarea>
@@ -410,6 +411,23 @@
                             <span asp-validation-for="FirmaAlmacafe" class="text-danger"></span>
                         </div>
                     </div>
+                    <div class="col-md-2">
+                        <div class="form-group">
+                            <label class="control-label">Plazo (Meses)</label>
+                            <kendo-numerictextbox name="PlazoMeses" for="PlazoMeses"
+                                                  format="d"
+                                                  min="0"
+                                                  step="1"
+                                                  max="60"
+                                                  decimals="0"
+                                                  restrict-decimals="true"
+                                                  data-val-required="El Plazo es requerido"
+                                                  style="min-width: 100%"
+                                                  spinners="false"
+                                                  value="@Model.PlazoMeses" />
+                            <span asp-validation-for="PlazoMeses" class="text-danger"></span>
+                        </div>
+                    </div>
                 </div>
 
 
@@ -425,6 +443,7 @@
                                                 datavaluefield="Id"
                                                 option-label="Seleccione el Tipo de Contrato"
                                                 value="@Model.TypeContractId"
+                                                onchange="ContractType()"
                                                 required
                                                 style="width: 100%;">
                                 <datasource type="DataSourceTagHelperType.WebApi">
@@ -435,6 +454,26 @@
                                 </datasource>
                             </kendo-dropdownlist>
                             <span asp-validation-for="TypeContractId" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label asp-for="CustomerContractId_Source" class="control-label" style="width:100%">Contrato Activo</label>
+                            <kendo-dropdownlist name="CustomerContractId_Source" filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                for="CustomerContractId_Source"
+                                                option-label="Seleccione en caso de Adendum"
+                                                datatextfield="CustomerContractId"
+                                                datavaluefield="CustomerContractId"
+                                                enable="false"
+                                                auto-bind="true"
+                                                style="width: 100%;">
+                                <datasource type="DataSourceTagHelperType.WebApi">
+                                    <transport>
+                                        <read url="@Url.Action("GetCustomerContractActiveByCustomerId", "CustomerContract")" data="GetCustomerId" />
+                                    </transport>
+                                </datasource>
+                            </kendo-dropdownlist>
+                            <span asp-validation-for="CustomerContractId_Source" class="text-danger"></span>
                         </div>
                     </div>
                     <div class="col-md-3">
@@ -458,6 +497,27 @@
                             <span asp-validation-for="ProductId" class="text-danger"></span>
                         </div>
                     </div>
+                    <script>
+                        function GetCustomerId() {
+                            debugger;
+                            var customerid = $("#CustomerId").val();
+                            return {
+                                'CustomerId': customerid
+                            };
+                        }
+                        function ContractType() {
+                            var type = $("#TypeContractId").data("kendoDropDownList").text()
+                            if (type == 'Adendum') {
+                                $("#CustomerContractId_Source").data("kendoDropDownList").enable(true);
+                            }
+                            else
+                            {
+                                $("#CustomerContractId_Source").data("kendoDropDownList").enable(false);
+                                $("#CustomerContractId_Source").data("kendoDropDownList").value(null);
+                            }
+                        }
+                    </script>
+
 
                     <div class="col-md-3">
                         <div class="form-group">
@@ -484,6 +544,7 @@
                             <span asp-validation-for="TypeInvoiceId" class="text-danger"></span>
                         </div>
                     </div>
+
                     <script>
                         function limpiardetalle() {
 
@@ -494,12 +555,14 @@
                     <script>
                         function tipoFacturacion() {
                             let tipo = $("#TypeInvoiceId").val();
+
                             if (tipo == 84) {
                                 $("#ComMax").show();
                                 $("#ComMin").show();
                                 $("#Preciobase").show();
                                 $("#incrementoanual").hide();
-                                
+
+
 
                             } else if (tipo == 184) {
                                 $("#ComMax").hide();
@@ -530,23 +593,7 @@
                     </script>
 
 
-                    <div class="col-md-3">
-                        <div class="form-group">
-                            <label class="control-label">Plazo (Meses)</label>
-                            <kendo-numerictextbox name="PlazoMeses" for="PlazoMeses"
-                                                  format="d"
-                                                  min="0"
-                                                  step="1"
-                                                  max="60"
-                                                  decimals="0"
-                                                  restrict-decimals="true"
-                                                  data-val-required="El Plazo es requerido"
-                                                  style="min-width: 100%"
-                                                  spinners="false"
-                                                  value="@Model.PlazoMeses" />
-                            <span asp-validation-for="PlazoMeses" class="text-danger"></span>
-                        </div>
-                    </div>
+                    
                 </div>
                 <div class="row">
                     <div class="col-md-3">
@@ -712,6 +759,21 @@
           function SaveCotizacion(e) {
             try {
                 ////////Validaciones////////////
+                var type = $("#TypeContractId").data("kendoDropDownList").text()
+                var contrato = $("#CustomerContractId_Source").val();
+                if (type == 'Adendum' && contrato == null) {
+                    $.toast({
+                        heading: 'Validación',
+                        text: "Seleccione el Contrato al que se le va a realizar el Adendum",
+                        position: 'top-right',
+                        loaderBg: '#ff6849',
+                        icon: 'error',
+                        hideAfter: 30000,
+                        stack: 6
+                    });
+                    return;
+                    
+                }
                 $("#btnSaveCotizacion").prop("disabled", false);
                 var displayedData = $("#gridCotizacionesDetail").data().kendoGrid.dataSource.data();
                 for (var i = 0; i < displayedData.length; i++) {
@@ -851,7 +913,8 @@
                         'PlazoMeses': $("#PlazoMeses").val(),
                         'ComisionMax': $("#ComisionMax").val(),
                         'ComisionMin': $("#ComisionMin").val(),
-                        'PrecioBaseProducto': $("#PrecioBaseProducto").val(),
+                        'PrecioBaseProducto': $("#PrecioBaseProducto").val(), 
+                        'CustomerContractId_Source': $("#CustomerContractId_Source").val(),
                         'SalesOrderLines': displayedData,
                         'IdEstado': idEstado,
                         'Estado': Estado,
