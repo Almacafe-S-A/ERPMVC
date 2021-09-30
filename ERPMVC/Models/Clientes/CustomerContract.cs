@@ -33,6 +33,8 @@ namespace ERPMVC.Models
         [Display(Name = "Gerente general cliente")]
         public string CustomerManager { get; set; }
 
+        public string TypeContractName { get; set; }
+
         [Display(Name = "RTN Gerente general cliente")]
         public string RTNCustomerManager { get; set; }
 
