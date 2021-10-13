@@ -34,6 +34,59 @@ namespace ERPMVC.Controllers
             return View();
         }
 
+        public async Task<DataSourceResult> GetCertificadoLine([DataSourceRequest] DataSourceRequest request, [FromQuery(Name = "Recibos")] int[] recibos, [FromQuery(Name = "Id")] int id)
+        {
+            List<CertificadoLine> certificadoLines = new List<CertificadoLine>();
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                string requestURl;
+                if (id == 0)
+                {
+                    string strrecibos = "?";
+                    foreach (var item in recibos)
+                    {
+                        strrecibos += $"Recibos={item}";
+                        if (item != recibos.ElementAt(recibos.Count() - 1))
+                        {
+                            strrecibos += "&&";
+                        }
+                    }
+                    requestURl = $"api/CertificadoLine/GetRecibosPendientes/{strrecibos}";
+                }
+                else
+                {
+                    requestURl = $"api/CertificadoLine/GetCertificadoLineByIdCD/{id}";
+                }
+
+
+
+                var result = await _client.GetAsync(baseadress + requestURl);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    certificadoLines = JsonConvert.DeserializeObject<List<CertificadoLine>>(valorrespuesta);
+                    certificadoLines = certificadoLines.OrderByDescending(e => e.CertificadoLineId).ToList();
+                }
+
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+
+            return certificadoLines.ToDataSourceResult(request);
+
+
+
+        }
+
         public async Task<ActionResult> pvwCertificadoDepositoDetailMant(Int64 CertificadoLineId = 0)
         {
             CertificadoLine _CertificadoLine = new CertificadoLine();
@@ -135,7 +188,7 @@ namespace ERPMVC.Controllers
 
 
         [HttpGet("[controller]/[action]")]
-        public async Task<DataSourceResult> GetCertificadoLine([DataSourceRequest]DataSourceRequest request, CertificadoLine _CertificadoLine)
+        public async Task<DataSourceResult> GetCertificadoLine2([DataSourceRequest]DataSourceRequest request, CertificadoLine _CertificadoLine)
         {
             List<CertificadoLine> _CertificadoLinelist = new List<CertificadoLine>();
 
@@ -204,7 +257,7 @@ namespace ERPMVC.Controllers
                             obj.TotalCantidad = _CertificadoLine.TotalCantidad;
                             obj.UnitMeasureId = _CertificadoLine.UnitMeasureId;
                             obj.UnitMeasurName = _CertificadoLine.UnitMeasurName;
-                            obj.ValorImpuestos = _CertificadoLine.ValorImpuestos;
+                            //obj.ValorImpuestos = (double)_CertificadoLine.ValorImpuestos;
                             obj.WarehouseId = _CertificadoLine.WarehouseId;
                             obj.WarehouseName = _CertificadoLine.WarehouseName;
                             obj.Merma = _CertificadoLine.Merma;

@@ -3,6 +3,7 @@
 
 @{
     ClaimsPrincipal permisos = (ClaimsPrincipal)ViewData["permisosCertificadoDeposito"];
+    bool editable = Model.IdCD == 0;
 }
 
 
@@ -271,6 +272,49 @@
         return ++record;
     }
 
+    function myfunction() {
+        console.log("asdasdas");
+    }
+
+    function CalcularTotalDocumento() {
+        //var freight = $("#Freight").val()===""?0:$("#Freight").val();
+
+
+        var displayedData = $("#gridCertificadoDepositoDetail").data().kendoGrid.dataSource.view();
+        var total = 0, sumacantidad = 0, ValorImpuestos = 0, derechosfiscales = 0;
+
+        $(displayedData).each(function (index, element) {
+            var t = JSON.parse(JSON.stringify(element));
+            //console.log(t);
+            //console.log('Total 1'+total);
+            //  console.log('sumacantidad 2' + sumacantidad);
+            sumacantidad = sumacantidad + t["Quantity"];
+            total = total + t["Amount"];
+            ValorImpuestos = ValorImpuestos + t["ValorImpuestos"];
+            derechosfiscales += t["DerechosFiscales"];
+            t["Amount"] = t["Quantity"] * t["Price"]
+
+        });
+
+        //  console.log('Total Documento:' + total);
+        setearvalor("Quantitysum", sumacantidad);
+        setearvalor("SujetasAPago", ValorImpuestos);
+        setearvalor("TotalDerechos", derechosfiscales);
+        setearvalor("Total", total);
+        //$("#Quantitysum").data("kendoNumericTextBox").value(sumacantidad);
+        //$("#Total").data("kendoNumericTextBox").value(total);
+
+    }
+
+    function calculateField(e) {
+        debugger;
+        var totalSpan = e.container.closest("TR").find(".totalSpan");
+        e.model.Amount = parseFloat(e.model.Price * e.model.Quantity).toFixed(2);
+        totalSpan.html(e.model.Amount);
+        CalcularTotalDocumento();
+        
+    }
+
 </script>
 
 
@@ -278,139 +322,137 @@
 <div class="box">
     <div class="box-body">
 
-        @(Html.Kendo().Grid<ERPMVC.Models.CertificadoLine>()
-                                                                          .Name("gridCertificadoDepositoDetail")
-                                                                          .Columns(columns =>
-                                                                          {
+        @(Html.Kendo().Grid<ERPMVC.Models.CertificadoLine>
+    ()
+    .Name("gridCertificadoDepositoDetail")
+    .Events(e =>
+    e.DataBound("CalcularTotalDocumento").CellClose("calculateField").Edit("calculateField")
+    )
+    .Columns(columns =>
+    {
 
-                                                                              columns.Command(command =>
-                                                                              {
-                                                                                  if (Model.editar == 1)
-                                                                                  {
+        columns.Command(command =>
+        {
+            if (Model.editar == 1)
+            {
 
-                                                                                      command.Custom("Eliminar").Text(" ").IconClass("fa fa-trash-alt").Click("Delete");
+                command.Custom("Eliminar").Text(" ").IconClass("fa fa-trash-alt").Click("Delete");
 
-                                                                                  }
+            }
 
-                                                                                  command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditCotizacionDetalle");
+            //command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditCotizacionDetalle");
 
-                                                                                  // command.Custom("Imprimir").Click("ImprimirCotizacion");
-                                                                                  //  command.Edit(); command.Destroy();
-                                                                              }).Width(100);
-                                                                              if (Model.IdCD != 0)
-                                                                              {
-                                                                                  columns.Bound(p => p.PdaNo).Title("Pda No").ClientTemplate("#= RowNum() #").Width(120);
-                                                                              }
-                                                                              else
-                                                                              {
-                                                                                  columns.Bound(p => p.CertificadoLineId).Title("No").Width(100);
-                                                                                  columns.Bound(p => p.ReciboId).Title("ReciboId").Width(100);
-                                                                              }
-                                                                              columns.Bound(p => p.IdCD).Title("Certificado Id").Width(150).Visible(false);
+            // command.Custom("Imprimir").Click("ImprimirCotizacion");
+            //  command.Edit(); command.Destroy();
+        }).Width(100).Visible(editable);
 
-                                                                              columns.Bound(p => p.SubProductId).Visible(false).Title("Producto").Width(0);                                                                              
-                                                                                                                                                          
-
-                                                                              columns.Bound(p => p.UnitMeasureId).Title("Unidad de medida").Width(0).Visible(false);
-                                                                              columns.Bound(p => p.UnitMeasurName).Title("Unidad de medida").Width(150);
-                                                                              columns.Bound(p => p.SubProductName).Title("Producto").Width(200);
-                                                                              columns.Bound(p => p.WarehouseId).Title("Bodega").Width(150).Visible(false);
-                                                                              columns.Bound(p => p.WarehouseName).Title("Bodega").Width(200);
-                                                                              columns.Bound(p => p.CantidadDisponible).Format("{0:n2}").Title("Cantidad Disp").Width(150);
-                                                                              columns.Bound(p => p.Quantity).Format("{0:n2}").Title("Cantidad").Width(150);
-                                                                              columns.Bound(p => p.Merma).Title("Merma").Format("{0:n2}").Width(120);
-                                                                              columns.Bound(p => p.ValorImpuestos).Format("{0:n2}").Width(100).Title("Impuestos");
-                                                                              columns.Bound(p => p.Price).Format("{0:n2}").Title("Precio").Width(150);
-                                                                              columns.Bound(p => p.Amount).Format("{0:n2}").Title("Total Lps").Width(125);
-                                                                              columns.Bound(p => p.DerechosFiscales).Format("{0:n2}").Title("Derechos Fiscales").Width(125);
-
-                                                                          })
-                                                                              .Filterable(f => f.Operators(o => o.ForString(s => s
-                                                                       .Clear()
-                                                                       .Contains("Contiene")
-                                                                       .DoesNotContain("No contiene")
-                                                                       .EndsWith("Termina con")
-                                                                       .IsEqualTo("Es igual a")
-                                                                       .IsNotEqualTo("No es igual a")
-                                                                       .IsNull("Es nulo")
-                                                                       .StartsWith("Inicia con")
+        columns.Bound(p => p.PdaNo).Title("Pda No").ClientTemplate("#= RowNum() #").Width(120);
 
 
-                                                                 )
-                                                                 .ForNumber(n => n
-                                                                   .Clear()
-                                                                   .IsEqualTo("Es igual a")
-                                                                   .IsGreaterThan("Es mayor que")
-                                                                   .IsLessThan("Es menor que")
-                                                                   .IsNull("Es nulo")
-                                                                   .IsLessThanOrEqualTo("Es menor o igual que")
-                                                                   .IsGreaterThanOrEqualTo("Es mayor o igual que")
-                                                                 )
-                                                                 .ForDate(d => d
-                                                                 .Clear()
-                                                                 .IsEqualTo("Es igual que")
-                                                                 .IsGreaterThan("Es mayor que")
-                                                                 .IsLessThan("Es menor que")
-                                                                 .IsLessThanOrEqualTo("Es menor o igual que")
-                                                                 .IsGreaterThanOrEqualTo("Es mayor o igual que")
-                                                                 .IsNotEqualTo("No es igual que")
-                                                                  )
-                                                               ))
-                                                                          .ToolBar(tools =>
-                                                                          {
-                                                                              if (Model.editar == 1)
-                                                                              {
+        columns.Bound(p => p.CertificadoLineId).Title("No").Width(100).Visible(false);
+        columns.Bound(p => p.CantidadDisponible).Format("{0:n2}").Title("Cantidad Disp").Width(150);
+        columns.Bound(p => p.Quantity).Format("{0:n2}").Title("Cantidad").Width(150);
+        columns.Bound(p => p.UnitMeasurName).Title("Unidad de medida").Width(150);
+        columns.Bound(p => p.ReciboId).Title("ReciboId").Width(100).Visible(false);
 
-                                                                                  tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
-                                                                              .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddCotizacionDetalle();" });
+        columns.Bound(p => p.IdCD).Title("Certificado Id").Width(150).Visible(false);
 
-                                                                              }
-                                                                              tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
-                                                                              tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
+        columns.Bound(p => p.SubProductId).Visible(false).Title("Producto").Width(0);
 
-                                                                          })
-                                                                           .Editable(e => e.Mode(GridEditMode.PopUp))
-                                                                            .Sortable()
-                                                                            .AutoBind(true)
-                                                                            .Pageable()
-                                                                            .Filterable()
-                                                                            .Scrollable()
-                                                                            // .ClientDetailTemplateId("template")
-                                                                            .Pdf(pdf => pdf.FileName("CertificadoDepositoDetalleReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-                                                                            + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
-                                                                            .ProxyURL(Url.Action("Export", "Home")).AllPages())
-                                                                              .Excel(excel => excel.FileName("CertificadoDepositoDetalleReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-                                                                            + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
-                                                                            .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
-                                                                            //.Events(e=>e.Save("onsave"))
-                                                                            .DataSource(dataSource =>
 
-                                                                           dataSource
-                                                                           //.Ajax()
-                                                                           .WebApi()
+        columns.Bound(p => p.UnitMeasureId).Title("Unidad de medida").Width(0).Visible(false);
+        columns.Bound(p => p.SubProductName).Title("Producto").Width(200);
+        columns.Bound(p => p.WarehouseId).Title("Bodega").Width(150).Visible(false);
+        columns.Bound(p => p.WarehouseName).Title("Bodega").Width(200);
+        //columns.Bound(p => p.Merma).Title("Merma").Format("{0:n2}").Width(120);
+        //columns.Bound(p => p.ValorImpuestos).Format("{0:n2}").Width(100).Title("Impuestos");
+        columns.Bound(p => p.Price).Format("{0:n2}").Title("Precio").Width(150);
+        //columns.Bound(p => p.Amount).Format("{0:n2}").Title("Total Lps").Width(125);
+        //columns.Template("#=calculateField(data)#").Title("Total Lps").Width(125);
+        columns.Bound(p => p.Amount).Format("{0:n2}").Title("Total Lps").ClientTemplate("<span class='totalSpan'>#= parseFloat(Price * Quantity).toFixed(2) #</span>").Width(125);
+        columns.Bound(p => p.DerechosFiscales).Format("{0:n2}").Title("Derechos Fiscales").Width(125);
 
-                                                                            .ServerOperation(true)
-                                                                            .Model(model =>
-                                                                            {
-                                                                                model.Id(p => p.CertificadoLineId);
-                                                                                model.Field(p => p.CertificadoLineId).Editable(false);
-                                                                                model.Field(p => p.IdCD).Editable(false);
+    })
+    .Editable(e => e.Mode(GridEditMode.InCell))
+    .Filterable(f => f.Operators(o => o.ForString(s => s
+    .Clear()
+    .Contains("Contiene")
+    .DoesNotContain("No contiene")
+    .EndsWith("Termina con")
+    .IsEqualTo("Es igual a")
+    .IsNotEqualTo("No es igual a")
+    .IsNull("Es nulo")
+    .StartsWith("Inicia con")
 
-                                                                            })
-                                                                            .Events(events =>
-                                                                            {
-                                                                                events.Error("error_handler");
-                                                                                //events.upda("EditHandler");
 
-                                                                            })
-                                                                            .Read(read => read.Action("GetCertificadoLine", "CertificadoLine").Data("GetSalesOrderId"))
-                                                                      //.Create(create => create.Action("Insert", "SalesOrderLine"))
-                                                                      //.Update(update => update.Action("Update", "SalesOrderLine", new { SalesOrderLineId = "{0}" }))
-                                                                      //.Destroy(destroy => destroy.Action("Delete", "SalesOrderLine", new { SalesOrderLineId = "{0}" }))
-                                                                      )
-        )
+    )
+    .ForNumber(n => n
+    .Clear()
+    .IsEqualTo("Es igual a")
+    .IsGreaterThan("Es mayor que")
+    .IsLessThan("Es menor que")
+    .IsNull("Es nulo")
+    .IsLessThanOrEqualTo("Es menor o igual que")
+    .IsGreaterThanOrEqualTo("Es mayor o igual que")
+    )
+    .ForDate(d => d
+    .Clear()
+    .IsEqualTo("Es igual que")
+    .IsGreaterThan("Es mayor que")
+    .IsLessThan("Es menor que")
+    .IsLessThanOrEqualTo("Es menor o igual que")
+    .IsGreaterThanOrEqualTo("Es mayor o igual que")
+    .IsNotEqualTo("No es igual que")
+    )
+    ))
 
-    </div>
+
+    .Sortable()
+    .AutoBind(true)
+    .Pageable()
+    .Filterable()
+    .Scrollable()
+    // .ClientDetailTemplateId("template")
+    .Pdf(pdf => pdf.FileName("CertificadoDepositoDetalleReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+    + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+    .ProxyURL(Url.Action("Export", "Home")).AllPages())
+    .Excel(excel => excel.FileName("CertificadoDepositoDetalleReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+    + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+    .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+    //.Events(e=>e.Save("onsave"))
+    .DataSource(dataSource =>
+
+    dataSource
+    //.Ajax()
+    .WebApi()
+    .Batch(true)
+
+    .ServerOperation(true)
+    .Model(model =>
+    {
+        model.Id(p => p.CertificadoLineId);
+        model.Field(p => p.CertificadoLineId).Editable(false);
+        model.Field(p => p.IdCD).Editable(false);
+        model.Field(p => p.Quantity).Editable(editable);
+        model.Field(p => p.Amount).Editable(false);
+        model.Field(p => p.DerechosFiscales).Editable(false);
+        model.Field(p => p.Price).Editable(false);
+
+    })
+    .Events(events =>
+    {
+        events.Error("error_handler");
+        //events.upda("EditHandler");
+
+    })
+    .Read(read => read.Action("GetCertificadoLine", "CertificadoLine").Data("GetRecibos"))
+    //.Create(create => create.Action("Insert", "SalesOrderLine"))
+    //.Update(update => update.Action("Update", "SalesOrderLine", new { SalesOrderLineId = "{0}" }))
+    //.Destroy(destroy => destroy.Action("Delete", "SalesOrderLine", new { SalesOrderLineId = "{0}" }))
+    )
+    )
+
+</div>
 </div>
 
 
