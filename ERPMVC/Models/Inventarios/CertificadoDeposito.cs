@@ -27,9 +27,6 @@ namespace ERPMVC.Models
         [Display(Name = "Sucursal")]
         public string BranchName { get; set; }
 
-        public string Recibos { get; set; }
-
-
 
         [Display(Name = "Tipo Servicio")]
         public Int64 ServicioId { get; set; }
@@ -47,7 +44,7 @@ namespace ERPMVC.Models
         [Display(Name = "Empresa")]
         public string NombreEmpresa { get; set; }
 
-        public Int64 IdEstado { get; set; }
+        public Int64? IdEstado { get; set; }
         public string Estado { get; set; }
         public int? InsuranceId { get; set; }
         [ForeignKey("InsuranceId")]
@@ -56,13 +53,16 @@ namespace ERPMVC.Models
         [Display(Name = "Seguro")]
         public string EmpresaSeguro { get; set; }
 
+
+        public string Recibos { get; set; }
+
         public Int64? InsurancePolicyId { get; set; }
         [ForeignKey("InsurancePolicyId")]
         public InsurancePolicy InsurancePolicy { get; set; }
         [Display(Name = "No. Poliza")]
         public string NoPoliza { get; set; }
         [Display(Name = "Sujetos a pago")]
-        public double SujetasAPago { get; set; }
+        public double? SujetasAPago { get; set; }
         [Display(Name = "Fecha de vencimiento")]
         public DateTime FechaVencimientoDeposito { get; set; }
 
@@ -84,36 +84,28 @@ namespace ERPMVC.Models
         [Display(Name = "Otros Cargos")]
         public string OtrosCargos { get; set; }
 
-        [Display(Name = "Banco")]
-        public Int64? BankId { get; set; }
-        [Display(Name = "Banco")]
-        public string BankName { get; set; }
-        [Display(Name = "Moneda")]
+
         public Int64 CurrencyId { get; set; }
         [Display(Name = "Moneda")]
         public string CurrencyName { get; set; }
-        [Display(Name = "Monto de garantia")]
-        public double? MontoGarantia { get; set; }
-        [Display(Name = "Fecha pago")]
-        public DateTime FechaPagoBanco { get; set; }
-
-        [Display(Name = "Porcentaje intereses")]
-        public double? PorcentajeInteresesInsolutos { get; set; }
-
-        [Display(Name = "Fecha de inicio")]
-        public DateTime? FechaInicioComputo { get; set; }
 
         [Display(Name = "Fecha de Vencimiento")]
         public DateTime? FechaVencimientoCertificado { get; set; }
 
-        [Display(Name = "Lugar de firma")]
-        public string LugarFirma { get; set; }
+
+        //public string SituadoEn { get; set; }
+
+        public double PorcentajeDeudas { get; set; }
+
+        public double? TotalDerechos { get; set; }
 
 
 
-        [Display(Name = "Nombre prestatario")]
-        public string NombrePrestatario { get; set; }
+        public string Comentario { get; set; }
+        [NotMapped]
+        public string NoRecibo { get; set; }
 
+        public bool? PolizaPropia { get; set; }
 
         /// <summary>
         /// Totales de Detalle de Linea
@@ -129,24 +121,12 @@ namespace ERPMVC.Models
         /// </summary>
 
 
-        public string SituadoEn { get; set; }
-
-        public string Comentario  { get; set; }
-
-        public decimal PorcentajeDeudas { get; set; }
-
-
-        public bool? PolizaPropia { get; set; }
-
-
-        public double? TotalDerechos { get; set; }
-
         public DateTime FechaCreacion { get; set; }
         public DateTime FechaModificacion { get; set; }
         public string UsuarioCreacion { get; set; }
         public string UsuarioModificacion { get; set; }
         [NotMapped]
-        public EndososCertificados Endoso { get; set; } 
+        public EndososCertificados Endoso { get; set; }
 
         public string Impreso { get; set; }
 

@@ -79,11 +79,12 @@ namespace ERPMVC.Controllers
                         //FechaVencimiento = DateTime.Now.AddDays(60),
                         FechaVencimientoDeposito = DateTime.Now.AddDays(30),
                         //FechaFirma = DateTime.Now,
-                        FechaInicioComputo = DateTime.Now,
-                        FechaPagoBanco = DateTime.Now,                        
+                        //FechaInicioComputo = DateTime.Now,
+                        //FechaPagoBanco = DateTime.Now,                        
                         BranchId = Convert.ToInt32(HttpContext.Session.GetString("BranchId")),
                         PolizaPropia = true,
                         Seguro = "S/Tarifa",
+                        SujetasAPago = 0,
                     };
                 }
                 else
@@ -378,15 +379,62 @@ namespace ERPMVC.Controllers
             return await Task.Run(() => Json(_CertificadoDeposito));
         }
 
+        CertificadoDeposito ToCertificado(dynamic dto) {
+            CertificadoDeposito certificadoDeposito = new CertificadoDeposito();
+            try
+            {
+                certificadoDeposito.IdCD = dto.IdCD;
+                certificadoDeposito.NoCD = dto.NoCD;
+                certificadoDeposito.Seguro = dto.Seguro;
+                certificadoDeposito.Aduana = dto.Aduana;
+                certificadoDeposito.Almacenaje = dto.Almacenaje;
+                certificadoDeposito.BranchName = dto.BranchName;
+                certificadoDeposito.BranchId = dto.BranchId;
+                certificadoDeposito.Comentario = dto.Comentario;
+                certificadoDeposito.CurrencyId = dto.CurrencyId;
+                certificadoDeposito.CurrencyName = dto.CurrencyName;
+                certificadoDeposito.CustomerId = dto.CustomerId;
+                certificadoDeposito.CustomerName = dto.CustomerName;
+                certificadoDeposito.Direccion = dto.Direccion;
+                certificadoDeposito.EmpresaSeguro = dto.EmpresaSeguro;
+                certificadoDeposito.Endoso = dto.Endoso;
+                certificadoDeposito.Estado = dto.Estado;
+                certificadoDeposito.FechaCertificado = dto.FechaCertificado;
+                certificadoDeposito.FechaVencimientoCertificado = dto.FechaVencimientoCertificado;
+                certificadoDeposito.FechaVencimientoDeposito = dto.FechaVencimientoDeposito;
+                certificadoDeposito.IdEstado = dto.IdEstado;
+                certificadoDeposito.InsurancePolicyId = dto.InsurancePolicyId;
+                certificadoDeposito.PolizaPropia = dto.PolizaPropia;
+                certificadoDeposito.ServicioId = dto.ServicioId;
+                certificadoDeposito.ServicioName = dto.ServicioName;
+                //certificadoDeposito.SujetasAPago = dto.SujetasAPago;
+                certificadoDeposito.Total = dto.Total;
+                certificadoDeposito.TotalDerechos = dto.TotalDerechos;
+                certificadoDeposito._CertificadoLine = dto._CertificadoLine;
+
+
+            }
+            catch (Exception ex)
+            {
+
+                throw;
+            }
+
+
+            return certificadoDeposito;
+        
+        
+        }
 
         [HttpPost("[controller]/[action]")]
        // public async Task<ActionResult<CertificadoDeposito>>      CertificadoDeposito([FromBody]CertificadoDepositoDTO _CertificadoDeposito)
          public async Task<ActionResult<CertificadoDeposito>> SaveCertificadoDeposito([FromBody]dynamic dto)
         {
-             CertificadoDepositoDTO _CertificadoDeposito = new CertificadoDepositoDTO(); 
+             CertificadoDeposito _CertificadoDeposito = new CertificadoDeposito(); 
             try
             {
-                 _CertificadoDeposito = JsonConvert.DeserializeObject<CertificadoDepositoDTO>(dto.ToString());
+                _CertificadoDeposito = JsonConvert.DeserializeObject<CertificadoDepositoDTO>(dto.ToString());
+                //_CertificadoDeposito = ToCertificado(dto);
                 if (_CertificadoDeposito != null)
                 {
                     foreach (var item in _CertificadoDeposito._CertificadoLine)
@@ -456,7 +504,7 @@ namespace ERPMVC.Controllers
         // POST: CertificadoDeposito/Insert
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult<CertificadoDepositoDTO>> Insert(CertificadoDepositoDTO _CertificadoDeposito)
+        public async Task<ActionResult<CertificadoDeposito>> Insert(CertificadoDeposito _CertificadoDeposito)
         {
             try
             {

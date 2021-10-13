@@ -16,11 +16,13 @@ namespace ERPMVC.Models
         public Int64 IdCD { get; set; }
         [Display(Name = "Producto")]
         public Int64 SubProductId { get; set; }
+        [ForeignKey("SubProductId")]
+        public SubProduct SubProduct { get; set; }
         [Display(Name = "Nombre producto")]
         public string SubProductName { get; set; }
+
         [Display(Name = "Unidad de medida")]
         public Int64 UnitMeasureId { get; set; }
-
         [Display(Name = "Unidad de medida")]
         public string UnitMeasurName { get; set; }
 
@@ -29,30 +31,43 @@ namespace ERPMVC.Models
         [Display(Name = "Cantidad")]
         public double Quantity { get; set; }
         [Display(Name = "Precio")]
+        [Column(TypeName = "Money")]
         public double Price { get; set; }
-        [Display(Name = "Merma")]
+        [Display(Name = "Porcentaje de Merma")]
         public double? Merma { get; set; }
+
         [Display(Name = "Total")]
+        [Column(TypeName = "Money")]
         public double Amount { get; set; }
-        [Display(Name = "Valor a pagar impuestos")]
-        public double ValorImpuestos { get; set; }
+
+
+        [Display(Name = "Bodega")]
+        public int WarehouseId { get; set; }
+        //[ForeignKey("WarehouseId")]
+        ///public Warehouse Warehouse { get; set; }
+        [Display(Name = "Bodega")]
+        public string WarehouseName { get; set; }
+
 
         [Display(Name = "Total Cantidad")]
         public double TotalCantidad { get; set; }
 
+        [Display(Name = "Saldo endoso")]
+        public double SaldoEndoso { get; set; }
 
-        [Display(Name = "Bodega")]
-        public Int64 WarehouseId { get; set; }
-        [Display(Name = "Bodega")]
-        public string WarehouseName { get; set; }
+        [Display(Name = "Centro de costos")]
+        public Int64 CenterCostId { get; set; }
+
+        [Display(Name = "Centro de costos")]
+        public string CenterCostName { get; set; }
 
         public string Observaciones { get; set; }
 
-        public double DerechosFiscales { get; set; }
-
-        public int ReciboId { get; set; }
-        public double CantidadDisponible { get; set; }
-
+        public double? DerechosFiscales { get; set; }
+        [NotMapped]
+        public int? ReciboId { get; set; }
+        [NotMapped]
+        public double? CantidadDisponible { get; set; }
 
     }
 
