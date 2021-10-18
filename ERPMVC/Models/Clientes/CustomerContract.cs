@@ -69,10 +69,9 @@ namespace ERPMVC.Models
         [Display(Name = "Tiempo de almacenaje")]
         public string StorageTime { get; set; }
 
+        public string ContitucionAlmacafe { get; set; }
 
-
-        [Display(Name = "Recepción de la mercadería")]
-        public string Reception { get; set; }
+        public string RelacionPartes { get; set; }
 
         public string WareHouses { get; set; }
 
