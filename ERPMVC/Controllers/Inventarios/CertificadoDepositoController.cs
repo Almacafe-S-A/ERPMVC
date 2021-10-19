@@ -391,8 +391,6 @@ namespace ERPMVC.Controllers
                 certificadoDeposito.BranchName = dto.BranchName;
                 certificadoDeposito.BranchId = dto.BranchId;
                 certificadoDeposito.Comentario = dto.Comentario;
-                certificadoDeposito.CurrencyId = dto.CurrencyId;
-                certificadoDeposito.CurrencyName = dto.CurrencyName;
                 certificadoDeposito.CustomerId = dto.CustomerId;
                 certificadoDeposito.CustomerName = dto.CustomerName;
                 certificadoDeposito.Direccion = dto.Direccion;

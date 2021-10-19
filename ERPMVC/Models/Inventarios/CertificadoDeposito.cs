@@ -85,9 +85,6 @@ namespace ERPMVC.Models
         public string OtrosCargos { get; set; }
 
 
-        public Int64 CurrencyId { get; set; }
-        [Display(Name = "Moneda")]
-        public string CurrencyName { get; set; }
 
         [Display(Name = "Fecha de Vencimiento")]
         public DateTime? FechaVencimientoCertificado { get; set; }
@@ -99,7 +96,7 @@ namespace ERPMVC.Models
 
         public double? TotalDerechos { get; set; }
 
-
+        public string Mensaje { get; set; }
 
         public string Comentario { get; set; }
         [NotMapped]

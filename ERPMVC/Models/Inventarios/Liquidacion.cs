@@ -30,6 +30,10 @@ namespace ERPMVC.Models
 
 
         public string ProductName { get; set; }
+
+
+
+        public bool? Importacion { get; set; }
         public string Recibos { get; set; }
 
 
