@@ -246,6 +246,7 @@
                     //var txt = $(data);
                     //var found = $("#SubProductId", txt);
                     //subproducto = $(found).val();
+                    record = 0;
                 },
                 error: function (XMLHttpRequest, textStatus, errorThrown) {
 
@@ -314,8 +315,22 @@
         CalcularTotalDocumento();
         
     }
+    function dataBound(e) {
+        var grid = this;
+        grid.tbody.find("tr[role='row']").each(function (e) {
+            var model = grid.dataItem(this);
+            var maxValue = model.CantidadDisponible;
 
+            $(this).find("#increment_" + inc).data("kendoDatePicker").set({ max: maxValue });
+        });
+    }
 </script>
+
+<style>
+    .numbers {
+        text-align: right;
+    }
+</style>
 
 
 
@@ -327,6 +342,7 @@
     .Name("gridCertificadoDepositoDetail")
     .Events(e =>
     e.DataBound("CalcularTotalDocumento").CellClose("calculateField").Edit("calculateField")
+
     )
     .Columns(columns =>
     {
@@ -339,38 +355,36 @@
                 command.Custom("Eliminar").Text(" ").IconClass("fa fa-trash-alt").Click("Delete");
 
             }
-
-            //command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditCotizacionDetalle");
-
-            // command.Custom("Imprimir").Click("ImprimirCotizacion");
-            //  command.Edit(); command.Destroy();
         }).Width(100).Visible(editable);
-
-        columns.Bound(p => p.PdaNo).Title("Pda No").ClientTemplate("#= RowNum() #").Width(120);
-
-
+        columns.Bound(p => p.PdaNo).Title("Pda No").ClientTemplate("#= RowNum() #").Width(110);
         columns.Bound(p => p.CertificadoLineId).Title("No").Width(100).Visible(false);
-        columns.Bound(p => p.CantidadDisponible).Format("{0:n2}").Title("Cantidad Disp").Width(150);
-        columns.Bound(p => p.Quantity).Format("{0:n2}").Title("Cantidad").Width(150);
-        columns.Bound(p => p.UnitMeasurName).Title("Unidad de medida").Width(150);
-        columns.Bound(p => p.ReciboId).Title("ReciboId").Width(100).Visible(false);
-
+        columns.Bound(p => p.ReciboId).Title("Recibo No").Width(120).Visible(true);
+        columns.Bound(p => p.CantidadDisponible).Format("{0:n2}").Title("Disponible")
+            .Width(150).ClientFooterTemplate("<div style='text-align: right'>#=totalColumnas(1,0)#</div>").Visible(editable)
+             .HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" });
+        columns.Bound(p => p.Quantity).Format("{0:n2}").Title("Cantidad").Width(120)
+                .ClientFooterTemplate("<div style='text-align: right'>#=totalColumnas(2,0)#</div>")
+                .HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" });
+        columns.Bound(p => p.UnitMeasurName).Title("Unidad de medida").Width(170);
         columns.Bound(p => p.IdCD).Title("Certificado Id").Width(150).Visible(false);
-
         columns.Bound(p => p.SubProductId).Visible(false).Title("Producto").Width(0);
-
-
         columns.Bound(p => p.UnitMeasureId).Title("Unidad de medida").Width(0).Visible(false);
-        columns.Bound(p => p.SubProductName).Title("Producto").Width(200);
+        columns.Bound(p => p.SubProductName).Title("Producto").Width(250);
         columns.Bound(p => p.WarehouseId).Title("Bodega").Width(150).Visible(false);
-        columns.Bound(p => p.WarehouseName).Title("Bodega").Width(200);
-        //columns.Bound(p => p.Merma).Title("Merma").Format("{0:n2}").Width(120);
-        //columns.Bound(p => p.ValorImpuestos).Format("{0:n2}").Width(100).Title("Impuestos");
-        columns.Bound(p => p.Price).Format("{0:n2}").Title("Precio").Width(150);
-        //columns.Bound(p => p.Amount).Format("{0:n2}").Title("Total Lps").Width(125);
-        //columns.Template("#=calculateField(data)#").Title("Total Lps").Width(125);
-        columns.Bound(p => p.Amount).Format("{0:n2}").Title("Total Lps").ClientTemplate("<span class='totalSpan'>#= parseFloat(Price * Quantity).toFixed(2) #</span>").Width(125);
-        columns.Bound(p => p.DerechosFiscales).Format("{0:n2}").Title("Derechos Fiscales").Width(125);
+        columns.Bound(p => p.WarehouseName).Title("Bodega").Width(150);
+        columns.Bound(p => p.Price).Format("{0:c2}").Title("Precio")
+         .HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" })
+        .Width(150).ClientFooterTemplate("<div style='text-align: right'>#=totalColumnas(3,1)#");
+        columns.Bound(p => p.Amount).Format("{0:c2}").Title("Total Lps")
+        .ClientTemplate("<div style='text-align: right'><span class='totalSpan'>#= parseFloat(Price * Quantity).toFixed(2) #</span></div>").Width(125).ClientFooterTemplate("#=totalColumnas(4,1)#")
+        .HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" });
+        columns.Bound(p => p.ValorUnitarioDerechos).Format("{0:c2}").Title("Unit Derechos Fiscales").Width(150)
+        .HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" })
+        .ClientFooterTemplate("<div style='text-align: right'>#=totalColumnas(5,1)#</div>");
+        columns.Bound(p => p.DerechosFiscales).Format("{0:c2}").Title("Total Derechos").Width(150)
+        .ClientFooterTemplate("<div style='text-align: right'>#=totalColumnas(6,1)#</div>")
+         .HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" });
+
 
     })
     .Editable(e => e.Mode(GridEditMode.InCell))
@@ -409,17 +423,15 @@
 
     .Sortable()
     .AutoBind(true)
-    .Pageable()
+    //.Pageable()
     .Filterable()
     .Scrollable()
-    // .ClientDetailTemplateId("template")
     .Pdf(pdf => pdf.FileName("CertificadoDepositoDetalleReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
     + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
     .ProxyURL(Url.Action("Export", "Home")).AllPages())
     .Excel(excel => excel.FileName("CertificadoDepositoDetalleReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
     + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
     .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
-    //.Events(e=>e.Save("onsave"))
     .DataSource(dataSource =>
 
     dataSource
@@ -431,9 +443,15 @@
     .Model(model =>
     {
         model.Id(p => p.CertificadoLineId);
+        model.Field(p => p.PdaNo).Editable(false);
+        model.Field(p => p.UnitMeasurName).Editable(false);
+        model.Field(p => p.SubProductName).Editable(false);
+        model.Field(p => p.WarehouseName).Editable(false);
+        model.Field(p => p.ValorUnitarioDerechos).Editable(false);
         model.Field(p => p.CertificadoLineId).Editable(false);
         model.Field(p => p.IdCD).Editable(false);
         model.Field(p => p.Quantity).Editable(editable);
+        model.Field(p => p.CantidadDisponible).Editable(editable);
         model.Field(p => p.Amount).Editable(false);
         model.Field(p => p.DerechosFiscales).Editable(false);
         model.Field(p => p.Price).Editable(false);
@@ -442,20 +460,12 @@
     .Events(events =>
     {
         events.Error("error_handler");
-        //events.upda("EditHandler");
+
 
     })
     .Read(read => read.Action("GetCertificadoLine", "CertificadoLine").Data("GetRecibos"))
-    //.Create(create => create.Action("Insert", "SalesOrderLine"))
-    //.Update(update => update.Action("Update", "SalesOrderLine", new { SalesOrderLineId = "{0}" }))
-    //.Destroy(destroy => destroy.Action("Delete", "SalesOrderLine", new { SalesOrderLineId = "{0}" }))
     )
     )
 
 </div>
 </div>
-
-
-<script>
-
-</script>

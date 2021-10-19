@@ -64,6 +64,9 @@ namespace ERPMVC.Models
         public string Observaciones { get; set; }
 
         public double? DerechosFiscales { get; set; }
+
+
+        public decimal? ValorUnitarioDerechos { get; set; }
         [NotMapped]
         public int? ReciboId { get; set; }
         [NotMapped]
