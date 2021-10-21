@@ -311,18 +311,22 @@
         debugger;
         var totalSpan = e.container.closest("TR").find(".totalSpan");
         e.model.Amount = parseFloat(e.model.Price * e.model.Quantity).toFixed(2);
-        totalSpan.html(e.model.Amount);
+        let nf = new Intl.NumberFormat('en-US');
+       
+        totalSpan.html(nf.format(e.model.Amount));
         CalcularTotalDocumento();
         
     }
     function dataBound(e) {
+        debugger;
         var grid = this;
         grid.tbody.find("tr[role='row']").each(function (e) {
             var model = grid.dataItem(this);
             var maxValue = model.CantidadDisponible;
 
-            $(this).find("#increment_" + inc).data("kendoDatePicker").set({ max: maxValue });
+            $(this).find("#qty_" + inc).data("kendoDatePicker").set({ max: maxValue });
         });
+        CalcularTotalDocumento();
     }
 </script>
 
@@ -341,7 +345,7 @@
     ()
     .Name("gridCertificadoDepositoDetail")
     .Events(e =>
-    e.DataBound("CalcularTotalDocumento").CellClose("calculateField").Edit("calculateField")
+    e.DataBound("calculateField").CellClose("calculateField").Edit("calculateField")
 
     )
     .Columns(columns =>
@@ -362,9 +366,13 @@
         columns.Bound(p => p.CantidadDisponible).Format("{0:n2}").Title("Disponible")
             .Width(150).ClientFooterTemplate("<div style='text-align: right'>#=totalColumnas(1,0)#</div>").Visible(editable)
              .HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" });
-        columns.Bound(p => p.Quantity).Format("{0:n2}").Title("Cantidad").Width(120)
+        columns.Bound(p => p.Quantity).Format("{0:n2}").Title("Cantidad").Width(120).
+               
+
+        HtmlAttributes(new Dictionary<string, object> { ["Name"] = " qty_#=CantidadDisponible#" })
                 .ClientFooterTemplate("<div style='text-align: right'>#=totalColumnas(2,0)#</div>")
-                .HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" });
+                .HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" })
+                 ;
         //.ClientTemplate("<input id='increment_#=ID#' class='numeric' max='#=CantidadDisponible#' />");
         columns.Bound(p => p.UnitMeasurName).Title("Unidad de medida").Width(170);
         columns.Bound(p => p.IdCD).Title("Certificado Id").Width(150).Visible(false);
