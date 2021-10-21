@@ -29,6 +29,7 @@ namespace ERPMVC.Models
         [Display(Name = "Descripcion")]
         public string Description { get; set; }
         [Display(Name = "Cantidad")]
+        
         public double Quantity { get; set; }
         [Display(Name = "Precio")]
         [Column(TypeName = "Money")]
