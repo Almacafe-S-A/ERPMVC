@@ -42,6 +42,8 @@ namespace ERPMVC.Models
         [Display(Name = "Moneda")]
         public string CurrencyName { get; set; }
 
+        public string Certificados { get; set; }
+
         [Display(Name = "Banco")]
         public Int64 BankId { get; set; }
         [Display(Name = "Banco")]

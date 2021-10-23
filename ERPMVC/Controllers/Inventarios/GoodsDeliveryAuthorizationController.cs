@@ -206,6 +206,8 @@ namespace ERPMVC.Controllers
 
 
 
+
+
         [HttpPost("[controller]/[action]")]
         [HttpPost("[action]")]
         // public async Task<ActionResult<GoodsDeliveryAuthorization>> SaveGoodsDeliveryAuthorization([FromBody]GoodsDeliveryAuthorizationDTO _GoodsDeliveryAuthorization)
