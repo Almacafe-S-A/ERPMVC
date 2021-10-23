@@ -33,6 +33,60 @@ namespace ERPMVC.Controllers
             return View();
         }
 
+        public async Task<DataSourceResult> GetARLine([DataSourceRequest] DataSourceRequest request, [FromQuery(Name = "Recibos")] int[] recibos, [FromQuery(Name = "Id")] int id)
+        {
+            List<GoodsDeliveryAuthorizationLine> arLines = new List<GoodsDeliveryAuthorizationLine>();
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                string requestURl;
+                if (id == 0)
+                {
+                    string strrecibos = "?";
+                    foreach (var item in recibos)
+                    {
+                        strrecibos += $"Recibos={item}";
+                        if (item != recibos.ElementAt(recibos.Count() - 1))
+                        {
+                            strrecibos += "&&";
+                        }
+                    }
+                    requestURl = $"api/GoodsDeliveryAuthorization/GetDetalleCertificadosPendientes/{strrecibos}";
+                }
+                else
+                {
+                    requestURl = $"api/GoodsDeliveryAuthorizationLine/GetGoodsDeliveryAuthorizationLineByARId/{id}";
+                }
+
+
+
+                var result = await _client.GetAsync(baseadress + requestURl);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    arLines = JsonConvert.DeserializeObject<List<GoodsDeliveryAuthorizationLine>>(valorrespuesta);
+                    arLines = arLines.OrderByDescending(e => e.GoodsDeliveryAuthorizationId).ToList();
+                }
+
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+
+            return arLines.ToDataSourceResult(request);
+
+
+
+        }
+
+
         public async Task<ActionResult> pvwGoodsDeliveryAuthorizationLine(Int64 Id = 0)
         {
             GoodsDeliveryAuthorizationLine _GoodsDeliveryAuthorizationLine = new GoodsDeliveryAuthorizationLine();

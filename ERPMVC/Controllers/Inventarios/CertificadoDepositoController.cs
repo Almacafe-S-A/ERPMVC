@@ -107,6 +107,46 @@ namespace ERPMVC.Controllers
 
 
 
+        [HttpGet("[controller]/[action]")]
+        public async Task<DataSourceResult> GetCertificadosCustomerService([DataSourceRequest] DataSourceRequest request, [FromQuery(Name = "clienteid")] int clienteid, [FromQuery(Name = "servicioid")] int servicioid, [FromQuery(Name = "pendienteliquidacion")] int pendienteliquidacion)
+        {
+            List<CertificadoDeposito> certificados = new List<CertificadoDeposito>();
+            try
+            {
+
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + $"api/CertificadoDeposito/CertificadosPendientesCustomerService/{clienteid}/{servicioid}/{pendienteliquidacion}");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    certificados = JsonConvert.DeserializeObject<List<CertificadoDeposito>>(valorrespuesta);
+                    certificados = certificados.OrderByDescending(q => q.IdCD).ToList();
+                    certificados = (from certificado in certificados
+                                      select new CertificadoDeposito()
+                                      {
+                                          IdCD = certificado.IdCD,
+                                          Comentario = certificado.IdCD + " - " + certificado.Comentario,
+                                      }).ToList();
+
+                }
+
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+
+            return certificados.ToDataSourceResult(request);
+
+        }
+
+
 
         [HttpGet("[controller]/[action]")]
         public async Task<DataSourceResult> GetCertificadoDeposito([DataSourceRequest]DataSourceRequest request)
