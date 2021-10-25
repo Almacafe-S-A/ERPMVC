@@ -9,80 +9,7 @@
 
 
 <script>
-
-
-    function GetSalesOrderId() {
-        if ($("#SubProductId").val() > 0 || @Model.IdCD>0 ) {
-            var subproductname = '', unidaddemedida = '',warehouse = '';
-            if ($("#UnitMeasureId") != null) {
-                if ($("#UnitMeasureId").data("kendoDropDownList") != null) {
-                    unidaddemedida = $("#UnitMeasureId").data("kendoDropDownList").text();
-                }
-            }
-            if ($("#SubProductId") != null) {
-                if ($("#SubProductId").data("kendoDropDownList") != null) {
-                    subproductname = $("#SubProductId").data("kendoDropDownList").text();
-                }
-            }
-            if ($("#WareHouseId") != null) {
-                if ($("#WareHouseId").data("kendoDropDownList") != null) {
-                    warehouse = $("#WareHouseId").data("kendoDropDownList").text();
-                }
-            }
-
-
-
-            var displayedData = $("#gridCertificadoDepositoDetail").data().kendoGrid.dataSource.data();
-            var id = -999999;
-            // debugger;
-            if (Number($("#CertificadoLineId").val()) === 0) {
-                if (displayedData.length > 0) {
-                    for (var i = 0; i < displayedData.length; i++) {
-                        //console.log('Linea:' + displayedData[i].CertificadoLineId);
-                        //console.log('Linea:' + id);
-                        if (displayedData[i].CertificadoLineId > id)
-                            id = displayedData[i].CertificadoLineId;
-
-                    }
-
-                    id = id + 1;
-                }
-                else if ($("#SubProductId").val() > 0) {
-                    id = 1;
-                }
-            }
-            else {
-                id = $("#CertificadoLineId").val();
-            }
-
-
-            return {
-
-                'CertificadoLineId': id,
-                'IdCD': @Model.IdCD,
-                'uid': $("#uid").val(),
-                'Merma': $("#Merma").val(),
-                'DerechosFiscales': $("#DerechosFiscales").val(),
-                'SubProductId': $("#SubProductId").val(),
-                'SubProductName': subproductname,
-                'Description': $("#DescriptionDetail").val(),
-                'Quantity': $("#Quantity").val(),
-                'Price': $("#Price").val(),
-                'Amount': $("#AmountLine").val(),
-                'UnitMeasureId': $("#UnitMeasureId").val(),
-                'UnitMeasurName': unidaddemedida,
-                'WarehouseId': $("#WarehouseId").val(),
-                'WarehouseName': warehouse,
-                'TotalCantidad': $("#TotalCantidad").val(),
-                'ValorImpuestos': $("#ValorImpuestos").val(),
-
-
-            }
-        }
-        else {
-            return;
-        }
-    }
+    const formatter = new Intl.NumberFormat("en-US");
 
     function RefreshCertificadoDepositoDetail() {
         var grid = $("#gridCertificadoDepositoDetail").getKendoGrid();
@@ -91,139 +18,6 @@
         //CalcularTotalDocumento();
     }
 
-
-    function AddCotizacionDetalle() {
-        var notification = $("#notification").data("kendoNotification");
-      //  console.log($("#ProductId").val());
-        if ($("#ServicioId").val() !== '' && $("#ServicioId").val() !== '0'  ) {
-            $("#SubProductId").data("kendoDropDownList").value(0);
-            var quantity = $("#Quantity").data("kendoNumericTextBox");
-            quantity.value(0);
-            quantity.trigger('change');
-
-            var Price = $("#Price").data("kendoNumericTextBox");
-            Price.value(0);
-            Price.trigger('change');
-
-            var Amount = $("#AmountLine").data("kendoNumericTextBox");
-            Amount.value(0);
-            Amount.trigger('change');
-
-          //  llenarsubproduct();
-            $("#frmCertificadoDepositoLine :input").not('#SalesOrderId').prop("disabled", false);
-            $('#TaxCode').val(0);
-            $('#myModalCertificadoDepositoLine').modal('show');
-        } else {
-            var notification = $("#notification").data("kendoNotification");
-            notification.show({
-                title: "Validación",
-                message: "Debe seleccionar un producto!"
-            }, "error");
-
-        }
-
-    }
-
-
-    function EditCotizacionDetalle(e) {
-        if ($("#ServicioId").val() !== '' && $("#ServicioId").val() !== '0') {
-            e.preventDefault();
-            var notification = $("#notification").data("kendoNotification");
-            var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
-            //console.log(dataItem);
-          //  debugger;
-            var subproducto = 0;
-            var dataObject = { 'CertificadoLineId': dataItem.CertificadoLineId };
-            if (dataItem.IdCD > 0) {
-                $.ajax({
-                    url: '@Url.Action("pvwCertificadoDepositoDetailMant", "CertificadoLine")',
-                    method: 'GET',
-                    //datatype: "json",
-                    contentType: 'application/json',
-                    async: false,
-                    //data: JSON.stringify(dataObject),
-                    data: (dataObject),
-                    success: function (data) {
-                        $("#SalesOrderLineMant").html('');
-                        $("#SalesOrderLineMant").html(data);
-                        var txt = $(data);
-                        var found = $("#SubProductId", txt);
-                        subproducto = $(found).val();
-                    },
-                    error: function (XMLHttpRequest, textStatus, errorThrown) {
-
-                        //  $("#btngenerarfactura").show();
-                        notification.show({
-                            title: "Validación",
-                            message: textStatus + ": " + XMLHttpRequest.responseText
-                        }, "error");
-
-                    }
-                });
-
-                hcustom = $("#CustomerId").val();
-                $("#frmCertificadoDepositoLine :input").prop("disabled", true);
-             //   llenarsubproduct();
-                var combobox = $('#SubProductId').getKendoDropDownList();
-                combobox.value(subproducto);
-                combobox.trigger('change');
-
-            }
-            else {
-                $("#CertificadoLineId").val(dataItem.CertificadoLineId);
-                $("#IdCD").val(0);
-                $("#DescriptionDetail").val(dataItem.Description);
-                var quantity = $("#Quantity").data("kendoNumericTextBox");
-                quantity.value(dataItem.Quantity);
-                quantity.trigger('change');
-
-                var Price = $("#Price").data("kendoNumericTextBox");
-                Price.value(dataItem.Price);
-                Price.trigger('change');
-
-                var Amount = $("#AmountLine").data("kendoNumericTextBox");
-                Amount.value(dataItem.Amount);
-                Amount.trigger('change');
-
-                if ($("#ProductId").val() == 2) {
-                    $("#divvalorimpuesto").css("display", "block");
-                }
-                else {
-                    $("#divvalorimpuesto").css("display", "none");
-                }
-
-                $("#UnitMeasureId").data("kendoDropDownList").value(dataItem.UnitMeasureId);
-
-                $("#SubProductId").data("kendoDropDownList").dataSource.read();
-                $("#SubProductId").data("kendoDropDownList").value(dataItem.SubProductId);
-                $("#UnitMeasureId").data("kendoDropDownList").value(dataItem.UnitMeasureId);
-                $("#WarehouseId").data("kendoDropDownList").value(dataItem.WarehouseId);
-
-                //var combobox = $('#CustomerId').getKendoDropDownList();
-                //combobox.value($('#CustomerId').val());
-                //combobox.trigger('change');
-                //combobox.dataSource.read();
-               // llenarsubproduct();
-            }
-
-            if ($("#ServicioId").val() == 2) {
-                changeServicio();
-            }
-
-            $('#myModalCertificadoDepositoLine').modal('show');
-        }
-        else {
-            var notification = $("#notification").data("kendoNotification");
-            notification.show({
-                title: "Validacion",
-                message: "Debe seleccionar un producto!"
-            }, "error");
-
-        }
-
-
-
-    }
 
 
         function Delete(e) {
@@ -260,6 +54,7 @@
             });
 
             var grid = $("#gridCertificadoDepositoDetail").data("kendoGrid");
+            
             grid.dataSource.remove(dataItem);
 
             CalcularTotalDocumento();
@@ -272,15 +67,7 @@
         
         return ++record;
     }
-
-    function myfunction() {
-        console.log("asdasdas");
-    }
-
     function CalcularTotalDocumento() {
-        //var freight = $("#Freight").val()===""?0:$("#Freight").val();
-
-
         var displayedData = $("#gridCertificadoDepositoDetail").data().kendoGrid.dataSource.view();
         var total = 0, sumacantidad = 0, ValorImpuestos = 0, derechosfiscales = 0;
 
@@ -299,7 +86,7 @@
 
         //  console.log('Total Documento:' + total);
         setearvalor("Quantitysum", sumacantidad);
-        setearvalor("SujetasAPago", ValorImpuestos);
+        //setearvalor("SujetasAPago", ValorImpuestos);
         setearvalor("TotalDerechos", derechosfiscales);
         setearvalor("Total", total);
         //$("#Quantitysum").data("kendoNumericTextBox").value(sumacantidad);
@@ -307,30 +94,59 @@
 
     }
 
+    function setearvalor(nombrenumerico, valor) {
+        var numeric = $("#" + nombrenumerico).data("kendoNumericTextBox");
+        numeric.value(valor);
+        numeric.trigger('change');
+        numeric = null;
+    }
+
+
+
+
     function calculateField(e) {
         debugger;
-        if (e.container) {
-
-
+        if (e.container) {            
+            if (e.model.Quantity > e.model.CantidadDisponible) {
+                $.toast({
+                    heading: 'Error',
+                    text: 'La cantidad a Certificar no puede ser mayor al Disponible',
+                    position: 'top-right',
+                    loaderBg: '#ff6849',
+                    icon: 'error',
+                    hideAfter: 3000,
+                    stack: 6
+                });
+                e.model.Quantity = e.model.CantidadDisponible;
+            }
+            if (e.model.Quantity <=0) {
+                $.toast({
+                    heading: 'Error',
+                    text: 'La cantidad a Certificar no puede ser cero para no certificar este producto elimine la fila',
+                    position: 'top-right',
+                    loaderBg: '#ff6849',
+                    icon: 'error',
+                    hideAfter: 3000,
+                    stack: 6
+                });
+                e.model.Quantity = e.model.CantidadDisponible;
+            }
             var totalSpan = e.container.closest("TR").find(".totalSpan");
-            e.model.Amount = parseFloat(e.model.Price * e.model.Quantity).toFixed(2);
-            let nf = new Intl.NumberFormat('en-US');
+            e.model.Amount = e.model.Price * e.model.Quantity;   
+            totalSpan.html(parseFloat(e.model.Amount).toFixed(2));
 
-            totalSpan.html(nf.format(e.model.Amount));
+            
+            
+            //Actualizar Total
+            var footer = $('tr.k-footer-template'),
+                idx = 9, // replace 3 with the column index you want to aggregate
+                aggregate = $(footer).children('td')[idx];
+            $(aggregate).text(totalColumnas(4, 1));
+
             CalcularTotalDocumento();
+            
         }
         
-    }
-    function dataBound(e) {
-        debugger;
-        var grid = this;
-        grid.tbody.find("tr[role='row']").each(function (e) {
-            var model = grid.dataItem(this);
-            var maxValue = model.CantidadDisponible;
-
-            $(this).find("#qty_" + inc).data("kendoDatePicker").set({ max: maxValue });
-        });
-        CalcularTotalDocumento();
     }
 </script>
 
@@ -349,7 +165,7 @@
     ()
     .Name("gridCertificadoDepositoDetail")
     .Events(e =>
-    e.DataBound("calculateField").CellClose("calculateField").Edit("calculateField")
+    e.CellClose("calculateField")
 
     )
     .Columns(columns =>
@@ -364,16 +180,13 @@
 
             }
         }).Width(100).Visible(editable);
-        columns.Bound(p => p.PdaNo).Title("Pda No").ClientTemplate("#= RowNum() #").Width(110);
+        columns.Bound(p => p.PdaNo).Title("Pda No").ClientTemplate("#= RowNum()#").Width(110);
         columns.Bound(p => p.CertificadoLineId).Title("No").Width(100).Visible(false);
         columns.Bound(p => p.ReciboId).Title("Recibo No").Width(120).Visible(true);
         columns.Bound(p => p.CantidadDisponible).Format("{0:n2}").Title("Disponible")
             .Width(150).ClientFooterTemplate("<div style='text-align: right'>#=totalColumnas(1,0)#</div>").Visible(editable)
              .HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" });
-        columns.Bound(p => p.Quantity).Format("{0:n2}").Title("Cantidad").Width(120).
-               
-
-        HtmlAttributes(new Dictionary<string, object> { ["Name"] = " qty_#=CantidadDisponible#" })
+        columns.Bound(p => p.Quantity).Format("{0:n2}").Title("Cantidad").Width(120)      
                 .ClientFooterTemplate("<div style='text-align: right'>#=totalColumnas(2,0)#</div>")
                 .HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" })
                  ;
@@ -385,16 +198,17 @@
         columns.Bound(p => p.SubProductName).Title("Producto").Width(250);
         columns.Bound(p => p.WarehouseId).Title("Bodega").Width(150).Visible(false);
         columns.Bound(p => p.WarehouseName).Title("Bodega").Width(150);
-        columns.Bound(p => p.Price).Format("{0:c2}").Title("Precio")
+        columns.Bound(p => p.Price).Format("{0:n2}").Title("Precio")
          .HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" })
         .Width(150).ClientFooterTemplate("<div style='text-align: right'>#=totalColumnas(3,1)#");
-        columns.Bound(p => p.Amount).Format("{0:c2}").Title("Total Lps")
-        .ClientTemplate("<div style='text-align: right'><span class='totalSpan'>#= parseFloat(Price * Quantity).toFixed(2) #</span></div>").Width(125).ClientFooterTemplate("#=totalColumnas(4,1)#")
+        columns.Bound(p => p.Amount).Format("{0:n2}").Title("Total ")
+        .ClientTemplate("<div style='text-align: right'><span class='totalSpan'>#= parseFloat(Price * Quantity).toFixed(2) #</span></div>").Width(150)
+        .ClientFooterTemplate("<div style='text-align: right'><span class='totalsp'>#=totalColumnas(4,1)#</span></div>")
         .HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" });
-        columns.Bound(p => p.ValorUnitarioDerechos).Format("{0:c2}").Title("Unit Derechos Fiscales").Width(150)
+        columns.Bound(p => p.ValorUnitarioDerechos).Format("{0:n2}").Title("Unit Derechos Fiscales").Width(150)
         .HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" })
         .ClientFooterTemplate("<div style='text-align: right'>#=totalColumnas(5,1)#</div>");
-        columns.Bound(p => p.DerechosFiscales).Format("{0:c2}").Title("Total Derechos").Width(150)
+        columns.Bound(p => p.DerechosFiscales).Format("{0:n2}").Title("Total Derechos").Width(150)
         .ClientFooterTemplate("<div style='text-align: right'>#=totalColumnas(6,1)#</div>")
          .HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" });
 
