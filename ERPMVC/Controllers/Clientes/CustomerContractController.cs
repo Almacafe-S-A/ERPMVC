@@ -375,11 +375,13 @@ namespace ERPMVC.Controllers
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
-
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     CustomerContract = JsonConvert.DeserializeObject<CustomerContract>(valorrespuesta);
+                    bool dias = (decimal)CustomerContract.Plazo -  Decimal.ToInt32((decimal)CustomerContract.Plazo) > 0 ? true :false;
                     CustomerContract.FechaInicioContrato = _CustomerContract.FechaInicioContrato;
-                    CustomerContract.FechaVencimiento = ((DateTime)CustomerContract.FechaInicioContrato).AddMonths((int)CustomerContract.Plazo);
+                    CustomerContract.FechaVencimiento = ((DateTime)CustomerContract.FechaInicioContrato).AddMonths(Decimal.ToInt32((decimal)CustomerContract.Plazo));
+                    CustomerContract.FechaVencimiento = ((DateTime)CustomerContract.FechaVencimiento)
+                        .AddDays(dias?15:0);
                     CustomerContract.Estado = "Vigente";
                     CustomerContract.IdEstado = 7;
                     CustomerContract.FechaModificacion = DateTime.Now;

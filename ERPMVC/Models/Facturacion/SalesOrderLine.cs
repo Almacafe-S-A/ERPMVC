@@ -71,6 +71,6 @@ namespace ERPMVC.Models
 
         public string TipoCobroName { get; set; }
 
-        public int PeriodoCobro { get; set; }
+        public double PeriodoCobro { get; set; }
     }
 }

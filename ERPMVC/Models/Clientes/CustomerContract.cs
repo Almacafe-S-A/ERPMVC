@@ -23,7 +23,7 @@ namespace ERPMVC.Models
         [Display(Name = "Cliente")]
         public Int64 CustomerId { get; set; }
 
-        public int? Plazo { get; set; }
+        public double? Plazo { get; set; }
 
         public double? IncrementoAnual { get; set; }
 
