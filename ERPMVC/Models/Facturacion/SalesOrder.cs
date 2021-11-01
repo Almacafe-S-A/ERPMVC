@@ -73,7 +73,7 @@ namespace ERPMVC.Models
         public DateTime OrderDate { get; set; }
         public DateTime ExpirationDate { get; set; }
 
-        public int? PlazoMeses { get; set; }
+        public double? PlazoMeses { get; set; }
         /// <summary>
         /// Precio Base del proucto a Almacenar
         /// </summary>
