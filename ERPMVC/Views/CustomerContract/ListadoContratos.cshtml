@@ -156,12 +156,15 @@
 
     function ModalActivarContrato(e) {
         e.preventDefault();
+        debugger
         var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
         
         contratoseleccionado = dataItem.CustomerContractId;
         $('#ModalActivar').modal('show');
        
     }
+
+
 
 
     function ActivarContrato(e) {
@@ -207,8 +210,15 @@
                 $('[data-uid=' + this.uid + ']').find('.k-grid-Activar').hide();
 
             }
+            if (this.Estado != "Generado") {
+                $('[data-uid=' + this.uid + ']').find('.k-grid-ActivarAdendum').hide();
+
+            }
             if (this.Estado == "Terminado") {
                 $('[data-uid=' + this.uid + ']').find('.k-grid-Anular').hide();
+            }
+            if (this.Estado == "Terminado") {
+                $('[data-uid=' + this.uid + ']').find('.k-grid-AnularAdendum').hide();
             }
         })
     }
@@ -281,7 +291,7 @@
                                       // command.Edit(); command.Destroy();
                                   }).Title("Acciones").Width(200);
 
-                                  columns.Bound(p => p.CustomerContractId).Width(100).Title("Id Contrato");
+                                  columns.Bound(p => p.CustomerContractId).Width(150).Title("Id Contrato");
                                   columns.Bound(p => p.CustomerId).Visible(false).Width(100);
                                   columns.Bound(p => p.ProductName).Title("Servicio").Width(200);
                                   columns.Bound(p => p.TypeInvoiceName).Title("Tipo de Facturacion").Width(200);
@@ -289,8 +299,8 @@
                                   columns.Bound(p => p.CustomerManager).Width(230).Title("Gerente Gral Cliente");
                                   columns.Bound(p => p.Plazo).Title("Plazo Meses").Width(150);
                                   //columns.Bound(p => p.TypeContractName).Title("Tipo").Width(100);
-                                  columns.Bound(p => p.CustomerContractId_Source).Title("Contrato").Width(150);
-                                  columns.Bound(p => p.AdendumNo).Title("No Adendum").Width(120);
+                                  columns.Bound(p => p.CustomerContractId_Source).Title("Contrato").Width(150).Visible(false);
+                                  columns.Bound(p => p.AdendumNo).Title("No Adendum").Width(120).Visible(false);
                                   //columns.Bound(p => p.Manager).Width(180);
                                   columns.Bound(p => p.Estado).Width(150);
                                   columns.Bound(p => p.FechaInicioContrato).Width(200).Format("{0:dd/MM/yyyy}").Title("Fecha Inicio");
@@ -345,7 +355,7 @@
                               .Pageable()
                               .Filterable()
                               .Scrollable()
-                             
+                              .ClientDetailTemplateId("template")
                               .Pdf(pdf => pdf.FileName("ClienteAreaReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
                                + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
                                .ProxyURL(Url.Action("Export", "Home")).AllPages())
@@ -374,10 +384,89 @@
                                 
 )
 
+
+
+
 <div id="CustomerContract">
     @await Html.PartialAsync("pvwCustomerContract", new ERPMVC.Models.CustomerContract { CustomerContractId = 0 })
 </div>
 
+
+
+<script id="template" type="text/kendo-tmpl">
+    Adendums
+    @(Html.Kendo().Grid<ERPMVC.Models.CustomerContract>()
+                              .Name("grid_#=CustomerContractId#")
+                              .Columns(columns =>
+                              {
+
+                                  columns.Command(command =>
+                                  {
+
+                                      command.Custom("EditarAdendum").Text(" ").IconClass("fa fa-edit").Click("EditCustomerContractSignature");
+
+
+                                      command.Custom("ImprimirAdendum").Text(" ").IconClass("fa fa-print").Click("ImprimirContrato");
+
+                                      command.Custom("ActivarAdendum").Text(" ").IconClass("fa fa-check").Click("ModalActivarContrato");
+                                      command.Custom("AnularAdendum").Text(" ").IconClass("fa fa-ban").Click("Anular");
+
+                                      // command.Custom("Ver detalles").Click("Detalles");
+                                      // command.Edit(); command.Destroy();
+                                  }).Title("Acciones").Width(200);
+
+                                  columns.Bound(p => p.AdendumNo).Title("No Adendum").Width(170);
+                                  columns.Bound(p => p.CustomerContractId).Width(100).Title("Id Contrato").Visible(false);
+                                  columns.Bound(p => p.CustomerId).Visible(false).Width(100);
+                                  columns.Bound(p => p.ProductName).Title("Servicio").Width(200);
+                                  columns.Bound(p => p.TypeInvoiceName).Title("Tipo de Facturacion").Width(200);
+                                  //columns.Bound(p => p.CustomerManager).Width(230).Title("Gerente Gral Cliente");
+                                  columns.Bound(p => p.Plazo).Title("Plazo Meses").Width(150);
+                                  //columns.Bound(p => p.TypeContractName).Title("Tipo").Width(100);
+                                  columns.Bound(p => p.CustomerContractId_Source).Title("Contrato").Width(150).Visible(false);
+                                  //columns.Bound(p => p.Manager).Width(180);
+                                  columns.Bound(p => p.Estado).Width(150);
+                                  columns.Bound(p => p.FechaInicioContrato).Width(200).Format("{0:dd/MM/yyyy}").Title("Fecha Inicio");
+                                  columns.Bound(p => p.FechaVencimiento).Width(200).Format("{0:dd/MM/yyyy}");
+                                  columns.Bound(p => p.Observcion).Title("Observación").Width(200);
+
+
+                              })
+                                 
+                              .Editable(e => e.Mode(GridEditMode.PopUp).ConfirmDelete("¿Esta seguro que desea eliminar este registro?"))
+                              .Sortable()
+                              .Pageable()
+                              .Filterable()
+                              .Scrollable()
+                              
+                              .Pdf(pdf => pdf.FileName("ClienteAreaReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                               + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+                               .ProxyURL(Url.Action("Export", "Home")).AllPages())
+                                 .Excel(excel => excel.FileName("ClienteAreaReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                               + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+                               .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+                              .DataSource(dataSource =>
+                                  dataSource
+                                    .WebApi()
+                                    .ServerOperation(true)
+                                    .Model(model =>
+                                    {
+                                        model.Id(p => p.CustomerId);
+                                        model.Field(p => p.CustomerId).Editable(false);
+                                    })
+                                    .Events(events => events.Error("error_handler"))
+                                    .Sort(s => s.Add(m => m.CustomerContractId).Descending())
+                                    .Read(read => read.Action("CustomerAdendumByContract", "CustomerContract", new { ContractId = "#=CustomerContractId#" }))
+
+                                    .Create(create => create.Action("Post", "CustomerContract"))
+                                    .Update(update => update.Action("Put", "CustomerContract", new { id = "{0}" }))
+                                    .Destroy(destroy => destroy.Action("Delete", "CustomerContract", new { id = "{0}" }))
+
+                              )
+                                .Events(e => e.DataBound("dataBound")).ToClientTemplate()
+
+)
+</script>
 
 <div id="ModalActivar" style="width: 300px; height: 300px; position: absolute; left: 50%; top: 50%; margin-left: -150px; margin-top: -150px;" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
