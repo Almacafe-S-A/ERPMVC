@@ -155,6 +155,73 @@ namespace ERPMVC.Controllers
         }
 
 
+        [HttpGet]
+        public async Task<DataSourceResult> GetList([DataSourceRequest] DataSourceRequest request)
+        {
+            List<CustomerContract> _CustomerContract = new List<CustomerContract>();
+            try
+            {
+
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/CustomerContract/GetCustomerContractList");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _CustomerContract = JsonConvert.DeserializeObject<List<CustomerContract>>(valorrespuesta);
+
+                }
+
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+
+            return _CustomerContract.ToDataSourceResult(request);
+
+        }
+
+
+
+        [HttpGet]
+        public async Task<DataSourceResult> GetContractsList([DataSourceRequest] DataSourceRequest request)
+        {
+            List<CustomerContract> _CustomerContract = new List<CustomerContract>();
+            try
+            {
+
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/CustomerContract/GetCustomerContract");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _CustomerContract = JsonConvert.DeserializeObject<List<CustomerContract>>(valorrespuesta);
+
+                }
+
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+
+            return _CustomerContract.ToDataSourceResult(request);
+
+        }
+
+
         [HttpPost("[action]")]
         public async Task<ActionResult> GetCustomerContractbySalesorderId([FromBody] CustomerContract  idsalesorder)
         {
