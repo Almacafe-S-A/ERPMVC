@@ -617,6 +617,9 @@ namespace ERPMVC.Controllers
                     case "Arrendamiento":
                         Contrato = "ContratoArrendamiento.docx";
                         break;
+                    case "Arrendamiento de Equipo":
+                        Contrato = "ArrendamientoEquipo.docx";
+                        break;
                     default:
                         break;
                 }
