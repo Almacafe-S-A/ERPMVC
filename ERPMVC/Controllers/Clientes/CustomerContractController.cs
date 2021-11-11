@@ -529,7 +529,7 @@ namespace ERPMVC.Controllers
                         valorrespuesta = await (result.Content.ReadAsStringAsync());
                         _cc = JsonConvert.DeserializeObject<CustomerContract>(valorrespuesta);
                         _cc.IdEstado = 7;
-                        _cc.Estado = "Terminado";
+                        _cc.Estado = "Cancelado";
                         _cc.Observcion = _CustomerContract.Observcion;
                         var resultcustomerc = await Update(_cc.CustomerContractId, _cc);
 
