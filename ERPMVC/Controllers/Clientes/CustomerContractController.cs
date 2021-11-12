@@ -52,7 +52,7 @@ namespace ERPMVC.Controllers
         }
 
         [HttpPost("[controller]/[action]")]
-        public async Task<ActionResult> pvwCustomerContract([FromBody]CustomerContract _CustomerContractp)
+        public async Task<ActionResult> pvwCustomerContract([FromBody] CustomerContract _CustomerContractp)
         {
             CustomerContract _CustomerContract = new CustomerContract();
             try
@@ -119,6 +119,37 @@ namespace ERPMVC.Controllers
 
 
             return PartialView(_CustomerContractTerms);
+
+        }
+
+        [HttpGet("[action]")]
+        public async Task<ActionResult<CustomerContract>> GetCustomerContractById(int ContractId)
+        {
+            CustomerContract _CustomerContract = new CustomerContract();
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/CustomerContract/GetCustomerContractById/" + ContractId);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _CustomerContract = JsonConvert.DeserializeObject<CustomerContract>(valorrespuesta);
+
+                }
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                
+            }
+
+
+
+            return _CustomerContract;
 
         }
 
