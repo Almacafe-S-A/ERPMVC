@@ -465,6 +465,8 @@
                                                 datatextfield="CustomerContractId"
                                                 datavaluefield="CustomerContractId"
                                                 enable="false"
+                                                on-change="SetServicio"
+                                                onchange="SetServicio()"
                                                 auto-bind="true"
                                                 style="width: 100%;">
                                 <datasource type="DataSourceTagHelperType.WebApi">
@@ -476,6 +478,45 @@
                             <span asp-validation-for="CustomerContractId_Source" class="text-danger"></span>
                         </div>
                     </div>
+                    <script>
+                        function SetServicio(e) {
+                            debugger;
+                            var contrato = $("#CustomerContractId_Source").val();
+                            dataObject = {
+                                ContractId: contrato,
+                            };
+                            var dataSource = $("#ProductId").data("kendoDropDownList");
+                            $.ajax({
+                                url: '@Url.Action("GetCustomerContractById", "CustomerContract")' ,
+                                                                     method: 'GET',
+                                                                     datatype: "json",
+                                                                     contentType: 'application/json',
+                                async: false,
+                                data: dataObject,
+                                                                      success: function (result) {
+                                                                          //console.log(result);
+                                                                          // setearvalor("TaxPercentage", result.TaxPercentage);
+                                                                          dataSource.value(result.ProductId);
+                                                                          dataSource.enable(false);
+
+
+                                                                     },
+                                 error: function (XMLHttpRequest, textStatus, errorThrown) {
+                                     $("#ProductId").val(null);
+                                     dataSource.enable(true);
+                                                                             
+                                                                       }
+                                                                  });
+                        }
+                        function bloquearservicio() {
+                            var tipo = $("#TypeContractId").val();
+                            
+                            var dataSource = $("#ProductId").data("kendoDropDownList");
+                            if (tipo == 2) {
+                                dataSource.enable(false);
+                            }
+                        }
+                    </script>
                     <div class="col-md-3">
                         <div class="form-group">
                             <label asp-for="ProductId" class="control-label" style="width:100%">Servicio</label>
@@ -486,6 +527,8 @@
                                                 datatextfield="ProductName"
                                                 datavaluefield="ProductId"
                                                 on-change="limpiardetalle"
+                                                on-data-bound="bloquearservicio"
+                                                auto-bind="true"
                                                 required
                                                 style="width: 100%;">
                                 <datasource type="DataSourceTagHelperType.WebApi">
