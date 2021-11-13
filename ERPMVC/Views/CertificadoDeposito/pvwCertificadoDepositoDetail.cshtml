@@ -102,7 +102,11 @@
     }
 
 
-
+    formattear = new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'LPS',
+        minimumFractionDigits: 2
+    });
 
     function calculateField(e) {
         debugger;
@@ -132,9 +136,16 @@
                 e.model.Quantity = e.model.CantidadDisponible;
             }
             var totalSpan = e.container.closest("TR").find(".totalSpan");
-            e.model.Amount = e.model.Price * e.model.Quantity;   
-            totalSpan.html(parseFloat(e.model.Amount).toFixed(2));
+            var totalderechosSpan = e.container.closest("TR").find(".totalderechosSpan");
+            e.model.Amount = e.model.Price * e.model.Quantity;
+            e.model.DerechosFiscales = e.model.Quantity * e.model.ValorUnitarioDerechos;
+            
+            var total = formattear.format(e.model.Amount).replace(/[a-z]{3}/i, "").trim();
+            totalSpan.html(total);
 
+
+            var totalderechos = formattear.format(e.model.DerechosFiscales).replace(/[a-z]{3}/i, "").trim();
+            totalderechosSpan.html(totalderechos);
             
             
             //Actualizar Total
@@ -143,11 +154,19 @@
                 aggregate = $(footer).children('td')[idx];
             $(aggregate).text(totalColumnas(4, 1));
 
+            //Actualizar TotalDerechos
+            var footer = $('tr.k-footer-template'),
+                idx = 11, // replace 3 with the column index you want to aggregate
+                aggregate = $(footer).children('td')[idx];
+            $(aggregate).text(totalColumnas(6, 1));
+
             CalcularTotalDocumento();
             
         }
         
     }
+
+
 </script>
 
 <style>
@@ -202,13 +221,14 @@
          .HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" })
         .Width(150).ClientFooterTemplate("<div style='text-align: right'>#=totalColumnas(3,1)#");
         columns.Bound(p => p.Amount).Format("{0:n2}").Title("Total ")
-        .ClientTemplate("<div style='text-align: right'><span class='totalSpan'>#= parseFloat(Price * Quantity).toFixed(2) #</span></div>").Width(150)
+        .ClientTemplate("<div style='text-align: right'><span class='totalSpan'>#= formattear.format(Price * Quantity).replace(/[a-z]{3}/i, '').trim() #</span></div>").Width(200)
         .ClientFooterTemplate("<div style='text-align: right'><span class='totalsp'>#=totalColumnas(4,1)#</span></div>")
         .HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" });
         columns.Bound(p => p.ValorUnitarioDerechos).Format("{0:n2}").Title("Unit Derechos Fiscales").Width(150)
         .HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" })
         .ClientFooterTemplate("<div style='text-align: right'>#=totalColumnas(5,1)#</div>");
         columns.Bound(p => p.DerechosFiscales).Format("{0:n2}").Title("Total Derechos").Width(150)
+         .ClientTemplate("<div style='text-align: right'><span class='totalderechosSpan'>#= formattear.format(ValorUnitarioDerechos * Quantity).replace(/[a-z]{3}/i, '').trim() #</span></div>")
         .ClientFooterTemplate("<div style='text-align: right'>#=totalColumnas(6,1)#</div>")
          .HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" });
 
@@ -272,6 +292,7 @@
         model.Id(p => p.CertificadoLineId);
         model.Field(p => p.PdaNo).Editable(false);
         model.Field(p => p.UnitMeasurName).Editable(false);
+        model.Field(p => p.ReciboId).Editable(false);
         model.Field(p => p.SubProductName).Editable(false);
         model.Field(p => p.WarehouseName).Editable(false);
         model.Field(p => p.ValorUnitarioDerechos).Editable(false);
