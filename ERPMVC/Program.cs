@@ -36,7 +36,7 @@ namespace ERPMVC
                  .UseKestrel(options =>
                  {
                      options.Limits.MaxRequestHeadersTotalSize = 1048576;
-                 })
+                 }) // TODO: Cambiaar el funcionamiento de los permisos , solucion temporal de incrementar el valor de la variable
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .UseStartup<Startup>();
     }
