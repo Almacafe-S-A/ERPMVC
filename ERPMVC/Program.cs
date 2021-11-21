@@ -32,7 +32,11 @@ namespace ERPMVC
                        logging.ClearProviders();
                        logging.SetMinimumLevel(Microsoft.Extensions.Logging.LogLevel.Trace);
                    })
-                .UseNLog()         
+                .UseNLog()
+                 .UseKestrel(options =>
+                 {
+                     options.Limits.MaxRequestHeadersTotalSize = 1048576;
+                 })
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .UseStartup<Startup>();
     }
