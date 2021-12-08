@@ -155,7 +155,7 @@ namespace ERPMVC.Controllers
 
 
         [HttpGet("[controller]/[action]")]
-        public async Task<DataSourceResult> GoodsReceivedCustomerService([DataSourceRequest] DataSourceRequest request, [FromQuery(Name = "clienteid")] int clienteid, [FromQuery(Name = "servicioid")] int servicioid, [FromQuery(Name = "pendienteliquidacion")] int pendienteliquidacion)
+        public async Task<DataSourceResult> RecibosPendientesCertificar([DataSourceRequest] DataSourceRequest request, [FromQuery(Name = "clienteid")] int clienteid, [FromQuery(Name = "servicioid")] int servicioid, [FromQuery(Name = "pendienteliquidacion")] int pendienteliquidacion, [FromQuery(Name = "sucursal")] int sucursal)
         {
             List<GoodsReceived> _GoodsReceived = new List<GoodsReceived>();
             try
@@ -164,7 +164,7 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + $"api/GoodsReceived/GoodsReceivedCustomerService/{clienteid}/{servicioid}/{pendienteliquidacion}");
+                var result = await _client.GetAsync(baseadress + $"api/GoodsReceived/RecibosPendientesCertificar/{clienteid}/{servicioid}/{pendienteliquidacion}/{sucursal}");
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
