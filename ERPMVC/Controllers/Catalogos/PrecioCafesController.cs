@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http;
-using System.Threading.Tasks;
+﻿using ERPMVC.DTO;
 using ERPMVC.Helpers;
 using ERPMVC.Models;
-using ERPMVC.DTO;
 using Kendo.Mvc.Extensions;
 using Kendo.Mvc.UI;
 using Microsoft.AspNetCore.Authorization;
@@ -14,7 +9,12 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net.Http;
 using System.Security.Claims;
+using System.Threading.Tasks;
 
 namespace ERPMVC.Controllers
 {
@@ -79,15 +79,15 @@ namespace ERPMVC.Controllers
             try
             {
 
-                if (_Preciocafes.ExchangeRateId == 0)
-                {
+                //if (_Preciocafes.ExchangeRateId == 0)
+                //{
 
 
 
-                    //return await Task.Run(() => BadRequest("Seleccione una cuenta"));
-                    return await Task.Run(() => BadRequest($"Por favor seleccione la tasa de cambio."));
+                //    //return await Task.Run(() => BadRequest("Seleccione una cuenta"));
+                //    return await Task.Run(() => BadRequest($"Por favor seleccione la tasa de cambio."));
 
-                }
+                //}
 
 
                 string baseadress = config.Value.urlbase;
@@ -207,7 +207,8 @@ namespace ERPMVC.Controllers
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 throw ex;
             }
-            ViewData["defaultasadecambio"] = tasacambio.FirstOrDefault();
+            ViewData["tasa"] = tasacambio.FirstOrDefault() == null ? 0 : tasacambio.FirstOrDefault().ExchangeRateValueCompra;
+            ViewData["defaultasadecambio"] =tasacambio.FirstOrDefault();
             return tasacambio;
 
         }

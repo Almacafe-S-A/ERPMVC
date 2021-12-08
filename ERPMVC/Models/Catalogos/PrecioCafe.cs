@@ -17,14 +17,22 @@ namespace ERPMVC.Models
         [Required(ErrorMessage = "El Precio Bolsa USD es Requerido.")]
         public decimal PrecioBolsaUSD { get; set; }
         [Required(ErrorMessage = "La Diferencial USD es Requerido.")]
-        public decimal DiferencialesUSD { get; set; }
+        //public decimal DiferencialesUSD { get; set; }
 
-        public decimal TotalUSD { get; set; }
+        //public decimal TotalUSD { get; set; }
 
         [UIHint("Tasadecambiodrop")]
         public Int64 ExchangeRateId { get; set; }
         [ForeignKey("ExchangeRateId")]
         public ExchangeRate ExchangeRate { get; set; }
+
+        public decimal? ExchangeRateValue { get; set; }
+
+        public string Cosecha { get; set; }
+
+        public Int64? CustomerId { get; set; }
+
+        public Customer Customer { get; set; }
 
         public decimal BrutoLPSIngreso { get; set; }
         [Required(ErrorMessage = "El Porcentaje Ingreso es Requerido.")]
@@ -59,6 +67,10 @@ namespace ERPMVC.Models
         public decimal PrecioQQOro { get; set; }
 
         public decimal PercioQQPergamino { get; set; }
+
+        public decimal? PrecioQQCalidadesInferiores { get; set; }
+
+        public decimal? Otros { get; set; }
 
         public DateTime FechaCreacion { get; set; }
         public DateTime FechaModificacion { get; set; }
