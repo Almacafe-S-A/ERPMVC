@@ -197,7 +197,7 @@ namespace ERPMVC.Controllers
                     tasacambio = JsonConvert.DeserializeObject<IEnumerable<ExchangeRate>>(valorrespuesta);
                     
                     DateTime tasacambioactual = DateTime.Now;
-                    tasacambio = tasacambio.Where(x => x.DayofRate.ToString("yyyy-MM-dd") == tasacambioactual.ToString("yyyy-MM-dd"));
+                    tasacambio = tasacambio.Where(x => x.DayofRate.Date > DateTime.Now.AddDays(-4));
 
 
                 }
@@ -208,7 +208,7 @@ namespace ERPMVC.Controllers
                 throw ex;
             }
             ViewData["tasa"] = tasacambio.FirstOrDefault() == null ? 0 : tasacambio.FirstOrDefault().ExchangeRateValueCompra;
-            ViewData["defaultasadecambio"] =tasacambio.FirstOrDefault();
+            ViewData["defaultasadecambio"] =tasacambio;
             return tasacambio;
 
         }
@@ -235,7 +235,7 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _ExchangeRate = JsonConvert.DeserializeObject<List<ExchangeRate>>(valorrespuesta);
-                    _ExchangeRate = _ExchangeRate.Where(x => x.DayofRate.ToString("yyyy-MM-dd") == cd.ToString("yyyy-MM-dd")).ToList();
+                    _ExchangeRate = _ExchangeRate.Where(x => x.DayofRate.Date > DateTime.Now.AddDays(-4)).ToList();
 
                 }
 
