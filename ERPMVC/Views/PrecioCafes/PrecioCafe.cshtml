@@ -86,10 +86,10 @@
                         columns.Bound(p => p.Id).Width(130).Visible(false);
                         columns.Bound(p => p.Fecha).Width(200).EditorTemplateName("DayApplicationSalary").Format("{0:dd/MM/yyyy hh:MM}");
                         columns.Bound(p => p.Cosecha).Width(200);
-                        columns.Bound(p => p.PrecioBolsaUSD).Format("{0:n2}").Width(240).EditorTemplateName("NumericTextBox");
-                        columns.ForeignKey(p => p.ExchangeRateId, (System.Collections.IEnumerable)ViewData["Tasacambio"], "ExchangeRateId", "ExchangeRateValueCompra").Title("Tasa de cambio").Width(170);
+                        columns.Bound(p => p.PrecioBolsaUSD).Format("{0:n2}").Width(180).EditorTemplateName("NumericTextBox");
+                        columns.ForeignKey(p => p.ExchangeRateId, (System.Collections.IEnumerable)ViewData["Tasacambio"], "ExchangeRateId", "Descripcion").Title("Tasa de cambio").Width(170);
                         //columns.Bound(p => p.ExchangeRateValue).Format("{0:n2}").Width(200).Title("Tasa Cambio");
-                        columns.Bound(p => p.BrutoLPSIngreso).Format("{0:n2}").Width(200);
+                        columns.Bound(p => p.BrutoLPSIngreso).Format("{0:n2}").Width(150);
                         columns.Bound(p => p.PorcentajeIngreso).Format("{0:n2}").Width(200).EditorTemplateName("NumericTextBox");
                         columns.Bound(p => p.NetoLPSIngreso).Format("{0:n2}").Width(200).EditorTemplateName("NumericTextBox");
                         columns.Bound(p => p.BrutoLPSConsumoInterno).Format("{0:n2}").Width(200).EditorTemplateName("NumericTextBox");
@@ -100,11 +100,11 @@
                         columns.Bound(p => p.FideicomisoUSD).Format("{0:n2}").Width(200).EditorTemplateName("NumericTextBox");
                         columns.Bound(p => p.UtilidadUSD).Format("{0:n2}").Width(200).EditorTemplateName("NumericTextBox");
                         columns.Bound(p => p.PermisoExportacionUSD).Format("{0:n2}").Width(200).EditorTemplateName("NumericTextBox");
-                        columns.Bound(p => p.Otros).Format("{0:n2}").Width(200).EditorTemplateName("NumericTextBox").Title("Otros");
+                        columns.Bound(p => p.Otros).Format("{0:n2}").Width(150).EditorTemplateName("NumericTextBox").Title("Otros");
                         columns.Bound(p => p.TotalUSDEgreso).Format("{0:n2}").Width(200).EditorTemplateName("NumericTextBox");
                         columns.Bound(p => p.TotalLPSEgreso).Format("{0:n2}").Width(200).EditorTemplateName("NumericTextBox");
                         columns.Bound(p => p.PrecioQQOro).Format("{0:n2}").Width(200).EditorTemplateName("NumericTextBox");
-                        columns.Bound(p => p.PercioQQPergamino).Format("{0:n2}").Width(200).EditorTemplateName("NumericTextBox");
+                        columns.Bound(p => p.PercioQQPergamino).Format("{0:n2}").Width(200).EditorTemplateName("NumericTextBox").Title("Precio QQ Pergamino");
                         columns.Bound(p => p.PrecioQQCalidadesInferiores).Format("{0:n2}").Width(200).EditorTemplateName("NumericTextBox");
 
 
@@ -157,7 +157,7 @@
 
                     })
                     .Editable(e => e.Mode(GridEditMode.InLine).ConfirmDelete("¿Esta seguro que desea eliminar este registro?"))
-                     .Events(e => e.Save("onsave"))
+                     //.Events(e => e.SaveChanges("onsave"))
                     .Sortable()
                     .Pageable()
                     .Filterable()
@@ -213,7 +213,7 @@
                     )
                     .Events(e =>
                     {
-                        e.Save("onsave");
+                        e.SaveChanges("SaveChanges").Save("onsave");
 
                     })
 )
@@ -231,9 +231,28 @@
         }
     }
 
-    function onsave(e) {
+    function onsave() {
+        $.toast({
+            heading: 'Satisfactorio',
+            text: 'Datos guardados correctamente.',
+            position: 'top-right',
+            loaderBg: '#ff6849',
+            icon: 'success',
+            hideAfter: 3000,
+            stack: 6
+        });
+    }
+
+    function SaveChanges(e) {
+       
+        e.sender.one("dataBound", function () {
+            e.sender.dataSource.read();
+        });
+        
+        debugger;
         var grid = $("#gridPrecioCafe").getKendoGrid();
         grid.dataSource.read();
+        grid.refresh();
     }
 
     function error_handler(e) {

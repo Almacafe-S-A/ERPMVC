@@ -12,6 +12,11 @@ namespace ERPMVC.Models
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         [Display(Name = "Id")]
         public Int64 ExchangeRateId { get; set; }
+        
+        /////Campo para mostrar la fecha y el valor de compra no mapeado 
+        ///
+        [NotMapped]
+        public string Descripcion { get; set; }
         [Display(Name = "Fecha")]
         public DateTime DayofRate { get; set; }
         [Display(Name = "Tasa de Venta")]
@@ -41,5 +46,31 @@ namespace ERPMVC.Models
         [Display(Name = "Fecha de Modificacion")]
         public DateTime ModifiedDate { get; set; }
 
+        public static List<ExchangeRate> PreprocesarTasasCambio(List<ExchangeRate> tasascambio)
+        {
+            tasascambio = (from tasa in tasascambio
+                           select new ExchangeRate
+                           {
+                               ExchangeRateId = tasa.ExchangeRateId,
+                               Descripcion = tasa.DayofRate.Date.ToString("dd/MM/yyyy") + " -> " + tasa.ExchangeRateValueCompra,
+                               ExchangeRateValueCompra = tasa.ExchangeRateValueCompra,
+                               CurrencyId = tasa.CurrencyId,
+                               CurrencyName = tasa.CurrencyName,
+                               ExchangeRateValue = tasa.ExchangeRateValue,
+                               DayofRate = tasa.DayofRate
+
+                           }
+                            ).ToList();
+
+
+            ;
+
+            return tasascambio;
+
+        }
+
     }
+
+
+   
 }

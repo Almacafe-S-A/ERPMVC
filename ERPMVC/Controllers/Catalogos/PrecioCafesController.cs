@@ -15,6 +15,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using ERPMVC.Controllers;
 
 namespace ERPMVC.Controllers
 {
@@ -116,6 +117,8 @@ namespace ERPMVC.Controllers
             return Json(_Preciocafes);
         }
 
+        
+
 
         [AcceptVerbs("Post")]
         public async Task<ActionResult<PrecioCafe>> Update(/*Int64 Id,*/ PrecioCafeDTO _Preciocafes)
@@ -207,8 +210,10 @@ namespace ERPMVC.Controllers
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 throw ex;
             }
+            tasacambio = (IEnumerable<ExchangeRate>)ExchangeRate.PreprocesarTasasCambio(tasacambio.ToList());
             ViewData["tasa"] = tasacambio.FirstOrDefault() == null ? 0 : tasacambio.FirstOrDefault().ExchangeRateValueCompra;
-            ViewData["defaultasadecambio"] =tasacambio;
+            
+            ViewData["defaultasadecambio"] = tasacambio;
             return tasacambio;
 
         }
