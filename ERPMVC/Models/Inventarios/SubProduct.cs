@@ -34,6 +34,9 @@ namespace ERPMVC.Models
      
         [Display(Name = "Saldo Quintales")]
         public double Balance { get; set; }
+
+        public int TipoCafe { get; set; }
+
         [Display(Name = "Saldo Sacos")]
         public Int64 BagBalance { get; set; }
         [Display(Name = "Código de servicio/producto")]
@@ -55,6 +58,12 @@ namespace ERPMVC.Models
         public string UsuarioCreacion { get; set; }
         public string UsuarioModificacion { get; set; }
 
+    }
+
+    public class TipoCafe {
+        public int Id { get; set; }
+
+        public string Tipo { get; set; }
     }
 
 

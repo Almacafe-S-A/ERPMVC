@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -40,6 +41,9 @@ namespace ERPMVC.Controllers
             ViewData["permisoEditar"] = _principal.HasClaim("Configuracion.Tasa de Cambio.Editar", "true");
             return View();
         }
+
+
+       
 
         [HttpPost("[action]")]
         public async Task<JsonResult> GetExchangeRateByDateNCurrency([FromBody] ExchangeRate exchangeRate)
