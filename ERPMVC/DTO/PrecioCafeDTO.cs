@@ -15,5 +15,7 @@ namespace ERPMVC.DTO
 
         public string token { get; set; }
 
+        public double?[] configuraciones { get; set; }
+
     }
 }

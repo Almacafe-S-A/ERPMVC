@@ -36,9 +36,12 @@ namespace ERPMVC.Controllers
         [Authorize(Policy = "Administracion.PrecioCafe")]
         public async Task<IActionResult> PrecioCafe()
         {
+            PrecioCafeDTO precio = new PrecioCafeDTO();
+            precio = await ObtenerCoinfiguracionCafe();
+            
             ViewData["Tasacambio"] = await Obtenertasadecambio();
-            ViewData["permisos"] = _principal;
-            return View();
+            ViewData["Clientes"] = await ObtenerClientes();
+            return View(precio);
         }
 
 
@@ -79,18 +82,14 @@ namespace ERPMVC.Controllers
         {
             try
             {
-
-                //if (_Preciocafes.ExchangeRateId == 0)
-                //{
-
-
-
-                //    //return await Task.Run(() => BadRequest("Seleccione una cuenta"));
-                //    return await Task.Run(() => BadRequest($"Por favor seleccione la tasa de cambio."));
-
-                //}
-
-
+                if (_Preciocafes.CustomerId == 0)
+                {
+                    return await Task.Run(() => BadRequest($"Por favor seleccione el cliente"));
+                }
+                if (_Preciocafes.ExchangeRateId == 0)
+                {
+                    return await Task.Run(() => BadRequest($"Por favor seleccione la tasa de cambio."));
+                }
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
@@ -105,6 +104,10 @@ namespace ERPMVC.Controllers
 
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _Preciocafes = JsonConvert.DeserializeObject<PrecioCafeDTO>(valorrespuesta);
+                }
+                else
+                {
+                    return BadRequest("Registro Duplicado");
                 }
 
             }
@@ -140,6 +143,10 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _Preciocafes = JsonConvert.DeserializeObject<PrecioCafeDTO>(valorrespuesta);
+                }
+                else
+                {
+                    return BadRequest("Registro Duplicado");
                 }
 
             }
@@ -211,10 +218,69 @@ namespace ERPMVC.Controllers
                 throw ex;
             }
             tasacambio = (IEnumerable<ExchangeRate>)ExchangeRate.PreprocesarTasasCambio(tasacambio.ToList());
-            ViewData["tasa"] = tasacambio.FirstOrDefault() == null ? 0 : tasacambio.FirstOrDefault().ExchangeRateValueCompra;
+            //ViewData["tasa"] = tasacambio.FirstOrDefault() == null ? 0 : tasacambio.FirstOrDefault().ExchangeRateValueCompra;
             
-            ViewData["defaultasadecambio"] = tasacambio;
+            //ViewData["defaultasadecambio"] = tasacambio;
             return tasacambio;
+
+        }
+
+        async Task<PrecioCafeDTO> ObtenerCoinfiguracionCafe()
+        {
+            IEnumerable<ElementoConfiguracion> configuracion = null;
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/ElementoConfiguracion/GetElementosConfiguracionByGrupoConfiguracion/141");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    configuracion = JsonConvert.DeserializeObject<IEnumerable<ElementoConfiguracion>>(valorrespuesta);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+            PrecioCafeDTO precio = new PrecioCafeDTO();
+            precio.PermisoExportacionUSD = configuracion.Where(q => q.Id == 189).FirstOrDefault().Valordecimal;
+            precio.UtilidadUSD = configuracion.Where(q => q.Id == 188).FirstOrDefault().Valordecimal;
+            precio.FideicomisoUSD = configuracion.Where(q => q.Id == 187).FirstOrDefault().Valordecimal;
+            precio.BeneficiadoUSD = configuracion.Where(q => q.Id == 186).FirstOrDefault().Valordecimal;
+            precio.PorcentajeConsumoInterno = configuracion.Where(q => q.Id == 185).FirstOrDefault().Valordecimal;
+            return precio;
+
+        }
+
+
+        async Task<IEnumerable<Customer>> ObtenerClientes()
+        {
+            IEnumerable<Customer> clientes = null;
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/Customer/GetCustomer");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    clientes = JsonConvert.DeserializeObject<IEnumerable<Customer>>(valorrespuesta);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+            return clientes;
 
         }
 

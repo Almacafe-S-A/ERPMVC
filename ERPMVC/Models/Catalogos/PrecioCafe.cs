@@ -15,50 +15,50 @@ namespace ERPMVC.Models
 
         public DateTime Fecha { get; set; }
         [Required(ErrorMessage = "El Precio Bolsa USD es Requerido.")]
-        public decimal PrecioBolsaUSD { get; set; }
+        public double PrecioBolsaUSD { get; set; }
         [Required(ErrorMessage = "La Diferencial USD es Requerido.")]
-        //public decimal DiferencialesUSD { get; set; }
+        //public double? DiferencialesUSD { get; set; }
 
-        //public decimal TotalUSD { get; set; }
+        //public double? TotalUSD { get; set; }
 
         [UIHint("Tasadecambiodrop")]
         public Int64 ExchangeRateId { get; set; }
         [ForeignKey("ExchangeRateId")]
         public ExchangeRate ExchangeRate { get; set; }
 
-        public decimal? ExchangeRateValue { get; set; }
+        public double? ExchangeRateValue { get; set; }
 
         public string Cosecha { get; set; }
-
-        public Int64? CustomerId { get; set; }
-
+        [UIHint("Customer")]
+        public int CustomerId { get; set; }
+        [ForeignKey("CustomerId")]
         public Customer Customer { get; set; }
 
         public decimal BrutoLPSIngreso { get; set; }
         [Required(ErrorMessage = "El Porcentaje Ingreso es Requerido.")]
 
-        public decimal PorcentajeIngreso { get; set; }
+        public double? PorcentajeIngreso { get; set; }
 
         public decimal NetoLPSIngreso { get; set; }
 
         [Required(ErrorMessage = "El Bruto LPS Consumo Interno es Requerido.")]
         public decimal BrutoLPSConsumoInterno { get; set; }
         [Required(ErrorMessage = "El Porcentaje Consumo Interno es Requerido.")]
-        public decimal PorcentajeConsumoInterno { get; set; }
+        public double? PorcentajeConsumoInterno { get; set; }
 
         public decimal NetoLPSConsumoInterno { get; set; }
 
         public decimal TotalLPSIngreso { get; set; }
         [Required(ErrorMessage = "El Beneficiado USD es Requerido.")]
 
-        public decimal BeneficiadoUSD { get; set; }
+        public double? BeneficiadoUSD { get; set; }
         [Required(ErrorMessage = "El Fideicomiso USD es Requerido.")]
 
-        public decimal FideicomisoUSD { get; set; }
+        public double? FideicomisoUSD { get; set; }
         [Required(ErrorMessage = "La Utilidad USD es Requerida.")]
-        public decimal UtilidadUSD { get; set; }
+        public double? UtilidadUSD { get; set; }
         [Required(ErrorMessage = "El Permiso Exportación USD es Requerido.")]
-        public decimal PermisoExportacionUSD { get; set; }
+        public double? PermisoExportacionUSD { get; set; }
 
         public decimal TotalUSDEgreso { get; set; }
 
@@ -68,9 +68,9 @@ namespace ERPMVC.Models
 
         public decimal PercioQQPergamino { get; set; }
 
-        public decimal? PrecioQQCalidadesInferiores { get; set; }
+        public decimal PrecioQQCalidadesInferiores { get; set; }
 
-        public decimal? Otros { get; set; }
+        public decimal Otros { get; set; }
 
         public DateTime FechaCreacion { get; set; }
         public DateTime FechaModificacion { get; set; }
