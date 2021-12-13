@@ -1,9 +1,15 @@
-﻿@model ERPMVC.Models.PrecioCafe
+﻿@model ERPMVC.DTO.PrecioCafeDTO
 @using System.Security.Claims
+@using System.Linq;
 @{
     ViewData["Title"] = "Precio Café";
-    var cuentas = ViewData["Tasacambio"] as IEnumerable<ERPMVC.Models.ExchangeRate>;
-    ClaimsPrincipal permisos = (ClaimsPrincipal)ViewData["permisos"];
+    //double?[] configuracion = (double?[])ViewData["configuracion"];
+    //IEnumerable<ERPMVC.Models.ElementoConfiguracion> configuracion = (IEnumerable<ERPMVC.Models.ElementoConfiguracion>) ViewData["configuracion"];
+    //double porcentajeingreso = (double)configuracion.Where(q => q.Id == 185).FirstOrDefault().Valordecimal;
+    //double beneficiado = (double)configuracion.Where(q => q.Id == 186).FirstOrDefault().Valordecimal;
+    //double fideicomiso = (double)configuracion.Where(q => q.Id == 187).FirstOrDefault().Valordecimal;
+    //double utilidad = (double)configuracion.Where(q => q.Id == 188).FirstOrDefault().Valordecimal;
+    //double exportacion = (double)configuracion.Where(q => q.Id == 189).FirstOrDefault().Valordecimal;
 
 
 
@@ -61,239 +67,251 @@
 <h3 class="text-themecolor">Precio Café</h3>
 
 @(Html.Kendo().Grid<ERPMVC.Models.PrecioCafe>
-                    ()
-                    .Name("gridPrecioCafe")
-                    .Columns(columns =>
-                    {
+    ()
+    .Name("gridPrecioCafe")
+    .Columns(columns =>
+    {
 
-                        if (permisos.HasClaim("Administracion.PrecioCafe.Editar", "true")
-                   || permisos.HasClaim("Administracion.PrecioCafe.Eliminar", "true"))
-                        {
-                            columns.Command(command =>
-                            {
-                                //command.Custom("Ver detalles").Click("Detalles");
-                                if(permisos.HasClaim("Administracion.PrecioCafe.Editar", "true")) {
-                                    command.Edit().Text(" ").IconClass("fa fa-edit").UpdateText(" ").CancelText(" ");
-                                }
+        if (User.HasClaim("Administracion.PrecioCafe.Editar", "true")
+        || User.HasClaim("Administracion.PrecioCafe.Eliminar", "true"))
+        {
+            columns.Command(command =>
+            {
+                //command.Custom("Ver detalles").Click("Detalles");
+                if(User.HasClaim("Administracion.PrecioCafe.Editar", "true")) {
+                    command.Edit().Text(" ").IconClass("fa fa-edit").UpdateText(" ").CancelText(" ");
+                }
 
-                                if(permisos.HasClaim("Administracion.PrecioCafe.Eliminar", "true"))
-                                {
-                                    command.Destroy().Text(" ").IconClass("fa fa-trash-alt");
-                                }
-                            }).Title("Acciones").Width(120);
-                        }
-
-                        columns.Bound(p => p.Id).Width(130).Visible(false);
-                        columns.Bound(p => p.Fecha).Width(200).EditorTemplateName("DayApplicationSalary").Format("{0:dd/MM/yyyy hh:MM}");
-                        columns.Bound(p => p.Cosecha).Width(200);
-                        columns.Bound(p => p.PrecioBolsaUSD).Format("{0:n2}").Width(180).EditorTemplateName("NumericTextBox");
-                        columns.ForeignKey(p => p.ExchangeRateId, (System.Collections.IEnumerable)ViewData["Tasacambio"], "ExchangeRateId", "Descripcion").Title("Tasa de cambio").Width(170);
-                        //columns.Bound(p => p.ExchangeRateValue).Format("{0:n2}").Width(200).Title("Tasa Cambio");
-                        columns.Bound(p => p.BrutoLPSIngreso).Format("{0:n2}").Width(150);
-                        columns.Bound(p => p.PorcentajeIngreso).Format("{0:n2}").Width(200).EditorTemplateName("NumericTextBox");
-                        columns.Bound(p => p.NetoLPSIngreso).Format("{0:n2}").Width(200).EditorTemplateName("NumericTextBox");
-                        columns.Bound(p => p.BrutoLPSConsumoInterno).Format("{0:n2}").Width(200).EditorTemplateName("NumericTextBox");
-                        columns.Bound(p => p.PorcentajeConsumoInterno).Format("{0:n2}").Width(200).EditorTemplateName("NumericTextBox");
-                        columns.Bound(p => p.NetoLPSConsumoInterno).Format("{0:n2}").Width(200).EditorTemplateName("NumericTextBox");
-                        columns.Bound(p => p.TotalLPSIngreso).Format("{0:n2}").Width(200).EditorTemplateName("NumericTextBox");
-                        columns.Bound(p => p.BeneficiadoUSD).Format("{0:n2}").Width(200).EditorTemplateName("NumericTextBox");
-                        columns.Bound(p => p.FideicomisoUSD).Format("{0:n2}").Width(200).EditorTemplateName("NumericTextBox");
-                        columns.Bound(p => p.UtilidadUSD).Format("{0:n2}").Width(200).EditorTemplateName("NumericTextBox");
-                        columns.Bound(p => p.PermisoExportacionUSD).Format("{0:n2}").Width(200).EditorTemplateName("NumericTextBox");
-                        columns.Bound(p => p.Otros).Format("{0:n2}").Width(150).EditorTemplateName("NumericTextBox").Title("Otros");
-                        columns.Bound(p => p.TotalUSDEgreso).Format("{0:n2}").Width(200).EditorTemplateName("NumericTextBox");
-                        columns.Bound(p => p.TotalLPSEgreso).Format("{0:n2}").Width(200).EditorTemplateName("NumericTextBox");
-                        columns.Bound(p => p.PrecioQQOro).Format("{0:n2}").Width(200).EditorTemplateName("NumericTextBox");
-                        columns.Bound(p => p.PercioQQPergamino).Format("{0:n2}").Width(200).EditorTemplateName("NumericTextBox").Title("Precio QQ Pergamino");
-                        columns.Bound(p => p.PrecioQQCalidadesInferiores).Format("{0:n2}").Width(200).EditorTemplateName("NumericTextBox");
-
-
-
-
-                    })
-                        .Filterable(f => f.Operators(o => o.ForString(s => s
-                                                       .Clear()
-                                                       .Contains("Contiene")
-                                                       .DoesNotContain("No contiene")
-                                                       .EndsWith("Termina con")
-                                                       .IsEqualTo("Es igual a")
-                                                       .IsNotEqualTo("No es igual a")
-                                                       .IsNull("Es nulo")
-                                                       .StartsWith("Inicia con")
-
-
-                                                 )
-                                                 .ForNumber(n => n
-                                                   .Clear()
-                                                   .IsEqualTo("Es igual a")
-                                                   .IsGreaterThan("Es mayor que")
-                                                   .IsLessThan("Es menor que")
-                                                   .IsNull("Es nulo")
-                                                   .IsLessThanOrEqualTo("Es menor o igual que")
-                                                   .IsGreaterThanOrEqualTo("Es mayor o igual que")
-                                                 )
-                                                 .ForDate(d => d
-                                                 .Clear()
-                                                 .IsEqualTo("Es igual que")
-                                                 .IsGreaterThan("Es mayor que")
-                                                 .IsLessThan("Es menor que")
-                                                 .IsLessThanOrEqualTo("Es menor o igual que")
-                                                 .IsGreaterThanOrEqualTo("Es mayor o igual que")
-                                                 .IsNotEqualTo("No es igual que")
-                                                  )
-                                               ))
-                    .ToolBar(tools =>
-                    {
-                        // tools.Create();
-
-                        if (permisos.HasClaim("Administracion.PrecioCafe.Agregar", "true"))
-                        {
-                            tools.Create().Text("Agregar").IconClass("k-icon k-i-plus")
-                            .HtmlAttributes(new { @class = "k-i-plus-sm" });
-                        }
-                        tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
-                        tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
-
-
-                    })
-                    .Editable(e => e.Mode(GridEditMode.InLine).ConfirmDelete("¿Esta seguro que desea eliminar este registro?"))
-                     //.Events(e => e.SaveChanges("onsave"))
-                    .Sortable()
-                    .Pageable()
-                    .Filterable()
-                    .Scrollable()
-                    .Pdf(pdf => pdf.FileName("Estados_Reporte" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-                    + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
-                    .ProxyURL(Url.Action("Export", "Home")).AllPages())
-                        .Excel(excel => excel.FileName("Estados_Reporte_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-                    + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
-                    .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
-                    .DataSource(dataSource =>
-                        dataSource
-                        .WebApi()
-
-                        .ServerOperation(true)
-                        .Model(model =>
-                        {
-                            model.Id(p => p.Id);
-                            model.Field(p => p.Id).Editable(false);
-                            model.Field(p => p.Fecha).Editable(true);
-                            model.Field(p => p.PrecioBolsaUSD).Editable(true);
-                            model.Field(p => p.ExchangeRateId).Editable(true);
-                            model.Field(p => p.ExchangeRateValue).Editable(false).DefaultValue(ViewData["tasa"]);
-                            model.Field(p => p.BrutoLPSIngreso).Editable(false);
-                            model.Field(p => p.PorcentajeIngreso).Editable(true);
-                            model.Field(p => p.NetoLPSIngreso).Editable(false);
-                            model.Field(p => p.BrutoLPSConsumoInterno).Editable(false);
-                            model.Field(p => p.PorcentajeConsumoInterno).Editable(true);
-                            model.Field(p => p.NetoLPSConsumoInterno).Editable(false);
-                            model.Field(p => p.TotalLPSIngreso).Editable(false);
-                            model.Field(p => p.BeneficiadoUSD).Editable(true);
-                            model.Field(p => p.FideicomisoUSD).Editable(true);
-                            model.Field(p => p.UtilidadUSD).Editable(true);
-                            model.Field(p => p.PermisoExportacionUSD).Editable(true);
-                            model.Field(p => p.TotalUSDEgreso).Editable(false);
-                            model.Field(p => p.TotalLPSEgreso).Editable(false);
-                            model.Field(p => p.PrecioQQOro).Editable(false);
-                            model.Field(p => p.PercioQQPergamino).Editable(false);
-                            model.Field(p => p.PrecioQQCalidadesInferiores).Editable(false).DefaultValue(0);
-                            model.Field(p => p.FechaCreacion).Editable(false);
-                            model.Field(p => p.UsuarioCreacion).Editable(false);
-                            model.Field(p => p.UsuarioModificacion).Editable(false);
-                            model.Field(p => p.FechaModificacion).Editable(false);
-                            model.Field(p => p.Otros).Editable(true).DefaultValue(0);
-
-                        })
-                        .Events(events => events.Error("error_handler"))
-                        .Read(read => read.Action("Get", "PrecioCafes"))
-                        .Create(create => create.Action("savepreciocafes", "PrecioCafes").Type(HttpVerbs.Post).Data("GetData"))
-                        .Update(update => update.Action("Update", "PrecioCafes", new { Id = "{0}" }).Type(HttpVerbs.Post).Data("GetDataUpdate"))
-                        .Destroy(destroy => destroy.Action("Delete", "PrecioCafes", new { Id = "{0}" }).Type(HttpVerbs.Post))
-
-                    )
-                    .Events(e =>
-                    {
-                        e.SaveChanges("SaveChanges").Save("onsave");
-
-                    })
-)
-
-<script>
-
-    function GetData(data) {
-        if (data != null) {
-            data.Fecha = data.Fecha.toJSON();
+                if(User.HasClaim("Administracion.PrecioCafe.Eliminar", "true"))
+                {
+                    command.Destroy().Text(" ").IconClass("fa fa-trash-alt");
+                }
+            }).Title("Acciones").Width(120);
         }
-    }
-    function GetDataUpdate(data) {
-        if (data != null) {
-            data.Fecha = data.Fecha.toJSON();
+
+        columns.Bound(p => p.Id).Width(130).Visible(false);
+        columns.Bound(p => p.Fecha).Width(200).EditorTemplateName("DayApplicationSalary").Format("{0:dd/MM/yyyy hh:MM}");
+        columns.ForeignKey(p => p.CustomerId, (System.Collections.IEnumerable)ViewData["Clientes"], "CustomerId", "CustomerName").Title("Cliente").Width(250);
+        //columns.Bound(p => p.CustomerId).EditorTemplateName("Customer").Title("Cliente").Width(250);
+        columns.Bound(p => p.Cosecha).Width(200);
+        columns.Bound(p => p.PrecioBolsaUSD).Format("{0:n2}").Width(180).EditorTemplateName("NumericTextBox");
+        columns.ForeignKey(p => p.ExchangeRateId, 
+            (System.Collections.IEnumerable)ViewData["Tasacambio"],
+            "ExchangeRateId", "Descripcion").Title("Tasa de cambio").Width(200);
+        //columns.Bound(p => p.ExchangeRateValue).Format("{0:n2}").Width(200).Title("Tasa Cambio");
+        columns.Bound(p => p.BrutoLPSIngreso).Format("{0:n2}").Width(150);
+        columns.Bound(p => p.PorcentajeIngreso).Format("{0:n2}").Width(200).EditorTemplateName("NumericTextBox");
+        columns.Bound(p => p.NetoLPSIngreso).Format("{0:n2}").Width(200).EditorTemplateName("NumericTextBox");
+        columns.Bound(p => p.BrutoLPSConsumoInterno).Format("{0:n2}").Width(200).EditorTemplateName("NumericTextBox");
+        columns.Bound(p => p.PorcentajeConsumoInterno).Format("{0:n2}").Width(200).EditorTemplateName("NumericTextBox");
+        columns.Bound(p => p.NetoLPSConsumoInterno).Format("{0:n2}").Width(200).EditorTemplateName("NumericTextBox");
+        columns.Bound(p => p.TotalLPSIngreso).Format("{0:n2}").Width(200).EditorTemplateName("NumericTextBox");
+        columns.Bound(p => p.BeneficiadoUSD).Format("{0:n2}").Width(200).EditorTemplateName("NumericTextBox");
+        columns.Bound(p => p.FideicomisoUSD).Format("{0:n2}").Width(200).EditorTemplateName("NumericTextBox");
+        columns.Bound(p => p.UtilidadUSD).Format("{0:n2}").Width(200).EditorTemplateName("NumericTextBox");
+        columns.Bound(p => p.PermisoExportacionUSD).Format("{0:n2}").Width(200).EditorTemplateName("NumericTextBox");
+        columns.Bound(p => p.Otros).Format("{0:n2}").Width(150).EditorTemplateName("NumericTextBox").Title("Otros");
+        columns.Bound(p => p.TotalUSDEgreso).Format("{0:n2}").Width(200).EditorTemplateName("NumericTextBox");
+        columns.Bound(p => p.TotalLPSEgreso).Format("{0:n2}").Width(200).EditorTemplateName("NumericTextBox");
+        columns.Bound(p => p.PrecioQQOro).Format("{0:n2}").Width(200).EditorTemplateName("NumericTextBox");
+        columns.Bound(p => p.PercioQQPergamino).Format("{0:n2}").Width(200).EditorTemplateName("NumericTextBox").Title("Precio QQ Pergamino");
+        columns.Bound(p => p.PrecioQQCalidadesInferiores).Format("{0:n2}").Width(200).EditorTemplateName("NumericTextBox");
+
+
+
+
+    })
+    .Filterable(f => f.Operators(o => o.ForString(s => s
+    .Clear()
+    .Contains("Contiene")
+    .DoesNotContain("No contiene")
+    .EndsWith("Termina con")
+    .IsEqualTo("Es igual a")
+    .IsNotEqualTo("No es igual a")
+    .IsNull("Es nulo")
+    .StartsWith("Inicia con")
+
+
+    )
+    .ForNumber(n => n
+    .Clear()
+    .IsEqualTo("Es igual a")
+    .IsGreaterThan("Es mayor que")
+    .IsLessThan("Es menor que")
+    .IsNull("Es nulo")
+    .IsLessThanOrEqualTo("Es menor o igual que")
+    .IsGreaterThanOrEqualTo("Es mayor o igual que")
+    )
+    .ForDate(d => d
+    .Clear()
+    .IsEqualTo("Es igual que")
+    .IsGreaterThan("Es mayor que")
+    .IsLessThan("Es menor que")
+    .IsLessThanOrEqualTo("Es menor o igual que")
+    .IsGreaterThanOrEqualTo("Es mayor o igual que")
+    .IsNotEqualTo("No es igual que")
+    )
+    ))
+    .ToolBar(tools =>
+    {
+        // tools.Create();
+
+        if (User.HasClaim("Administracion.PrecioCafe.Agregar", "true"))
+        {
+            tools.Create().Text("Agregar").IconClass("k-icon k-i-plus")
+            .HtmlAttributes(new { @class = "k-i-plus-sm" });
         }
-    }
+        tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
+        tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
 
-    function onsave() {
-        $.toast({
-            heading: 'Satisfactorio',
-            text: 'Datos guardados correctamente.',
-            position: 'top-right',
-            loaderBg: '#ff6849',
-            icon: 'success',
-            hideAfter: 3000,
-            stack: 6
-        });
-    }
 
-    function SaveChanges(e) {
-       
-        e.sender.one("dataBound", function () {
-            e.sender.dataSource.read();
-        });
-        
-        debugger;
-        var grid = $("#gridPrecioCafe").getKendoGrid();
-        grid.dataSource.read();
-        grid.refresh();
-    }
+    })
+    .Editable(e => e.Mode(GridEditMode.InLine).ConfirmDelete("¿Esta seguro que desea eliminar este registro?"))
+    .Events(e => e.SaveChanges("SaveChanges"))
+    .Sortable()
+    .Pageable()
+    .Filterable()
+    .Scrollable()
+    .Pdf(pdf => pdf.FileName("Estados_Reporte" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+    + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+    .ProxyURL(Url.Action("Export", "Home")).AllPages())
+    .Excel(excel => excel.FileName("Estados_Reporte_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+    + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+    .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+    .DataSource(dataSource =>
+    dataSource
+    .WebApi()
 
-    function error_handler(e) {
-        if (e.xhr.responseText == "Por favor seleccione la tasa de cambio.") {
+    .ServerOperation(true)
+    .Model(model =>
+    {
+        model.Id(p => p.Id);
+        model.Field(p => p.Id).Editable(false);
+        model.Field(p => p.Fecha).Editable(true);
+        model.Field(p => p.PrecioBolsaUSD).Editable(true);
+        model.Field(p => p.CustomerId).Editable(true);
+        model.Field(p => p.ExchangeRateId).Editable(true);
+        //model.Field(p => p.ExchangeRateValue).Editable(false).DefaultValue(ViewData["tasa"]);
+        model.Field(p => p.BrutoLPSIngreso).Editable(false);
+        model.Field(p => p.PorcentajeIngreso).Editable(true).DefaultValue(Model.PorcentajeConsumoInterno);
+        model.Field(p => p.NetoLPSIngreso).Editable(false);
+        model.Field(p => p.BrutoLPSConsumoInterno).Editable(false);
+        model.Field(p => p.PorcentajeConsumoInterno).Editable(true);
+        model.Field(p => p.NetoLPSConsumoInterno).Editable(false);
+        model.Field(p => p.TotalLPSIngreso).Editable(false);
+        model.Field(p => p.BeneficiadoUSD).Editable(true).DefaultValue(Model.BeneficiadoUSD);
+        model.Field(p => p.FideicomisoUSD).Editable(true).DefaultValue(Model.FideicomisoUSD);
+        model.Field(p => p.UtilidadUSD).Editable(true)
+        .DefaultValue(Model.UtilidadUSD);
+        model.Field(p => p.PermisoExportacionUSD).Editable(true)
+        .DefaultValue(Model.PermisoExportacionUSD);
+        model.Field(p => p.TotalUSDEgreso).Editable(false);
+        model.Field(p => p.TotalLPSEgreso).Editable(false);
+        model.Field(p => p.PrecioQQOro).Editable(false);
+        model.Field(p => p.PercioQQPergamino).Editable(false);
+        model.Field(p => p.PrecioQQCalidadesInferiores).Editable(false).DefaultValue(0);
+        model.Field(p => p.FechaCreacion).Editable(false);
+        model.Field(p => p.UsuarioCreacion).Editable(false);
+        model.Field(p => p.UsuarioModificacion).Editable(false);
+        model.Field(p => p.FechaModificacion).Editable(false);
+        model.Field(p => p.Otros).Editable(true).DefaultValue(0);
 
+    })
+    .Events(events => events.Error("error_handler"))
+    .Read(read => read.Action("Get", "PrecioCafes"))
+    .Create(create => create.Action("savepreciocafes", "PrecioCafes").Type(HttpVerbs.Post).Data("GetData"))
+    .Update(update => update.Action("Update", "PrecioCafes", new { Id = "{0}" }).Type(HttpVerbs.Post).Data("GetDataUpdate"))
+    .Destroy(destroy => destroy.Action("Delete", "PrecioCafes", new { Id = "{0}" }).Type(HttpVerbs.Post))
+
+    )
+    .Events(e =>
+    {
+        e.SaveChanges("SaveChanges").Save("onsave");
+
+    })
+    )
+
+    <script>
+
+        function GetData(data) {
+            if (data != null) {
+                data.Fecha = data.Fecha.toJSON();
+            }
+        }
+        function GetDataUpdate(data) {
+            if (data != null) {
+                data.Fecha = data.Fecha.toJSON();
+            }
+        }
+
+        function onsave(e) {
+            debugger;
+            if (true) {
+
+            }
+            
+        }
+
+        function SaveChanges(e) {
+
+            e.sender.one("dataBound", function () {
+                e.sender.dataSource.read();
+            });
             $.toast({
-                heading: 'Error',
-                text: '<br/>Por favor seleccione la tasa de cambio!.<br/>',
+                heading: 'Satisfactorio',
+                text: 'Datos guardados correctamente.',
                 position: 'top-right',
                 loaderBg: '#ff6849',
-                icon: 'error',
-                hideAfter: 30000,
+                icon: 'success',
+                hideAfter: 3000,
                 stack: 6
-
             });
+
+            debugger;
+            var grid = $("#gridPrecioCafe").getKendoGrid();
+            grid.dataSource.read();
+            grid.refresh();
+        }
+
+        function error_handler(e) {
+            if (e.xhr.responseText == "Por favor seleccione la tasa de cambio.") {
+
+                $.toast({
+                    heading: 'Error',
+                    text: '<br/>Por favor seleccione la tasa de cambio!.<br/>',
+                    position: 'top-right',
+                    loaderBg: '#ff6849',
+                    icon: 'error',
+                    hideAfter: 30000,
+                    stack: 6
+
+                });
+
+
+            }
 
 
         }
 
 
-    }
+        function setToolbarTooltip(btn_cl, btn_tooltip) {
+            $("#gridPrecioCafe").kendoTooltip({
+                filter: btn_cl,
+                content: btn_tooltip
+            });
+        }
 
+        function setRowButtonTooltip(btn_cl, btn_tooltip) {
+            $("#gridPrecioCafe").kendoTooltip({
+                filter: btn_cl,
+                content: btn_tooltip
+            });
+        }
 
-    function setToolbarTooltip(btn_cl, btn_tooltip) {
-        $("#gridPrecioCafe").kendoTooltip({
-            filter: btn_cl,
-            content: btn_tooltip
-        });
-    }
+        setToolbarTooltip(".k-grid-toolbar a.k-grid-add", "Agregar Nuevo Registro");
+        setRowButtonTooltip(".k-grid-edit", "Editar Registro");
+        setRowButtonTooltip(".k-grid-delete", "Eliminar Registro");
+        setRowButtonTooltip(".k-grid-update", "Guardar");
+        setRowButtonTooltip(".k-grid-cancel", "Cancelar");
 
-    function setRowButtonTooltip(btn_cl, btn_tooltip) {
-        $("#gridPrecioCafe").kendoTooltip({
-            filter: btn_cl,
-            content: btn_tooltip
-        });
-    }
-
-    setToolbarTooltip(".k-grid-toolbar a.k-grid-add", "Agregar Nuevo Registro");
-    setRowButtonTooltip(".k-grid-edit", "Editar Registro");
-    setRowButtonTooltip(".k-grid-delete", "Eliminar Registro");
-    setRowButtonTooltip(".k-grid-update", "Guardar");
-    setRowButtonTooltip(".k-grid-cancel", "Cancelar");
-
-</script>
+    </script>
