@@ -252,7 +252,9 @@ namespace ERPMVC.Controllers
             precio.UtilidadUSD = configuracion.Where(q => q.Id == 188).FirstOrDefault().Valordecimal;
             precio.FideicomisoUSD = configuracion.Where(q => q.Id == 187).FirstOrDefault().Valordecimal;
             precio.BeneficiadoUSD = configuracion.Where(q => q.Id == 186).FirstOrDefault().Valordecimal;
-            precio.PorcentajeConsumoInterno = configuracion.Where(q => q.Id == 185).FirstOrDefault().Valordecimal;
+            precio.PorcentajeIngreso = configuracion.Where(q => q.Id == 185).FirstOrDefault().Valordecimal;
+            precio.PorcentajeConsumoInterno =configuracion.Where(q => q.Id == 190).FirstOrDefault().Valordecimal;
+
             return precio;
 
         }
