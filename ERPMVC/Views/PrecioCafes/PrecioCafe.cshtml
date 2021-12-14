@@ -193,10 +193,10 @@
         model.Field(p => p.ExchangeRateId).Editable(true);
         //model.Field(p => p.ExchangeRateValue).Editable(false).DefaultValue(ViewData["tasa"]);
         model.Field(p => p.BrutoLPSIngreso).Editable(false);
-        model.Field(p => p.PorcentajeIngreso).Editable(true).DefaultValue(Model.PorcentajeConsumoInterno);
+        model.Field(p => p.PorcentajeIngreso).Editable(true).DefaultValue(Model.PorcentajeIngreso);
         model.Field(p => p.NetoLPSIngreso).Editable(false);
         model.Field(p => p.BrutoLPSConsumoInterno).Editable(false);
-        model.Field(p => p.PorcentajeConsumoInterno).Editable(true);
+        model.Field(p => p.PorcentajeConsumoInterno).Editable(true).DefaultValue(Model.PorcentajeConsumoInterno);
         model.Field(p => p.NetoLPSConsumoInterno).Editable(false);
         model.Field(p => p.TotalLPSIngreso).Editable(false);
         model.Field(p => p.BeneficiadoUSD).Editable(true).DefaultValue(Model.BeneficiadoUSD);
@@ -222,7 +222,7 @@
     .Create(create => create.Action("savepreciocafes", "PrecioCafes").Type(HttpVerbs.Post).Data("GetData"))
     .Update(update => update.Action("Update", "PrecioCafes", new { Id = "{0}" }).Type(HttpVerbs.Post).Data("GetDataUpdate"))
     .Destroy(destroy => destroy.Action("Delete", "PrecioCafes", new { Id = "{0}" }).Type(HttpVerbs.Post))
-
+    .Events(events => events.Error("error"))
     )
     .Events(e =>
     {
@@ -233,6 +233,31 @@
 
     <script>
 
+        function Update(e) {
+            debugger;
+            if (true) {
+                $.toast({
+                    heading: 'Satisfactorio',
+                    text: 'Datos guardados correctamente.',
+                    position: 'top-right',
+                    loaderBg: '#ff6849',
+                    icon: 'success',
+                    hideAfter: 3000,
+                    stack: 6
+                });
+            }
+        }
+        function error(data) {
+            $.toast({
+                heading: 'Error ya se encuentran los valores para este cliente en la fecha seleccionada',
+                text: 'No se han registrado los cambios',
+                position: 'top-right',
+                loaderBg: '#ff6849',
+                icon: 'error',
+                hideAfter: 10000,
+                stack: 6
+            });
+        }
         function GetData(data) {
             if (data != null) {
                 data.Fecha = data.Fecha.toJSON();
@@ -246,17 +271,14 @@
 
         function onsave(e) {
             debugger;
-            if (true) {
-
-            }
-            
+            e.sender.one("dataBound", function () {
+                e.sender.dataSource.read();
+            });
         }
 
         function SaveChanges(e) {
 
-            e.sender.one("dataBound", function () {
-                e.sender.dataSource.read();
-            });
+            
             $.toast({
                 heading: 'Satisfactorio',
                 text: 'Datos guardados correctamente.',
