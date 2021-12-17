@@ -77,6 +77,49 @@ namespace ERPMVC.Controllers
 
         }
 
+
+        [HttpGet]
+        public async Task<DataSourceResult> GetPrecioCafeByCustomer([DataSourceRequest] DataSourceRequest request, int clienteid)
+        {
+            List<PrecioCafe> _PrecioCafe = new List<PrecioCafe>();
+            try
+            {
+
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress +$"api/PrecioCafe/GetPrecioCafeByCustomer/{clienteid}");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _PrecioCafe = JsonConvert.DeserializeObject<List<PrecioCafe>>(valorrespuesta);
+                    _PrecioCafe = _PrecioCafe.OrderByDescending(q => q.Id).ToList();
+                }
+
+                _PrecioCafe = (from precio in _PrecioCafe
+                               select new PrecioCafe()
+                               {
+                                   Id=precio.Id,
+                                   Descripcion =  precio.Fecha.Date.ToString("dd/MM/yyyy") + " -> Valor Cafe Oro "+precio.PrecioQQOro +
+                                   " Valor Cafe Pregamino " + precio.PercioQQPergamino + " Valor Precio Calidades Inferiores" + precio.PrecioQQOro
+                               }
+                                ).ToList();
+
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+
+            return _PrecioCafe.ToDataSourceResult(request);
+
+        }
+
+
         [HttpPost("savepreciocafes")]
         public async Task<ActionResult<PrecioCafe>> savepreciocafes(PrecioCafeDTO _Preciocafes)
         {
@@ -225,6 +268,8 @@ namespace ERPMVC.Controllers
 
         }
 
+        
+
         async Task<PrecioCafeDTO> ObtenerCoinfiguracionCafe()
         {
             IEnumerable<ElementoConfiguracion> configuracion = null;
@@ -248,13 +293,17 @@ namespace ERPMVC.Controllers
                 throw ex;
             }
             PrecioCafeDTO precio = new PrecioCafeDTO();
-            precio.PermisoExportacionUSD = configuracion.Where(q => q.Id == 189).FirstOrDefault().Valordecimal;
-            precio.UtilidadUSD = configuracion.Where(q => q.Id == 188).FirstOrDefault().Valordecimal;
-            precio.FideicomisoUSD = configuracion.Where(q => q.Id == 187).FirstOrDefault().Valordecimal;
-            precio.BeneficiadoUSD = configuracion.Where(q => q.Id == 186).FirstOrDefault().Valordecimal;
-            precio.PorcentajeIngreso = configuracion.Where(q => q.Id == 185).FirstOrDefault().Valordecimal;
-            precio.PorcentajeConsumoInterno =configuracion.Where(q => q.Id == 190).FirstOrDefault().Valordecimal;
+            if (precio!=null)
+            {
+                precio.PermisoExportacionUSD = configuracion.Where(q => q.Id == 189).FirstOrDefault().Valordecimal;
+                precio.UtilidadUSD = configuracion.Where(q => q.Id == 188).FirstOrDefault().Valordecimal;
+                precio.FideicomisoUSD = configuracion.Where(q => q.Id == 187).FirstOrDefault().Valordecimal;
+                precio.BeneficiadoUSD = configuracion.Where(q => q.Id == 186).FirstOrDefault().Valordecimal;
+                precio.PorcentajeIngreso = configuracion.Where(q => q.Id == 185).FirstOrDefault().Valordecimal;
+                precio.PorcentajeConsumoInterno =configuracion.Where(q => q.Id == 190).FirstOrDefault().Valordecimal;
 
+
+            }
             return precio;
 
         }
@@ -308,7 +357,7 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _ExchangeRate = JsonConvert.DeserializeObject<List<ExchangeRate>>(valorrespuesta);
-                    _ExchangeRate = _ExchangeRate.Where(x => x.DayofRate.Date > DateTime.Now.AddDays(-4)).ToList();
+                    _ExchangeRate = _ExchangeRate.Where(x => x.DayofRate.Date == DateTime.Now.Date).ToList();
 
                 }
 
