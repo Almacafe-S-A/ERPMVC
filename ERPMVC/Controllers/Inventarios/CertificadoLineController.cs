@@ -34,7 +34,10 @@ namespace ERPMVC.Controllers
             return View();
         }
 
-        public async Task<DataSourceResult> GetCertificadoLine([DataSourceRequest] DataSourceRequest request, [FromQuery(Name = "Recibos")] int[] recibos, [FromQuery(Name = "Id")] int id)
+        public async Task<DataSourceResult> GetCertificadoLine([DataSourceRequest] DataSourceRequest request
+            , [FromQuery(Name = "Recibos")] int[] recibos
+            , [FromQuery(Name = "Id")] int id
+            , [FromQuery(Name = "preciocafe")] int preciocafe)
         {
             List<CertificadoLine> certificadoLines = new List<CertificadoLine>();
             try
@@ -54,7 +57,7 @@ namespace ERPMVC.Controllers
                             strrecibos += "&&";
                         }
                     }
-                    requestURl = $"api/CertificadoLine/GetRecibosPendientes/{strrecibos}";
+                    requestURl = $"api/CertificadoLine/GetRecibosPendientes/{strrecibos}&&preciocafe={preciocafe}";
                 }
                 else
                 {

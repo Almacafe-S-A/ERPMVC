@@ -41,6 +41,11 @@ namespace ERPMVC.Models
         [Display(Name = "Fecha de certificado")]
         public DateTime FechaCertificado { get; set; }
 
+
+        public int? PrecioCafeId { get; set; }
+        [ForeignKey("PrecioCafeId")]
+        public PrecioCafe PrecioCafe { get; set; }
+
         [Display(Name = "Empresa")]
         public string NombreEmpresa { get; set; }
 

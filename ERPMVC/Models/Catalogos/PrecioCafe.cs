@@ -26,6 +26,9 @@ namespace ERPMVC.Models
         [ForeignKey("ExchangeRateId")]
         public ExchangeRate ExchangeRate { get; set; }
 
+        [NotMapped]
+        public string Descripcion { get; set; }
+
         public double? ExchangeRateValue { get; set; }
 
         public string Cosecha { get; set; }
@@ -71,6 +74,8 @@ namespace ERPMVC.Models
         public decimal PrecioQQCalidadesInferiores { get; set; }
 
         public decimal Otros { get; set; }
+
+        public bool? UtilizadaCertificado { get; set; }
 
         public DateTime FechaCreacion { get; set; }
         public DateTime FechaModificacion { get; set; }
