@@ -158,7 +158,7 @@ namespace ERPMVC.Controllers
         public async Task<DataSourceResult> RecibosPendientesCertificar([DataSourceRequest] DataSourceRequest request, 
             [FromQuery(Name = "clienteid")] int clienteid, 
             [FromQuery(Name = "servicioid")] int servicioid,
-            [FromQuery(Name = "pendienteliquidacion")] int escafe, 
+            [FromQuery(Name = "escafe")] int escafe, 
             [FromQuery(Name = "sucursal")] int sucursal)
         {
             List<GoodsReceived> _GoodsReceived = new List<GoodsReceived>();

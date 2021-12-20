@@ -271,7 +271,7 @@ namespace ERPMVC.Controllers
                 FileStream inputStream = new FileStream(basePath + "/ReportsTemplate/SolicitudCertificadoDeposito.rdl", FileMode.Open, FileAccess.Read);
                 ReportWriter reportWriter = new ReportWriter(inputStream);
                 List<ReportParameter> parameters = new List<ReportParameter>();
-                parameters.Add(new ReportParameter() { Name = "NoCD", Labels = new List<string>() { _SolicitudCertificadoDepositoDTO.NoCD.ToString() }, Values = new List<string>() { _SolicitudCertificadoDepositoDTO.NoCD.ToString() } });
+                parameters.Add(new ReportParameter() { Name = "SolicitudCertificadoDepositoId", Labels = new List<string>() { _SolicitudCertificadoDepositoDTO.NoCD.ToString() }, Values = new List<string>() { _SolicitudCertificadoDepositoDTO.NoCD.ToString() } });
                 reportWriter.SetParameters(parameters);
                 Syncfusion.Report.DataSourceCredentials[] dscarray = new Syncfusion.Report.DataSourceCredentials[1];
                 Syncfusion.Report.DataSourceCredentials dsc = new Syncfusion.Report.DataSourceCredentials();
