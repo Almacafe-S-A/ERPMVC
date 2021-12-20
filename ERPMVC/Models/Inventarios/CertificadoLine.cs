@@ -70,6 +70,13 @@ namespace ERPMVC.Models
         public decimal? ValorUnitarioDerechos { get; set; }
         [NotMapped]
         public int? ReciboId { get; set; }
+
+
+        public Int64? GoodsReceivedLineId { get; set; }
+
+        [ForeignKey("GoodsReceivedLineId")]
+
+        public GoodsReceivedLine GoodsReceivedLine { get; set; }
         [NotMapped]
         public double? CantidadDisponible { get; set; }
 

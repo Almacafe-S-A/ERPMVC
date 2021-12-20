@@ -101,8 +101,8 @@ namespace ERPMVC.Controllers
                                select new PrecioCafe()
                                {
                                    Id=precio.Id,
-                                   Descripcion =  precio.Fecha.Date.ToString("dd/MM/yyyy") + " -> Valor Cafe Oro "+precio.PrecioQQOro +
-                                   " Valor Cafe Pregamino " + precio.PercioQQPergamino + " Valor Precio Calidades Inferiores" + precio.PrecioQQOro
+                                   Descripcion =  precio.Fecha.Date.ToString("dd/MM/yyyy") + " -> Valor Cafe Oro "+precio.PrecioQQOro.ToString("C2") +
+                                   " Valor Cafe Pregamino " + precio.PercioQQPergamino.ToString("C2") + " Valor Precio Calidades Inferiores" + precio.PrecioQQOro.ToString("C2")
                                }
                                 ).ToList();
 

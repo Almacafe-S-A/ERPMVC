@@ -155,7 +155,11 @@ namespace ERPMVC.Controllers
 
 
         [HttpGet("[controller]/[action]")]
-        public async Task<DataSourceResult> RecibosPendientesCertificar([DataSourceRequest] DataSourceRequest request, [FromQuery(Name = "clienteid")] int clienteid, [FromQuery(Name = "servicioid")] int servicioid, [FromQuery(Name = "pendienteliquidacion")] int pendienteliquidacion, [FromQuery(Name = "sucursal")] int sucursal)
+        public async Task<DataSourceResult> RecibosPendientesCertificar([DataSourceRequest] DataSourceRequest request, 
+            [FromQuery(Name = "clienteid")] int clienteid, 
+            [FromQuery(Name = "servicioid")] int servicioid,
+            [FromQuery(Name = "pendienteliquidacion")] int escafe, 
+            [FromQuery(Name = "sucursal")] int sucursal)
         {
             List<GoodsReceived> _GoodsReceived = new List<GoodsReceived>();
             try
@@ -164,7 +168,7 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + $"api/GoodsReceived/RecibosPendientesCertificar/{clienteid}/{servicioid}/{pendienteliquidacion}/{sucursal}");
+                var result = await _client.GetAsync(baseadress + $"api/GoodsReceived/RecibosPendientesCertificar/{clienteid}/{servicioid}/{escafe}/{sucursal}");
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
@@ -179,6 +183,48 @@ namespace ERPMVC.Controllers
 
                 }
                 
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+
+            return _GoodsReceived.ToDataSourceResult(request);
+
+        }
+
+
+        [HttpGet("[controller]/[action]")]
+        public async Task<DataSourceResult> RecibosPendientesLiquidar([DataSourceRequest] DataSourceRequest request,
+            [FromQuery(Name = "clienteid")] int clienteid,
+            [FromQuery(Name = "servicioid")] int servicioid)
+        {
+            List<GoodsReceived> _GoodsReceived = new List<GoodsReceived>();
+            try
+            {
+
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + $"api/GoodsReceived/RecibosPendientesLiquidar/{clienteid}/{servicioid}");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _GoodsReceived = JsonConvert.DeserializeObject<List<GoodsReceived>>(valorrespuesta);
+                    _GoodsReceived = _GoodsReceived.OrderByDescending(q => q.GoodsReceivedId).ToList();
+                    _GoodsReceived = (from recibos in _GoodsReceived
+                                      select new GoodsReceived()
+                                      {
+                                          GoodsReceivedId = recibos.GoodsReceivedId,
+                                          Comments = recibos.GoodsReceivedId + " - " + recibos.Comments,
+                                      }).ToList();
+
+                }
+
 
             }
             catch (Exception ex)

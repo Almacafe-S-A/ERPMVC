@@ -68,6 +68,10 @@ namespace ERPMVC.Controllers
             return _users.ToDataSourceResult(request);
         }
 
+
+        
+
+
         [HttpPost]
         public async Task<JsonResult> SucursalesPorUsuario(UserBranch Sucursal, Guid Userselect)
         {
