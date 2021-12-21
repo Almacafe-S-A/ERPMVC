@@ -45,7 +45,7 @@ namespace ERPMVC.Models
         public string Certificados { get; set; }
 
         [Display(Name = "Banco")]
-        public Int64 BankId { get; set; }
+        public Int64? BankId { get; set; }
         [Display(Name = "Banco")]
         public string BankName { get; set; }
         [Display(Name = "Servicio")]
