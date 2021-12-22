@@ -12,6 +12,8 @@ namespace ERPMVC.Models
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         [Display(Name = "Id Linea")]
         public Int64 GoodsDeliveryAuthorizationLineId { get; set; }
+
+        public Int64 CertificadoLineId { get; set; }
         [Display(Name = "Autorizacion Id")]
         public Int64 GoodsDeliveryAuthorizationId { get; set; }
         [Display(Name = "Número de certificado")]
@@ -38,6 +40,9 @@ namespace ERPMVC.Models
 
         [Display(Name = "Cantidad")]
         public double Quantity { get; set; }
+
+
+        public decimal Saldo { get; set; }
 
         [Display(Name = "Precio")]
         public double Price { get; set; }
