@@ -78,6 +78,13 @@ namespace ERPMVC.Controllers
 
         }
 
+        public async Task<ActionResult> GetControlPalletsByCustomer([DataSourceRequest] DataSourceRequest request,int CustomerId,int esIngreso) {
+            var res = await GetControlPallets(esIngreso);
+            return Json(res.Where(q => q.CustomerId == CustomerId).ToDataSourceResult(request));
+
+
+        }
+
 
 
 
@@ -344,6 +351,52 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _ControlPallets = JsonConvert.DeserializeObject<List<ControlPallets>>(valorrespuesta);
+
+                }
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+
+            return _ControlPallets.ToDataSourceResult(request);
+
+        }
+
+
+        [HttpGet]
+        public async Task<DataSourceResult> GetSalidasByCustomer([DataSourceRequest] DataSourceRequest request, int CustomerId)
+        {
+            List<ControlPallets> _ControlPallets = new List<ControlPallets>();
+            try
+            {
+
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/ControlPallets/GetControlPalletsSalida");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _ControlPallets = JsonConvert.DeserializeObject<List<ControlPallets>>(valorrespuesta);
+                    _ControlPallets = 
+                    (from c in _ControlPallets
+                                       .Where(q => q.CustomerId == CustomerId)
+                     select new ControlPallets
+                     {
+                         ControlPalletsId = c.ControlPalletsId,
+                         CustomerName = "Control Salida No.:" + c.ControlPalletsId
+                            //+" || Control de ingresos:"+c.PalletId 
+                             + " || Placa:" + c.Placa + " || Motorista:" + c.Motorista + " || Fecha: " + c.DocumentDate.ToString("dd/MM/yyyy") + " || Total Sacos:" + c.TotalSacos,
+                         DocumentDate = c.DocumentDate,
+
+                     }
+                                      ).ToList();
+
 
                 }
 

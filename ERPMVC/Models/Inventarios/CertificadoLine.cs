@@ -56,6 +56,10 @@ namespace ERPMVC.Models
         [Display(Name = "Saldo endoso")]
         public double SaldoEndoso { get; set; }
 
+        public decimal? CantidadDisponibleAutorizar { get; set; }
+
+        public decimal? Saldo { get; set; }
+
         [Display(Name = "Centro de costos")]
         public Int64 CenterCostId { get; set; }
 
