@@ -368,7 +368,7 @@ namespace ERPMVC.Controllers
 
 
         [HttpGet]
-        public async Task<DataSourceResult> GetSalidasByCustomer([DataSourceRequest] DataSourceRequest request, int CustomerId)
+        public async Task<DataSourceResult> GetControlesByCustomer([DataSourceRequest] DataSourceRequest request, int CustomerId,int ServicioId,int esIngreso,int BranchId)
         {
             List<ControlPallets> _ControlPallets = new List<ControlPallets>();
             try
@@ -379,21 +379,22 @@ namespace ERPMVC.Controllers
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
                 var result = await _client.GetAsync(baseadress + "api/ControlPallets/GetControlPalletsSalida");
                 string valorrespuesta = "";
+                string IngresoSalida = esIngreso == 1 ? "Ingreso" : "Salida";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _ControlPallets = JsonConvert.DeserializeObject<List<ControlPallets>>(valorrespuesta);
                     _ControlPallets = 
                     (from c in _ControlPallets
-                                       .Where(q => q.CustomerId == CustomerId)
+                                       .Where(q => q.CustomerId == CustomerId
+                                       && q.EsIngreso == esIngreso
+                                       && q.BranchId == BranchId
+                                       && q.ProductId == ServicioId)
                      select new ControlPallets
                      {
                          ControlPalletsId = c.ControlPalletsId,
-                         CustomerName = "Control Salida No.:" + c.ControlPalletsId
-                            //+" || Control de ingresos:"+c.PalletId 
-                             + " || Placa:" + c.Placa + " || Motorista:" + c.Motorista + " || Fecha: " + c.DocumentDate.ToString("dd/MM/yyyy") + " || Total Sacos:" + c.TotalSacos,
+                         CustomerName = $"Control {IngresoSalida} No.:{c.ControlPalletsId}|| Placa: {c.Placa}  || Motorista: { c.Motorista } || Fecha: { c.DocumentDate.ToString("dd/MM/yyyy") } || Total Sacos: {c.TotalSacos}",
                          DocumentDate = c.DocumentDate,
-
                      }
                                       ).ToList();
 

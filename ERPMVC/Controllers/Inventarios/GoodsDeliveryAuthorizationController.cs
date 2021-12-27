@@ -85,6 +85,50 @@ namespace ERPMVC.Controllers
 
         }
 
+
+        [HttpGet("[controller]/[action]")]
+        public async Task<DataSourceResult> AutorizacionesPendientes([DataSourceRequest] DataSourceRequest request,
+             int CustomerId,
+             int ServicioId,
+             int BranchId)
+        {
+            List<GoodsDeliveryAuthorization> goodsDeliveryAuthorizations = new List<GoodsDeliveryAuthorization>();
+            try
+            {
+
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + $"api/GoodsDeliveryAuthorization/AutorizacionesPendientes/{CustomerId}/{ServicioId}/{BranchId}");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    goodsDeliveryAuthorizations = JsonConvert.DeserializeObject<List<GoodsDeliveryAuthorization>>(valorrespuesta);
+                    goodsDeliveryAuthorizations = goodsDeliveryAuthorizations.OrderByDescending(q => q.GoodsDeliveryAuthorizationId).ToList();
+                    goodsDeliveryAuthorizations = (from ar in goodsDeliveryAuthorizations
+                                                   select new GoodsDeliveryAuthorization()
+                                      {
+                                          GoodsDeliveryAuthorizationId = ar.GoodsDeliveryAuthorizationId,
+                                          Comments = $"{ar.GoodsDeliveryAuthorizationId} || Fecha:{ ar.AuthorizationDate}"
+                                      }).ToList();
+
+                }
+
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+            return goodsDeliveryAuthorizations.ToDataSourceResult(request);
+        }
+
+
+
+
         [HttpPost("[controller]/[action]")]
         [HttpPost("[action]")]
         public async Task<ActionResult> pvwGoodsDeliveryAuthorization([FromBody]GoodsDeliveryAuthorizationDTO _GoodsDeliveryAuthorizationDTO)

@@ -102,6 +102,62 @@ namespace ERPMVC.Controllers
 
         }
 
+        public async Task<DataSourceResult> GetGoodsDeliveredDetails([DataSourceRequest] DataSourceRequest request
+           , [FromQuery(Name = "ARBoletas")] int[] ARBoletas
+           , [FromQuery(Name = "Id")] int id
+           , [FromQuery(Name = "ControlId")] int ControlId)
+        {
+            List<GoodsDeliveredLine> goodsdeliveredlines = new List<GoodsDeliveredLine>();
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                string requestURl;
+                if (id == 0)
+                {
+                    string ARs = "?";
+                    foreach (var item in ARBoletas)
+                    {
+                        ARs += $"ARs={item}";
+                        if (item != ARs.ElementAt(ARBoletas.Count() - 1))
+                        {
+                            ARs += "&&";
+                        }
+                    }
+                    requestURl = $"api/GoodsDeliveredLine/GetGoodsDeliveredLinePendientes/{ARs}&&controlid={ControlId}";
+                }
+                else
+                {
+                    requestURl = $"api/GoodsDeliveredLine/GetGoodsDeliveredLineByGoodsDeliveredId/{id}";
+                }
+
+
+
+                var result = await _client.GetAsync(baseadress + requestURl);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    goodsdeliveredlines = JsonConvert.DeserializeObject<List<GoodsDeliveredLine>>(valorrespuesta);
+                    goodsdeliveredlines = goodsdeliveredlines.OrderByDescending(e => e.GoodsDeliveredId).ToList();
+                }
+
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+
+            return goodsdeliveredlines.ToDataSourceResult(request);
+
+
+
+        }
+
 
         [HttpPost("[controller]/[action]")]
           //public async Task<ActionResult<GoodsDeliveredLine>> SetLinesInSession([FromBody]dynamic dto)

@@ -15,7 +15,7 @@
         <!-- Modal content-->
         <div class="modal-content">
             <div class="modal-header">
-                <h4 class="modal-title">Información Entrega de Mercadería</h4>
+                <h4 class="modal-title">Entrega de Mercadería</h4>
                 <button type="button" class="close" onclick="closeGoodsDelivered();">&times;</button>
             </div>
             <div class="modal-body">
@@ -37,9 +37,9 @@
                                                     <kendo-numerictextbox name="SalesOrderId"
                                                                           format="n"
                                                                           min="0"
+                                                                          decimals="0"
                                                                           readonly
                                                                           max="99999999"
-                                                                          step="1"
                                                                           spinners="false"
                                                                           style="width: 100%;"
                                                                           value="Model.GoodsDeliveredId" />
@@ -118,6 +118,7 @@
                                                                     option-label="Seleccione Sucursal"
                                                                     datatextfield="BranchName"
                                                                     datavaluefield="BranchId"
+                                                                    on-change="RefrescarOpciones"
                                                                     required
                                                                     auto-bind="true"
                                                                     style="width: 100%;">
@@ -133,23 +134,13 @@
 
                                         <div class="col-md-3">
                                             <div class="form-group">
-                                                <script>
-
-                                                    function GetSubProduct(e) {
-                                                        $("#ControlId").data("kendoDropDownList").dataSource.read();
-
-                                                    }
-
-                                                </script>
-
-
                                                 <label asp-for="CustomerId" class="control-label">Cliente</label>
                                                 <kendo-dropdownlist name="CustomerId" for="CustomerId" filter="Kendo.Mvc.UI.FilterType.Contains"
                                                                     option-label="Seleccione el cliente"
                                                                     required data-required-msg="Cliente es requerido"
                                                                     datatextfield="CustomerName"
                                                                     datavaluefield="CustomerId"
-                                                                    on-change="GetSubProduct"
+                                                                    on-change="RefrescarOpciones"
                                                                     style="min-width: 100%;">
                                                     <datasource type="DataSourceTagHelperType.WebApi" page-size="9999999">
                                                         <transport>
@@ -171,6 +162,7 @@
                                                                     option-label="Seleccione el Servicio"
                                                                     datatextfield="ProductName"
                                                                     datavaluefield="ProductId"
+                                                                    on-change="RefrescarOpciones"
                                                                     required data-required-msg="Servicio es requerido"
                                                                     style="width: 100%;">
                                                     <datasource type="DataSourceTagHelperType.WebApi" page-size="999999999">
@@ -184,26 +176,21 @@
                                         </div>
 
                                         <div class="col-md-3">
-                                            <div class="form-group">                                           
-                                                    <label asp-for="ControlId" class="control-label" style="width:100%">Asociar Control de Salida</label>
-                                                    <kendo-dropdownlist name="ControlId" filter="Kendo.Mvc.UI.FilterType.Contains"
-                                                                        for="ControlId"
-                                                                        option-label="Seleccione el Servicio"
-                                                                        datatextfield="CustomerName"
-                                                                        datavaluefield="ControlPalletsId"
-                                                                        required data-required-msg="Servicio es requerido"
-                                                                        style="width: 100%;">
-                                                        <datasource type="DataSourceTagHelperType.WebApi" page-size="999999999">
-                                                            <transport>
-                                                                <read url="@Url.Action("GetSalidasByCustomer", "ControlPallets")" data="GetCustomerControl" />
-                                                            </transport>
-                                                        </datasource>
-                                                    </kendo-dropdownlist>
-
-                                                
-
-
-
+                                            <div class="form-group">
+                                                <label asp-for="ControlId" class="control-label" style="width: 100%;">Asociar Control de Salida</label>
+                                                <kendo-dropdownlist name="ControlId" filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                                    for="ControlId"
+                                                                    option-label="Seleccione Control de Salidas"
+                                                                    datatextfield="CustomerName"
+                                                                    datavaluefield="ControlPalletsId"
+                                                                    required data-required-msg="Control de Salidas es requerido"
+                                                                    style="min-width:100%">
+                                                    <datasource type="DataSourceTagHelperType.WebApi" page-size="999999999">
+                                                        <transport>
+                                                            <read url="@Url.Action("GetControlesByCustomer", "ControlPallets")" data="GetformDetils" />
+                                                        </transport>
+                                                    </datasource>
+                                                </kendo-dropdownlist>
                                             </div>
 
                                         </div>
@@ -214,30 +201,18 @@
 
                                         <div class="col-md-6">
                                             <div class="form-group">
-                                                <label for="cbxBuscar" class="control-label" style="width:100%">Autorizacion de Retiro</label>                                                
+                                                <label for="cbxBuscar" class="control-label" style="width:100%">Autorizacion de Retiro</label>
                                                 <input type="hidden" id="singuardar" value="0" />
-                                                @(Html.Kendo().DropDownList()
-                                                              .Name("cbxBuscar")
-                                                              .Filter(Kendo.Mvc.UI.FilterType.Contains)
-                                                              .OptionLabel("Buscar")
-                                                              .DataTextField("CustomerName")
-                                                              .DataValueField("GoodsDeliveryAuthorizationId")
-                                                              .HtmlAttributes(new { style = "width:100%" })
-                                                              .Height(290)
-                                                              .Events(e =>
-                                                              {
-                                                                  //e.Change("changesetearvalues");
-                                                                                                  })
-                                                              .AutoBind(true)
-                                                              .DataSource(source =>
-                                                              {
-                                                                  source.Ajax()
-                                                                  .PageSize(80)
+                                                <kendo-multiselect name="AsociarAutorizaciones" id="AsociarAutorizaciones" style="min-width:100%"
+                                                                   no-data-template="No se encontraron Autorizaciones para el cliente y el servicio seleccionado" on-change="refrescarDetalle"
+                                                                   datatextfield="Comments" datavaluefield="GoodsDeliveryAuthorizationId" placeholder="Seleccione las Autorizaciones">
+                                                    <datasource page-size="999" type="DataSourceTagHelperType.WebApi" server-operation="true">
+                                                        <transport>
+                                                            <read url="@Url.Action("AutorizacionesPendientes","GoodsDeliveryAuthorization")" data="GetformDetils" />
+                                                        </transport>
+                                                    </datasource>
 
-                                                                  .Read("Virtualization_Read", "GoodsDeliveryAuthorization");
-                                                              })
-                                                    )
-
+                                                </kendo-multiselect>
 
                                             </div>
                                         </div>
@@ -258,7 +233,35 @@
 
                                     <div class="row">
 
+<script>
+    function GetARBoleta() {
+        debugger;
 
+        var ARBoletaSelect = $("#AsociarAutorizaciones").data("kendoMultiSelect");
+        var ARBoletas = ARBoletaSelect == undefined ? [] : ARBoletaSelect.value();
+        var dataobject = {
+            'ARBoletas': ARBoletas,
+            'Id': $('#GoodsDeliveredId').val(),
+            'ControlId': $('#ControlId').val(),
+        };
+
+        console.log(dataobject);
+        return dataobject;
+
+    }
+
+    function RefrescarOpciones(e) {
+        $("#ControlId").data("kendoDropDownList").dataSource.read();
+        RefrescarAR();
+        refrescarDetalle();
+    }
+
+    function refrescarDetalle() {
+        var grid = $("#gridGoodsDeliveredDetail").getKendoGrid();
+        grid.dataSource.read();
+    }
+
+</script>
                                         <div class="col-md-3">
                                             <div class="form-group">
                                                 <label asp-for="Placa" class="control-label" style="width: 100%;"></label>
@@ -310,6 +313,15 @@
 <script>
 
 
+   
+
+    function RefrescarAR() {
+        var multiselect = $("#AsociarAutorizaciones").data("kendoMultiSelect");
+        if (multiselect) {
+            multiselect.dataSource.read();
+        }
+    }
+
     function customFunction(input) {
 
         if (input.attr('name') === "BranchId" && input.val() === "0") {
@@ -336,7 +348,7 @@
             return false;
         }
 
-       
+
 
 
 
@@ -349,18 +361,25 @@
         grid.dataSource.read();
     }
 
+    function GetformDetils() {
+        return {
+            CustomerId: $("#CustomerId").val(),
+            esIngreso: 0,
+            ServicioId: $("#ProductId").val(),
+            BranchId: $("#BranchId").val()
+        }
+    }
+
+    function onbound() {
+        kendo.ui.progress($("#myModalControlPallets"), false);
+    }
 
 
-                                                  
-                                                           
 
-                                                            function GetCustomerControl() {
-                                                                return { CustomerId: $("#CustomerId").val() , esIngreso : 0}
-                                                            }
 
-                                                            function onbound() {
-                                                                kendo.ui.progress($("#myModalControlPallets"), false);
-                                                            }
+
+
+
 </script>
 
 
@@ -373,31 +392,72 @@
     }
 
     function SaveGoodsDelivered(e) {
+         // e.preventDefault();
+        $("#btnSaveControlEstiba").hide();
+        $("#btnSaveControlEstiba").prop("disabled", true);
+        debugger;
 
-        var notification = $("#notification").data("kendoNotification");
+        var validadetalle = true;
+        var displayedData = $("#gridGoodsDeliveredDetail").data().kendoGrid.dataSource.data();
+        for (var i = 0; i < displayedData.length; i++) {
+            displayedData[i].GoodsDeliveredLinedId = 0;
+            if (
+                displayedData[i].WareHouseId === '' || displayedData[i].Quantity === 0
+                || displayedData[i].WareHouseId === null || displayedData[i].WareHouseId === 0) {
+                notification.show({
+                    title: "Validación",
+                    message: "Ingrese al detalle todos los datos requeridos"
+                }, "error");
+                validadetalle = false;
 
-        if ($("#cbxBuscar").val() !== '' && $("#cbxBuscar").val() !== null) {
-            // e.preventDefault();
-            $("#btnSaveControlEstiba").hide();
-            $("#btnSaveControlEstiba").prop("disabled", true);
-
-            var validadetalle = true;
-            var displayedData = $("#gridGoodsDeliveredDetail").data().kendoGrid.dataSource.data();
-            for (var i = 0; i < displayedData.length; i++) {
-                displayedData[i].GoodsDeliveredLinedId = 0;
-                if (
-                    displayedData[i].WareHouseId === '' || displayedData[i].Quantity === 0
-                    || displayedData[i].WareHouseId === null || displayedData[i].WareHouseId === 0) {
-                    notification.show({
-                        title: "Validación",
-                        message: "Ingrese al detalle todos los datos requeridos"
-                    }, "error");
-                    validadetalle = false;
-
-                }
             }
-            if (validadetalle) {
-                var dataObject = {
+        }
+        if (!validadetalle) {
+            $.toast({
+                heading: 'Error',
+                text: 'Debe Agregar los productos',
+                position: 'top-right',
+                loaderBg: '#ff6849',
+                icon: 'error',
+                hideAfter: 7000,
+                stack: 6
+            });
+            return;
+        }
+
+        var validator = $("#frmGoodsDelivered").data("kendoValidator");
+        var validator2 = $("#TotalesDocumento").data("kendoValidator");
+        var status = $(".status");
+
+        if (validator.validate() && validator2.validate()) {
+            $.toast({
+                heading: 'Error',
+                text: 'Debe Agregar los productos',
+                position: 'top-right',
+                loaderBg: '#ff6849',
+                icon: 'error',
+                hideAfter: 7000,
+                stack: 6
+            });
+            HabilitarBotones();
+            return;
+        }
+
+        if (displayedData.length < 0) {
+            HabilitarBotones();
+            $.toast({
+                heading: 'Error',
+                text: 'Debe Agregar los productos',
+                position: 'top-right',
+                loaderBg: '#ff6849',
+                icon: 'error',
+                hideAfter: 7000,
+                stack: 6
+            });
+            return;
+        }
+
+        var dataObject = {
                     'GoodsDeliveredId': $("#GoodsDeliveredId").val(),
                     'CustomerId': $("#CustomerId").val(),
                     'CustomerName': $("#CustomerId").data("kendoDropDownList").text(),
@@ -413,20 +473,14 @@
                     'Reference': $("#Reference").val(),
                     'ExitTicket': $("#ExitTicket").val(),
                     'Comments': $("#Comments").val(),
-                    'GoodsDeliveryAuthorizationId': ($("#cbxBuscar").val()),
+                   // 'GoodsDeliveryAuthorizationId': ($("#cbxBuscar").val()),
                     'WeightBallot': $("#WeightBallot").val(),
                     '_GoodsDeliveredLine': displayedData
 
-                };
+        };
 
-                var validator = $("#frmGoodsDelivered").data("kendoValidator");
-                var validator2 = $("#TotalesDocumento").data("kendoValidator");
-                var status = $(".status");
 
-                if (displayedData.length > 0) {
-                    if (validator.validate() && validator2.validate()) {
-
-                        $.ajax({
+        $.ajax({
                             url: '@Url.Action("SaveGoodsDelivered", "GoodsDelivered")',
                             method: 'POST',
                             datatype: "json",
@@ -446,10 +500,6 @@
                                     stack: 6
                                 });
 
-                                //notification.show({
-                                //    message: "Guardado correctamente!"
-                                //}, "upload-success");
-
                                 RefreshGridGoodsDelivered();
                                 $('#myModalGoodsDelivered').modal('hide');
 
@@ -458,46 +508,26 @@
                                 $("#btnSaveControlEstiba").show();
                                 $("#btnSaveControlEstiba").prop("disabled", false);
                                 $("#btngenerarfactura").show();
-                                notification.show({
-                                    title: "Validación",
-                                    message: textStatus + ": " + XMLHttpRequest.responseText
-                                }, "error");
-
+                                var error = textStatus + ": " + XMLHttpRequest.responseText;
+                                $.toast({
+                                    heading: 'Error',
+                                    text: error.length > 100 ? 'Error de servidor' : textStatus + ": " + XMLHttpRequest.responseText,
+                                    position: 'top-right',
+                                    loaderBg: '#ff6849',
+                                    icon: 'error',
+                                    hideAfter: 7000,
+                                    stack: 6
+                                });
                             }
                         });
 
-                    }
-                    else {
-                        $("#btnSaveControlEstiba").show();
-                        $("#btnSaveControlEstiba").prop("disabled", false);
-                        //status.text("Oops! There is invalid data in the form.")
-                        //    .removeClass("valid")
-                        //    .addClass("invalid");
-                    }
-                }
-                else {
-                    $("#btnSaveControlEstiba").show();
-                    $("#btnSaveControlEstiba").prop("disabled", false);
-                    notification.show({
-                        title: "Validación",
-                        message: "Debe agregar los productos!"
-                    }, "error");
 
-                }
-            }
-            else {
-                notification.show({
-                    title: "Validación",
-                    message: "Debe de seleccionar la autorización!"
-                }, "error");
-            }
-        }
-        else {
-            $("#btnSaveControlEstiba").show();
-            $("#btnSaveControlEstiba").prop("disabled", false);
-        }
+     }
 
-      //  $("#btnSaveControlEstiba").show();
 
+
+    function HabilitarBotones() {
+        $("#btnSaveControlEstiba").show();
+        $("#btnSaveControlEstiba").prop("disabled", false);
     }
 </script>
