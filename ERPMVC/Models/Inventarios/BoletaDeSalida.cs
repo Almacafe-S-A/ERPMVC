@@ -61,7 +61,7 @@ namespace ERPMVC.Models
         public string SubProductName { get; set; }
 
         [Display(Name = "Unidad de medida")]
-        public Int64 UnitOfMeasureId { get; set; }
+        public Int64? UnitOfMeasureId { get; set; }
 
         [Display(Name = "Unidad de medida")]
         public string UnitOfMeasureName { get; set; }
@@ -83,6 +83,9 @@ namespace ERPMVC.Models
 
         [Display(Name = "Fecha de Creación")]
         public string UsuarioModificacion { get; set; }
+
+
+        public List<BoletaDeSalidaLine> BoletaDeSalidaLines { get; set; }
 
 
     }
