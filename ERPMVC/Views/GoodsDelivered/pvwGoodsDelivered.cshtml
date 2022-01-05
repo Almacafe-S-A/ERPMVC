@@ -34,7 +34,7 @@
                                             <div class="col-md-3">
                                                 <div class="form-group">
                                                     <label asp-for="GoodsDeliveredId" class="control-label" style="width:100%"></label>
-                                                    <kendo-numerictextbox name="SalesOrderId"
+                                                    <kendo-numerictextbox name="GoodsDeliveredId" for="GoodsDeliveredId"
                                                                           format="n"
                                                                           min="0"
                                                                           decimals="0"
@@ -183,6 +183,7 @@
                                                                     option-label="Seleccione Control de Salidas"
                                                                     datatextfield="CustomerName"
                                                                     datavaluefield="ControlPalletsId"
+                                                                    on-change="ObtenerDatosControl"
                                                                     required data-required-msg="Control de Salidas es requerido"
                                                                     style="min-width:100%">
                                                     <datasource type="DataSourceTagHelperType.WebApi" page-size="999999999">
@@ -195,6 +196,64 @@
 
                                         </div>
                                     </div>
+                                    <script>
+                                        function ObtenerDatosControl() {
+                                            var dataObject = { 'Id': $("#ControlId").val() };
+                                            RefrescarOpciones();
+                                             $.ajax({
+                                                                    url: '@Url.Action("GetControlPalletsByIdCalculo", "ControlPallets")',
+                                                                    method: 'GET',
+                                                                    datatype: "json",
+                                                                    contentType: 'application/json',
+                                                                    async: false,
+                                                                    data: dataObject,
+                                                                    success: function (data) {
+                                                                        debugger;
+                                                                        $("#Name").val(data.Motorista);
+                                                                        $("#Placa").val(data.Placa);
+                                                                        $("#Marca").val(data.Marca); 
+                                                                        $("#Reference").val(data.WeightBallot);
+                                                                        var grid = $("#gridGoodsReceivedDetail").data("kendoGrid");
+                                                                        var datasource = grid.dataSource;
+                                                                        //if (data._Boleto_Ent != null) {
+                                                                            //$("#Comments").val(data._Boleto_Ent.Boleto_Sal.observa_s);
+                                                                            //$("#TaraCamion").data("kendoNumericTextBox").value(ConvertirUOM(data.taracamion, data.UnitOfMeasureName));
+                                                                            //$("#TaraUnidadMedida").data("kendoNumericTextBox").value(ConvertirUOM(data.Tara, data.UnitOfMeasureName));
+                                                                            //$("#PesoBruto").data("kendoNumericTextBox").value(ConvertirUOM(data.pesobruto, data.UnitOfMeasureName));
+                                                                            //$("#PesoNeto").data("kendoNumericTextBox").value(ConvertirUOM(data.pesoneto, data.UnitOfMeasureName));
+                                                                            //$("#PesoNeto2").data("kendoNumericTextBox").value(ConvertirUOM(data.pesoneto2, data.UnitOfMeasureName));
+                                                                            //$("#WeightBallot").data("kendoNumericTextBox").value(ConvertirUOM(data.WeightBallot, data.UnitOfMeasureName));
+
+                                                                        //} else {
+                                                                        //    $("#WeightBallot").data("kendoNumericTextBox").value(0);
+                                                                        //    $("#TaraCamion").data("kendoNumericTextBox").value(0);
+                                                                        //    $("#TaraUnidadMedida").data("kendoNumericTextBox").value(0);
+                                                                        //    $("#PesoBruto").data("kendoNumericTextBox").value(0);
+                                                                        //    $("#PesoNeto").data("kendoNumericTextBox").value(0);
+                                                                        //    $("#PesoNeto2").data("kendoNumericTextBox").value(0);
+
+                                                                       // }
+
+                                                                },
+                                                                    error: function (XMLHttpRequest, textStatus, errorThrown) {
+
+                                                                        //  $("#btngenerarfactura").show();
+                                                                        $.toast({
+                                                                            heading: 'Validación',
+                                                                            text: textStatus + ": " + XMLHttpRequest.responseText,
+                                                                            position: 'top-right',
+                                                                            loaderBg: '#ff6849',
+                                                                            icon: 'error',
+                                                                            hideAfter: 3000,
+                                                                            stack: 6
+                                                                        });
+
+                                                                    }
+                                                                 });
+                                                            }
+
+
+                                    </script>
 
 
                                     <div class="row">
@@ -218,14 +277,14 @@
                                         </div>
                                         <div class="col-md-3">
                                             <div class="form-group">
-                                                <label asp-for="Reference" class="control-label" style="width: 100%;"></label>
+                                                <label asp-for="Reference" class="control-label" style="width: 100%;">Boleta de Peso</label>
                                                 <input type="text" id="Reference" required class="k-textbox" style="min-width: 100%;" asp-for="Reference" />
                                             </div>
                                         </div>
                                         <div class="col-md-3">
                                             <div class="form-group">
                                                 <label asp-for="Name" class="control-label" style="width: 100%;"></label>
-                                                <input type="text" id="test" required class="k-textbox" style="min-width:100%;" asp-for="Name" />
+                                                <input type="text" id="Name" required class="k-textbox" style="min-width:100%;" asp-for="Name" />
                                             </div>
                                         </div>
                                     </div>
@@ -426,13 +485,12 @@
         }
 
         var validator = $("#frmGoodsDelivered").data("kendoValidator");
-        var validator2 = $("#TotalesDocumento").data("kendoValidator");
         var status = $(".status");
 
-        if (validator.validate() && validator2.validate()) {
+        if (!validator.validate() ) {
             $.toast({
                 heading: 'Error',
-                text: 'Debe Agregar los productos',
+                text: 'Rellene los campos del formulario',
                 position: 'top-right',
                 loaderBg: '#ff6849',
                 icon: 'error',
@@ -473,7 +531,6 @@
                     'Reference': $("#Reference").val(),
                     'ExitTicket': $("#ExitTicket").val(),
                     'Comments': $("#Comments").val(),
-                   // 'GoodsDeliveryAuthorizationId': ($("#cbxBuscar").val()),
                     'WeightBallot': $("#WeightBallot").val(),
                     '_GoodsDeliveredLine': displayedData
 
