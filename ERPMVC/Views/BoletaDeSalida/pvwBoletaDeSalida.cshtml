@@ -196,11 +196,10 @@
                                                                         datatextfield="Nombre"
                                                                         datavaluefield="Id"
                                                                         data-val-required="El campo Cargado/Vacio es requerido"
-
                                                                         style="width: 100%;">
                                                         <datasource type="DataSourceTagHelperType.WebApi">
                                                             <transport>
-                                                                <read url="@Url.Action("GetElementoByIdConfiguracion", "ElementoConfiguracion",new {Id = 7 })"  />
+                                                                <read url="@Url.Action("GetElementoByIdConfiguracion", "ElementoConfiguracion",new {Id = 7 })" />
                                                             </transport>
                                                         </datasource>
                                                     </kendo-dropdownlist>
@@ -212,7 +211,7 @@
                                         </div>
 
 
-                                        
+
 
                                         <div class="row">
                                             <div class="col-md-3">
@@ -371,33 +370,108 @@
                                             </div>
                                         </div>
 
+                                        <script>
+                                            function CalcularArea() {
+                                                var UsedArea = $("#Ancho").val() * $("#Alto").val() * $("#Largo").val();
+                                                var numeric = $("#UsedArea").data("kendoNumericTextBox");
+                                                numeric.value(UsedArea);
+                                                numeric.trigger('change');
+                                                //$("#UsedArea").val(UsedArea);
+                                            }
+                                            function GrupoConfiguracionCargado() {
+                                                return { Id: 18 };
+                                            }
+                                        </script>
 
-
-                                        <div class="row">
-                                            <script>
-                                                function CalcularArea() {
-                                                    var UsedArea = $("#Ancho").val() * $("#Alto").val() * $("#Largo").val();
-                                                    var numeric = $("#UsedArea").data("kendoNumericTextBox");
-                                                    numeric.value(UsedArea);
-                                                    numeric.trigger('change');
-                                                    //$("#UsedArea").val(UsedArea);
-                                                }
-                                            </script>
-
-
-                                            <script>
-                                                
-                                            </script>
-                                        </div>
-
-                                        <div class="row">
-                                            <script>
-                                                function GrupoConfiguracionCargado() {
-                                                    return { Id: 18 };
-                                                }
-                                            </script>   
-                                        </div>
+                                        
                                     </form>
+
+                                    <div class="row">
+                                        @(Html.Kendo().Grid<ERPMVC.Models.BoletaDeSalidaLine>()
+                          .Name("gridBoletaDeSalidaLines")
+                          .Columns(columns =>
+                          {
+
+                              columns.Command(command =>
+                              {
+                              }).Title("Acciones").Width(120).Visible(Model.BoletaDeSalidaId == 0);
+                              columns.Bound(p => p.BoletaSalidaLineId).Width(150).Hidden(true);
+                              columns.Bound(p => p.SubProductId).Hidden(true).Width(150);
+                              columns.Bound(p => p.SubProductName).Width(150);
+                              columns.Bound(p => p.UnitOfMeasureName).Width(180);
+                              columns.Bound(p => p.Quantity).Width(150);
+                              columns.Bound(p => p.UnitOfMeasureId).Width(180).Hidden(true);
+                              columns.Bound(p => p.WarehouseName).Width(200).Title("Bodega");
+                              columns.Bound(p => p.Warehouseid).Visible(false);
+
+
+                          })
+
+                              .Filterable(f => f.Operators(o => o.ForString(s => s
+                                                   .Clear()
+                                                   .Contains("Contiene")
+                                                   .DoesNotContain("No contiene")
+                                                   .EndsWith("Termina con")
+                                                   .IsEqualTo("Es igual a")
+                                                   .IsNotEqualTo("No es igual a")
+                                                   .IsNull("Es nulo")
+                                                   .StartsWith("Inicia con")
+
+
+                                             )
+                                             .ForNumber(n => n
+                                               .Clear()
+                                               .IsEqualTo("Es igual a")
+                                               .IsGreaterThan("Es mayor que")
+                                               .IsLessThan("Es menor que")
+                                               .IsNull("Es nulo")
+                                               .IsLessThanOrEqualTo("Es menor o igual que")
+                                               .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                             )
+
+                                             .ForDate(d => d
+                                             .Clear()
+                                             .IsEqualTo("Es igual que")
+                                             .IsGreaterThan("Es mayor que")
+                                             .IsLessThan("Es menor que")
+                                             .IsLessThanOrEqualTo("Es menor o igual que")
+                                             .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                             .IsNotEqualTo("No es igual que")
+                                              )
+                                           ))
+
+                          .Editable(e => e.Mode(GridEditMode.PopUp))
+                          .Sortable()
+                          .Filterable()
+                          .Scrollable()
+                          .Pdf(pdf => pdf.FileName("BoletaDeSalidaReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                           + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+                           .ProxyURL(Url.Action("Export", "Home")).AllPages())
+                             .Excel(excel => excel.FileName("BoletaDeSalidaReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                           + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+                           .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+                          .DataSource(dataSource =>
+                              dataSource
+                                .WebApi()
+                                .ServerOperation(true)
+                                .Model(model =>
+                                {
+                                    model.Id(p => p.BoletaSalidaLineId);
+                                    model.Field(p => p.SubProductId).Editable(false);
+                                })
+                                .Events(events => events.Error("error_handler"))
+                                .Read(read => read.Action("GetBoletaLines", "BoletaDeSalida", new { BoletaId = Model.BoletaDeSalidaId }))
+                                .Create(create => create.Action("Post", "BoletaDeSalida"))
+                                .Update(update => update.Action("Put", "BoletaDeSalida", new { id = "{0}" }))
+                                .Destroy(destroy => destroy.Action("Delete", "BoletaDeSalida", new { id = "{0}" }))
+                                .Sort(s => s.Add(m => m.BoletaSalidaLineId).Descending())
+                          )
+                            .Events(e =>
+                            {
+                                //e.Save("onsave");
+                            })
+)
+                                    </div>
 
                                     <div class="row">
                                       

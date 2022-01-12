@@ -59,20 +59,23 @@ namespace ERPMVC.Controllers
             return View();
         }
 
+        
+
 
         [HttpPost]
         public object PostReportAction([FromBody] Dictionary<string, object> jsonResult)
         {
-            if ((string)(jsonResult["reportAction"]) == "Export")
-            {
-                jsonResult["reportName"] = "Reporte_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-                                           + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second;
-            }
+            //if ((string)(jsonResult["reportAction"]) == "Export")
+            //{
+            //    string reportname = jsonResult["Description"] != null ? jsonResult["Description"].ToString() : "Reporte";
+            //    jsonResult["reportName"] = jsonResult["Description"].ToString() + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+            //                               + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second;
+            //}
 
-            if (jsonResult.ContainsKey("CustomData"))
-            {
-                DefaultParam = jsonResult["CustomData"].ToString();
-            }
+            //if (jsonResult.ContainsKey("CustomData"))
+            //{
+            //    DefaultParam = jsonResult["CustomData"].ToString();
+            //}
 
             return ReportHelper.ProcessReport(jsonResult, this, this._cache);
         }
@@ -105,6 +108,14 @@ namespace ERPMVC.Controllers
             reportOption.ReportModel.Stream = inputStream;
             reportOption.ReportModel.DataSourceCredentials.Add(dsc);
             reportOption.ReportModel.EmbedImageData = true;
+            //var reportviewermodel = new ReportViewerModel();
+            //reportviewermodel.ReportDefinition = new Syncfusion.RDL.DOM.ReportDefinition();
+            //reportviewermodel.ReportDefinition.Description = reportOption.ReportModel.ReportPath.Substring(0, reportOption.ReportModel.ReportPath.LastIndexOf('.'));
+            //reportOption.ReportModel.ReportDefinition = reportviewermodel.ReportDefinition;
+           // reportOption.ReportModel.ReportDefinition.Description = reportOption.ReportModel.ReportPath.Substring(0, reportOption.ReportModel.ReportPath.LastIndexOf('.'));
+           // IEnumerable<ReportParameter> reportParameters = 
+            //reportOption.ReportModel.Parameters.Append(new ReportParameter()
+           // {Name="NombreReporte",Values = new List<string>() { reportOption.ReportModel.ReportPath } });
             var defaultDateCulture = "es-HN";
             var ci = new CultureInfo(defaultDateCulture);
             reportOption.Culture = ci;

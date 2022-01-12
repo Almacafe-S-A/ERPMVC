@@ -108,6 +108,38 @@ namespace ERPMVC.Controllers
 
         }
 
+        [HttpGet("[controller]/[action]")]
+        public async Task<DataSourceResult> GetBoletaLines([DataSourceRequest] DataSourceRequest request,int BoletaId)
+        {
+            List<BoletaDeSalidaLine> _BoletaDeSalida = new List<BoletaDeSalidaLine>();
+            try
+            {
+
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/BoletaDeSalida/GetBoletaDeSalidaLines/"+BoletaId);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _BoletaDeSalida = JsonConvert.DeserializeObject<List<BoletaDeSalidaLine>>(valorrespuesta);
+
+                }
+
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+
+            return _BoletaDeSalida.ToDataSourceResult(request);
+
+        }
+
         [HttpPost("[controller]/[action]")]
         public async Task<ActionResult<BoletaDeSalida>> SaveBoletaDeSalida([FromBody]BoletaDeSalida _BoletaDeSalida)
         {
