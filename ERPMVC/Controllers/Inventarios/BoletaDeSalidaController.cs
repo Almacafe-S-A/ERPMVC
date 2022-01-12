@@ -41,7 +41,7 @@ namespace ERPMVC.Controllers
         }
 
         [HttpPost("[controller]/[action]")]
-        public async Task<ActionResult> pvwBoletaDeSalida([FromBody]BoletaDeSalida _BoletaDeSalidap)
+        public async Task<ActionResult> pvwBoletaDeSalida([FromBody] BoletaDeSalida _BoletaDeSalidap)
         {
             BoletaDeSalida _BoletaDeSalida = new BoletaDeSalida();
             try
@@ -77,7 +77,7 @@ namespace ERPMVC.Controllers
 
 
         [HttpGet("[controller]/[action]")]
-        public async Task<DataSourceResult> Get([DataSourceRequest]DataSourceRequest request)
+        public async Task<DataSourceResult> Get([DataSourceRequest] DataSourceRequest request)
         {
             List<BoletaDeSalida> _BoletaDeSalida = new List<BoletaDeSalida>();
             try
@@ -109,7 +109,7 @@ namespace ERPMVC.Controllers
         }
 
         [HttpGet("[controller]/[action]")]
-        public async Task<DataSourceResult> GetBoletaLines([DataSourceRequest] DataSourceRequest request,int BoletaId)
+        public async Task<DataSourceResult> GetBoletaLines([DataSourceRequest] DataSourceRequest request, int BoletaId)
         {
             List<BoletaDeSalidaLine> _BoletaDeSalida = new List<BoletaDeSalidaLine>();
             try
@@ -118,7 +118,7 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/BoletaDeSalida/GetBoletaDeSalidaLines/"+BoletaId);
+                var result = await _client.GetAsync(baseadress + "api/BoletaDeSalida/GetBoletaDeSalidaLines/" + BoletaId);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
@@ -141,7 +141,7 @@ namespace ERPMVC.Controllers
         }
 
         [HttpPost("[controller]/[action]")]
-        public async Task<ActionResult<BoletaDeSalida>> SaveBoletaDeSalida([FromBody]BoletaDeSalida _BoletaDeSalida)
+        public async Task<ActionResult<BoletaDeSalida>> SaveBoletaDeSalida([FromBody] BoletaDeSalida _BoletaDeSalida)
         {
 
             try
@@ -243,7 +243,7 @@ namespace ERPMVC.Controllers
         }
 
         [HttpPost("[controller]/[action]")]
-        public async Task<ActionResult<BoletaDeSalida>> Delete([FromBody]BoletaDeSalida _BoletaDeSalida)
+        public async Task<ActionResult<BoletaDeSalida>> Delete([FromBody] BoletaDeSalida _BoletaDeSalida)
         {
             try
             {
@@ -279,6 +279,45 @@ namespace ERPMVC.Controllers
             BoletaDeSalida _BoletaDeSalida = new BoletaDeSalida { BoletaDeSalidaId = id, };
 
             return View(_BoletaDeSalida);
+        }
+
+
+        [HttpGet]
+        public ActionResult SFGuiaRemision(int id)
+        {
+
+            GuiaRemision guiaRemision = new GuiaRemision { Id = id, };
+            return View(guiaRemision);
+        }
+
+        [HttpPost("[controller]/[action]")]
+        public async Task<ActionResult<GuiaRemision>> GenerarGuia([FromBody]GuiaRemision guiaRemision)
+        {
+
+            if (guiaRemision == null)
+            {
+                return BadRequest("No se pudo Obtener el Numero de la Boleta");
+            }
+
+            string baseadress = config.Value.urlbase;
+            HttpClient _client = new HttpClient();
+            _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+            var result = await _client.GetAsync(baseadress + "api/BoletaDeSalida/GenerarGuiaRemision/" + guiaRemision.Id);
+            string valorrespuesta = "";
+            if (result.IsSuccessStatusCode)
+            {
+                valorrespuesta = await(result.Content.ReadAsStringAsync());
+                guiaRemision = JsonConvert.DeserializeObject<GuiaRemision>(valorrespuesta);
+
+            }
+            else
+            {
+                return BadRequest(await result.Content.ReadAsStringAsync());
+                    
+            }
+                    
+
+            return Ok(guiaRemision);
         }
 
 

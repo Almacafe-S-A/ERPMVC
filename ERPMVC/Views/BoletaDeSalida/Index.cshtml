@@ -106,6 +106,75 @@
            win.focus();
     }
 
+    function ImprimirGuia(e) {
+           e.preventDefault();
+           debugger;
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        if (dataItem.GuiaRemisionId ==null) {
+            $.toast({
+                heading: 'Error',
+                text: 'No se encontro Guia de Remision para esta Boleta ',
+                position: 'top-right',
+                loaderBg: '#ff6849',
+                icon: 'error',
+                hideAfter: 7000,
+                stack: 6
+            });
+            return;
+        }
+           var url = '@Url.Action("SFGuiaRemision", "BoletaDeSalida")/' + dataItem.GuiaRemisionId;
+           var win = window.open(url, '_blank');
+           win.focus();
+    }
+
+    function GenerarGuia(e) {
+           e.preventDefault();
+           debugger;
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        if (dataItem.GuiaRemisionId > 0) {
+            $.toast({
+                heading: 'Error',
+                text: 'Ya se ha generado una Guia de Remision para esta Boleta.',
+                position: 'top-right',
+                loaderBg: '#ff6849',
+                icon: 'error',
+                hideAfter: 7000,
+                stack: 6
+            });
+            return;
+        }
+
+        var dataObject = {
+            Id: dataItem.BoletaDeSalidaId
+
+        };
+
+        $.ajax({
+            url: '@Url.Action("GenerarGuia", "BoletaDeSalida")',
+            method: 'POST',
+            datatype: "json",
+            contentType: 'application/json',
+            async: false,
+            data: JSON.stringify(dataObject),
+            success: function (result) {
+                $.toast({
+                    heading: 'Exitoso!',
+                    text: 'Se ha generado una Guia de Remision para esta Boleta Exitosamente.',
+                    position: 'top-right',
+                    loaderBg: '#ff6849',
+                    icon: 'success',
+                    hideAfter: 7000,
+                    stack: 6
+                });
+                RefreshGridBoletaSalida();
+            },
+             error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+              }
+        });
+
+    }
+
 
 
 
@@ -125,9 +194,13 @@
 
                                   command.Custom("Imprimir").Text(" ").IconClass("fa fa-print").Click("ImprimirBoletaDeSalida");
 
+                                  command.Custom("GenerarGuia").Text(" ").IconClass("fa fa-file-text").Click("GenerarGuia");
+
+                                  command.Custom("ImprimirGuia").Text(" ").IconClass("fa fa-print").Click("ImprimirGuia");
+
                                   // command.Custom("Ver detalles").Click("Detalles");
                                   // command.Edit(); command.Destroy();
-                              }).Title("Acciones").Width(120);
+                              }).Title("Acciones").Width(200);
 
                               columns.Bound(p => p.FechaCreacion).Title("Fecha Creación").Format("{0:dd/MM/yyyy HH:mm:ss}").Width(100).Hidden();
                               columns.Bound(p => p.BoletaDeSalidaId).Width(120).Title("Boleta No.");
@@ -138,6 +211,7 @@
                               columns.Bound(p => p.DocumentDate).Format("{0:dd/MM/yyyy}").Width(150);
                               columns.Bound(p => p.Cargadoname).Width(150);
                               columns.Bound(p => p.Quantity).Width(150);
+                              columns.Bound(p => p.GuiaRemisionId).Width(150);
                               columns.Bound(p => p.UnitOfMeasureName).Width(180);
 
 
@@ -243,11 +317,13 @@
             content: btn_tooltip
         });
     }
-
+    
 
 
     setToolbarTooltip(".k-grid-toolbar a.k-grid-Agregar", "Agregar un nuevo registro");
     setRowButtonTooltip(".k-grid-Editar", "Editar registro");
-    setRowButtonTooltip(".k-grid-Imprimir", "Imprimir registro");
+    setRowButtonTooltip(".k-grid-Imprimir", "Imprimir Boleta Salida");
+    setRowButtonTooltip(".k-grid-GenerarGuia", "Generar Guia Remision");
+    setRowButtonTooltip(".k-grid-ImprimirGuia", "Imprimir Guia Remision");
 
 </script>
