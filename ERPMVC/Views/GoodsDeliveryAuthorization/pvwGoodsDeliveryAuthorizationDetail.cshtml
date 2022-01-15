@@ -161,9 +161,9 @@
             $("#ValorImpuestosOriginal" + dataItem.GoodsDeliveryAuthorizationLineId).val(dataItem.ValorImpuestosOriginal);
             $("#QuantityOriginal" + dataItem.GoodsDeliveryAuthorizationLineId).val(dataItem.QuantityOriginal);
 
-            var valorfinanciado = $("#valorfinanciado").data("kendoNumericTextBox");
-            valorfinanciado.value(dataItem.valorfinanciado);
-            valorfinanciado.trigger('change');
+            ////var valorfinanciado = $("#valorfinanciado").data("kendoNumericTextBox");
+            ////valorfinanciado.value(dataItem.valorfinanciado);
+            ////valorfinanciado.trigger('change');
 
             $("#SubProductId").data("kendoDropDownList").dataSource.read();
             $("#WarehouseId").data("kendoDropDownList").value(dataItem.WarehouseId);
@@ -182,6 +182,10 @@
             quantity.trigger('change');
 
 
+            var Saldo = $("#SaldoProducto").data("kendoNumericTextBox");
+            Saldo.value(dataItem.SaldoProducto);
+            Saldo.trigger('change');
+
 
 
             $("#Price").val(dataItem.Price);
@@ -191,63 +195,9 @@
             NoCertificadoDeposito.trigger('change');
 
 
-            var esaldo = 0;
-            var dataObject = {
-                'DocumentId': dataItem.NoCertificadoDeposito,
-                'DocumentName': "CD",
-                'SubProducId': dataItem.SubProductId
-            };
+           
 
-              $.ajax({
-                url: '@Url.Action("GetSaldoProductoByCertificado", "Kardex")',
-                method: 'POST',
-                datatype: "json",
-                contentType: 'application/json',
-                async: false,
-                data: JSON.stringify(dataObject),
-                success: function (data) {
-                    esaldo = data.TotalCD;
-                },
-                error: function (XMLHttpRequest, textStatus, errorThrown) {
-
-                    //  $("#btngenerarfactura").show();
-                    notification.show({
-                        title: "Validacion",
-                        message: textStatus + ": " + XMLHttpRequest.responseText
-                    }, "error");
-
-                }
-            });
-
-
-
-             $("#SaldoProducto").data("kendoNumericTextBox").value(esaldo);
-
-            //var Price = $("#Price").data("kendoNumericTextBox");
-            //Price.value(dataItem.Price);
-            //Price.trigger('change');
-
-            //var Total = $("#Total").data("kendoNumericTextBox");
-            //Total.value(dataItem.Total);
-            //Total.trigger('change');
-
-            //var quantitysacos= $("#QuantitySacos").data("kendoNumericTextBox");
-            //if (quantitysacos !== null && dataItem.QuantitySacos != null)
-            //    quantitysacos.value(dataItem.QuantitySacos);
-            //    quantitysacos.trigger('change');
-
-            //var total = $("#Total").data("kendoNumericTextBox");
-            //if (total !== null)
-            //    total.value(dataItem.TotalSacos);
-            //      total.trigger('change');
-
-            //$("#WareHouseId").data("kendoDropDownList").value(dataItem.WareHouseId);
-
-
-            //data.WarehouseId
-            //var ControlPalletsId = $("#ControlPalletsId").data("kendoNumericTextBox");
-            //ControlPalletsId.value(dataItem.ControlPalletsId);
-            //ControlPalletsId.trigger('change');
+            
         }
 
 
@@ -326,6 +276,10 @@
 
         @(Html.Kendo().Grid<ERPMVC.Models.GoodsDeliveryAuthorizationLineDTO>()
                                                                   .Name("gridGoodsDeliveredAuthorizationLine")
+                                                                  .Events(e =>
+    e.CellClose("calculateField")
+
+    )
                                                                   .Columns(columns =>
                                                                   {
 
@@ -338,7 +292,7 @@
 
                                                                           }
 
-                                                                          command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditGoodsDeliveryDetalle");
+                                                                          //command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditGoodsDeliveryDetalle");
 
                                                                           // command.Custom("Imprimir").Click("ImprimirCotizacion");
                                                                           //  command.Edit(); command.Destroy();
@@ -347,7 +301,7 @@
                                                                       columns.Bound(p => p.GoodsDeliveryAuthorizationLineId).Title("Id Línea").Width(100).Visible(false);
                                                                       columns.Bound(p => p.GoodsDeliveryAuthorizationId).Title("Entrega de Mercaderia").Width(195).Visible(false);
                                                                       columns.Bound(p => p.CertificadoLineId).Title("Entrega de Mercaderia").Width(195).Visible(false);
-                                                                      columns.Bound(p => p.NoCertificadoDeposito).Title("CD No").Width(120);
+                                                                      //columns.Bound(p => p.pda).Title("CD No").Width(120);
                                                                       columns.Bound(p => p.NoCertificadoDeposito).Title("CD No").Width(120);
                                                                       columns.Bound(p => p.SubProductName).Width(160).Title("Producto");
                                                                       columns.Bound(p => p.WarehouseName).Title("Bodega").Width(120).Visible(false);
@@ -355,11 +309,17 @@
                                                                       columns.Bound(p => p.ValorImpuestosOriginal).Visible(false).Width(0);
                                                                       columns.Bound(p => p.QuantityOriginal).Visible(false).Width(0);
                                                                       columns.Bound(p => p.UnitOfMeasureName).Title("Unidad de medida").Width(170);
-                                                                      columns.Bound(p => p.Quantity).Title("Cant. Retiro").Width(130);
-                                                                      columns.Bound(p => p.SaldoProducto).Title("Saldo CD");
+                                                                      columns.Bound(p => p.SaldoProducto).Title("Saldo CD").Width(170)
+                                                                                .ClientFooterTemplate("<div style='text-align: right'>#=totalColumnas(11,0)#</div>")
+                                                                                .HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" })
+                                                                                 ;
+                                                                      columns.Bound(p => p.Quantity).Title("Cant. Autorizada Retiro").Width(170)
+                                                                                    .ClientFooterTemplate("<div style='text-align: right'><span class='totalaut'>#=totalColumnas(12,0)#</span></div>")
+                                                                                .HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" })
+                                                                                 ;
                                                                       columns.Bound(p => p.Price).Visible(false);
-                                                                      columns.Bound(p => p.valorcertificado).Title("Valor Retiro").Width(170);
-                                                                      columns.Bound(p => p.valorfinanciado).Title("Valor financiado").Width(170);
+                                                                      columns.Bound(p => p.valorcertificado).Title("Valor Retiro").Width(170).Visible(false);
+                                                                      columns.Bound(p => p.valorfinanciado).Title("Valor financiado").Width(170).Visible(false);
                                                                   })
                                                                       .Filterable(f => f.Operators(o => o.ForString(s => s
                                                                .Clear()
@@ -403,7 +363,7 @@
                                                                           }
                                                                       }
                                                                   })
-                                                                   .Editable(e => e.Mode(GridEditMode.PopUp))
+                                                                   .Editable(e => e.Mode(GridEditMode.InCell))
                                                                     .Sortable()
                                                                     .AutoBind(true)
                                                                     //.Pageable()
@@ -421,6 +381,12 @@
                                                                         model.Id(p => p.GoodsDeliveryAuthorizationLineId);
                                                                         model.Field(p => p.GoodsDeliveryAuthorizationLineId).Editable(false);
                                                                         model.Field(p => p.GoodsDeliveryAuthorizationId).Editable(false);
+                                                                        model.Field(p => p.Description).Editable(false);
+                                                                        model.Field(p => p.UnitOfMeasureName).Editable(false);
+                                                                        model.Field(p => p.SubProductName).Editable(false);
+                                                                        model.Field(p => p.Price).Editable(false);
+                                                                        model.Field(p => p.Quantity).Editable(true);
+                                                                        model.Field(p => p.SaldoProducto).Editable(false);
                                                                         // model.Field(p => p.ControlPalletsId).Editable(true);
 
                                                                     })
@@ -443,5 +409,96 @@
 
 
 <script>
+
+
+
+    formattear = new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'LPS',
+        minimumFractionDigits: 2
+    });
+
+    function calculateField(e) {
+        debugger;
+        if (e.container) {
+            if (e.model.Quantity > e.model.SaldoProducto) {
+                $.toast({
+                    heading: 'Error',
+                    text: 'La cantidad a Autorizar no puede ser mayor al Disponible',
+                    position: 'top-right',
+                    loaderBg: '#ff6849',
+                    icon: 'error',
+                    hideAfter: 3000,
+                    stack: 6
+                });
+                e.model.Quantity = e.model.SaldoProducto;
+            }
+            //Actualizar Saldo
+            var footer = $('tr.k-footer-template'),
+                idx = 11, // replace 3 with the column index you want to aggregate
+                aggregate = $(footer).children('td')[idx];
+            $(aggregate).text(totalColumnas(12, 0));
+
+
+        }
+
+    }
+
+
+    function totalColumnas(tiporesultado, moneda) {
+        var data = $("#gridGoodsDeliveredAuthorizationLine").getKendoGrid().dataSource.data();
+        var total = 0;
+
+        switch (tiporesultado) {
+            case 1: ///////Calcular el Total FOB
+                data.forEach(r => total += r.CantidadDisponible);
+                break;
+            case 2: /// Calcular el total CIB
+                data.forEach(r => total += r.Quantity);
+                break;
+            case 3: ////Calcular el total CIF LPS
+                data.forEach(r => total += r.Price);
+                break;
+            case 4://///Calcular el total de Valor de derechos importacion
+                data.forEach(r => total += r.Amount);
+                break;
+            case 5:
+                data.forEach(r => total += r.ValorUnitarioDerechos);
+                break;
+            case 6:
+                data.forEach(r => total += r.DerechosFiscales);
+                break;
+
+            default:
+                break;
+        }
+        var formatter = new Intl.NumberFormat('es-HN', {
+            style: 'currency',
+            currency: 'LPS',
+            minimumFractionDigits: 2
+        });
+        if (moneda == 1) {
+            return formatter.format(total);
+        }
+        if (moneda == 2) {
+            formatter = new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD',
+                minimumFractionDigits: 2
+            });
+            return formatter.format(total);
+        }
+        if (moneda == 0) {
+            formatter = new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'LPS',
+                minimumFractionDigits: 2
+            });
+            return formatter.format(total).replace(/[a-z]{3}/i, "").trim();
+        }
+        return total;
+    }
+
+
 
 </script>
