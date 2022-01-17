@@ -75,6 +75,16 @@ namespace ERPMVC.Controllers
 
 
         [HttpGet]
+        public ActionResult SFPrecioCafe(int id)
+        {
+
+            PrecioCafe precioCafe = new PrecioCafe { Id = id, };
+
+            return View(precioCafe);
+        }
+
+
+        [HttpGet]
         public async Task<DataSourceResult> Get([DataSourceRequest]DataSourceRequest request)
         {
             List<PrecioCafe> _PrecioCafe = new List<PrecioCafe>();
