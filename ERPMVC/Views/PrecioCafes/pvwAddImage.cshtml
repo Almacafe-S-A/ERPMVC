@@ -1,4 +1,4 @@
-﻿@model ERPMVC.Models.CustomerDocument
+﻿@model ERPMVC.Models.PrecioCafe
 @{ Layout = null;
     var messages = new Dictionary<string, string>() { { "custom", "Ingrese un valor correcto." },
 {"required","Requerido" }
@@ -9,29 +9,28 @@
 
     function cliente() {
         var cliente = $("#CustomerId").val()
-        
+
         return CustomerId = cliente;
 
     }
-   
+
 
 
     function closeDocument() {
-        RefreshCustomerDocument();
        $("#myModalCustomerDocumentUpload").modal('hide');
     }
 
     function SaveCustomerDocument(e) {
 
-     
+
 
         var dataObject = {
-            'CustomerDocumentId': $("#CustomerDocumentId").val(),                          
+            'Is': $("#CustomerDocumentId").val(),
             'CustomerId': cliente(),
             'DocumentTypeId': $("#DocumentTypeId").val(),
             'DocumentTypeName': $("#DocumentTypeId").data("kendoDropDownList").text(),
             'DocumentName': $("#DocumentName").val(),
-            
+
 
         };
 
@@ -42,7 +41,7 @@
         //RefrescarGrid();
 
     }
-    
+
 
     var onComplete = function () {
         var grid = $("#gridCustomerDocument").getKendoGrid();
@@ -57,58 +56,22 @@
         <!-- Modal content-->
         <div class="modal-content">
             <div class="modal-header">
-                <h4 class="modal-title">Información de documentos del cliente</h4>
-                <button type="button" class="close" onclick="closeDocument();">&times;</button>
+                <h4 class="modal-title">Imagen Precio del café</h4>
+                <button type="button" class="close" onclick="closeDocument()" >&times;</button>
             </div>
             <div class="modal-body">
                 <div class="box">
-                    Extensiones Permitidas: .pdf, .jpeg, .png y .txt                   
+                    Extensiones Permitidas: .pdf, .jpeg, .png y .txt
                 </div>
                 <div class="row" id="validation">
-
-                  
-
-
-
                     <div class="col-lg-12">
                         <div class="card">
                             <div class="card-body">
-                                <form id="CustomerDocument" kendo-validator="true" kendo-messages="messages" asp-action="SaveCustomerDocument" asp-controller="CustomerDocument"
+                                <form id="CustomerDocument" kendo-validator="true" kendo-messages="messages" asp-action="SaveImage" asp-controller="PrecioCafes"
                                       data-ajax="true"
                                       data-ajax-method="post" enctype="multipart/form-data"
                                       data-ajax-begin="onBegin" data-ajax-complete="onComplete"
                                       data-ajax-failure="onFailed" data-ajax-success="onSuccess">
-
-
-                                    <div class="row">
-                                        <div class="col-md-5">
-                                            <script>
-                                                function GetDocumentos() {
-                                                    return { 'Id': 9 }
-                                                }
-                                            </script>
-                                            <input id="CustomerDocumentId" name="CustomerDocumentId" asp-for="CustomerDocumentId" hidden />
-                                            <label asp-for="DocumentTypeId" class="control-label" style="width:100%"></label>
-                                            <kendo-dropdownlist name="DocumentTypeId" filter="Kendo.Mvc.UI.FilterType.Contains"
-                                                                option-label="Seleccion el tipo de documento"
-                                                                for="DocumentTypeId"
-                                                                datatextfield="Nombre"
-                                                                datavaluefield="Id"
-                                                                required data-required-msg="El tipo de documento ses requerido."
-                                                                auto-bind="false"
-                                                                onchange="NombreTipoDocumento();"
-                                                                style="width: 100%;">
-                                                <datasource type="DataSourceTagHelperType.WebApi" server-filtering="true">
-                                                    <transport>
-                                                        <read url="@Url.Action("GetElementoByIdConfiguracion", "ElementoConfiguracion")" data="GetDocumentos" />
-                                                    </transport>
-                                                </datasource>
-
-                                            </kendo-dropdownlist>
-                                            <span asp-validation-for="DocumentTypeId" class="text-danger"></span>
-                                        </div>
-
-                                    </div>
 
 
                                     <script>
@@ -130,11 +93,8 @@
                                     </script>
 
 
-                                    <input type="text" hidden asp-for="CustomerParametrosave" />
-                                    <input type="text" hidden asp-for="DocumentTypeName" />
-
-
                                     <div class="row">
+                                        <input asp-for="Id"  hidden/>
 
                                         <div class="col-md-5">
                                             <kendo-upload drop-zone="drop-zone1" name="files" on-upload="SaveCustomerDocument" multiple="false" accept=".pdf,.jpeg,.png,.txt">
@@ -143,17 +103,20 @@
                                                 <validation max-file-size="10485760" />
                                             </kendo-upload>
                                         </div>
-                                        @if (Model.DocumentName != null)
+                                        @if (Model.ImgPrecioCafe != null)
                                         {
                                             <div class="col-md-8">
-                                                <label class="control-label" asp-for="DocumentName">Archivo Adjunto</label>
-                                                <input type="text" asp-for="DocumentName" class="form-control" readonly />
+                                                <div class="form-group">
+                                                    <label class="control-label" asp-for="ImgPrecioCafe">Archivo Adjunto</label>
+                                                    <img src="../PrecioCafeImg/@Model.ImgName"  alt="Imagen"  />
+                                                </div>
+                                                
                                                 @*<button type="button" onclick="DescargarAdjunto()" class="btn btn-success">Descargar Adjunto</button>*@
                                             </div>
 
                                         }
 
-                                        <input type="text" asp-for="Path" hidden />
+                                        <input type="text" asp-for="ImgPrecioCafe" hidden />
                                     </div>
 
                                     <div class="modal-footer">
@@ -173,39 +136,10 @@
     </div>
 </div>
 <script>
-    function DescargarAdjunto() {
-         var dataObject = {
-             'tpath': '@Model.Path'
-        };
-
-
-        console.log(dataObject.Path);
-        debugger;
-          var ajax = new XMLHttpRequest();
-         ajax.open("Post", '@Url.Action("DownloadFile", "Download")' , true);
-          ajax.responseType = "blob";
-          ajax.setRequestHeader("Content-Type", "application/json");
-                            ajax.onreadystatechange = function () {
-                                if (this.readyState == 4) {
-                                    //debugger;
-                                   // var blob = new Blob([this.response]);
-                                    var blob = new Blob([this.response], { type: "application/octet-stream" });
-                                    //var fileName = dataItem.DocumentName;
-                                    var fileName = '@Model.DocumentName';
-                                    saveAs(blob, fileName);
-                                    //application/octet-stream
-                                }
-        };
-        ajax.send(JSON.stringify(dataObject));
-
-
-
-
-    }
-
+    
     function ReemplazarArchivo() {
         debugger;
-        var archivo = '@Model.Path';
+        var archivo = '@Model.ImgPrecioCafe';
 
         if ($("#DocumentName").val() != null) {
             alert("Esta accion reemplazara su archivo anterior");
@@ -215,11 +149,11 @@
 
 
     var onBegin = function () {
-       
+
         $("#btnDocumentCustomer").attr("disabled", true);
     };
 
-    
+
 
 
     var onSuccess = function (context) {
@@ -254,7 +188,7 @@
                 stack: 6
             });
             return false;
-        } 
+        }
 
        else if (context == 'ImagenRequerida') {
             $("#btnDocumentCustomer").attr("disabled", false);
@@ -269,7 +203,7 @@
                 stack: 6
             });
 
-        }       
+        }
         else {
             $.toast({
                 heading: 'Satisfactorio',
@@ -284,7 +218,7 @@
 
         }
 
-       
+
     };
 
     var onFailed = function (context) {

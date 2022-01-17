@@ -3,16 +3,9 @@
 @using System.Linq;
 @{
     ViewData["Title"] = "Precio Café";
-    //double?[] configuracion = (double?[])ViewData["configuracion"];
-    //IEnumerable<ERPMVC.Models.ElementoConfiguracion> configuracion = (IEnumerable<ERPMVC.Models.ElementoConfiguracion>) ViewData["configuracion"];
-    //double porcentajeingreso = (double)configuracion.Where(q => q.Id == 185).FirstOrDefault().Valordecimal;
-    //double beneficiado = (double)configuracion.Where(q => q.Id == 186).FirstOrDefault().Valordecimal;
-    //double fideicomiso = (double)configuracion.Where(q => q.Id == 187).FirstOrDefault().Valordecimal;
-    //double utilidad = (double)configuracion.Where(q => q.Id == 188).FirstOrDefault().Valordecimal;
-    //double exportacion = (double)configuracion.Where(q => q.Id == 189).FirstOrDefault().Valordecimal;
 
-
-
+    var verControles = User.HasClaim("Administracion.PrecioCafe.Editar", "true")
+        || User.HasClaim("Administracion.PrecioCafe.Eliminar", "true");
 }
 
 <script>
@@ -60,6 +53,17 @@
     });
 
 
+     function Imprimir(e) {
+           e.preventDefault();
+           debugger;
+           var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+              //window.location.href = '@Url.Action("SFPrecioCafe", "PrecioCafes")/' + dataItem.KardexId;
+           var url = '@Url.Action("SFPrecioCafe", "PrecioCafes")/' + dataItem.Id;
+           var win = window.open(url, '_blank');
+           win.focus();
+    }
+
+
 
 </script>
 
@@ -72,30 +76,30 @@
     .Columns(columns =>
     {
 
-        if (User.HasClaim("Administracion.PrecioCafe.Editar", "true")
-        || User.HasClaim("Administracion.PrecioCafe.Eliminar", "true"))
+
+        columns.Command(command =>
         {
-            columns.Command(command =>
+            //command.Custom("Ver detalles").Click("Detalles");
+            if (User.HasClaim("Administracion.PrecioCafe.Editar", "true"))
             {
-                //command.Custom("Ver detalles").Click("Detalles");
-                if(User.HasClaim("Administracion.PrecioCafe.Editar", "true")) {
-                    command.Edit().Text(" ").IconClass("fa fa-edit").UpdateText(" ").CancelText(" ");
-                }
+                command.Edit().Text(" ").IconClass("fa fa-edit").UpdateText(" ").CancelText(" ");
+            }
 
-                if(User.HasClaim("Administracion.PrecioCafe.Eliminar", "true"))
-                {
-                    command.Destroy().Text(" ").IconClass("fa fa-trash-alt");
-                }
-            }).Title("Acciones").Width(120);
-        }
+            if (User.HasClaim("Administracion.PrecioCafe.Eliminar", "true"))
+            {
+                command.Destroy().Text(" ").IconClass("fa fa-trash-alt");
+            }
+            command.Custom("AddImage").Text(" ").IconClass("fa fa-upload").Click("AddImage");
+            command.Custom("Imprimir").Text(" ").IconClass("fa fa-print").Click("Imprimir");
 
+        }).Title("Acciones").Width(180).Visible(verControles);
         columns.Bound(p => p.Id).Width(130).Visible(false);
         columns.Bound(p => p.Fecha).Width(200).EditorTemplateName("DayApplicationSalary").Format("{0:dd/MM/yyyy hh:MM}");
         columns.ForeignKey(p => p.CustomerId, (System.Collections.IEnumerable)ViewData["Clientes"], "CustomerId", "CustomerName").Title("Cliente").Width(250);
         //columns.Bound(p => p.CustomerId).EditorTemplateName("Customer").Title("Cliente").Width(250);
         columns.Bound(p => p.Cosecha).Width(200);
         columns.Bound(p => p.PrecioBolsaUSD).Format("{0:n2}").Width(180).EditorTemplateName("NumericTextBox");
-        columns.ForeignKey(p => p.ExchangeRateId, 
+        columns.ForeignKey(p => p.ExchangeRateId,
             (System.Collections.IEnumerable)ViewData["Tasacambio"],
             "ExchangeRateId", "Descripcion").Title("Tasa de cambio").Width(200);
         //columns.Bound(p => p.ExchangeRateValue).Format("{0:n2}").Width(200).Title("Tasa Cambio");
@@ -116,6 +120,7 @@
         columns.Bound(p => p.PrecioQQOro).Format("{0:n2}").Width(200).EditorTemplateName("NumericTextBox");
         columns.Bound(p => p.PercioQQPergamino).Format("{0:n2}").Width(200).EditorTemplateName("NumericTextBox").Title("Precio QQ Pergamino");
         columns.Bound(p => p.PrecioQQCalidadesInferiores).Format("{0:n2}").Width(200).EditorTemplateName("NumericTextBox");
+        columns.Bound(p => p.ImgPrecioCafe).Hidden(true);
 
 
 
@@ -231,8 +236,39 @@
     })
     )
 
-    <script>
 
+<div id="AddImage">
+    @await Html.PartialAsync("pvwAddImage", new ERPMVC.Models.PrecioCafe { Id = 0 })
+</div>
+
+<script>
+
+
+    function AddImage(e) {
+        e.preventDefault();
+            var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+            var dataObject = {
+                Id: dataItem.Id,
+            };
+            $.ajax({
+                url: '@Url.Action("pvwAddImage", "PrecioCafes")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (result) {
+                    $("#AddImage").html('');
+                    $("#AddImage").html(result);
+                    $('#myModalCustomerDocumentUpload').modal('show');
+
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+                }
+        });
+
+    }
         function Update(e) {
             debugger;
             if (true) {
@@ -278,7 +314,7 @@
 
         function SaveChanges(e) {
 
-            
+
             $.toast({
                 heading: 'Satisfactorio',
                 text: 'Datos guardados correctamente.',
@@ -315,6 +351,37 @@
 
         }
 
+        function DescargarAdjunto() {
+            var dataObject = {
+                'tpath': '@Model.ImgPrecioCafe'
+        };
+
+
+        console.log(dataObject.Path);
+        debugger;
+          var ajax = new XMLHttpRequest();
+         ajax.open("Post", '@Url.Action("DownloadFile", "Download")' , true);
+          ajax.responseType = "blob";
+          ajax.setRequestHeader("Content-Type", "application/json");
+                            ajax.onreadystatechange = function () {
+                                if (this.readyState == 4) {
+                                    //debugger;
+                                   // var blob = new Blob([this.response]);
+                                    var blob = new Blob([this.response], { type: "application/octet-stream" });
+                                    //var fileName = dataItem.DocumentName;
+                                    var fileName = '@Model.ImgPrecioCafe';
+                                    saveAs(blob, fileName);
+                                    //application/octet-stream
+                                }
+        };
+        ajax.send(JSON.stringify(dataObject));
+
+
+
+
+    }
+
+
 
         function setToolbarTooltip(btn_cl, btn_tooltip) {
             $("#gridPrecioCafe").kendoTooltip({
@@ -333,7 +400,9 @@
         setToolbarTooltip(".k-grid-toolbar a.k-grid-add", "Agregar Nuevo Registro");
         setRowButtonTooltip(".k-grid-edit", "Editar Registro");
         setRowButtonTooltip(".k-grid-delete", "Eliminar Registro");
-        setRowButtonTooltip(".k-grid-update", "Guardar");
+    setRowButtonTooltip(".k-grid-update", "Guardar");
+    setRowButtonTooltip(".k-grid-Imprimir", "Imprimir");
+    setRowButtonTooltip(".k-grid-AddImage", "Agregar Imagen");
         setRowButtonTooltip(".k-grid-cancel", "Cancelar");
 
-    </script>
+</script>
