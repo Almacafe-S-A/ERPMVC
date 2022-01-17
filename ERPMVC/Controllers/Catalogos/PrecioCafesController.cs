@@ -16,6 +16,8 @@ using System.Net.Http;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using ERPMVC.Controllers;
+using System.IO;
+using Microsoft.AspNetCore.Hosting;
 
 namespace ERPMVC.Controllers
 {
@@ -26,11 +28,15 @@ namespace ERPMVC.Controllers
         private readonly IOptions<MyConfig> config;
         private readonly ILogger _logger;
         private readonly ClaimsPrincipal _principal;
-        public PrecioCafesController    (ILogger<PrecioCafesController> logger, IOptions<MyConfig> config, IHttpContextAccessor httpContextAccessor)
+        private IHostingEnvironment _hostingEnvironment;
+        public PrecioCafesController    (ILogger<PrecioCafesController> logger, 
+            IOptions<MyConfig> config, IHttpContextAccessor httpContextAccessor
+            , IHostingEnvironment hostingEnvironment)
         {
             this.config = config;
             this._logger = logger;
             _principal = httpContextAccessor.HttpContext.User;
+            this._hostingEnvironment = hostingEnvironment;
         }
 
         [Authorize(Policy = "Administracion.PrecioCafe")]
@@ -41,6 +47,29 @@ namespace ERPMVC.Controllers
             
             ViewData["Tasacambio"] = await Obtenertasadecambio();
             ViewData["Clientes"] = await ObtenerClientes();
+            return View(precio);
+        }
+
+
+        public async Task<IActionResult> pvwAddImage([FromBody] PrecioCafe precioCafe)
+        {
+            PrecioCafe precio = new PrecioCafe();
+            string baseadress = config.Value.urlbase;
+            HttpClient _client = new HttpClient();
+            _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+            var result = await _client.GetAsync(baseadress + $"api/PrecioCafe/GetPrecioCafeById/{precioCafe.Id}");
+            string valorrespuesta = "";
+            if (result.IsSuccessStatusCode)
+            {
+                valorrespuesta = await (result.Content.ReadAsStringAsync());
+                precio = JsonConvert.DeserializeObject<PrecioCafe>(valorrespuesta);
+            }
+            else
+            {
+                return BadRequest();
+            }
+
+
             return View(precio);
         }
 
@@ -120,6 +149,67 @@ namespace ERPMVC.Controllers
         }
 
 
+
+        [HttpPost("[controller]/[action]")]
+        public async Task<ActionResult<CustomerDocument>> SaveImage(IEnumerable<IFormFile> files, PrecioCafe precioCafe)
+        {
+            PrecioCafe precio = new PrecioCafe();
+            IFormFile Image = files.FirstOrDefault();
+            try
+            {
+
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + $"api/PrecioCafe/GetPrecioCafeById/{precioCafe.Id}");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    precio = JsonConvert.DeserializeObject<PrecioCafe>(valorrespuesta);
+                }
+                else
+                {
+                    return BadRequest();
+                }
+
+                if (Image == null)
+                {
+                    return BadRequest("No se Adjunto ningun archivo de Imagen");
+
+                }
+                FileInfo info = new FileInfo(Image.FileName);
+                if (!(info.Extension.Equals(".pdf") || info.Extension.Equals(".jpeg")
+                    || info.Extension.Equals(".png") || info.Extension.Equals(".txt")))
+                {
+                    return BadRequest("Formato de Imagen No Válido");                   
+                }
+                string filename = precioCafe.Id + "_PrecioCafe" + info.Extension;
+                var filePath = _hostingEnvironment.WebRootPath + "/PrecioCafeImg/" +filename;
+
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await Image.CopyToAsync(stream);
+                }
+
+                precio.ImgPrecioCafe = filePath;
+                precio.ImgName = filename;
+
+                var udpate = await Update(precio);
+
+
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+            return Json(precioCafe);
+        }
+
+
         [HttpPost("savepreciocafes")]
         public async Task<ActionResult<PrecioCafe>> savepreciocafes(PrecioCafeDTO _Preciocafes)
         {
@@ -167,7 +257,7 @@ namespace ERPMVC.Controllers
 
 
         [AcceptVerbs("Post")]
-        public async Task<ActionResult<PrecioCafe>> Update(/*Int64 Id,*/ PrecioCafeDTO _Preciocafes)
+        public async Task<ActionResult<PrecioCafe>> Update(/*Int64 Id,*/ PrecioCafe _Preciocafes)
         {
             try
             {

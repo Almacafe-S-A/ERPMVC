@@ -42,6 +42,9 @@ namespace ERPMVC.Models
 
         public double? PorcentajeIngreso { get; set; }
 
+        public string ImgPrecioCafe { get; set; }
+        public string ImgName { get; set; }
+
         public decimal NetoLPSIngreso { get; set; }
 
         [Required(ErrorMessage = "El Bruto LPS Consumo Interno es Requerido.")]
