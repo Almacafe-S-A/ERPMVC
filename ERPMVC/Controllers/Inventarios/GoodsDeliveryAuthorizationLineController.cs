@@ -320,7 +320,6 @@ namespace ERPMVC.Controllers
                         var obj = _GoodsReceivedLine.FirstOrDefault(x => x.GoodsDeliveryAuthorizationLineId == _GoodsReceivedLinep.GoodsDeliveryAuthorizationLineId);
                         if (obj != null)
                         {
-                            obj.Description = _GoodsReceivedLinep.Description;
                             obj.Price = _GoodsReceivedLinep.Price;
                             obj.Quantity = _GoodsReceivedLinep.Quantity;
                             obj.SubProductId = _GoodsReceivedLinep.SubProductId;
@@ -329,15 +328,11 @@ namespace ERPMVC.Controllers
                             obj.SubProductId = _GoodsReceivedLinep.SubProductId;
                             obj.SubProductName = _GoodsReceivedLinep.SubProductName;
                             obj.valorcertificado = _GoodsReceivedLinep.valorcertificado;
-                            obj.valorfinanciado = _GoodsReceivedLinep.valorfinanciado;
                             obj.UnitOfMeasureId = _GoodsReceivedLinep.UnitOfMeasureId;
                             obj.UnitOfMeasureName = _GoodsReceivedLinep.UnitOfMeasureName;
                             obj.WarehouseId = _GoodsReceivedLinep.WarehouseId;
                             obj.WarehouseName = _GoodsReceivedLinep.WarehouseName;
-                            obj.NoCertificadoDeposito = _GoodsReceivedLinep.NoCertificadoDeposito;
-                            obj.Description = _GoodsReceivedLinep.Description;
                             obj.ValorImpuestos = _GoodsReceivedLinep.ValorImpuestos;
-
                             obj.ValorImpuestosOriginal = _GoodsReceivedLinep.ValorImpuestosOriginal;
                             obj.QuantityOriginal = _GoodsReceivedLinep.QuantityOriginal;
                         }

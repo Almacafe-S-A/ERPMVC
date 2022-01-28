@@ -24,6 +24,8 @@ namespace ERPMVC.Models
         [Display(Name = "Número de certificado de depósito")]
         public Int64 NoCD { get; set; }
 
+        public string Autorizados { get; set; }
+
 
         [Display(Name = "Comentarios")]
         public string Comments { get; set; }
