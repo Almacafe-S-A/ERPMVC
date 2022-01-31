@@ -82,9 +82,9 @@ namespace ERPMVC.Models
         [Display(Name = "Total endoso")]
         public double TotalEndoso { get; set; }
 
-        public DateTime FechaLiberacion { get; set; }
+        public DateTime? FechaLiberacion { get; set; }
 
-        public DateTime FechaCancelacion { get; set; }
+        public DateTime? FechaCancelacion { get; set; }
 
         public double CantidadEndosada { get; set; }
 

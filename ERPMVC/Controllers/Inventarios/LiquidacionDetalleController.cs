@@ -146,14 +146,14 @@ namespace ERPMVC.Controllers.Inventarios
                         item.ValorUnitarioDerechos = item.TotalDerechosmasImpuestos / item.Cantidad;
                         item.ValorTotalDerechos = item.ValorUnitarioDerechos * item.CantidadRecibida;
                         item.PrecioUnitarioCIF = item.TotalCIFLPS / item.Cantidad;
-                        item.ValorTotalCIF = (decimal)item.PrecioUnitarioCIF * item.CantidadRecibida; ;
-                        item.TotalFinal = (decimal)item.ValorTotalDerechos + (decimal)item.ValorTotalCIF;
+                        item.ValorTotalCIF = Decimal.Round((decimal)item.PrecioUnitarioCIF,2) * Decimal.Round(item.CantidadRecibida,2); 
+                        item.TotalFinal = Decimal.Round((decimal)item.ValorTotalDerechos) + Decimal.Round((decimal)item.ValorTotalCIF,2);
                     }
                     else
                     {
                         item.PrecioUnitarioCIF = item.TotalDerechos / item.Cantidad;
                         item.TotalFinal = (decimal)item.PrecioUnitarioCIF * item.CantidadRecibida;
-                        item.ValorTotalCIF = (decimal)item.TotalCIFLPS + (decimal)item.TotalDerechosmasImpuestos;
+                        item.ValorTotalCIF = Decimal.Round((decimal)item.TotalCIFLPS,2) + Decimal.Round((decimal)item.TotalDerechosmasImpuestos,2);
                     }
 
                     item.ValorUnitarioDerechos = item.TotalDerechosmasImpuestos / item.Cantidad;

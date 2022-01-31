@@ -33,7 +33,7 @@ namespace ERPMVC.Controllers
             return View();
         }
 
-        public async Task<DataSourceResult> GetARLine([DataSourceRequest] DataSourceRequest request, [FromQuery(Name = "Recibos")] int[] recibos, [FromQuery(Name = "Id")] int id)
+        public async Task<ActionResult<DataSourceResult>> GetARLine([DataSourceRequest] DataSourceRequest request, [FromQuery(Name = "Recibos")] int[] recibos, [FromQuery(Name = "Id")] int id)
         {
             List<GoodsDeliveryAuthorizationLine> arLines = new List<GoodsDeliveryAuthorizationLine>();
             try
@@ -69,6 +69,10 @@ namespace ERPMVC.Controllers
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     arLines = JsonConvert.DeserializeObject<List<GoodsDeliveryAuthorizationLine>>(valorrespuesta);
                     arLines = arLines.OrderByDescending(e => e.GoodsDeliveryAuthorizationId).ToList();
+                }
+                else
+                {
+                    return BadRequest(await result.Content.ReadAsStringAsync()) ;
                 }
 
 

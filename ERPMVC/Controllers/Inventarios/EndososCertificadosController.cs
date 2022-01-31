@@ -60,7 +60,13 @@ namespace ERPMVC.Controllers
 
                 if (_EndososCertificados == null)
                 {
-                    _EndososCertificados = new EndososDTO { FechaOtorgado = DateTime.Now, DocumentDate = DateTime.Now, ExpirationDate = DateTime.Now };
+                    _EndososCertificados = new EndososDTO { 
+                        FechaOtorgado = DateTime.Now, 
+                        DocumentDate = DateTime.Now, 
+                        ExpirationDate = DateTime.Now,
+                        FechaCancelacion = null,
+                        FechaLiberacion = null,
+                    };
                 }
                 ViewData["permisos"] = _principal;
             }
@@ -113,6 +119,10 @@ namespace ERPMVC.Controllers
         public async Task<ActionResult> GetEndososCertificadosByIdCD([DataSourceRequest]DataSourceRequest request,[FromBody] EndososCertificados CD)
         {
             EndososCertificados _EndososCertificados = new EndososCertificados();
+            if (CD == null)
+            {
+                return BadRequest();
+            }
             try
             {
 

@@ -179,10 +179,11 @@ namespace ERPMVC.Controllers
             return _CertificadoDeposito.ToDataSourceResult(request);
 
         }
+        
 
 
 
-        [HttpGet("[controller]/[action]")]
+       [HttpGet("[controller]/[action]")]
         public async Task<DataSourceResult> GetCertificadoDepositoByCustomer([DataSourceRequest]DataSourceRequest request, Int64 CustomerId)
         {
             List<CertificadoDeposito> _CertificadoDeposito = new List<CertificadoDeposito>();
@@ -198,8 +199,19 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _CertificadoDeposito = JsonConvert.DeserializeObject<List<CertificadoDeposito>>(valorrespuesta);
+                    _CertificadoDeposito = (from ce in _CertificadoDeposito
+                                            select new CertificadoDeposito {
+                                                IdCD = ce.IdCD,
+                                                Comentario = $"No: {ce.IdCD} || Servicio :{ce.ServicioName} || Fecha: {ce.FechaCertificado}",
+                                                CustomerName = ce.CustomerName,
+                                                CustomerId = ce.CustomerId,
+                                                
+                                                
+                                            }
+                                            ).ToList();
 
                 }
+
 
 
             }

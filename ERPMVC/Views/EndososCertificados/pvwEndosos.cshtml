@@ -72,8 +72,14 @@
 
                                                             return data;
                                                         }
-                                                        function changesetearvalues() {
-                                                            var dataObject = { 'IdCD': $("#cbxBuscar").val() };
+    function changesetearvalues() {
+        debugger;
+        var IdCD = $("#IdCD").val();
+        if (IdCD == null || IdCD =="") {
+                                                                return;
+                                                            }
+                                                            var dataObject = { 'IdCD': IdCD };
+
                                                             var notification = $("#notification").data("kendoNotification");
 
                                                                $.ajax({
@@ -109,7 +115,6 @@
                                                                                    $("#CustomerId").data("kendoDropDownList").value(data.CustomerId);
                                                                                    $("#CustomerId").data("kendoDropDownList").trigger('change');
                                                                                    $("#BankId").data("kendoDropDownList").value(data.BankId);
-                                                                                   $("#CurrencyId").data("kendoDropDownList").value(data.CurrencyId);
                                                                                    $("#ProductId").data("kendoDropDownList").value(data.ServicioId);                                                                                   
                                                                                    $("#NoCD").val(data.NoCD);
 
@@ -230,7 +235,7 @@
                                                                           time-format="hh:mm:ss"
                                                                           data-val-required="La fecha es requerida"
                                                                           value="Model.DocumentDate" />
-                                                    
+
                                                     <span asp-validation-for="DocumentDate" class="text-danger"></span>
                                                 </div>
                                             </div>
@@ -284,6 +289,15 @@
 
                                                     }
 
+                                                    function GetCustomer(e) {
+                                                        return {
+                                                            CustomerId: $("#CustomerId").val()
+                                                        }
+
+                                                    }
+
+
+
                                                 </script>
 
 
@@ -308,34 +322,24 @@
                                         <div class="col-md-6">
                                             <div class="form-group">
 
-                                                <label for="cbxBuscar" class="control-label" style="width:100%">Asociar certificado de deposito</label>
+                                                <label asp-for="IdCD" class="control-label" style="width:100%">Asociar certificado de deposito</label>
 
                                                 <input type="hidden" id="singuardar" value="0" />
-                                                @(Html.Kendo().DropDownList()
-                                                                                                   .Name("cbxBuscar")
-                                                                                                   .Enable(Model.EndososCertificadosId == 0)
-                                                                                                   .Filter(Kendo.Mvc.UI.FilterType.Contains)
-                                                                                                   .OptionLabel("Buscar")
-                                                                                                   .DataTextField("CustomerName")
-                                                                                                   .DataValueField("IdCD")
-                                                                                                   .Value(Model.IdCD.ToString())
-                                                                                                   .HtmlAttributes(new { style = "width:100%" })
-                                                                                                   .Height(290)
-                                                                                                   .Events(e =>
-                                                                                                   {
-                                                                                                       e.Change("changesetearvalues");
-                                                                                                                                           // e.Filtering("applyFilterCustomer");
-                                                                                                                                       })
-                                                                                                   .AutoBind(true)
-                                                                                                   .DataSource(source =>
-                                                                                                   {
-                                                                                                       source.Ajax()
-                                                                                                       .PageSize(80)
-
-                                                                                                       .Read("Virtualization_Read", "CertificadoDeposito");
-                                                                                                   })
-                                                                                                   .Virtual(v => v.ItemHeight(26).ValueMapper("valueMapper"))
-                                                        )
+                                                <kendo-dropdownlist name="IdCD" for="@Model.IdCD" filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                                    option-label="Seleccione el Certificado"
+                                                                    required enable="Model.EndososCertificadosId==0"
+                                                                    datatextfield="Comentario"
+                                                                    datavaluefield="IdCD"
+                                                                    on-select="GetSubProduct"
+                                                                    cascade-from="CustomerId"
+                                                                    on-change="changesetearvalues"
+                                                                    style="width: 100%;">
+                                                    <datasource type="DataSourceTagHelperType.WebApi" page-size="100000">
+                                                        <transport>
+                                                            <read url="@Url.Action("GetCertificadoDepositoByCustomer", "CertificadoDeposito")" data="GetCustomer" />
+                                                        </transport>
+                                                    </datasource>
+                                                </kendo-dropdownlist>
                                             </div>
                                         </div>
                                         <div class="col-md-3">
@@ -356,32 +360,12 @@
                                                 </kendo-dropdownlist>
                                                 <span asp-validation-for="ProductId" class="text-danger"></span>
                                             </div>
-                                        </div>                                       
+                                        </div>
 
                                     </div>
 
 
                                     <div class="row">
-                                        <div class="col-md-3">
-
-                                            <div class="form-group">
-                                                <label asp-for="CurrencyId" class="control-label"></label>
-                                                <kendo-dropdownlist name="CurrencyId" for="CurrencyId" filter="Kendo.Mvc.UI.FilterType.Contains"
-                                                                    option-label="Seleccione la moneda"
-                                                                    datatextfield="CurrencyName" enable="@Model.EndososCertificadosId ==0"
-                                                                    datavaluefield="CurrencyId"
-                                                                    style="width: 100%;">
-                                                    <datasource type="DataSourceTagHelperType.WebApi">
-                                                        <transport>
-                                                            <read url="@Url.Action("GetCurrency", "Currency")" />
-                                                        </transport>
-                                                    </datasource>
-                                                </kendo-dropdownlist>
-                                                <span asp-validation-for="CurrencyId" class="text-danger"></span>
-                                            </div>
-
-                                        </div>
-
 
                                         <div class="col-md-3">
                                             <div class="form-group">
@@ -417,12 +401,12 @@
                                         <div class="col-md-3">
                                             <div class="form-group">
                                                 <label asp-for="FirmadoEn" class="control-label" style="width: 100%;"></label>
-                                                <input type="text" id="FirmadoEn" required class="k-textbox"  style="min-width:100%;" asp-for="FirmadoEn" />
+                                                <input type="text" id="FirmadoEn" required class="k-textbox" style="min-width:100%;" asp-for="FirmadoEn" />
                                             </div>
 
                                         </div>
 
-                                        
+
 
 
                                     </div>
@@ -455,7 +439,7 @@
                                                 <kendo-datetimepicker name="FechaOtorgado" readonly
                                                                       style="width: 100%;"
                                                                       format="dd/MM/yyyy hh:mm:ss"
-                                                                      time-format="hh:mm:ss" 
+                                                                      time-format="hh:mm:ss"
                                                                       date-input="false"
                                                                       data-val-required="La fecha es requerida"
                                                                       value="Model.FechaOtorgado" />
@@ -470,15 +454,15 @@
                                                 <kendo-datetimepicker name="FechaCancelacion"
                                                                       style="width: 100%;"
                                                                       date-input="false"
+                                                                      readonly
                                                                       format="dd/MM/yyyy hh:mm:ss"
                                                                       time-format="hh:mm:ss"
-                                                                      data-val-required="La fecha es requerida"
                                                                       value="Model.FechaCancelacion" />
 
                                             </div>
                                         </div>
 
-                                        <div class="col-md-3"hidden>
+                                        <div class="col-md-3" hidden>
                                             <div class="form-group">
                                                 <label asp-for="CantidadEndosada" class="control-label" style="width:100%">Cantidad Endosada</label>
                                                 <kendo-numerictextbox name="CantidadEndosada"
@@ -503,12 +487,15 @@
                                 <div id="EndososLineMant">
                                     @await Html.PartialAsync("pvwEndososDetailMant", new ERPMVC.Models.EndososCertificadosLine { EndososCertificadosLineId = 0, EndososCertificadosId = Model.EndososCertificadosId })
                                 </div>
-                                @if (Model.EndososCertificadosId == 0)
-	                            {
+
+                                
+
+                                @if (Model.EndososCertificadosId == 0 || Model.FechaCancelacion != null)
+                                {
                                     <div class="row">
                                         <button id="btnSaveControlEstiba" type="submit" class="form-control btn-miboton" onclick="SaveEndosos(this);">Guardar</button>
                                     </div>
-	                            }
+                                }
                             </div>
                         </div>
                     </div>
@@ -598,8 +585,8 @@
 
                 var dataObject = {
                     'EndososCertificadosId': $("#EndososCertificadosId").val(),
-                    'IdCD': $("#cbxBuscar").val(),
-                    'NoCD': $("#NoCD").val(),
+                    'IdCD': $("#IdCD").val(),
+                    'NoCD': $("#IdCD").val(),
                     'DocumentDate': $("#DocumentDate").getKendoDateTimePicker().value().toJSON(),
                     'CustomerId': $("#CustomerId").val(),
                     'CustomerName': $("#CustomerId").data("kendoDropDownList").text(),
