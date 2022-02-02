@@ -44,6 +44,8 @@ namespace ERPMVC.Models
         public Int64 ControlPalletsId { get; set; }
         [Display(Name = "Cantidad")]
         public double Quantity { get; set; }
+
+        public decimal? QuantityAuthorized { get; set; }
         [Display(Name = "Sacos")]
         public int QuantitySacos { get; set; }
 
