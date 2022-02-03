@@ -187,6 +187,7 @@
                                                     <script>
                                                         function fiscal() {
                                                             RefrescarCertificados();
+                                                            
                                                             if ($("#ProductId").val() == 2) {
                                                                 $("#importacion").show();
                                                             }
@@ -196,11 +197,11 @@
 
                                                         }
                                                     </script>
-                                                    <label asp-for="ProductId" class="control-label" style="width:100%"></label>
+                                                    <label asp-for="ProductId" class="control-label" style="width:100%">Servicio</label>
 
                                                     <kendo-dropdownlist name="ProductId" filter="Kendo.Mvc.UI.FilterType.Contains"
                                                                         for="ProductId"
-                                                                        option-label="Seleccione el Producto"
+                                                                        option-label="Seleccione el Servicio"
                                                                         datatextfield="ProductName"
                                                                         datavaluefield="ProductId"
                                                                         on-change="fiscal"
@@ -222,13 +223,13 @@
 
                                                     @if (Model.GoodsDeliveryAuthorizationId == 0)
                                                     {
-                                                        <kendo-multiselect name="AsociarRecibos" id="AsociarRecibos" style="min-width:100%"
+                                                        <kendo-multiselect name="AsociarCertificados" id="AsociarCertificados" style="min-width:100%"
                                                                            no-data-template="No se encontraron certificados el cliente y el servicio seleccionado"
                                                                            required data-required-msg="Seleccione un Certificados" on-change="RefrescarGridDetalle"
                                                                            datatextfield="Comentario" datavaluefield="IdCD" option-label="Seleccione los recibos">
                                                             <datasource page-size="999" type="DataSourceTagHelperType.WebApi" server-operation="true">
                                                                 <transport >
-                                                                    <read url="@Url.Action("GetCertificadosCustomerService","CertificadoDeposito")" data="GetCustomerService"  />
+                                                                    <read url="@Url.Action("GetCertificadosPendientesAutorizar","CertificadoDeposito")" data="GetCustomerService"  />
                                                                 </transport>
                                                             </datasource>
 
@@ -257,10 +258,19 @@
                                                 //console.log(dataobject);
                                                 return dataobject
                                             }
+                                            function GetCliente() {
+                                                var customer = $("#CustomerId").val();
+                                                var dataobject = {
+                                                    'CustomerId': customer,
+                                                }
+                                                return dataobject;
+                                            }
+
+
                                             function GetCertificados() {
                                                 debugger;
                                                 record = 0;
-                                                var recibosselect = $("#AsociarRecibos").data("kendoMultiSelect");
+                                                var recibosselect = $("#AsociarCertificados").data("kendoMultiSelect");
                                                 var recibos = recibosselect == undefined ? [] : recibosselect.value();
                                                 var dataobject = {
                                                     'recibos': recibos,
@@ -273,7 +283,8 @@
                                             }
                                             function RefrescarCertificados() {
                                                 debugger;
-                                                var multiselect = $("#AsociarRecibos").data("kendoMultiSelect");
+                                                RefrescarFirmas();
+                                                var multiselect = $("#AsociarCertificados").data("kendoMultiSelect");
                                                 if (multiselect) {
                                                     multiselect.dataSource.read();
                                                 }
@@ -286,12 +297,48 @@
                                                 grid.dataSource.read();
                                             }
 
+
+                                            function RefrescarFirmas() {
+                                                debugger;
+                                                var multiselect = $("#FirmasAutorizadas").data("kendoMultiSelect");
+                                                if (multiselect) {
+                                                    multiselect.dataSource.read();
+                                                }
+
+                                            }
+
                                         </script>
 
 
 
 
                                         <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="form-group">
+                                                    <label class="control-label" style="min-width:100%">Firmas Autorizadas</label>
+
+                                                    @if (true)
+                                                    {
+                                                        <kendo-multiselect name="FirmasAutorizadas" id="FirmasAutorizadas" style="min-width:100%"
+                                                                           no-data-template="No se encontraron firmas en el cliente y el servicio seleccionado"
+                                                                           required data-required-msg="Seleccione una Firma" value="@Model.Firmas"
+                                                                           datatextfield="Nombre" datavaluefield="CustomerAuthorizedSignatureId" option-label="Seleccione las firmas Autorizadas">
+                                                            <datasource page-size="999" type="DataSourceTagHelperType.WebApi" server-operation="true">
+                                                                <transport>
+                                                                    <read url="@Url.Action("GetSignatureByCustomerId","CustomerAuthorizedSignature")" data="GetCliente" />
+                                                                </transport>
+                                                            </datasource>
+
+                                                        </kendo-multiselect>
+                                                    }
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="form-group">
+                                                    <label asp-for="Comments" class="control-label" style="width: 100%;"></label>
+                                                    <input type="text" id="Comments" required class="form-control" style="min-width: 100%;" asp-for="Comments" />
+                                                </div>
+                                            </div>
                                             <div class="col-md-4" hidden>
                                                 <div class="form-group">
                                                     <label asp-for="NoCD" class="control-label" style="width:100%"></label>
@@ -352,12 +399,7 @@
                                         </div>
 
                                         <div class="row">
-                                            <div class="col-md-12">
-                                                <div class="form-group">
-                                                    <label asp-for="Comments" class="control-label" style="width: 100%;"></label>
-                                                    <input type="text" id="Comments" required class="form-control" style="min-width: 100%;" asp-for="Comments" />
-                                                </div>
-                                            </div>
+                                            
                                         </div>
                                     </div>
                                 </form>
@@ -389,7 +431,7 @@
 
 
     function RefreshGridGoodsDelivered() {
-        var grid = $("#RefreshGridGoodsDelivered ").getKendoGrid();
+        var grid = $("#gridGoodsDeliveryAuthorization ").getKendoGrid();
         grid.dataSource.read();
     }
 
@@ -431,10 +473,14 @@
             return;
         }
 
-        var list = [];
-            $("#ddlRecibosAsociados > option").each(function () {
-                list.push(this.value);
-            });
+        var listCertificados = [];
+        $("#AsociarCertificados > option").each(function () {
+            listCertificados.push(this.value);
+        });
+        var Firmas = [];
+        $("#FirmasAutorizadas > option").each(function () {
+            Firmas.push(this.value);
+        });
 
             var dataObject = {
                 'GoodsDeliveryAuthorizationId': $("#GoodsDeliveryAuthorizationId").val(),
@@ -463,9 +509,10 @@
                 'Aduana': $("#Aduana").val(),
                 'ManifiestoNo': $("#ManifiestoNo").val(),
                 'NoTraslado': $("#NoTraslado").val(),
+                'Firmas': Firmas,
 
 
-                'CertificadosAsociados': list
+                'CertificadosAsociados': listCertificados
             };
 
             var validator = $("#frmGoodsDeliveryAuthorization").data("kendoValidator");

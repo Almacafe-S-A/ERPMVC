@@ -95,6 +95,12 @@ namespace ERPMVC.Models
         [Display(Name = "Carta de porte o manifiesto No.")]
         public string ManifiestoNo { get; set; }
 
+        [NotMapped]
+        public int[] Firmas { get; set; }
+
         public List<GoodsDeliveryAuthorizationLine> GoodsDeliveryAuthorizationLine { get; set; } = new List<GoodsDeliveryAuthorizationLine>();
+
+
+        public List<GoodsDeliveryAuthorizedSignatures> goodsDeliveryAuthorizedSignatures { get; set; } = new List<GoodsDeliveryAuthorizedSignatures>();
     }
 }
