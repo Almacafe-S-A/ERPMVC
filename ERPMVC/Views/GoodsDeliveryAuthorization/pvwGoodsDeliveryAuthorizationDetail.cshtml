@@ -6,74 +6,6 @@
 }
 <script>
 
-
-    function GetGoodsDeliveredLineId() {
-        //debugger;
-        var id = 0;
-        var subproductname = '', unidaddemedida = '', WareHouseId='';
-        if ($("#SubProductId") != null) {
-            if ($("#SubProductId").data("kendoDropDownList") != null) {
-                subproductname = $("#SubProductId").data("kendoDropDownList").text();
-            }
-        }
-
-        if ($("#UnitOfMeasureId") != null) {
-            if ($("#UnitOfMeasureId").data("kendoDropDownList") != null) {
-                unidaddemedida = $("#UnitOfMeasureId").data("kendoDropDownList").text();
-            }
-        }
-
-        if ($("#WarehouseId") != null) {
-            if ($("#WarehouseId").data("kendoDropDownList") != null) {
-                WareHouseId = $("#WarehouseId").data("kendoDropDownList").text();
-            }
-        }
-
-        var displayedData = $("#gridGoodsDeliveredAuthorizationLine").data().kendoGrid.dataSource.data();
-
-
-
-
-
-        if (Number($("#GoodsDeliveryAuthorizationLineId").val()) === 0) {
-            if (displayedData.length > 0) {
-                for (var i = 0; i < displayedData.length; i++) {
-
-                    if (displayedData[i].GoodsDeliveryAuthorizationLineId > id)
-                        id = displayedData[i].GoodsDeliveryAuthorizationLineId;
-
-                }
-
-                id = id + 1;
-            }
-        }
-        else {
-            id = $("#GoodsDeliveryAuthorizationLineId").val();
-        }
-
-
-        return {
-             'GoodsDeliveryAuthorizationLineId':id,
-			 'GoodsDeliveryAuthorizationId':@Model.GoodsDeliveryAuthorizationId,
-			 'NoCertificadoDeposito':$("#NoCertificadoDeposito").val(),
-			 'Quantity':$("#Quantity").val(),
-			 'Description':$("#Description").val(),
-			 'valorcertificado':$("#valorcertificado").val(),
-			 'valorfinanciado':$("#valorfinanciado").val(),
-			 'SubProductId':$("#SubProductId").val(),
-             'SubProductName': subproductname,
-			 'UnitOfMeasureId':$("#UnitOfMeasureId").val(),
-             'UnitOfMeasureName': unidaddemedida,
-             'WarehouseId': $("#WarehouseId").val(),
-             'WarehouseName': WareHouseId,
-             'SaldoProducto': $("#SaldoProducto").val(),
-             'Price': $("#Price").val(),
-             'ValorImpuestos': $("#ValorImpuestos").val(),
-              'ValorImpuestosOriginal': $("#ValorImpuestosOriginal" + id).val(),
-              'QuantityOriginal': $("#QuantityOriginal" + id).val()
-        }
-    }
-
     function RefreshGoodsDeliveredDetail() {
       //  console.log('Refresca Entrada de mercaderias');
         var grid = $("#gridGoodsDeliveredAuthorizationLine").getKendoGrid();
@@ -102,111 +34,6 @@
 
     }
 
-
-    function EditGoodsDeliveryDetalle(e) {
-        debugger;
-        e.preventDefault();
-        var notification = $("#notification").data("kendoNotification");
-        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
-
-        if (dataItem.GoodsDeliveryAuthorizationId > 0) {
-            var subproducto = 0;
-            var dataObject = { 'GoodsDeliveryAuthorizationLineId': dataItem.GoodsDeliveryAuthorizationLineId };
-            $.ajax({
-                url: '@Url.Action("pvwGoodsDeliveryAuthorizationDetailMant", "GoodsDeliveryAuthorization")',
-                method: 'POST',
-                datatype: "json",
-                contentType: 'application/json',
-                async: false,
-                data: JSON.stringify(dataObject),
-                success: function (data) {
-                    debugger;
-                    $("#GoodsDeliveredAuthorizationLineMant").html('');
-                    $("#GoodsDeliveredAuthorizationLineMant").html(data);
-                    var txt = $(data);
-                    var found = $("#SubProductId", txt);
-                    subproducto = $(found).val();
-                },
-                error: function (XMLHttpRequest, textStatus, errorThrown) {
-
-                    //  $("#btngenerarfactura").show();
-                    notification.show({
-                        title: "Validacion",
-                        message: textStatus + ": " + XMLHttpRequest.responseText
-                    }, "error");
-
-                }
-            });
-
-            $("#frmGoodsDeliveryAuthorizationLine :input").prop("disabled", true);
-            //llenarsubproduct();
-            var combobox = $('#SubProductId').getKendoDropDownList();
-            combobox.value(subproducto);
-            combobox.trigger('change');
-        }
-        else {
-            $("#GoodsDeliveryAuthorizationLineId").val(dataItem.GoodsDeliveryAuthorizationLineId);
-            $("#GoodsDeliveryAuthorizationId").val(dataItem.GoodsDeliveryAuthorizationId);
-            $("#UnitOfMeasureName").val(dataItem.UnitOfMeasureName);
-            $("#UnitOfMeasureId").data("kendoDropDownList").value(dataItem.UnitOfMeasureId);
-
-            var valorcertificado = $("#valorcertificado").data("kendoNumericTextBox");
-            valorcertificado.value(dataItem.valorcertificado);
-            valorcertificado.trigger('change');
-
-            var ValorImpuestos = $("#ValorImpuestos").data("kendoNumericTextBox");
-            ValorImpuestos.value(dataItem.ValorImpuestos);
-            ValorImpuestos.trigger('change');
-
-            $("#ValorImpuestosOriginal" + dataItem.GoodsDeliveryAuthorizationLineId).val(dataItem.ValorImpuestosOriginal);
-            $("#QuantityOriginal" + dataItem.GoodsDeliveryAuthorizationLineId).val(dataItem.QuantityOriginal);
-
-            ////var valorfinanciado = $("#valorfinanciado").data("kendoNumericTextBox");
-            ////valorfinanciado.value(dataItem.valorfinanciado);
-            ////valorfinanciado.trigger('change');
-
-            $("#SubProductId").data("kendoDropDownList").dataSource.read();
-            $("#WarehouseId").data("kendoDropDownList").value(dataItem.WarehouseId);
-
-            $("#SubProductId").data("kendoDropDownList").value(dataItem.SubProductId);
-            //$("#SubProductName").val(dataItem.SubProductName);
-            if ($("#ProductId").val() == 2) {
-                $("#divvalorimpuesto").css("display", "block");
-            }
-            else {
-                $("#divvalorimpuesto").css("display", "none");
-            }
-
-            var quantity = $("#Quantity").data("kendoNumericTextBox");
-            quantity.value(dataItem.Quantity);
-            quantity.trigger('change');
-
-
-            var Saldo = $("#SaldoProducto").data("kendoNumericTextBox");
-            Saldo.value(dataItem.SaldoProducto);
-            Saldo.trigger('change');
-
-
-
-            $("#Price").val(dataItem.Price);
-
-            var NoCertificadoDeposito = $("#NoCertificadoDeposito").data("kendoNumericTextBox");
-            NoCertificadoDeposito.value(dataItem.NoCertificadoDeposito);
-            NoCertificadoDeposito.trigger('change');
-
-
-           
-
-            
-        }
-
-
-
-
-        $('#myModalGoodsDeliveryAuthorizationLine').modal('show');
-
-    }
-
     function Delete(e) {
 
         e.preventDefault();
@@ -222,11 +49,6 @@
                 async: false,
                 data: JSON.stringify(dataItem),
                 success: function (data) {
-                    //$("#ControlPalletsLineMant").html('');
-                    //$("#ControlPalletsLineMant").html(data);
-                    //var txt = $(data);
-                    //var found = $("#SubProductId", txt);
-                    //subproducto = $(found).val();
                 },
                 error: function (XMLHttpRequest, textStatus, errorThrown) {
 
@@ -241,8 +63,6 @@
 
             var grid = $("#gridGoodsDeliveredAuthorizationLine").data("kendoGrid");
             grid.dataSource.remove(dataItem);
-            //Sync it with the grid
-            //grid.dataSource.sync();
         }
     }
 
