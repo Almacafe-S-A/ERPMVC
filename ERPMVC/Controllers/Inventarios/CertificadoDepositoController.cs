@@ -112,6 +112,7 @@ namespace ERPMVC.Controllers
         {
             List<CertificadoDeposito> certificados = new List<CertificadoDeposito>();
             try
+
             {
 
                 string baseadress = config.Value.urlbase;
