@@ -86,6 +86,94 @@ namespace ERPMVC.Controllers
         }
 
 
+
+        [HttpPost("[controller]/[action]")]
+        public async Task<ActionResult<CustomerDocument>> SaveImage(IEnumerable<IFormFile> CartaRetiro, IEnumerable<IFormFile> CartaLiberacion, GoodsDeliveryAuthorization autorizacion)
+        {
+            GoodsDeliveryAuthorization autho = new GoodsDeliveryAuthorization();
+            IFormFile Image = CartaRetiro.FirstOrDefault();
+            try
+            {
+
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + $"api/GoodsDeliveryAuthorization/GetGoodsDeliveryAuthorizationById/{autorizacion.GoodsDeliveryAuthorizationId}");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    autho = JsonConvert.DeserializeObject<GoodsDeliveryAuthorization>(valorrespuesta);
+                }
+                else
+                {
+                    return BadRequest();
+                }
+
+                if (Image == null)
+                {
+                    return BadRequest("No se Adjunto ningun archivo de Imagen");
+
+                }
+                FileInfo info = new FileInfo(Image.FileName);
+                if (!(info.Extension.Equals(".pdf") || info.Extension.Equals(".jpeg")
+                    || info.Extension.Equals(".png") || info.Extension.Equals(".txt")))
+                {
+                    return BadRequest("Formato de Imagen No Válido");
+                }
+                string filename = autorizacion.GoodsDeliveryAuthorizationId + "_Autorizacion" + info.Extension;
+                var filePath = _hostingEnvironment.WebRootPath + "/Autorizaciones/" + filename;
+
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await Image.CopyToAsync(stream);
+                }
+
+                autho.URLCartaRetiro = filePath;
+                autho.CartaRetiroDocName = filename;
+
+                autho.URLLiberacionEndoso = filePath;
+                autho.LiberacionEndosoDocName = filename;
+
+                var udpate = await Update(autho.GoodsDeliveryAuthorizationId,autho);
+
+
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+            return Json(autorizacion);
+        }
+
+
+
+        public async Task<IActionResult> pvwAddImage([FromBody] GoodsDeliveryAuthorization autorizacion)
+        {
+            GoodsDeliveryAuthorization autho = new GoodsDeliveryAuthorization();
+            string baseadress = config.Value.urlbase;
+            HttpClient _client = new HttpClient();
+            _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+            var result = await _client.GetAsync(baseadress + $"api/GoodsDeliveryAuthorization/GetGoodsDeliveryAuthorizationById/{autorizacion.GoodsDeliveryAuthorizationId}");
+            string valorrespuesta = "";
+            if (result.IsSuccessStatusCode)
+            {
+                valorrespuesta = await (result.Content.ReadAsStringAsync());
+                autho = JsonConvert.DeserializeObject<GoodsDeliveryAuthorization>(valorrespuesta);
+            }
+            else
+            {
+                return BadRequest();
+            }
+
+
+            return View(autho);
+        }
+
+
         [HttpGet("[controller]/[action]")]
         public async Task<DataSourceResult> AutorizacionesPendientes([DataSourceRequest] DataSourceRequest request,
              int CustomerId,

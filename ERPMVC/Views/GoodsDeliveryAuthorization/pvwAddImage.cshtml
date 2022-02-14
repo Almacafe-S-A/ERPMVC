@@ -1,0 +1,242 @@
+﻿@model ERPMVC.Models.GoodsDeliveryAuthorization
+@{ Layout = null;
+    var messages = new Dictionary<string, string>() { { "custom", "Ingrese un valor correcto." },
+{"required","Requerido" }
+};
+    var rules = new Dictionary<string, string>() { { "custom", "customFunction" } };
+}
+<script>
+
+    function cliente() {
+        var cliente = $("#CustomerId").val()
+
+        return CustomerId = cliente;
+
+    }
+
+
+
+    function closeDocument() {
+       $("#myModalCustomerDocumentUpload").modal('hide');
+    }
+
+    function SaveCustomerDocument(e) {
+
+
+
+        var dataObject = {
+            'Is': $("#CustomerDocumentId").val(),
+            'CustomerId': cliente(),
+            'DocumentTypeId': $("#DocumentTypeId").val(),
+            'DocumentTypeName': $("#DocumentTypeId").data("kendoDropDownList").text(),
+            'DocumentName': $("#DocumentName").val(),
+
+
+        };
+
+        console.log(SaveCustomerDocument)
+
+
+        e.data = dataObject;
+        //RefrescarGrid();
+
+    }
+
+
+    var onComplete = function () {
+        var grid = $("#gridCustomerDocument").getKendoGrid();
+        grid.dataSource.read();
+    };
+
+</script>
+
+
+<div id="myModalCustomerDocumentUpload" class="modal fade" role="dialog">
+    <div class="modal-dialog modal-lg">
+        <!-- Modal content-->
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Imagen Precio del café</h4>
+                <button type="button" class="close" onclick="closeDocument()" >&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="box">
+                    Extensiones Permitidas: .pdf, .jpeg, .png y .txt
+                </div>
+                <div class="row" id="validation">
+                    <div class="col-lg-12">
+                        <div class="card">
+                            <div class="card-body">
+                                <form id="CustomerDocument" kendo-validator="true" kendo-messages="messages" asp-action="SaveImage" asp-controller="GoodsDeliveryAuthorization"
+                                      data-ajax="true"
+                                      data-ajax-method="post" enctype="multipart/form-data"
+                                      data-ajax-begin="onBegin" data-ajax-complete="onComplete"
+                                      data-ajax-failure="onFailed" data-ajax-success="onSuccess">
+
+
+                                    <script>
+
+                                        $(document).ready(function () {
+                                            customer = $("#CustomerId").val();
+
+                                            $("#CustomerParametrosave").val(customer);
+
+                                        });
+
+                                        function NombreTipoDocumento() {
+
+                                            var Documentos = $("#DocumentTypeId").data("kendoDropDownList").text()
+                                            $("#DocumentTypeName").val(Documentos);
+                                        }
+
+
+                                    </script>
+
+
+                                    <input asp-for="GoodsDeliveryAuthorizationId" hidden />
+                                    <div class="row">
+                                        <label class="control-laber">Carta Retiro</label>
+
+                                        <div class="col-md-5">
+                                            <kendo-upload drop-zone="drop-zone1" name="CartaRetiro"  multiple="false" accept=".pdf,.jpeg,.png,.txt">
+                                                <localization select="Adjuntar Archivo" cancel="Cancelar" drop-files-here="Soltar Archivo aquí" invalid-file-extension="Extensión de Archivo Invalido" retry="Reintentar" />
+                                                <files />
+                                                <validation max-file-size="10485760" />
+                                            </kendo-upload>
+                                        </div>
+
+
+                                        <input type="text" asp-for="CartaRetiroDocName" />
+                                    </div>
+
+                                    <div class="row">
+                                        <label class="control-laber">Carta Liberacion</label>
+
+                                        <div class="col-md-5">
+                                            <kendo-upload drop-zone="drop-zone1" name="CartaLiberacion"  multiple="false" accept=".pdf,.jpeg,.png,.txt">
+                                                <localization select="Adjuntar Archivo" cancel="Cancelar" drop-files-here="Soltar Archivo aquí" invalid-file-extension="Extensión de Archivo Invalido" retry="Reintentar" />
+                                                <files />
+                                                <validation max-file-size="10485760" />
+                                            </kendo-upload>
+                                        </div>
+
+
+                                        <input type="text" asp-for="CartaRetiroDocName" />
+                                    </div>
+
+
+                                    <div class="modal-footer">
+                                        <div class="col-md-12">
+                                            <button id="btnDocumentCustomer" class="form-control btn-miboton" type="submit"> Guardar </button>
+                                        </div>
+                                    </div>
+
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    
+    function ReemplazarArchivo() {
+        debugger;
+
+        if ($("#DocumentName").val() != null) {
+            alert("Esta accion reemplazara su archivo anterior");
+
+        }
+    }
+
+
+    var onBegin = function () {
+
+        $("#btnDocumentCustomer").attr("disabled", true);
+    };
+
+
+
+
+    var onSuccess = function (context) {
+        console.log(context);
+
+
+        if (context > 0) {
+            $("#btnDocumentCustomer").attr("disabled", false);
+
+            $.toast({
+                heading: 'Error',
+                text: 'Ya exite un Docuemnto con este mismo nombre para este tipo de Docuemnto de cliente.',
+                position: 'top-right',
+                loaderBg: '#ff6849',
+                icon: 'error',
+                hideAfter: 30000,
+                stack: 6
+            });
+
+        }
+
+
+        else if (context == "TipoDocumentoRequerido") {
+            $("#btnDocumentCustomer").attr("disabled", false);
+            $.toast({
+                heading: 'Error',
+                text: 'Debe de seleccionar el tipo de documento.',
+                position: 'top-right',
+                loaderBg: '#ff6849',
+                icon: 'error',
+                hideAfter: 30000,
+                stack: 6
+            });
+            return false;
+        }
+
+       else if (context == 'ImagenRequerida') {
+            $("#btnDocumentCustomer").attr("disabled", false);
+
+            $.toast({
+                heading: 'Error',
+                text: 'El Documento es requerido.',
+                position: 'top-right',
+                loaderBg: '#ff6849',
+                icon: 'error',
+                hideAfter: 30000,
+                stack: 6
+            });
+
+        }
+        else {
+            $.toast({
+                heading: 'Satisfactorio',
+                text: ' Datos guardados correctamente.',
+                position: 'top-right',
+                loaderBg: '#ff6849',
+                icon: 'success',
+                hideAfter: 30000,
+                stack: 6
+            });
+            $('#myModalCustomerDocumentUpload').modal('hide');
+
+        }
+
+
+    };
+
+    var onFailed = function (context) {
+        console.log(context);
+        $.toast({
+            heading: 'Error',
+            text: ' Error al Crear Documento',
+            position: 'top-right',
+            loaderBg: '#ff6849',
+            icon: 'error',
+            hideAfter: 30000,
+            stack: 6
+        });
+        $("#btnDocumentCustomer").attr("disabled", false);
+    };
+</script>
