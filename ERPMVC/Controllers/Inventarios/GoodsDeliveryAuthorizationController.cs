@@ -91,7 +91,8 @@ namespace ERPMVC.Controllers
         public async Task<ActionResult<CustomerDocument>> SaveImage(IEnumerable<IFormFile> CartaRetiro, IEnumerable<IFormFile> CartaLiberacion, GoodsDeliveryAuthorization autorizacion)
         {
             GoodsDeliveryAuthorization autho = new GoodsDeliveryAuthorization();
-            IFormFile Image = CartaRetiro.FirstOrDefault();
+            IFormFile fileCartaRetiro = CartaRetiro.FirstOrDefault();
+            IFormFile fileCartaLiberacion = CartaLiberacion.FirstOrDefault();
             try
             {
 
@@ -110,30 +111,43 @@ namespace ERPMVC.Controllers
                     return BadRequest();
                 }
 
-                if (Image == null)
+                if (fileCartaLiberacion == null && fileCartaRetiro == null)
                 {
-                    return BadRequest("No se Adjunto ningun archivo de Imagen");
+                    return BadRequest("No se Adjunto ningun archivo ");
 
                 }
-                FileInfo info = new FileInfo(Image.FileName);
-                if (!(info.Extension.Equals(".pdf") || info.Extension.Equals(".jpeg")
-                    || info.Extension.Equals(".png") || info.Extension.Equals(".txt")))
+
+                if (fileCartaLiberacion !=null)
                 {
-                    return BadRequest("Formato de Imagen No Válido");
-                }
-                string filename = autorizacion.GoodsDeliveryAuthorizationId + "_Autorizacion" + info.Extension;
-                var filePath = _hostingEnvironment.WebRootPath + "/Autorizaciones/" + filename;
+                    FileInfo infoCartaliberacion = new FileInfo(fileCartaLiberacion.FileName);
 
-                using (var stream = new FileStream(filePath, FileMode.Create))
+                    string filenameCartaLiberacion = autorizacion.GoodsDeliveryAuthorizationId + "_AutorizacionLiberacion" + infoCartaliberacion.Extension;
+                    var filePathCartaLiberacion = _hostingEnvironment.WebRootPath + "/Autorizaciones/" + fileCartaLiberacion.FileName;
+
+                    using (var stream = new FileStream(filePathCartaLiberacion, FileMode.Create))
+                    {
+                        await fileCartaLiberacion.CopyToAsync(stream);
+                    }
+
+                    autho.URLLiberacionEndoso = filePathCartaLiberacion;
+                    autho.LiberacionEndosoDocName = filenameCartaLiberacion;
+                }
+
+                if (fileCartaRetiro != null)
                 {
-                    await Image.CopyToAsync(stream);
+                    FileInfo infoCartaRetiro = new FileInfo(fileCartaRetiro.FileName);
+
+                    string filenameCartaRetiro = autorizacion.GoodsDeliveryAuthorizationId + "_AutorizacionCartaRetiro" + infoCartaRetiro.Extension;
+                    var filepathCartaRetiro = _hostingEnvironment.WebRootPath + "/Autorizaciones/" + fileCartaRetiro.FileName;
+
+                    using (var stream = new FileStream(filepathCartaRetiro, FileMode.Create))
+                    {
+                        await fileCartaRetiro.CopyToAsync(stream);
+                    }
+
+                    autho.URLCartaRetiro = filepathCartaRetiro;
+                    autho.CartaRetiroDocName = filenameCartaRetiro;
                 }
-
-                autho.URLCartaRetiro = filePath;
-                autho.CartaRetiroDocName = filename;
-
-                autho.URLLiberacionEndoso = filePath;
-                autho.LiberacionEndosoDocName = filename;
 
                 var udpate = await Update(autho.GoodsDeliveryAuthorizationId,autho);
 

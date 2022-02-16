@@ -408,6 +408,48 @@ namespace ERPMVC.Controllers
         }
 
 
+        //[HttpPost("[controller]/[action]")]
+        public async Task<ActionResult<CertificadoDeposito>> Aprobar([FromBody] CertificadoDepositoDTO _CertificadoDeposito)
+        {
+            try
+            {
+                if (_CertificadoDeposito != null)
+                {
+                    CertificadoDeposito _listCertificadoDeposito = new CertificadoDeposito();
+                    string baseadress = config.Value.urlbase;
+                    HttpClient _client = new HttpClient();
+                    _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));                   
+                    var result = await _client.GetAsync(baseadress + $"api/CertificadoDeposito/AprobarCertificado/{ _CertificadoDeposito.IdCD}");
+                    string valorrespuesta = "";
+                    _CertificadoDeposito.FechaModificacion = DateTime.Now;
+                    _CertificadoDeposito.UsuarioModificacion = HttpContext.Session.GetString("user");
+                    if (result.IsSuccessStatusCode)
+                    {
+                        valorrespuesta = await (result.Content.ReadAsStringAsync());
+                        _listCertificadoDeposito = JsonConvert.DeserializeObject<CertificadoDeposito>(valorrespuesta);
+                    }
+                    else
+                    {
+                        return await Task.Run(() => BadRequest("No se anulo el documento!"));
+                    }
+
+                }
+                else
+                {
+                    return await Task.Run(() => BadRequest("No llego correctamente el modelo!"));
+                }
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+            return await Task.Run(() => Json(_CertificadoDeposito));
+        }
+
+
 
         [HttpPost("[controller]/[action]")]
         public async Task<ActionResult<CertificadoDeposito>> AnularCD([FromBody]CertificadoDepositoDTO _CertificadoDeposito)
@@ -439,24 +481,6 @@ namespace ERPMVC.Controllers
                         return await Task.Run(() => BadRequest("No se anulo el documento!"));
                     }
 
-
-                    //if (_listCertificadoDeposito == null) { _listCertificadoDeposito = new CertificadoDeposito(); }
-                    //if (_listCertificadoDeposito.IdCD == 0)
-                    //{
-                    //    _CertificadoDeposito.FechaCreacion = DateTime.Now;
-                    //    _CertificadoDeposito.UsuarioCreacion = HttpContext.Session.GetString("user");
-                    //    var insertresult = await Insert(_CertificadoDeposito);
-                    //    var value = (insertresult.Result as ObjectResult).Value;
-                    //    _CertificadoDeposito = ((CertificadoDepositoDTO)(value));
-                    //    if (_CertificadoDeposito.IdCD == 0)
-                    //    {
-                    //        return await Task.Run(() => BadRequest("No se genero el documento!"));
-                    //    }
-                    //}
-                    //else
-                    //{
-                    //    var updateresult = await Update(_CertificadoDeposito.IdCD, _CertificadoDeposito);
-                    //}
                 }
                 else
                 {

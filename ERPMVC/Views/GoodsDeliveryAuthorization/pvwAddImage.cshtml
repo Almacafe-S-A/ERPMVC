@@ -56,7 +56,7 @@
         <!-- Modal content-->
         <div class="modal-content">
             <div class="modal-header">
-                <h4 class="modal-title">Imagen Precio del café</h4>
+                <h4 class="modal-title">Documentos Adjuntos</h4>
                 <button type="button" class="close" onclick="closeDocument()" >&times;</button>
             </div>
             <div class="modal-body">
@@ -106,14 +106,19 @@
                                         </div>
 
 
-                                        <input type="text" asp-for="CartaRetiroDocName" />
+                                        <input class="k-textbox"  type="text" asp-for="CartaRetiroDocName" />
+                                        <input type="text" name="URLCartaRetiro"  asp-for="URLCartaRetiro" hidden/>
+
+                                        <button class="btn-primary" type="button" onclick="Descargar(1)">Descargar Carta Retiro</button>
                                     </div>
+
+                                    <div class="row"><br /></div>
 
                                     <div class="row">
                                         <label class="control-laber">Carta Liberacion</label>
 
                                         <div class="col-md-5">
-                                            <kendo-upload drop-zone="drop-zone1" name="CartaLiberacion"  multiple="false" accept=".pdf,.jpeg,.png,.txt">
+                                            <kendo-upload drop-zone="drop-zone1" name="CartaLiberacion" multiple="false" accept=".pdf,.jpeg,.png,.txt">
                                                 <localization select="Adjuntar Archivo" cancel="Cancelar" drop-files-here="Soltar Archivo aquí" invalid-file-extension="Extensión de Archivo Invalido" retry="Reintentar" />
                                                 <files />
                                                 <validation max-file-size="10485760" />
@@ -121,7 +126,9 @@
                                         </div>
 
 
-                                        <input type="text" asp-for="CartaRetiroDocName" />
+                                        <input class="k-textbox" type="text" asp-for="LiberacionEndosoDocName" />
+                                        <input asp-for="URLLiberacionEndoso"  hidden     />
+                                        <button class="btn-primary" type="button" onclick="Descargar(2)">Descargar Carta Liberacion</button>
                                     </div>
 
 
@@ -142,7 +149,7 @@
     </div>
 </div>
 <script>
-    
+
     function ReemplazarArchivo() {
         debugger;
 
@@ -151,6 +158,54 @@
 
         }
     }
+
+    function Descargar(e) {
+        var path = "";
+        var filename = "";
+        if (e == 1) {
+            path = $("#URLCartaRetiro").val();
+            filename = $("#CartaRetiroDocName").val();
+        } else {
+            path = $("#URLLiberacionEndoso").val();
+            filename = $("#LiberacionEndosoDocName").val();
+        }
+
+        if (path == "") {
+            $.toast({
+                heading: 'Error',
+                text: 'No se ha cargado ningun archivo',
+                position: 'top-right',
+                loaderBg: '#ff6849',
+                icon: 'error',
+                hideAfter: 30000,
+                stack: 6
+            });
+            return;
+        }   
+        
+         var dataObject = {
+             'tpath': path
+             };
+
+          var ajax = new XMLHttpRequest();
+         ajax.open("Post", '@Url.Action("Download", "Download")' , true);
+          ajax.responseType = "blob";
+          ajax.setRequestHeader("Content-Type", "application/json");
+                            ajax.onreadystatechange = function () {
+                                if (this.readyState == 4) {
+                                    //debugger;
+                                    var blob = new Blob([this.response], { type: "application/vnd.ms-excel;charset=charset=utf-8" });
+                                   // var blob = new  Blob([this.response], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=charset=utf-8" });
+                                   // var fileName = filename;
+                                    saveAs(blob, filename);
+                                    //application/octet-stream
+                                }
+        };
+        ajax.send(JSON.stringify(dataObject));
+
+
+    }
+
 
 
     var onBegin = function () {
