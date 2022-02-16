@@ -39,6 +39,8 @@ namespace ERPMVC.Models
         [Display(Name = "Servicio")]
         public string ServicioName { get; set; }
 
+        public string Producto { get; set; }
+
         [Display(Name = "Dirección")]
         public string Direccion { get; set; }
         [Display(Name = "Fecha de certificado")]

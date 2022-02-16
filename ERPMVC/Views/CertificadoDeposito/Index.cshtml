@@ -127,19 +127,6 @@
                 async: false,
                 data: JSON.stringify(dataObject),
                 success: function (result) {
-                    //$("#GoodsDeliveryAuthorization").html('');
-                    //$("#GoodsDeliveryAuthorization").html(result);
-                    //var customer = $("#CustomerId").val();
-                    //$("#CustomerId").val(0);
-                    //$("#CustomerId").data("kendoDropDownList").select(customer);
-                    //$("#CustomerId").data("kendoDropDownList").value(customer);
-
-                    //hcustom = customer;
-                    //GetProductTypeIdS();
-                    //$("#SubProductId").data("kendoDropDownList").dataSource.read();
-                    //// var sapProject = $("#CustomerId").data("kendoDropDownList").bind("select", onChange(customer));
-                    //fiscal();
-                    //$('#myModalGoodsDeliveryAuthorization').modal('show');
                 },
                 error: function (XMLHttpRequest, textStatus, errorThrown) {
                     alert(textStatus + ": " + XMLHttpRequest.responseText);
@@ -167,11 +154,80 @@
         e.preventDefault();
         var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
 
+        if (dataItem.IdEstado != 6) {
+            notification.show({
+                title: "Validación",
+                message: "El Certificado no ha sido aprobado"
+            }, "error");
+        }
+
         var url = '@Url.Action("SFSolicitudCertificadoDeposito", "SolicitudCertificadoDeposito")/' + dataItem.SolicitudCertificadoId;
         var win = window.open(url , '_blank');
         win.focus();
 
     }
+
+    function dataBound(e) {
+        $.each(this.dataSource.data(), function () {
+            if (Number(this.IdEstado) != 5) {
+                $('[data-uid=' + this.uid + ']').find('.k-grid-Aprobar').hide();
+            }
+            if (Number(this.IdEstado) != 6) {
+                $('[data-uid=' + this.uid + ']').find('.k-grid-Imprimir').hide();
+            }
+        })
+    }
+
+
+    function Aprobar(e) {
+        var notification = $("#notification").data("kendoNotification");
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        if (dataItem.IdEstado != 5) {
+                    notification.show({
+                    title: "Validación",
+                    message: "El Certificado ya ha sido aprobado"
+                }, "error");
+            }
+        if (!confirm('Esta seguro de aprobar este Certificado?')) {
+            return;
+
+        }
+
+        var dataObject = {
+                IdCD: dataItem.IdCD,
+            };
+
+            $.ajax({
+                url: '@Url.Action("Aprobar", "CertificadoDeposito")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (result) {
+                    $.toast({
+                        heading: 'Satisfactorio',
+                        text: 'El Certificado se ha aprobado correctamente.',
+                        position: 'top-right',
+                        loaderBg: '#ff6849',
+                        icon: 'success',
+                        hideAfter: 7000,
+                        stack: 6
+                    });
+                    RefreshCertificadoDeposito();
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    notification.show({
+                        title: "Validación",
+                        message: textStatus + ": " + XMLHttpRequest.responseText
+                    }, "error");
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+                }
+            });
+            }
+
+
+    
 
 </script>
 
@@ -193,6 +249,7 @@
                                                   if (User.HasClaim("Inventarios.Solicitud Certificado Deposito.Editar", "true"))
                                                   {
                                                       command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditCertificadoDeposito");
+                                                      
                                                   }
                                                   if (User.HasClaim("Inventarios.Solicitud Certificado Deposito.Imprimir Certificado", "true"))
                                                   {
@@ -201,12 +258,13 @@
                                                   if (User.HasClaim("Inventarios.Solicitud Certificado Deposito.Anular", "true"))
                                                   {
                                                       command.Custom("Anular").Text(" ").IconClass("fa fa-times-circle").Click("AnularCD");
+                                                      command.Custom("Aprobar").Text(" ").IconClass("fa fa-thumbs-up").Click("Aprobar");
                                                   }
                                                   if (User.HasClaim("Inventarios.Solicitud Certificado Deposito.Imprimir Solicitud", "true"))
                                                   {
                                                       command.Custom("ImprimirSolicitud").Text(" ").IconClass("fa fa-print").Click("ImprimirSolicitudDeposito");
                                                   }
-                                              }).Width(200).Title("Acciones");
+                                              }).Width(220).Title("Acciones");
                                           }
                                           columns.Bound(p => p.IdCD).Title("No. CD").Width(120);
                                           columns.Bound(p => p.SolicitudCertificadoId).Title("No. SCD").Width(120);
@@ -216,6 +274,7 @@
                                           columns.Bound(p => p.ServicioName).Title("Servicio").Width(150);
                                           //columns.Bound(p => p.NombreEmpresa).Title("Nombre empresa").Width(150);
                                           columns.Bound(p => p.NoPoliza).Title("NoPoliza").Width(150);
+                                          columns.Bound(p => p.Producto).Title("Producto").Width(150);
                                           columns.Bound(p => p.Quantitysum).Title("Cantidad").Width(150);
                                           columns.Bound(p => p.Estado).Title("Estado").Width(150);
                                       }).Filterable(f => f.Operators(o => o.ForString(s => s
@@ -293,14 +352,14 @@
                                         .Events(events =>
                                         {
                                             events.Error("error_handler");
-                                            //events.upda("EditHandler");
+                                            //events.boun("EditHandler");
 
                                         })
                                         .Read(read => read.Action("GetCertificadoDeposito", "CertificadoDeposito"))
                                         .Create(create => create.Action("Insert", "CertificadoDeposito"))
                                         .Update(update => update.Action("Update", "CertificadoDeposito", new { id = "{0}" }))
                                         .Destroy(destroy => destroy.Action("Delete", "CertificadoDeposito", new { id = "{0}" }))
-                                  )
+                                  ).Events(e => e.DataBound("dataBound"))
 )
 
 <div id="salesorder">
@@ -338,9 +397,11 @@
     setToolbarTooltip(".k-button k-button-icontext k-grid-Agregar k-i-plus-sm", "Agregar un nuevo registro");
     //setRowButtonTooltip(".k-grid-edit", "Tooltip for Edit button");
     setRowButtonTooltip(".k-grid-Anular", "Anular un certificado de deposito!");
-    setRowButtonTooltip(".k-grid-Imprimir", "Imprimir");
+    setRowButtonTooltip(".k-grid-Imprimir", "Imprimir Certificado");
     setRowButtonTooltip(".k-grid-ImprimirSolicitud", "Imprimir Solicitud");
     setRowButtonTooltip(".k-grid-Editar", "Editar registro");
+
+    setRowButtonTooltip(".k-grid-Aprobar", "Aprobar");
 
 </script>
 
