@@ -63,6 +63,8 @@ namespace ERPMVC.Models
 
         public string LiberacionEndosoDocName { get; set; }
 
+        public string RetiroAutorizadoA { get; set; }
+
         [Display(Name = "Fecha de Creacion")]
         public DateTime? FechaCreacion { get; set; }
         [Display(Name = "Fecha de Modificación")]
