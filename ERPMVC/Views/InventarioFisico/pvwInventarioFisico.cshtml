@@ -1,0 +1,573 @@
+﻿@model ERPMVC.Models.InventarioFisico
+@using System.Security.Claims
+
+@{ Layout = null;
+    var messages = new Dictionary<string, string>() { { "custom", "Ingrese un valor correcto." },
+                                {"required","Valor requerido" }
+                            };
+    var rules = new Dictionary<string, string>() { { "custom", "customFunction" } };
+
+    string mostrar = "block";
+    ClaimsPrincipal permisos = (ClaimsPrincipal)ViewData["permisos"];
+    bool editar = Model.Id == 0;
+    string lectura = editar ? "" : "readonly";
+}
+
+
+
+
+
+<script>
+
+    
+
+
+    function customFunction(input) {
+
+        if (input.attr('name') === "BranchId" && input.val() === "0") {
+            return false;
+        }
+
+        if (input.attr('name') === "BranchId" && input.val() === "0") {
+            return false;
+        }
+
+
+        if (input.attr('name') === "NoCD" && input.val() == 0) {
+            return false;
+        }
+
+        if (input.attr('name') === "Quantity" && input.val() == 0) {
+            return false;
+        }
+
+        if (input.attr('name') === "Price" && input.val() == 0) {
+            return false;
+        }
+
+        if (input.attr('name') === "TotalLine" && input.val() == 0) {
+            return false;
+        }
+
+
+
+        return true;
+    }
+</script>
+
+@*@await  Html.PartialAsync("~/Views/OFAC/Index.cshtml")*@
+
+
+<div id="myModalInventarioFisico" class="modal fade" style="min-width:100%" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
+
+        <!-- Modal content-->
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Inventario </h4>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+
+                <div class="card" id="formulario">
+                    <div class="card-body">
+
+                        <form id="frmInventarioFisico" kendo-validator="true" kendo-messages="messages" kendo-rules="rules"
+                              data-ajax="true"
+                              data-ajax-method="post"
+                              method="post">
+
+
+
+                            <div class="row">
+                                <div class=" col-md-3">
+                                    <div class="form-group">
+                                        <label asp-for="Id" class="control-label">No. Certificado de Deposito</label>
+                                        <input class="k-textbox" type="number" name="name" value="@Model.Id" asp-for="Id" style="min-width: 100%;" required readonly />
+                                        <span asp-validation-for="Id" class="text-danger"></span>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label asp-for="Fecha" class="control-label" style="min-width: 100%;">Fecha</label>
+                                        <kendo-datepicker for="Fecha"
+                                                          style="min-width: 93%;"
+                                                          format="dd/MM/yyyy "
+                                                          lectura
+                                                          data-val-required="La fecha es requerida"
+                                                          value="Model.Fecha" />
+                                        <span asp-validation-for="Fecha" class="text-danger"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+
+                            <script>
+                                function GetCustomerService() {
+                                    debugger;
+                                    var customer = $("#CustomerId").val();
+                                    var servicio = $("#ServicioId").val();
+                                    var sucursal = $("#BranchId").val();
+                                    var preciocafe = $("#PrecioCafeId").val();
+                                    var dataobject = {
+                                        'servicioid': servicio,
+                                        'clienteid': customer,
+                                        'escafe': preciocafe > 0 ? 1 : 0,
+                                        'sucursal': sucursal
+                                    }
+                                    //console.log(dataobject);
+                                    return dataobject
+                                }
+                                function GetRecibos() {
+                                    debugger;
+                                    record = 0;
+                                    var recibosselect = $("#AsociarRecibos").data("kendoMultiSelect");
+                                    var recibos = recibosselect == undefined ? [] : recibosselect.value();
+                                    var dataobject = {
+                                        'recibos': recibos,
+                                        'Id': $('#IdCD').val(),
+                                        'preciocafe': $('#PrecioCafeId').val(),
+                                    };
+
+                                    console.log(dataobject);
+                                    return dataobject;
+
+                                }
+                                function RefrescarRecibos() {
+                                    debugger;
+                                    var multiselect = $("#AsociarRecibos").data("kendoMultiSelect");
+                                    if (multiselect) {
+                                        multiselect.dataSource.read();
+                                    }
+
+
+
+                                }
+                                function RefrescarGridDetalle() {
+                                    var grid = $("#gridInventarioFisicoDetail").getKendoGrid();
+                                    grid.dataSource.read();
+                                }
+
+                            </script>
+                            <div class="row">
+
+
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <script>
+
+                                                        function SetCustomerName(e) {
+                                                            // console.log(e);
+                                                            RefrescarRecibos();
+
+                                                            if ($("#CustomerId").val() > 0) {
+
+                                                                var dataObject = { CustomerId: $("#CustomerId").val()};
+                                                                  $.ajax({
+                                                                     url: '@Url.Action("GetCustomerById", "Customer")',
+                                                                     method: 'GET',
+                                                                     datatype: "json",
+                                                                     contentType: 'application/json',
+                                                                     async: false,
+                                                                     data: dataObject,
+                                                                      success: function (result) {
+                                                                          console.log(result);
+                                                                          // setearvalor("TaxPercentage", result.TaxPercentage);
+                                                                          //$("#RTN").val(result.RTN);
+                                                                          //$("#Correo").val(result.Email);
+                                                                          //$("#Tefono").val(result.Phone);
+                                                                          $("#Direccion").val(result.Address);
+
+                                                                     },
+                                                                      error: function (XMLHttpRequest, textStatus, errorThrown) {
+                                                                             alert(textStatus + ": " + XMLHttpRequest.responseText);
+                                                                       }
+                                                                  });
+                                                                $("#PrecioCafeId").data("kendoDropDownList").dataSource.read();
+                                                            }
+                                                        }
+                                        </script>
+                                        <label asp-for="CustomerId" class="control-label"></label>
+
+                                        <kendo-dropdownlist name="CustomerId" for="@Model.CustomerId" filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                            option-label="Seleccione el cliente"
+                                                            datatextfield="CustomerName"
+                                                            on-change="SetCustomerName"
+                                                            datavaluefield="CustomerId"
+                                                            on-data-bound="changeServicio"
+                                                            enable="editar"
+                                                            class="form-control-line"
+                                                            style="width: 100%;">
+                                            <datasource type="DataSourceTagHelperType.WebApi" server-operation="true" page-size="9999999999">
+                                                <transport>
+                                                    <read url="@Url.Action("GetCustomer", "Common")" />
+                                                </transport>
+                                            </datasource>
+                                        </kendo-dropdownlist>
+                                    </div>
+                                </div>
+                               
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <script>
+
+                                            function FillWareHouse(e) {
+                                                var dataItem = e.dataItem;
+                                                $("#warehousesetid").val(dataItem.BranchId);
+                                                $("#WarehouseId").data("kendoDropDownList").dataSource.read();
+                                            }
+
+                                            function DataSucursal() {
+                                                return {
+                                                    ServicioId: $("#ServicioId").val(),
+                                                    CustomerId: $("#CustomerId").val()
+                                                }
+                                            }
+
+
+                                        </script>
+                                        <input type="hidden" id="warehousesetid" />
+                                        <label asp-for="BranchId" class="control-label"></label>
+                                        <kendo-dropdownlist name="BranchId" for="BranchId" filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                            option-label="Seleccione Sucursal"
+                                                            datatextfield="BranchName"
+                                                            datavaluefield="BranchId"
+                                                            enable=editar
+                                                            required
+                                                            auto-bind="true"
+                                                            on-change="changeServicio"
+                                                            style="width: 100%;">
+                                            <datasource type="DataSourceTagHelperType.WebApi" page-size="99999999999">
+                                                <transport>
+                                                    <read url="@Url.Action("GetBranch", "Branch")" data="DataSucursal" />
+                                                </transport>
+                                            </datasource>
+                                        </kendo-dropdownlist>
+                                        <span asp-validation-for="BranchId" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <script>
+                                    function RefrescarRecibosDetalle() {
+                                        RefrescarGridDetalle();
+                                        RefrescarRecibos();
+                                    }
+                                </script>
+                            </div>
+
+                           
+                        </form>
+                    </div>
+
+
+                    <div class="card">
+                        <div class="card-body">
+                            <div id="salesorderdetail">
+                                @await Html.PartialAsync("pvwInventarioFisicoDetail",Model)
+                            </div>
+
+
+
+                            <div class="clearfix">&nbsp;</div>
+                            <div class="clearfix">&nbsp;</div>
+
+
+                            <div class="row">
+                                    <button id="btnSaveInventarioFisico" type="submit" class="form-control btn-miboton " onclick="SaveInventarioFisico(this);">Guardar</button>                                 
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<script>
+
+    function totalColumnas(tiporesultado, moneda) {
+        var data = $("#gridInventarioFisicoDetail").getKendoGrid().dataSource.data();
+        var total = 0;
+
+        switch (tiporesultado) {
+            case 1: ///////Calcular el Total FOB
+                data.forEach(r => total += r.CantidadDisponible);
+                break;
+            case 2: /// Calcular el total CIB
+                data.forEach(r => total += r.Quantity);
+                break;
+            case 3: ////Calcular el total CIF LPS
+                data.forEach(r => total += r.Price);
+                break;
+            case 4://///Calcular el total de Valor de derechos importacion
+                data.forEach(r => total += r.Price * r.Quantity);
+                break;
+            case 5:
+                data.forEach(r => total += r.ValorUnitarioDerechos);
+                break;
+            case 6:
+                data.forEach(r => total += r.DerechosFiscales);
+                break;
+
+            default:
+                break;
+        }
+        var formatter = new Intl.NumberFormat('es-HN', {
+            style: 'currency',
+            currency: 'LPS',
+            minimumFractionDigits: 2
+        });
+        if (moneda == 1) {
+            return formatter.format(total);
+        }
+        if (moneda == 2) {
+            formatter = new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD',
+                minimumFractionDigits: 2
+            });
+            return formatter.format(total);
+        }
+        if (moneda == 0) {
+            formatter = new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'LPS',
+                minimumFractionDigits: 2
+            });
+            return formatter.format(total).replace(/[a-z]{3}/i, "").trim();
+        }
+        return total;
+    }
+
+    function TotalColumnaTotal( moneda) {
+        var data = $("#gridInventarioFisicoDetail").getKendoGrid().dataSource.data();
+        debugger
+
+
+        var total = 0;
+        data.forEach(r => total += r.Amount);
+        var formatter = new Intl.NumberFormat('es-HN', {
+            style: 'currency',
+            currency: 'LPS',
+            minimumFractionDigits: 2
+        });
+        if (moneda == 1) {
+            return formatter.format(total);
+        }
+        if (moneda == 2) {
+            formatter = new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD',
+                minimumFractionDigits: 2
+            });
+            return formatter.format(total);
+        }
+        if (moneda == 0) {
+            formatter = new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'LPS',
+                minimumFractionDigits: 2
+            });
+            return formatter.format(total).replace(/[a-z]{3}/i, "").trim();
+        }
+        return total;
+
+    }
+
+
+
+    function RefreshInventarioFisico() {
+        var grid = $("#gridInventarioFisico").getKendoGrid();
+        grid.dataSource.read();
+    }
+
+     function SaveInventarioFisico(e) {
+        // e.preventDefault();
+        CalcularTotalDocumento();
+         $("#btnSaveInventarioFisico").hide();
+         $("#btnSaveInventarioFisico").prop("disabled", true);
+
+       debugger;
+        var validadetalle = true;
+         var displayedData = $("#gridInventarioFisicoDetail").data().kendoGrid.dataSource.data();
+         if (displayedData[displayedData.length-1].PdaNo > 5) {
+             $.toast({
+                 heading: 'Error',
+                 text: 'El certificado no puede tener mas de 5 Partidas',
+                 position: 'top-right',
+                 loaderBg: '#ff6849',
+                 icon: 'error',
+                 hideAfter: 3000,
+                 stack: 6
+             });
+             $("#btnSaveInventarioFisico").show();
+             $("#btnSaveInventarioFisico").prop("disabled", false);
+             return;
+         }
+        
+
+         if ($("#ServicioId").val() == 2 && ($("#SujetasAPago").val() == '' || $("#SujetasAPago").val() == 0)) {
+             validadetalle = false;
+             
+             $.toast({
+                 heading: 'Error',
+                 text: 'Ingresar los valores de impuestos!',
+                 position: 'top-right',
+                 loaderBg: '#ff6849',
+                 icon: 'error',
+                 hideAfter: 3000,
+                 stack: 6
+             });
+         }
+
+         if(!$("#InsurancePolicyId").val() > 0){
+             validadetalle = false;
+
+             $.toast({
+                 heading: 'Error',
+                 text: 'Seleccione una Poliza!',
+                 position: 'top-right',
+                 loaderBg: '#ff6849',
+                 icon: 'error',
+                 hideAfter: 3000,
+                 stack: 6
+             });
+         }
+
+
+         if (validadetalle) {
+
+             var recibosselect = $("#AsociarRecibos").data("kendoMultiSelect");
+             var recibos = recibosselect == undefined ? [] : recibosselect.value();
+             var list = recibos;
+             //$("#ddlRecibosAsociados > option").each(function () {
+             //    list.push(this.value);
+             //});
+             var validator = $("#frmInventarioFisico").data("kendoValidator");
+            // var validator2 = $("#TotalesDocumento").data("kendoValidator");
+             var status = $(".status");
+            //var aseguradora = 
+             var valido = true;
+             $("frmInventarioFisico").kendoValidator({
+                 validate: function (e) {
+                     /* The result can be observed in the DevTools(F12) console of the browser. */
+                     valido = true;
+                 }
+             });
+             if (displayedData.length > 0) {
+                 if (valido ) {
+                     var dataObject = {
+                         'IdCD': $("#IdCD").val(),
+                         'PrecioCafeId': $("#PrecioCafeId").val(),
+                         'CustomerId': $("#CustomerId").val(),
+                         'CustomerName': $("#CustomerId").data("kendoDropDownList").text(),
+                         'BranchId': $("#BranchId").val(),
+                         'BranchName': $("#BranchId").data("kendoDropDownList").text(),
+                         'WarehouseId': $("#WarehouseId").val(),
+                         'ServicioId': $("#ServicioId").val(),
+                         'ServicioName': $("#ServicioId").data("kendoDropDownList").text(),
+                         'Direccion': $("#Direccion").val(),
+                         'Recibos': $("#Recibos").val(),
+                         'FechaCertificado': $("#FechaCertificado").data("kendoDatePicker").value().toJSON(),
+                         'NombreEmpresa': $("#NombreEmpresa").val(),
+                         'NoPoliza': $("#InsurancePolicyId").data("kendoDropDownList").text(),
+                         'FechaVencimientoDeposito': $("#FechaVencimientoDeposito").data("kendoDatePicker").value().toJSON(),
+                         'Almacenaje': $("#Almacenaje").val(),
+                         'Comentario': $("#Comentario").val(),
+                         'Mensaje': $("#Mensaje").val(),
+                         'PorcentajeDeudas': $("#PorcentajeDeudas").val(),
+                         'PolizaPropia': $("#PolizaPropia").val(),                      
+                         'SolicitudCertificadoId': $("#SolicitudCertificadoId").val(),
+                         'NoTraslado': $("#NoTraslado").val(),
+                         'OtrosCargos': $("#OtrosCargos").val(),
+                         'Quantitysum': $("#Quantitysum").val(),
+                         'Seguro': $("#Seguro").val(),
+                         'SujetasAPago': $("#SujetasAPago").val(),
+                         'Total': $("#Total").val(),
+                         'Aduana': $("#Aduana").val(),
+                         'ManifiestoNo': $("#ManifiestoNo").val(),
+                         'InsurancePolicyId': $("#InsurancePolicyId").val(),
+                         '_CertificadoLine': displayedData,
+                         'RecibosAsociados': list
+                     };
+                     $.ajax({
+                         url: '@Url.Action("SaveInventarioFisico", "InventarioFisico")',
+                         method: 'POST',
+                         datatype: "json",
+                         contentType: 'application/json',
+                         async: false,
+                         data: JSON.stringify(dataObject),
+                         success: function (data) {
+
+                             $.toast({
+                                 heading: 'Satisfactorio',
+                                 text: 'Datos guardados correctamente.',
+                                 position: 'top-right',
+                                 loaderBg: '#ff6849',
+                                 icon: 'success',
+                                 hideAfter: 3000,
+                                 stack: 6
+                             });
+                             RefreshInventarioFisico();
+                             $('#myModalInventarioFisico').modal('hide');
+
+                         },
+                         error: function (XMLHttpRequest, textStatus, errorThrown) {
+
+                             $("#btnSaveInventarioFisico").show();
+                             $("#btnSaveInventarioFisico").prop("disabled", false);
+                             $.toast({
+                                 heading: 'Validación',
+                                 text: textStatus + ": " + XMLHttpRequest.responseText,
+                                 position: 'top-right',
+                                 loaderBg: '#ff6849',
+                                 icon: 'error',
+                                 hideAfter: 3000,
+                                 stack: 6
+                             });
+
+
+                         }
+                     });
+
+                 }
+                 else {
+
+                     $.toast({
+                         heading: 'Validación',
+                         text: 'Hay campos no validos en el formulario!',
+                         position: 'top-right',
+                         loaderBg: '#ff6849',
+                         icon: 'error',
+                         hideAfter: 3000,
+                         stack: 6
+                     });
+                     $("#btnSaveInventarioFisico").show();
+                     $("#btnSaveInventarioFisico").prop("disabled", false);
+                 }
+             }
+             else {
+
+                 $.toast({
+                     heading: 'Validación',
+                     text: 'Debe agregar los productos!',
+                     position: 'top-right',
+                     loaderBg: '#ff6849',
+                     icon: 'error',
+                     hideAfter: 3000,
+                     stack: 6
+                 });
+
+             }
+
+
+         }
+         else {
+             $("#btnSaveInventarioFisico").show();
+             $("#btnSaveInventarioFisico").prop("disabled", false);
+         }
+    }
+</script>

@@ -23,7 +23,7 @@ namespace ERPMVC.Models
 
         public decimal SaldoLibros { get; set; }
 
-        public decimal InventarioFisico { get; set; }
+        public decimal InventarioFisicoCantidad { get; set; }
 
         public decimal Diferencia { get; set; }
 
