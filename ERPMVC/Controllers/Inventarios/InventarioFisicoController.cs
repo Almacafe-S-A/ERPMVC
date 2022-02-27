@@ -95,23 +95,23 @@ namespace ERPMVC.Controllers
 
 
         [HttpGet("[controller]/[action]")]
-        public async Task<DataSourceResult> GetCertificadosCustomerService([DataSourceRequest] DataSourceRequest request, [FromQuery(Name = "clienteid")] int clienteid, [FromQuery(Name = "servicioid")] int servicioid, [FromQuery(Name = "pendienteliquidacion")] int pendienteliquidacion)
+        public async Task<DataSourceResult> GetInventarioFisicoCustomerService([DataSourceRequest] DataSourceRequest request, [FromQuery(Name = "clienteid")] int clienteid, [FromQuery(Name = "servicioid")] int servicioid, [FromQuery(Name = "pendienteliquidacion")] int pendienteliquidacion)
         {
-            List<InventarioFisico> certificados = new List<InventarioFisico>();
+            List<InventarioFisico> InventarioFisico = new List<InventarioFisico>();
             try
             {
 
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + $"api/InventarioFisico/CertificadosPendientesCustomerService/{clienteid}/{servicioid}/{pendienteliquidacion}");
+                var result = await _client.GetAsync(baseadress + $"api/InventarioFisico/InventarioFisicoPendientesCustomerService/{clienteid}/{servicioid}/{pendienteliquidacion}");
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    certificados = JsonConvert.DeserializeObject<List<InventarioFisico>>(valorrespuesta);
-                    certificados = certificados.OrderByDescending(q => q.Id).ToList();
-                    certificados = (from certificado in certificados
+                    InventarioFisico = JsonConvert.DeserializeObject<List<InventarioFisico>>(valorrespuesta);
+                    InventarioFisico = InventarioFisico.OrderByDescending(q => q.Id).ToList();
+                    InventarioFisico = (from certificado in InventarioFisico
                                       select new InventarioFisico()
                                       {
                                       }).ToList();
@@ -127,7 +127,7 @@ namespace ERPMVC.Controllers
             }
 
 
-            return certificados.ToDataSourceResult(request);
+            return InventarioFisico.ToDataSourceResult(request);
 
         }
 
@@ -210,7 +210,7 @@ namespace ERPMVC.Controllers
         }
 
         [HttpPost("[controller]/[action]")]
-        public async Task<ActionResult> GetInventarioFisicoById([DataSourceRequest]DataSourceRequest request, [FromBody] InventarioFisico _Certificado)
+        public async Task<ActionResult> GetInventarioFisicoById([DataSourceRequest]DataSourceRequest request, [FromBody] InventarioFisico Inventario)
         {
             InventarioFisico _InventarioFisico = new InventarioFisico();
             try
@@ -218,7 +218,7 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/InventarioFisico/GetInventarioFisicoById/" + _Certificado.Id);
+                var result = await _client.GetAsync(baseadress + "api/InventarioFisico/GetInventarioFisicoById/" + Inventario.Id);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
@@ -244,59 +244,15 @@ namespace ERPMVC.Controllers
 
        
 
-        //[HttpPost("[controller]/[action]")]
-        public async Task<ActionResult<InventarioFisico>> Aprobar([FromBody] InventarioFisico _InventarioFisico)
-        {
-            try
-            {
-                if (_InventarioFisico != null)
-                {
-                    InventarioFisico _listInventarioFisico = new InventarioFisico();
-                    string baseadress = config.Value.urlbase;
-                    HttpClient _client = new HttpClient();
-                    _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));                   
-                    var result = await _client.GetAsync(baseadress + $"api/InventarioFisico/AprobarCertificado/{ _InventarioFisico.Id}");
-                    string valorrespuesta = "";
-                    _InventarioFisico.FechaModificion = DateTime.Now;
-                    _InventarioFisico.UsuarioModificion = HttpContext.Session.GetString("user");
-                    if (result.IsSuccessStatusCode)
-                    {
-                        valorrespuesta = await (result.Content.ReadAsStringAsync());
-                        _listInventarioFisico = JsonConvert.DeserializeObject<InventarioFisico>(valorrespuesta);
-                    }
-                    else
-                    {
-                        return await Task.Run(() => BadRequest("No se anulo el documento!"));
-                    }
-
-                }
-                else
-                {
-                    return await Task.Run(() => BadRequest("No llego correctamente el modelo!"));
-                }
-
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
-                throw ex;
-            }
-
-            return await Task.Run(() => Json(_InventarioFisico));
-        }
-
-
-
 
         [HttpPost("[controller]/[action]")]
        // public async Task<ActionResult<InventarioFisico>>      InventarioFisico([FromBody]InventarioFisico _InventarioFisico)
-         public async Task<ActionResult<InventarioFisico>> SaveInventarioFisico([FromBody]dynamic dto)
+         public async Task<ActionResult<InventarioFisico>> Save([FromBody]dynamic dto)
         {
              InventarioFisico _InventarioFisico = new InventarioFisico(); 
             try
             {
                 _InventarioFisico = JsonConvert.DeserializeObject<InventarioFisico>(dto.ToString());
-                //_InventarioFisico = ToCertificado(dto);
                 if (_InventarioFisico != null)
                 {
                     InventarioFisico _listInventarioFisico = new InventarioFisico();
@@ -306,7 +262,7 @@ namespace ERPMVC.Controllers
                     var result = await _client.GetAsync(baseadress + "api/InventarioFisico/GetInventarioFisicoById/" + _InventarioFisico.Id);
                     string valorrespuesta = "";
                     _InventarioFisico.FechaModificion = DateTime.Now;
-                    _InventarioFisico.UsuarioModificion = HttpContext.Session.GetString("user");
+                    _InventarioFisico.UsuarioModificacion = HttpContext.Session.GetString("user");
                     if (result.IsSuccessStatusCode)
                     {
                         valorrespuesta = await (result.Content.ReadAsStringAsync());
@@ -358,7 +314,7 @@ namespace ERPMVC.Controllers
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
                 _InventarioFisico.UsuarioCreacion = HttpContext.Session.GetString("user");
-                _InventarioFisico.UsuarioModificion = HttpContext.Session.GetString("user");
+                _InventarioFisico.UsuarioModificacion = HttpContext.Session.GetString("user");
                 var result = await _client.PostAsJsonAsync(baseadress + "api/InventarioFisico/Insert", _InventarioFisico);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
@@ -437,36 +393,7 @@ namespace ERPMVC.Controllers
             return new ObjectResult(new DataSourceResult { Data = new[] { _InventarioFisico }, Total = 1 });
         }
 
-
-        public async Task<ActionResult> Virtualization_ReadByCustomer([DataSourceRequest] DataSourceRequest request, Customer Customer)
-        {
-            var res = await GetCertificadosByCustomer(Customer);
-            return Json(res.ToDataSourceResult(request));
-        }
-
-        public async Task<ActionResult> Orders_ValueMapperByCustomer(Int64[] values)
-        {
-            var indices = new List<Int64>();
-
-            if (values != null && values.Any())
-            {
-                var index = 0;
-
-                foreach (var order in await GetCertificados(0))
-                {
-                    if (values.Contains(order.Id))
-                    {
-                        indices.Add(index);
-                    }
-
-                    index += 1;
-                }
-            }
-
-            return Json(indices);
-        }
-
-        private async Task<List<InventarioFisico>> GetCertificadosByCustomer(Customer Customer)
+        private async Task<List<InventarioFisico>> GetInventarioFisicoByCustomer(Customer Customer)
         {
             List<InventarioFisico> _InventarioFisico = new List<InventarioFisico>();
 
@@ -502,38 +429,7 @@ namespace ERPMVC.Controllers
             return _InventarioFisico;
         }
 
-
-
-
-        public async Task<ActionResult> Virtualization_Read([DataSourceRequest] DataSourceRequest request,Int64 CustomerId)
-        {
-            var res = await GetCertificados(CustomerId);
-            return Json(res.ToDataSourceResult(request));
-        }
-
-        public async Task<ActionResult> Orders_ValueMapper(Int64[] values)
-        {
-            var indices = new List<Int64>();
-
-            if (values != null && values.Any())
-            {
-                var index = 0;
-
-                foreach (var order in await GetCertificados(0))
-                {
-                    if (values.Contains(order.Id))
-                    {
-                        indices.Add(index);
-                    }
-
-                    index += 1;
-                }
-            }
-
-            return Json(indices);
-        }
-
-        private async Task<List<InventarioFisico>> GetCertificados(Int64 CustomerId)
+        private async Task<List<InventarioFisico>> GetInventarioFisico(Int64 CustomerId)
         {
             List<InventarioFisico> _InventarioFisico = new List<InventarioFisico>();
 
@@ -559,7 +455,7 @@ namespace ERPMVC.Controllers
 
                     _client = new HttpClient();
                     _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                    result = await _client.GetAsync(baseadress + "api/EndososCertificados/GetInventarioFisico");
+                    result = await _client.GetAsync(baseadress + "api/EndososInventarioFisico/GetInventarioFisico");
                     valorrespuesta = "";
                     //if (result.IsSuccessStatusCode)
                     //{
@@ -599,7 +495,7 @@ namespace ERPMVC.Controllers
                 dscarray[0] = dsc;
                 reportWriter.SetDataSourceCredentials(dscarray);
                 var format = Syncfusion.ReportWriter.WriterFormat.PDF;
-                string completepath = basePath + $"/CertificadosDeposito/CertificadoDeDeposito{id}.pdf";
+                string completepath = basePath + $"/InventarioFisicoDeposito/CertificadoDeDeposito{id}.pdf";
                 MemoryStream ms = new MemoryStream();
 
                 reportWriter.Save(ms, format);

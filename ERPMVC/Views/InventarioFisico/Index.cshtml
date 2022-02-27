@@ -1,0 +1,388 @@
+﻿@using Microsoft.AspNetCore.Http;
+@using System.Security.Claims
+@using Kendo.Mvc.UI;
+@{
+    ViewData["Title"] = "Inventario Físico";
+}
+
+<link href="~/admp/assets/plugins/wizard/steps.css" rel="stylesheet">
+<script src="~/admp/assets/plugins/wizard/jquery.steps.min.js"></script>
+<script src="~/admp/assets/plugins/wizard/jquery.validate.min.js"></script>
+
+
+<script>
+
+
+    $(document).ready(function () {
+        clearsession();
+    });
+
+
+     var hcustom = 0;
+    function clearsession() {
+            var dataObject = ["listadoproductosInventarioFisico"];
+         $.ajax({
+            url: '@Url.Action("ClearSession","Common")',
+            method: 'POST',
+            datatype: "json",
+            contentType: 'application/json',
+            async: false,
+            data: JSON.stringify(dataObject),
+            success: function (result) {
+                  //  $('#myModalSalesOrder').modal('show');
+            },
+             error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+              }
+         });
+    }
+
+    function AddInventarioFisico() {
+       // $('#myModalSalesOrder').find(':input').not(':submit').val('');
+         //$('#myModalSalesOrder').modal('show');
+
+         clearsession();
+
+         var dataObject = {
+            IdCD: 0,
+            editar : 1
+        };
+
+        $.ajax({
+            url: '@Url.Action("pvwInventarioFisico", "InventarioFisico")',
+            method: 'POST',
+            datatype: "json",
+            contentType: 'application/json',
+            async: false,
+            data: JSON.stringify(dataObject),
+            success: function (result) {
+                $("#salesorder").html('');
+                $("#salesorder").html(result);
+
+                RefreshInventarioFisicoDetail();
+                 $("#btnSaveCotizacion").show();
+                $('#myModalInventarioFisico').modal('show');
+            },
+             error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+              }
+        });
+
+
+    }
+
+    function EditInventarioFisico(e) {
+         e.preventDefault();
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        var dataObject = {
+            IdCD: dataItem.IdCD,
+            editar : 0
+        };
+
+        clearsession();
+
+        $.ajax({
+            url: '@Url.Action("pvwInventarioFisico", "InventarioFisico")',
+            method: 'POST',
+            datatype: "json",
+            contentType: 'application/json',
+            async: false,
+            data: JSON.stringify(dataObject),
+            success: function (result) {
+                $("#salesorder").html('');
+                $("#salesorder").html(result);
+
+              //  RefreshCotizacionesDetail();
+                 $("#btnSaveCotizacion").hide();
+                $('#myModalInventarioFisico').modal('show');
+            },
+             error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+              }
+        });
+    }
+
+
+
+
+    function closecondition() {
+        $('#myModalConditions').modal('hide');
+    }
+
+
+    function AnularCD(e) {
+        e.preventDefault();
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+
+        var dataObject = {
+            IdCD: dataItem.IdCD
+        }
+
+        if (confirm("Esta seguro que desea anular el certificado de deposito?")) {
+            $.ajax({
+                url: '@Url.Action("AnularCD", "InventarioFisico")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (result) {
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+                }
+            });
+        }
+    }
+
+
+      function ImprimirInventarioFisico(e) {
+        e.preventDefault();
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+
+        var url = '@Url.Action("SFInventarioFisico", "InventarioFisico")/' + dataItem.IdCD;
+       // var url = './SFInventarioFisico/' + dataItem.IdCD;
+        var win = window.open(url , '_blank');
+        win.focus();
+
+
+
+    }
+
+
+    function ImprimirSolicitudDeposito(e) {
+        e.preventDefault();
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+
+        if (dataItem.IdEstado != 6) {
+            notification.show({
+                title: "Validación",
+                message: "El Certificado no ha sido aprobado"
+            }, "error");
+        }
+
+        var url = '@Url.Action("SFSolicitudInventarioFisico", "SolicitudInventarioFisico")/' + dataItem.SolicitudCertificadoId;
+        var win = window.open(url , '_blank');
+        win.focus();
+
+    }
+
+    function dataBound(e) {
+        $.each(this.dataSource.data(), function () {
+            if (Number(this.IdEstado) != 5) {
+                $('[data-uid=' + this.uid + ']').find('.k-grid-Aprobar').hide();
+            }
+            if (Number(this.IdEstado) != 6) {
+                $('[data-uid=' + this.uid + ']').find('.k-grid-Imprimir').hide();
+            }
+        })
+    }
+
+
+    function Aprobar(e) {
+        var notification = $("#notification").data("kendoNotification");
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        if (dataItem.IdEstado != 5) {
+                    notification.show({
+                    title: "Validación",
+                    message: "El Certificado ya ha sido aprobado"
+                }, "error");
+            }
+        if (!confirm('Esta seguro de aprobar este Certificado?')) {
+            return;
+
+        }
+
+        var dataObject = {
+                IdCD: dataItem.IdCD,
+            };
+
+            $.ajax({
+                url: '@Url.Action("Aprobar", "InventarioFisico")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (result) {
+                    $.toast({
+                        heading: 'Satisfactorio',
+                        text: 'El Certificado se ha aprobado correctamente.',
+                        position: 'top-right',
+                        loaderBg: '#ff6849',
+                        icon: 'success',
+                        hideAfter: 7000,
+                        stack: 6
+                    });
+                    RefreshInventarioFisico();
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    notification.show({
+                        title: "Validación",
+                        message: textStatus + ": " + XMLHttpRequest.responseText
+                    }, "error");
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+                }
+            });
+            }
+
+
+    
+
+</script>
+
+
+
+<h3 class="text-themecolor">Solicitud/Certificado de depósito</h3>
+
+@(Html.Kendo().Grid<ERPMVC.Models.InventarioFisico>()
+                                      .Name("gridInventarioFisico")
+                                      .Columns(columns =>
+                                      {
+                                          {
+                                              columns.Command(command =>
+                                              {
+                                                  if (User.HasClaim("Inventarios.Solicitud Certificado Deposito.Editar", "true"))
+                                                  {
+                                                      command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditInventarioFisico");
+                                                      
+                                                  }
+                                                  if (User.HasClaim("Inventarios.Solicitud Certificado Deposito.Imprimir Certificado", "true"))
+                                                  {
+                                                      command.Custom("Imprimir").Text(" ").IconClass("fa fa-print").Click("ImprimirInventarioFisico");
+                                                  }
+                                                  if (User.HasClaim("Inventarios.Solicitud Certificado Deposito.Anular", "true"))
+                                                  {
+                                                      command.Custom("Anular").Text(" ").IconClass("fa fa-times-circle").Click("AnularCD");
+                                                      command.Custom("Aprobar").Text(" ").IconClass("fa fa-thumbs-up").Click("Aprobar");
+                                                  }
+                                                  if (User.HasClaim("Inventarios.Solicitud Certificado Deposito.Imprimir Solicitud", "true"))
+                                                  {
+                                                      command.Custom("ImprimirSolicitud").Text(" ").IconClass("fa fa-print").Click("ImprimirSolicitudDeposito");
+                                                  }
+                                              }).Width(220).Title("Acciones");
+                                          }
+                                          columns.Bound(p => p.Id).Title("No.").Width(120);
+                                          columns.Bound(p => p.Fecha).Title("Fecha").Width(120).Format("{0:dd/MM/yyyy}");
+                                          columns.Bound(p => p.Sucursal).Title("Fecha Certificado").Width(150);
+                                          columns.Bound(p => p.Bodega).Title("Fecha de Vencimiento").Width(150);
+                                          columns.Bound(p => p.Cliente).Title("Cliente").Width(200);
+                                      }).Filterable(f => f.Operators(o => o.ForString(s => s
+                                                             .Clear()
+                                                             .Contains("Contiene")
+                                                             .DoesNotContain("No contiene")
+                                                             .EndsWith("Termina con")
+                                                             .IsEqualTo("Es igual a")
+                                                             .IsNotEqualTo("No es igual a")
+                                                             .IsNull("Es nulo")
+                                                             .StartsWith("Inicia con")
+
+
+                                                       )
+                                                       .ForNumber(n => n
+                                                         .Clear()
+                                                         .IsEqualTo("Es igual a")
+                                                         .IsGreaterThan("Es mayor que")
+                                                         .IsLessThan("Es menor que")
+                                                         .IsNull("Es nulo")
+                                                         .IsLessThanOrEqualTo("Es menor o igual que")
+                                                         .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                                       )
+                                                       .ForDate(d => d
+                                                       .Clear()
+                                                       .IsEqualTo("Es igual que")
+                                                       .IsGreaterThan("Es mayor que")
+                                                       .IsLessThan("Es menor que")
+                                                       .IsLessThanOrEqualTo("Es menor o igual que")
+                                                       .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                                       .IsNotEqualTo("No es igual que")
+                                                        )
+                                                     ))
+                                          .ToolBar(tools =>
+                                          {
+                                              // tools.Create();
+
+                                              if (User.HasClaim("Inventarios.Solicitud Certificado Deposito.Agregar", "true"))
+                                              {
+                                                  tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+                                                               .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddInventarioFisico();" });
+                                              }
+                                                  tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
+                                                  tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
+
+                                          })
+                                       .Editable(e => e.Mode(GridEditMode.PopUp))
+                                        .Sortable()
+                                        .AutoBind(true)
+                                        .Pageable(p => p.Input(true))
+                                        
+                                        .Filterable()
+                                        .Scrollable()
+                                        // .ClientDetailTemplateId("template")
+                                        .Pdf(pdf => pdf.FileName("InventarioFisicoReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                        + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+                                        .ProxyURL(Url.Action("Export", "Home")).AllPages())
+                                          .Excel(excel => excel.FileName("InventarioFisicoReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                        + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+                                        .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+                                        //.Events(e=>e.Save("onsave"))
+                                        .DataSource(dataSource =>
+
+                                       dataSource
+                                       //.Ajax()
+                                       .WebApi()
+                                        .ServerOperation(true)
+                                        .Model(model =>
+                                        {
+                                            model.Id(p => p.Id);
+                                            //model.Field(p => p.IdCD).Editable(true);
+
+
+                                        })
+                                        .Events(events =>
+                                        {
+                                            events.Error("error_handler");
+                                            //events.boun("EditHandler");
+
+                                        })
+                                        .Read(read => read.Action("GetInventarioFisico", "InventarioFisico"))
+                                        .Create(create => create.Action("Insert", "InventarioFisico"))
+                                        .Update(update => update.Action("Update", "InventarioFisico", new { id = "{0}" }))
+                                        .Destroy(destroy => destroy.Action("Delete", "InventarioFisico", new { id = "{0}" }))
+                                  ).Events(e => e.DataBound("dataBound"))
+)
+
+<div id="salesorder">
+    @await Html.PartialAsync("pvwInventarioFisico", new ERPMVC.Models.InventarioFisico
+    {
+        Id = 0,
+        Fecha = DateTime.Now,
+})
+</div>
+
+<script>
+
+    function setToolbarTooltip(btn_cl, btn_tooltip) {
+        $("#gridInventarioFisico").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+
+    function setRowButtonTooltip(btn_cl, btn_tooltip) {
+        $("#gridInventarioFisico").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+
+    setToolbarTooltip(".k-button k-button-icontext k-grid-Agregar k-i-plus-sm", "Agregar");
+    //setRowButtonTooltip(".k-grid-edit", "Tooltip for Edit button");
+    setRowButtonTooltip(".k-grid-Anular", "Anular un certificado de deposito!");
+    setRowButtonTooltip(".k-grid-Imprimir", "Imprimir Certificado");
+    setRowButtonTooltip(".k-grid-Editar", "Editar registro");
+
+</script>
+
+
+

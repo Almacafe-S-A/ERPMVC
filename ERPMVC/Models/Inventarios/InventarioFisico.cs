@@ -20,6 +20,8 @@ namespace ERPMVC.Models
 
         public string Sucursal { get; set; }
 
+        public int BranchId { get; set; }
+
         public int WarehouseId { get; set; }
         [ForeignKey("WarehouseId")]
         public Warehouse Warehouse { get; set; }
@@ -40,7 +42,7 @@ namespace ERPMVC.Models
 
         public string UsuarioCreacion { get; set; }
 
-        public string UsuarioModificion { get; set; }
+        public string UsuarioModificacion { get; set; }
 
         public List<InventarioFisicoLine> InventarioFisicoLines { get; set; }
     }
