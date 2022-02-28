@@ -62,6 +62,47 @@ namespace ERPMVC.Controllers
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
                 var result = await _client.GetAsync(baseadress + "api/InventarioFisico/GetInventarioFisicoById/" + _InventarioFisico.Id);
                 string valorrespuesta = "";
+                if (result.StatusCode == System.Net.HttpStatusCode.OK)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _InventarioFisico = JsonConvert.DeserializeObject<InventarioFisico>(valorrespuesta);
+
+                }
+
+                if (_InventarioFisico.Id == 0)
+                {
+                    _InventarioFisico = new InventarioFisico
+                    {
+                        Id = 0,
+                        Fecha = DateTime.Now,
+                    };
+                }
+                ViewData["permisos"] = _principal;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+
+
+            return PartialView(_InventarioFisico);
+
+        }
+
+
+
+        [HttpPost("[controller]/[action]")]
+        public async Task<ActionResult> pvwInventarioFisicoDetail([FromBody] InventarioFisico _InventarioFisico)
+        {
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/InventarioFisico/GetInventarioFisicoDetail/" + _InventarioFisico.Id);
+                string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
@@ -90,7 +131,7 @@ namespace ERPMVC.Controllers
             return PartialView(_InventarioFisico);
 
         }
-        
+
 
 
 
