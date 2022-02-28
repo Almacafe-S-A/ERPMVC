@@ -90,7 +90,7 @@ namespace ERPMVC.Controllers
 
         }
 
-        public async Task<ActionResult> pvwCertificadoDepositoDetailMant(Int64 InventarioFisicoLineId = 0)
+        public async Task<ActionResult> pvwInventarioFisicoDetailMant(Int64 InventarioFisicoLineId = 0)
         {
             InventarioFisicoLine _InventarioFisicoLine = new InventarioFisicoLine();
             try
@@ -120,7 +120,7 @@ namespace ERPMVC.Controllers
 
 
 
-            return PartialView("~/Views/CertificadoDeposito/pvwCertificadoDepositoDetailMant.cshtml", _InventarioFisicoLine);
+            return PartialView("~/Views/InventarioFisico/pvwInventarioFisicoDetailMant.cshtml", _InventarioFisicoLine);
 
         }
 
@@ -261,13 +261,13 @@ namespace ERPMVC.Controllers
             {
 
                  _salesorderLIST =
-                JsonConvert.DeserializeObject<List<InventarioFisicoLine>>(HttpContext.Session.GetString("listadoproductoscertificadodeposito"));
+                JsonConvert.DeserializeObject<List<InventarioFisicoLine>>(HttpContext.Session.GetString("listadoproductosInventarioFisico"));
 
                 if (_salesorderLIST != null)
                 {
                     
 
-                    HttpContext.Session.SetString("listadoproductoscertificadodeposito", JsonConvert.SerializeObject(_salesorderLIST));
+                    HttpContext.Session.SetString("listadoproductosInventarioFisico", JsonConvert.SerializeObject(_salesorderLIST));
                 }
 
 
