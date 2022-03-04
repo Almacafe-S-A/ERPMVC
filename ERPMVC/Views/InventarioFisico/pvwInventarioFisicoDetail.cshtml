@@ -111,63 +111,11 @@
     function calculateField(e) {
         debugger;
         if (e.container) {            
-            if (e.model.Quantity > e.model.CantidadDisponible) {
-                $.toast({
-                    heading: 'Error',
-                    text: 'La cantidad a Certificar no puede ser mayor al Disponible',
-                    position: 'top-right',
-                    loaderBg: '#ff6849',
-                    icon: 'error',
-                    hideAfter: 3000,
-                    stack: 6
-                });
-                e.model.Quantity = e.model.CantidadDisponible;
-            }
-            if (e.model.Quantity <=0) {
-                $.toast({
-                    heading: 'Error',
-                    text: 'La cantidad a Certificar no puede ser cero para no certificar este producto elimine la fila',
-                    position: 'top-right',
-                    loaderBg: '#ff6849',
-                    icon: 'error',
-                    hideAfter: 3000,
-                    stack: 6
-                });
-                e.model.Quantity = e.model.CantidadDisponible;
-            }
             var totalSpan = e.container.closest("TR").find(".totalSpan");
-            var totalderechosSpan = e.container.closest("TR").find(".totalderechosSpan");
-            e.model.Amount = e.model.Price * e.model.Quantity;
-            e.model.DerechosFiscales = e.model.Quantity * e.model.ValorUnitarioDerechos;
             
-            var total = formattear.format(e.model.Amount).replace(/[a-z]{3}/i, "").trim();
-            totalSpan.html(total);
+            e.model.Diferencia =   e.model.InventarioFisicoCantidad - e.model.SaldoLibros;
+             totalSpan.html(e.model.Diferencia);
 
-
-            var totalderechos = formattear.format(e.model.DerechosFiscales).replace(/[a-z]{3}/i, "").trim();
-            totalderechosSpan.html(totalderechos);
-
-
-            //Actualizar Total
-            var footer = $('tr.k-footer-template'),
-                idx = 4, // replace 3 with the column index you want to aggregate
-                aggregate = $(footer).children('td')[idx];
-            $(aggregate).text(totalColumnas(2, 0));
-            
-            //Actualizar Total
-            var footer = $('tr.k-footer-template'),
-                idx = 9, // replace 3 with the column index you want to aggregate
-                aggregate = $(footer).children('td')[idx];
-            $(aggregate).text(totalColumnas(4, 1));
-
-            //Actualizar TotalDerechos
-            var footer = $('tr.k-footer-template'),
-                idx = 11, // replace 3 with the column index you want to aggregate
-                aggregate = $(footer).children('td')[idx];
-            $(aggregate).text(totalColumnas(6, 1));
-
-            CalcularTotalDocumento();
-            
         }
         
     }
@@ -204,13 +152,16 @@
                 command.Custom("Eliminar").Text(" ").IconClass("fa fa-trash-alt").Click("Delete");
 
             }
-        }).Width(100).Visible(editable);
+        }).Width(80).Visible(editable);
         //columns.Bound(p => p.PdaNo).Title("Pda No").ClientTemplate("#= RowNum()#").Width(110);
-        columns.Bound(p => p.Id).Title("Id").Width(110);
+        columns.Bound(p => p.Id).Title("Id").Width(110).Visible(false);
         columns.Bound(p => p.ProductoNombre).Title("Nombre Producto").Width(100).Visible(true);
         columns.Bound(p => p.SaldoLibros).Title("Saldo Libros").Width(120).Visible(true);
         columns.Bound(p => p.InventarioFisicoCantidad).Title("Inventario Fisico").Width(120).Visible(true);        
-        columns.Bound(p => p.Diferencia).Title("Diferencia").Width(120).Visible(true);
+        columns.Bound(p => p.Diferencia).Title("Diferencia")
+        .ClientTemplate("<div style='text-align: right'><span class='totalSpan'>#= InventarioFisicoCantidad - SaldoLibros #</span></div>")
+        
+        .Width(120).Visible(true);
       
     })
     .Editable(e => e.Mode(GridEditMode.InCell))
@@ -285,7 +236,7 @@
 
 
     })
-    .Read(read => read.Action("GetCertificadoLine", "CertificadoLine").Data("GetRecibos"))
+    .Read(read => read.Action("GetInventarioFisicoLines", "InventarioFisicoLine").Data("GetparamDetalle"))
     )
     )
 

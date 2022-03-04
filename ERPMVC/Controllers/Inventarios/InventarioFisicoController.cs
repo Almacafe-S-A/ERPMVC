@@ -287,13 +287,15 @@ namespace ERPMVC.Controllers
 
 
         [HttpPost("[controller]/[action]")]
-       // public async Task<ActionResult<InventarioFisico>>      InventarioFisico([FromBody]InventarioFisico _InventarioFisico)
-         public async Task<ActionResult<InventarioFisico>> Save([FromBody]dynamic dto)
+        // 
+        // public async Task<ActionResult<InventarioFisico>> Save([FromBody]dynamic dto)
+        public async Task<ActionResult<InventarioFisico>> Save([FromBody] InventarioFisico _InventarioFisico)
         {
-             InventarioFisico _InventarioFisico = new InventarioFisico(); 
+             //InventarioFisico _InventarioFisico = new InventarioFisico(); 
             try
+            
             {
-                _InventarioFisico = JsonConvert.DeserializeObject<InventarioFisico>(dto.ToString());
+               // _InventarioFisico = JsonConvert.DeserializeObject<InventarioFisico>(dto.ToString());
                 if (_InventarioFisico != null)
                 {
                     InventarioFisico _listInventarioFisico = new InventarioFisico();

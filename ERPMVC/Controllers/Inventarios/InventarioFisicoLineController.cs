@@ -34,10 +34,39 @@ namespace ERPMVC.Controllers
             return View();
         }
 
-        public async Task<DataSourceResult> GetInventarioFisicoLine([DataSourceRequest] DataSourceRequest request
-            , [FromQuery(Name = "Recibos")] int[] recibos
-            , [FromQuery(Name = "Id")] int id
-            , [FromQuery(Name = "preciocafe")] int preciocafe)
+        public async Task<DataSourceResult> GetInventarioFisicoLines([DataSourceRequest] DataSourceRequest request
+            , [FromQuery(Name = "Id")] int InventarioId
+            , [FromQuery(Name = "BranchId")] int branchid
+            , [FromQuery(Name = "warehouseid")] int warehouseid)
+        {
+            try
+            {
+                if (InventarioId == 0)
+                {
+                    return await  GetSaldoLibros(request,branchid, warehouseid);
+                }
+                else
+                {
+                    return await GetInventarioLinesByInventarioId(request,InventarioId);
+                }
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+            
+
+        }
+
+
+        
+
+        public async Task<DataSourceResult> GetSaldoLibros([DataSourceRequest] DataSourceRequest request
+            ,  int branchid
+            ,  int warehouseid)
         {
             List<InventarioFisicoLine> InventarioFisicoLines = new List<InventarioFisicoLine>();
             try
@@ -46,26 +75,7 @@ namespace ERPMVC.Controllers
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
                 string requestURl;
-                if (id == 0)
-                {
-                    string strrecibos = "?";
-                    foreach (var item in recibos)
-                    {
-                        strrecibos += $"Recibos={item}";
-                        if (item != recibos.ElementAt(recibos.Count() - 1))
-                        {
-                            strrecibos += "&&";
-                        }
-                    }
-                    requestURl = $"api/InventarioFisicoLine/GetRecibosPendientes/{strrecibos}&&preciocafe={preciocafe}";
-                }
-                else
-                {
-                    requestURl = $"api/InventarioFisicoLine/GetInventarioFisicoLineByIdCD/{id}";
-                }
-
-
-
+                requestURl = $"api/InventarioFisico/GetSaldoLibros/{branchid}/{warehouseid}";
                 var result = await _client.GetAsync(baseadress + requestURl);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
@@ -158,7 +168,7 @@ namespace ERPMVC.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult> GetInventarioFisicoLineByIdCD([DataSourceRequest]DataSourceRequest request, Int64 IdCD)
+        public async Task<DataSourceResult> GetInventarioLinesByInventarioId(DataSourceRequest request, Int64 InventarioId)
         {
             List<InventarioFisicoLine> _InventarioFisicoLine = new List<InventarioFisicoLine>();
             try
@@ -167,7 +177,7 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/InventarioFisicoLine/GetInventarioFisicoLineByIdCD/" + IdCD);
+                var result = await _client.GetAsync(baseadress + "api/InventarioFisicoLine/GetInventarioLinesByInventarioId/" + InventarioId);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
@@ -185,7 +195,7 @@ namespace ERPMVC.Controllers
             }
 
 
-            return Json(_InventarioFisicoLine.ToDataSourceResult(request));
+            return _InventarioFisicoLine.ToDataSourceResult(request);
 
         }
 
