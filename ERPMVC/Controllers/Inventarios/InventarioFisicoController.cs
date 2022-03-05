@@ -306,7 +306,7 @@ namespace ERPMVC.Controllers
                     string valorrespuesta = "";
                     _InventarioFisico.FechaModificion = DateTime.Now;
                     _InventarioFisico.UsuarioModificacion = HttpContext.Session.GetString("user");
-                    if (result.IsSuccessStatusCode)
+                    if (result.StatusCode == System.Net.HttpStatusCode.OK)
                     {
                         valorrespuesta = await (result.Content.ReadAsStringAsync());
                         _listInventarioFisico = JsonConvert.DeserializeObject<InventarioFisico>(valorrespuesta);
@@ -320,7 +320,7 @@ namespace ERPMVC.Controllers
                         var insertresult = await Insert(_InventarioFisico);
                         var value = (insertresult.Result as ObjectResult).Value;
                         _InventarioFisico = ((InventarioFisico)(value));
-                        if (_InventarioFisico.Id <= 0)
+                        if (insertresult.Result is BadRequestResult)
                         {
                             return await Task.Run(() => BadRequest("No se genero el documento!"));
                         }
