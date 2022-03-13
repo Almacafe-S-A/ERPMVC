@@ -355,11 +355,13 @@ namespace ERPMVC.Controllers
                 // TODO: Add insert logic here
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
+
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
                 _InventarioFisico.UsuarioCreacion = HttpContext.Session.GetString("user");
                 _InventarioFisico.UsuarioModificacion = HttpContext.Session.GetString("user");
                 var result = await _client.PostAsJsonAsync(baseadress + "api/InventarioFisico/Insert", _InventarioFisico);
                 string valorrespuesta = "";
+
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());

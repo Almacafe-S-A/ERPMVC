@@ -81,7 +81,7 @@ namespace ERPMVC.Controllers
 
 
         [HttpGet("[controller]/[action]")]
-        public async Task<DataSourceResult> GetCustomerByBranch([DataSourceRequest] DataSourceRequest request, Int64 BranchId)
+        public async Task<JsonResult> GetCustomerByBranch([DataSourceRequest] DataSourceRequest request, Int64 BranchId)
         {
             Customer customer = new Customer(); 
 
@@ -106,7 +106,8 @@ namespace ERPMVC.Controllers
             List<Customer> customers = new List<Customer>();
             customers.Add(customer);  
 
-            return customers.ToDataSourceResult(request);
+            //return customers.ToDataSourceResult(request);
+            return Json(customers.ToDataSourceResult(request));
         }
 
         [HttpGet("[controller]/[action]")]

@@ -110,6 +110,7 @@
 
     function calculateField(e) {
         debugger;
+        record = 0;
         if (e.container) {            
             var totalSpan = e.container.closest("TR").find(".totalSpan");
             
@@ -118,6 +119,13 @@
 
         }
         
+    }
+
+    var record = 0;
+
+    function RowNum() {
+
+        return ++record;
     }
 
 
@@ -148,20 +156,22 @@
         {
             if (editable)
             {
-
                 command.Custom("Eliminar").Text(" ").IconClass("fa fa-trash-alt").Click("Delete");
-
             }
         }).Width(80).Visible(editable);
+        columns.Bound(c =>c.No).Width(80).Title("No.").ClientTemplate("#=RowNum()#");
         //columns.Bound(p => p.PdaNo).Title("Pda No").ClientTemplate("#= RowNum()#").Width(110);
         columns.Bound(p => p.Id).Title("Id").Width(110).Visible(false);
-        columns.Bound(p => p.ProductoNombre).Title("Nombre Producto").Width(100).Visible(true);
-        columns.Bound(p => p.SaldoLibros).Title("Saldo Libros").Width(120).Visible(true);
-        columns.Bound(p => p.InventarioFisicoCantidad).Title("Inventario Fisico").Width(120).Visible(true);        
+        columns.Bound(p => p.Product).Title("Producto")
+        .ClientTemplate("#=typeof Product === 'undefined'||Product===null?ProductoNombre:Product.ProductName#").Width(120);        
+         columns.Bound(p => p.UnitOfMeasure).Title("Unidad de Medida")
+        .ClientTemplate("#=typeof UnitOfMeasure === 'undefined'||UnitOfMeasure===null?'':UnitOfMeasure.UnitOfMeasureName#").Width(120);
+        columns.Bound(p => p.SaldoLibros).Title("Saldo Libros").Width(120);
+        columns.Bound(p => p.InventarioFisicoCantidad).Title("Inventario Fisico").Width(120);        
         columns.Bound(p => p.Diferencia).Title("Diferencia")
-        .ClientTemplate("<div style='text-align: right'><span class='totalSpan'>#= InventarioFisicoCantidad - SaldoLibros #</span></div>")
-        
-        .Width(120).Visible(true);
+        .ClientTemplate("<div style='text-align: right'><span class='totalSpan'>#= InventarioFisicoCantidad - SaldoLibros #</span></div>")        
+        .Width(120);
+        columns.Bound(p => p.Estiba).Width(100);
       
     })
     .Editable(e => e.Mode(GridEditMode.InCell))
@@ -197,6 +207,11 @@
     .IsNotEqualTo("No es igual que")
     )
     ))
+     .ToolBar(tools =>
+        {
+            tools.Create().Text("Agregar Producto");
+            tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" }).Text("Exportar a excel");
+        })
 
 
     .Sortable()
@@ -218,15 +233,17 @@
     .WebApi()
     .Batch(true)
 
-    .ServerOperation(true)
+    .ServerOperation(false)
     .Model(model =>
     {
         model.Id(p => p.Id);
+        model.Field(p => p.No).Editable(false);
         model.Field(p => p.Id).Editable(false);
         model.Field(p => p.ProductoNombre).Editable(false);
         model.Field(p => p.SaldoLibros).Editable(false);
         model.Field(p => p.InventarioFisicoCantidad).Editable(true);
         model.Field(p => p.Diferencia).Editable(false);
+       
 
     })
     .Sort(s => s.Add(a => a.Id).Ascending())
