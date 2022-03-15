@@ -92,7 +92,7 @@ namespace ERPMVC.Controllers
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _users = JsonConvert.DeserializeObject<List<ApplicationUser>>(valorrespuesta);
+                    _users = JsonConvert.DeserializeObject<List<ApplicationUser>>(valorrespuesta).Where(w => Convert.ToBoolean(w.IsEnabled) ).ToList() ;
 
                 }
 
