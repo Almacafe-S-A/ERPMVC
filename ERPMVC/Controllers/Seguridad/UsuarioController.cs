@@ -361,6 +361,8 @@ namespace ERPMVC.Controllers
                 // TODO: Add insert logic here
                 string baseadress = config.Value.urlbase;
                 _usuario.UserName = _usuario.Email;
+                _usuario.NormalizedEmail = Convert.ToString(_usuario.Email).ToUpper();
+                _usuario.NormalizedUserName = Convert.ToString(_usuario.Email).ToUpper();
                 //_usuario.BranchId = _usuario.BranchId;
                 HttpClient _client = new HttpClient();
                // _usuario.cambiarpassword = _usuario.cambiarpassword == null ? false : true;

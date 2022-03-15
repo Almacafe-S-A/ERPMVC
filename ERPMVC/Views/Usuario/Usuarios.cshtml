@@ -14,6 +14,10 @@
         <p>
             <strong>Seleccione Reestablecer para cambiar la contraseña a una temporal  </strong>
         </p>
+
+        <p style="color: #1976d2">
+            <strong>Al editar un usuario se recomienda no usar funciones de autocompletado.</strong>
+        </p>
     </div>
 </div>
 
@@ -42,32 +46,32 @@
         })
         .Events(e => e.Edit("addmaskpassword"))
         .Filterable(f => f.Operators(o => o.ForString(s => s
-                .Clear()
-                .Contains("Contiene")
-                .DoesNotContain("No contiene")
-                .EndsWith("Termina con")
-                .IsEqualTo("Es igual a")
-                .IsNotEqualTo("No es igual a")
-                .IsNull("Es nulo")
-                .StartsWith("Inicia con")
+                    .Clear()
+                    .Contains("Contiene")
+                    .DoesNotContain("No contiene")
+                    .EndsWith("Termina con")
+                    .IsEqualTo("Es igual a")
+                    .IsNotEqualTo("No es igual a")
+                    .IsNull("Es nulo")
+                    .StartsWith("Inicia con")
             )
             .ForNumber(n => n
-                .Clear()
-                .IsEqualTo("Es igual a")
-                .IsGreaterThan("Es mayor que")
-                .IsLessThan("Es menor que")
-                .IsNull("Es nulo")
-                .IsLessThanOrEqualTo("Es menor o igual que")
-                .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                    .Clear()
+                    .IsEqualTo("Es igual a")
+                    .IsGreaterThan("Es mayor que")
+                    .IsLessThan("Es menor que")
+                    .IsNull("Es nulo")
+                    .IsLessThanOrEqualTo("Es menor o igual que")
+                    .IsGreaterThanOrEqualTo("Es mayor o igual que")
             )
             .ForDate(d => d
-                .Clear()
-                .IsEqualTo("Es igual que")
-                .IsGreaterThan("Es mayor que")
-                .IsLessThan("Es menor que")
-                .IsLessThanOrEqualTo("Es menor o igual que")
-                .IsGreaterThanOrEqualTo("Es mayor o igual que")
-                .IsNotEqualTo("No es igual que")
+                    .Clear()
+                    .IsEqualTo("Es igual que")
+                    .IsGreaterThan("Es mayor que")
+                    .IsLessThan("Es menor que")
+                    .IsLessThanOrEqualTo("Es menor o igual que")
+                    .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                    .IsNotEqualTo("No es igual que")
             )
         ))
         .ToolBar(tools =>
@@ -75,6 +79,7 @@
             tools.Create().Text("Agregar Usuario");
             tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" }).Text("Exportar a excel");
             tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" }).Text("Exportar a pdf");
+
         })
 
         .Editable(e => e.Mode(GridEditMode.InLine))
@@ -85,7 +90,7 @@
 
         .Pdf(pdf => pdf
             .FileName("UsuariosReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-                + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+            + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
             .ProxyURL(Url.Action("Export", "Home"))
             .AllPages()
         )
@@ -96,7 +101,6 @@
             .Filterable(true)
             .ProxyURL(Url.Action("Export", "Home")).AllPages(true)
         )
-
         .DataSource(dataSource => dataSource
             .WebApi()
             .ServerOperation(true)
@@ -112,7 +116,7 @@
                 model.Field(p => p.FechaModificacion).Editable(false);
                 model.Field(p => p.FechaCreacion).Editable(false);
                 model.Field(p => p.UsuarioCreacion).Editable(false);
-                model.Field(p => p.LockoutEnd).Editable(true);
+                model.Field(p => p.LockoutEnd).Editable(true).DefaultValue(DateTime.Now);
                 model.Field(p => p.IsBlocked).Editable(false);
                 model.Field(p => p.UsuarioModificacion).Editable(false);
             })
@@ -125,15 +129,37 @@
             .Create(create => create.Action("PostUsuario", "Usuario"))
             .Update(update => update.Action("PutUsuario", "Usuario", new { id = "{0}" }))
             .Destroy(destroy => destroy.Action("DeleteUsuario", "Usuario", new { id = "{0}" }))
+            
         )
         .Events(e =>{
             e.DataBound("onDataBound");
-            e.Save("onsave");
+            //e.Save("onsave");
+            e.Save("gridUser_Save");
         })
         .Resizable(resize => resize.Columns(true))
+        .Pageable(p => p.Refresh(true))
 )
 
 <script>
+    function gridUser_Save(e) {
+        if (e.model.LockoutEnd) {
+            var fechaBloqueo = moment(moment(e.model.LockoutEnd).format('l'));
+            var hoy = moment(moment().format('l'));
+            if (fechaBloqueo.diff(hoy) < 0) {
+                e.preventDefault();
+                 $.toast({
+                            heading: 'Error',
+                            text:"La fecha de: 'Bloqueado Hasta' deber se mayor o igual que la fecha actual: " + hoy.format('DD/MM/YYYY'),
+                            position: 'top-right',
+                            loaderBg: '#ff6849',
+                            icon: 'error',
+                            hideAfter: 30000,
+                            stack: 6
+                 });
+            }
+        }
+    }
+
     function onRequestEnd(e) {
         if (e.type == "update" && !e.response.Errors) {
             $.toast({
@@ -184,9 +210,18 @@
         let gridData = grid.dataSource.view();
         for (let i = 0; i < gridData.length; i++) {
             let currentUid = gridData[i].uid;
+            let block = document.querySelector("tr[data-uid= '" + currentUid + "'] td a.k-grid-Desbloquear");
             if (gridData[i].LockoutEnd === null) {
-                let block = document.querySelector("tr[data-uid= '" + currentUid + "'] td a.k-grid-Desbloquear");
                 block.style.display = "none";
+            } else {
+                var lockoutDate = moment(moment(gridData[i].LockoutEnd).format('l'));
+                var hoy = moment(moment().format('l'));
+                var diferencia = lockoutDate.diff(hoy, 'days');
+                if (diferencia <= 0) {
+                    block.style.display = "inline-flex";
+                } else {
+                     block.style.display = "none";
+                }
             }
         }
     }
