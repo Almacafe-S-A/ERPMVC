@@ -1,0 +1,218 @@
+﻿@model ERPMVC.Models.InventarioFisico
+@using System.Security.Claims
+
+@{
+    ClaimsPrincipal permisos = (ClaimsPrincipal)ViewData["permisosCertificadoDeposito"];
+    bool editable = Model.Id == 0;
+}
+
+
+
+<script>
+
+
+        function DeleteBHLine(e) {
+
+        e.preventDefault();
+        if (confirm('Esta seguro que desea eliminar la fila?')) {
+            var notification = $("#notification").data("kendoNotification");
+            var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+
+            $.ajax({
+                url: '@Url.Action("Delete", "CertificadoLine")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataItem),
+                success: function (data) {
+                    //$("#ControlPalletsLineMant").html('');
+                    //$("#ControlPalletsLineMant").html(data);
+                    //var txt = $(data);
+                    //var found = $("#SubProductId", txt);
+                    //subproducto = $(found).val();
+                    record = 0;
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+
+                    //  $("#btngenerarfactura").show();
+                    notification.show({
+                        title: "Validación",
+                        message: textStatus + ": " + XMLHttpRequest.responseText
+                    }, "error");
+
+                }
+            });
+
+            var grid = $("#gridInventarioFisicoLine").data("kendoGrid");
+            
+            grid.dataSource.remove(dataItem);
+
+            CalcularTotalDocumento();
+            //Sync it with the grid
+            //grid.dataSource.sync();
+        }
+    }
+    
+
+    function setearvalor(nombrenumerico, valor) {
+        var numeric = $("#" + nombrenumerico).data("kendoNumericTextBox");
+        numeric.value(valor);
+        numeric.trigger('change');
+        numeric = null;
+    }
+
+
+
+    function CalcularValor(e) {
+        debugger;
+        record = 0;
+        if (e.container) {            
+            var totalSpan = e.container.closest("TR").find(".totalSpan");
+            
+            e.model.Valor = parseFloat( e.model.Cantidad * e.model.Factor).toFixed(2);
+             totalSpan.html(e.model.Valor);
+
+        }
+        
+    }
+
+    var recordbh = 0;
+
+    function RowNumBH() {
+
+        return ++recordbh;
+    }
+
+
+</script>
+
+<style>
+    .numbers {
+        text-align: right;
+    }
+</style>
+
+
+
+<div class="box">
+    <div class="box-body">
+
+        @(Html.Kendo().Grid<ERPMVC.Models.InventarioBodegaHabilitada>
+    ()
+    .Name("gridInventarioBodegaHabilitadaLine")
+    .Events(e =>
+    e.CellClose("CalcularValor")
+
+    )
+    .Columns(columns =>
+    {
+
+        columns.Command(command =>
+        {
+            if (editable)
+            {
+                command.Custom("Eliminar").Text(" ").IconClass("fa fa-trash-alt").Click("Delete");
+            }
+        }).Width(80).Visible(editable);
+        columns.Bound(c =>c.No).Width(80).Title("No.").ClientTemplate("#=RowNumBH()#");
+        //columns.Bound(p => p.PdaNo).Title("Pda No").ClientTemplate("#= RowNum()#").Width(110);
+        columns.Bound(p => p.Id).Title("Id").Width(110).Visible(false);
+        columns.Bound(p => p.Product).Title("Producto")
+        .ClientTemplate("#=typeof Product === 'undefined'||Product===null?ProductoNombre:Product.ProductName#").Width(120);  
+        columns.Bound(p => p.Descripcion).Title("Descripcion").Width(150).Visible(true);
+         columns.Bound(p => p.UnitOfMeasure).Title("Unidad de Medida")
+        .ClientTemplate("#=typeof UnitOfMeasure === 'undefined'||UnitOfMeasure===null?'':UnitOfMeasure.UnitOfMeasureName#").Width(120);
+        columns.Bound(p => p.Cantidad).Title("Cantidad").Width(120);     
+        columns.Bound(p => p.Factor).Title("Factor").Width(120);
+        
+        columns.Bound(p => p.Valor).Title("Valor")
+        .ClientTemplate("<div style='text-align: right'><span class='totalSpan'>#= Cantidad * Factor #</span></div>")        
+        .Width(120);
+        columns.Bound(p => p.Estiba).Width(100);
+      
+    })
+    .Editable(e => e.Mode(GridEditMode.InCell))
+    .Filterable(f => f.Operators(o => o.ForString(s => s
+    .Clear()
+    
+    .Contains("Contiene")
+    .DoesNotContain("No contiene")
+    .EndsWith("Termina con")
+    .IsEqualTo("Es igual a")
+    .IsNotEqualTo("No es igual a")
+    .IsNull("Es nulo")
+    .StartsWith("Inicia con")
+
+
+    )
+    .ForNumber(n => n
+    .Clear()
+    .IsEqualTo("Es igual a")
+    .IsGreaterThan("Es mayor que")
+    .IsLessThan("Es menor que")
+    .IsNull("Es nulo")
+    .IsLessThanOrEqualTo("Es menor o igual que")
+    .IsGreaterThanOrEqualTo("Es mayor o igual que")
+    )
+    .ForDate(d => d
+    .Clear()
+    .IsEqualTo("Es igual que")
+    .IsGreaterThan("Es mayor que")
+    .IsLessThan("Es menor que")
+    .IsLessThanOrEqualTo("Es menor o igual que")
+    .IsGreaterThanOrEqualTo("Es mayor o igual que")
+    .IsNotEqualTo("No es igual que")
+    )
+    ))
+     .ToolBar(tools =>
+        {
+            tools.Create().Text("Agregar Producto");
+            tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" }).Text("Exportar a excel");
+        })
+
+
+    .Sortable()
+    
+    .AutoBind(true)
+    //.Pageable()
+    .Filterable()
+    .Scrollable()
+    .Pdf(pdf => pdf.FileName("CertificadoDepositoDetalleReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+    + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+    .ProxyURL(Url.Action("Export", "Home")).AllPages())
+    .Excel(excel => excel.FileName("CertificadoDepositoDetalleReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+    + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+    .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+    .DataSource(dataSource =>
+
+    dataSource
+    //.Ajax()
+    .WebApi()
+    .Batch(true)
+
+    .ServerOperation(false)
+    .Model(model =>
+    {
+        model.Id(p => p.Id);
+        model.Field(p => p.No).Editable(false);
+        model.Field(p => p.Id).Editable(false);
+        model.Field(p => p.ProductoNombre).Editable(false);
+        model.Field(p => p.SaldoLibros).Editable(false);
+        model.Field(p => p.Cantidad).Editable(true);
+       
+
+    })
+    .Sort(s => s.Add(a => a.Id).Ascending())
+    .Events(events =>
+    {
+        events.Error("error_handler");
+
+
+    })
+    .Read(read => read.Action("GetInventarioBodegaHabilitadaLines", "InventarioFisicoLine").Data("GetparamDetalle"))
+    )
+    )
+
+</div>
+</div>

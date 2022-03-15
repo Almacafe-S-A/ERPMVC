@@ -51,5 +51,7 @@ namespace ERPMVC.Models
         public string UsuarioModificacion { get; set; }
 
         public List<InventarioFisicoLine> InventarioFisicoLines { get; set; }
+
+        public List<InventarioBodegaHabilitada> InventarioBodegaHabilitadaLines { get; set; }
     }
 }
