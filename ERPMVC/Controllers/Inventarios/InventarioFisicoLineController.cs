@@ -62,7 +62,44 @@ namespace ERPMVC.Controllers
         }
 
 
-        
+        public async Task<DataSourceResult> GetInventarioBodegaHabilitadaLines([DataSourceRequest] DataSourceRequest request
+           , [FromQuery(Name = "Id")] int InventarioId)
+        {
+
+            List<InventarioBodegaHabilitada> _InventarioFisicoLine = new List<InventarioBodegaHabilitada>();
+            try
+            {
+
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/InventarioFisicoLine/GetInventarioBodegaHabilitadaLines/" + InventarioId);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _InventarioFisicoLine = JsonConvert.DeserializeObject<List<InventarioBodegaHabilitada>>(valorrespuesta);
+
+                }
+
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+
+            return _InventarioFisicoLine.ToDataSourceResult(request);
+
+
+
+        }
+
+
+
+
 
         public async Task<DataSourceResult> GetSaldoLibros([DataSourceRequest] DataSourceRequest request
             ,  int branchid

@@ -131,8 +131,48 @@ namespace ERPMVC.Controllers
             return PartialView(_InventarioFisico);
 
         }
+        
 
 
+
+        [HttpPost("[controller]/[action]")]
+        public async Task<ActionResult> pvwInventarioBodegaHabilitada([FromBody] InventarioFisico _InventarioFisico)
+        {
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/InventarioFisico/GetInventarioBodegaHabilitada/" + _InventarioFisico.Id);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _InventarioFisico = JsonConvert.DeserializeObject<InventarioFisico>(valorrespuesta);
+
+                }
+
+                if (_InventarioFisico.Id == 0)
+                {
+                    _InventarioFisico = new InventarioFisico
+                    {
+                        Id = 0,
+                        Fecha = DateTime.Now,
+                    };
+                }
+                ViewData["permisos"] = _principal;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+
+
+            return PartialView(_InventarioFisico);
+
+        }
 
 
         [HttpGet("[controller]/[action]")]
