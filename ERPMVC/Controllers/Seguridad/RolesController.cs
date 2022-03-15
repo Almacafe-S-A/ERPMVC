@@ -67,8 +67,7 @@ namespace ERPMVC.Controllers
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _users = JsonConvert.DeserializeObject<List<ApplicationRole>>(valorrespuesta);
-
+                    _users = JsonConvert.DeserializeObject<List<ApplicationRole>>(valorrespuesta).Where(w => w.IdEstado ==1).ToList();
                 }
                 
             }
@@ -81,9 +80,40 @@ namespace ERPMVC.Controllers
         }
 
 
-
+        /*REGRESA SOLO LOS ROLES ACTIVO PARA SER USADOS EN LAS OTRAS PANTALLAS QUE REQUIEREN LISTADO DE ROLES*/
         [HttpGet("GetRoles")]
         public async Task<DataSourceResult> GetRoles([DataSourceRequest]DataSourceRequest request)
+        {
+            List<ApplicationRole> _roles = new List<ApplicationRole>();
+
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                string token = "";
+                token = HttpContext.Session.GetString("token");
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + token);
+                var result = await _client.GetAsync(baseadress + "api/Roles/GetRoles");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _roles = JsonConvert.DeserializeObject<List<ApplicationRole>>(valorrespuesta);
+                    _roles = _roles.Where(w => w.IdEstado==1).OrderBy(q => q.Name).ToList();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                //return BadRequest($"Ocurrio un error{ex.Message}");
+            }
+            return _roles.ToDataSourceResult(request);
+        }
+
+
+        /*SE LLAMARA DESDE LA LISTA GENERAL DE ROLES EN LOS MANTENIMIENTOS MUESTRA ACTIVOS E INACTIVOS*/
+        [HttpGet("GetAllRoles")]
+        public async Task<DataSourceResult> GetAllRoles([DataSourceRequest] DataSourceRequest request)
         {
             List<ApplicationRole> _roles = new List<ApplicationRole>();
 
@@ -108,8 +138,6 @@ namespace ERPMVC.Controllers
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 //return BadRequest($"Ocurrio un error{ex.Message}");
             }
-           
-
             return _roles.ToDataSourceResult(request);
         }
 

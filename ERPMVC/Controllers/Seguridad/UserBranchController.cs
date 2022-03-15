@@ -228,12 +228,13 @@ namespace ERPMVC.Controllers
             UserBranch _usersbra = new UserBranch();
             try
             {
+               
                 Guid UserSucursal = new Guid("" + UsuarioId + "");
 
                 string baseadress = _config.Value.urlbase;
                 HttpClient _client = new HttpClient();
 
-                _usersbra.UserId = UserSucursal;
+               _usersbra.UserId = UserSucursal;
                 _usersbra.BranchId = BranchId;
 
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
@@ -300,7 +301,32 @@ namespace ERPMVC.Controllers
 
         }
 
+        public async Task<JsonResult> EsUsuarioActivo(string UserId) {
+            try
+            {
+                HttpClient _client = new HttpClient();
+                string baseadress = _config.Value.urlbase;
 
+
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var resultUser = await _client.GetAsync(baseadress + "api/Usuario/GetUserById/" + Guid.Parse(UserId));
+                if (resultUser.IsSuccessStatusCode)
+                {
+                    var Usuario = await (resultUser.Content.ReadAsStringAsync());
+                    var _usuario = JsonConvert.DeserializeObject<ApplicationUser>(Usuario);
+                    if (_usuario != null && !Convert.ToBoolean(_usuario.IsEnabled))
+                    {
+                        return Json($"El usuario seleccionado: '{_usuario.UserName}' esta inactivo por lo que no es posible asignarle o modificar las sucursales.");
+                    }
+                }
+
+                return Json(null);
+            }
+            catch (Exception ex)
+            {
+                return Json(ex.Message);
+            }
+        }
     }
 
 }

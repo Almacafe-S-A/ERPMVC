@@ -49,27 +49,27 @@
                                                     <div class="demo-section k-content" >
                                                         <label style="width:100%">Sucursales no Asignadas </label>
                                                         @(Html.Kendo().ListBox()
-                                                                                              .Name("listbox1")
-                                                                                              .DataValueField("BranchId")
-                                                                                              .DataTextField("BranchName")
-                                                                                              .Draggable(true)
-                                                                                              .DropSources("listbox2")
-                                                                                              //.Events(ev => ev
-                                                                                              //.Add("function(e){setDiscontinued(e, true)}")
-                                                                                              //.Remove("function(e){setDiscontinued(e, false)}"))
-                                                                                              .DataSource(source => source
-                                                                                          .Custom()
-                                                                                          .Transport(transport => transport
-                                                                                              .Read(read => read.Action("SucursalesNo", "UserBranch").Data("CargarPermisos"))
-                                                                                          )
-                                                                                          .PageSize(99999999)
-                                                                                          )
+                                                                .Name("listbox1")
+                                                                .DataValueField("BranchId")
+                                                                .DataTextField("BranchName")
+                                                                .Draggable(true)
+                                                                .DropSources("listbox2")
+                                                                //.Events(ev => ev
+                                                                //.Add("function(e){setDiscontinued(e, true)}")
+                                                                //.Remove("function(e){setDiscontinued(e, false)}"))
+                                                                .DataSource(source => source
+                                                            .Custom()
+                                                            .Transport(transport => transport
+                                                                .Read(read => read.Action("SucursalesNo", "UserBranch").Data("CargarPermisos"))
+                                                            )
+                                                            .PageSize(99999999)
+                                                            )
 
 
 
-                                                                                             .ConnectWith("listbox2")
-                                                                                             .BindTo(new List<string>())
-                                                                                             .Selectable(ListBoxSelectable.Single))
+                                                                .ConnectWith("listbox2")
+                                                                .BindTo(new List<string>())
+                                                                .Selectable(ListBoxSelectable.Single))
 
 
                                                     </div>
@@ -152,18 +152,60 @@
             kendo.ui.progress($("#Progres2"), false);
         }, 1000);
 
-       
+        EsUsuarioActivo();
+    }
 
+    function EsUsuarioActivo() {
+        var _UsuarioId = $("#GetUsuarios").data("kendoDropDownList").value();
+        if (!_UsuarioId)
+            return;
+
+         $.ajax({
+                url: '@Url.Action("EsUsuarioActivo", "UserBranch")',
+                method: 'post',
+                async: false,
+                data: { 'UserId': _UsuarioId  },
+             success: function (result) {
+                 if (result) {
+                     $('#btnUserBrach').attr('disabled',true);
+                      $.toast({
+                            heading: 'Error',
+                            text: result,
+                            position: 'top-right',
+                            loaderBg: '#ff6849',
+                            icon: 'error',
+                            hideAfter: 10000,
+                            stack: 6
+                        });
+                 } else {
+                     $('#btnUserBrach').attr('disabled',false);
+                 }
+                           
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    $('#btnUserBrach').prop('disabled', true);
+                     $.toast({
+                            heading: 'Error',
+                            text: e.errors,
+                            position: 'top-right',
+                            loaderBg: '#ff6849',
+                            icon: 'error',
+                            hideAfter: 30000,
+                            stack: 6
+                        });
+                }
+        });
     }
 
 
-    function UserBranch() {     
+    function UserBranch() {
 
         var Insert_And_Delete = false;
 
-        var UsuarioId = $("#GetUsuarios").data("kendoDropDownList").value();     
+        var UsuarioId = $("#GetUsuarios").data("kendoDropDownList").value();
         var SucursalesAsignadas = $("#listbox2").data("kendoListBox").dataSource;
         var rawsi = SucursalesAsignadas._data;
+
         for (i = SucursalesAsignadas._data.length - 1; i >= 0; i--) {
             var BranchId = rawsi[i].BranchId;
             var BranchName = rawsi[i].BranchName;            
@@ -177,7 +219,10 @@
                           success: function (result) {
                               Insert_And_Delete = true;
                       },
-                      error: function (XMLHttpRequest, textStatus, errorThrown) {
+                  error: function (XMLHttpRequest, textStatus, errorThrown) {
+                      console.log(XMLHttpRequest);
+                      console.log(textStatus);
+                      console.log(errorThrown);
                       notification.show({
                       title: "Validación",
                       message: textStatus + ": " + XMLHttpRequest.responseText
