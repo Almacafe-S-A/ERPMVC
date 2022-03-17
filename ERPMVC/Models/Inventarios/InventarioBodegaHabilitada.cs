@@ -14,6 +14,12 @@ namespace ERPMVC.Models
 
         public int? No { get; set; }
 
+        public int? WarehouseId { get; set; }
+        [ForeignKey("WarehouseId")]
+        [UIHint("Bodega")]
+        public Warehouse Warehouse { get; set; }
+        public string WarehouseName { get; set; }
+
         public int InventarioFisicoId { get; set; }
         [ForeignKey("InventarioFisicoId")]
         public InventarioFisico inventarioFisico { get; set; }
@@ -23,25 +29,29 @@ namespace ERPMVC.Models
         [UIHint("Producto")]
         public SubProduct Product { get; set; }
 
-        public string Descripcion  { get; set; }
+        public string Descripcion { get; set; }
 
 
         public string ProductoNombre { get; set; }
 
-        public decimal SaldoLibros { get; set; }
 
-        public decimal Cantidad{ get; set; }
+        public decimal Cantidad { get; set; }
+
+        public string Estiba { get; set; }
+
 
         public int? UnitOfMeasureId { get; set; }
         [ForeignKey("UnitOfMeasureId")]
-        [UIHint("UOM")]
+        [UIHint("Bodega")]
         public UnitOfMeasure UnitOfMeasure { get; set; }
 
         public decimal Factor { get; set; }
 
         public decimal Valor { get; set; }
 
-        public int Estiba { get; set; }
+        public decimal? FactorPergamino { get; set; }
+
+        public decimal? ValorPergamino { get; set; }
 
         public string Observacion { get; set; }
     }

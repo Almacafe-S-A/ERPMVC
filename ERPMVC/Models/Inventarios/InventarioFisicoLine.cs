@@ -12,9 +12,14 @@ namespace ERPMVC.Models
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
 
-        public int? No { get; set; }
 
-        public string Estiba { get; set; }
+        public int? WarehouseId { get; set; }
+        [ForeignKey("WarehouseId")]
+        [UIHint("Bodega")]
+        public Warehouse Warehouse { get; set; }
+        public string WarehouseName { get; set; }
+
+        public int? No { get; set; }
 
         public int InventarioFisicoId { get; set; }
         [ForeignKey("InventarioFisicoId")]
@@ -28,18 +33,21 @@ namespace ERPMVC.Models
         public int? UnitOfMeasureId { get; set; }
         [ForeignKey("UnitOfMeasureId")]
         [UIHint("UOM")]
-
         public UnitOfMeasure UnitOfMeasure { get; set; }
 
         public string ProductoNombre { get; set; }
 
+        public decimal? FactorSacos { get; set; }
+
         public int? NSacos { get; set; }
 
         public decimal SaldoLibros { get; set; }
-        [UIHint("Decimal")]
+
         public decimal InventarioFisicoCantidad { get; set; }
 
         public decimal Diferencia { get; set; }
+
+        public string Estiba { get; set; }
 
         public string Observacion { get; set; }
     }
