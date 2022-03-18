@@ -35,6 +35,8 @@ namespace ERPMVC.Models
         [UIHint("UOM")]
         public UnitOfMeasure UnitOfMeasure { get; set; }
 
+        public string UnitOfMeasureName { get; set; }
+
         public string ProductoNombre { get; set; }
 
         public decimal? FactorSacos { get; set; }
