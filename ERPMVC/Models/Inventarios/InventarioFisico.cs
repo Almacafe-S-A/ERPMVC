@@ -18,6 +18,8 @@ namespace ERPMVC.Models
 
         public DateTime Fecha { get; set; }
 
+        public DateTime? FechaCompletado { get; set; }
+
         public string Sucursal { get; set; }
 
         public int? BranchId { get; set; }

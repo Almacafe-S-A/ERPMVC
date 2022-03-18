@@ -45,6 +45,8 @@ namespace ERPMVC.Models
         [UIHint("Bodega")]
         public UnitOfMeasure UnitOfMeasure { get; set; }
 
+        public string UnitOfMeasureName { get; set; }
+
         public decimal Factor { get; set; }
 
         public decimal Valor { get; set; }
