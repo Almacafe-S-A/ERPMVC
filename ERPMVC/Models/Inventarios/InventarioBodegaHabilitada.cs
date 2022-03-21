@@ -42,7 +42,7 @@ namespace ERPMVC.Models
 
         public int? UnitOfMeasureId { get; set; }
         [ForeignKey("UnitOfMeasureId")]
-        [UIHint("Bodega")]
+        [UIHint("UOM")]
         public UnitOfMeasure UnitOfMeasure { get; set; }
 
         public string UnitOfMeasureName { get; set; }
