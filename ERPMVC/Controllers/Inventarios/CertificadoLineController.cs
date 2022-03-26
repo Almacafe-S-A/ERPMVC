@@ -36,6 +36,7 @@ namespace ERPMVC.Controllers
 
         public async Task<DataSourceResult> GetCertificadoLine([DataSourceRequest] DataSourceRequest request
             , [FromQuery(Name = "Recibos")] int[] recibos
+            , [FromQuery(Name = "inventarios")] int[] inventarios
             , [FromQuery(Name = "Id")] int id
             , [FromQuery(Name = "preciocafe")] int preciocafe)
         {
@@ -48,16 +49,24 @@ namespace ERPMVC.Controllers
                 string requestURl;
                 if (id == 0)
                 {
-                    string strrecibos = "?";
-                    foreach (var item in recibos)
+                    if (inventarios.Count() > 0)
                     {
-                        strrecibos += $"Recibos={item}";
-                        if (item != recibos.ElementAt(recibos.Count() - 1))
-                        {
-                            strrecibos += "&&";
-                        }
+                        requestURl = $"api/CertificadoLine/GetInventarioPendiente/{inventarios[0]}/{preciocafe}";
                     }
-                    requestURl = $"api/CertificadoLine/GetRecibosPendientes/{strrecibos}&&preciocafe={preciocafe}";
+                    else
+                    {
+
+                        string strrecibos = "?";
+                        foreach (var item in recibos)
+                        {
+                            strrecibos += $"Recibos={item}";
+                            if (item != recibos.ElementAt(recibos.Count() - 1))
+                            {
+                                strrecibos += "&&";
+                            }
+                        }
+                        requestURl = $"api/CertificadoLine/GetRecibosPendientes/{strrecibos}&&preciocafe={preciocafe}";
+                    }
                 }
                 else
                 {
