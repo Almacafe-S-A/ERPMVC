@@ -46,19 +46,16 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _customers = JsonConvert.DeserializeObject<List<SalesType>>(valorrespuesta);
-
                 }
             }
             catch (Exception ex)
             {
-
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 throw ex;
             }
-
             return Json(_customers.ToDataSourceResult(request));
-
         }
+
 
 
 

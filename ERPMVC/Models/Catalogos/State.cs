@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
@@ -27,6 +28,10 @@ namespace ERPMVC.Models
         public DateTime? FechaCreacion { get; set; }
         [Display(Name = "Fecha de modificación")]
         public DateTime? FechaModificacion { get; set; }
+
+        [Display(Name = "Estado")]
+        [DefaultValue(1)]
+        public Int64 IdEstado { get; set; } = 1;
 
         public Int64 CountryId { get; set; }
 

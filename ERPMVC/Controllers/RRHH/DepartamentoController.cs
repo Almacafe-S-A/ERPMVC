@@ -72,6 +72,33 @@ namespace ERPMVC.Controllers
             return Json(_Departamento.ToDataSourceResult(request));
 
         }
+
+        [HttpGet]
+        public async Task<JsonResult> GetActivos([DataSourceRequest] DataSourceRequest request)
+        {
+            List<Departamento> _Departamento = new List<Departamento>();
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/Departamento/GetDepartamento");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _Departamento = JsonConvert.DeserializeObject<List<Departamento>>(valorrespuesta).Where(w=>w.IdEstado==1).OrderBy(o => o.NombreDepartamento).ToList();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+            return Json(_Departamento.ToDataSourceResult(request));
+        }
+
+
         //--------------------------------------------------------------------------------------
         [HttpGet("[action]")]
         public async Task<JsonResult> GetDepartamento([DataSourceRequest]DataSourceRequest request)

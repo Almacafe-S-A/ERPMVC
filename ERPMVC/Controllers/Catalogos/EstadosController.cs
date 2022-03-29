@@ -302,6 +302,31 @@ namespace ERPMVC.Controllers
             return Json(_clientes.ToDataSourceResult(request));
         }
 
+        [HttpGet("[controller]/[action]")]
+        public async Task<ActionResult> GetGrupoEstadoUnoActivos([DataSourceRequest] DataSourceRequest request)
+        {
+            List<Estados> _clientes = new List<Estados>();
+            try
+            {
+                string baseadress = _config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/estados/GetEstadosByGrupo/" + 1);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _clientes = JsonConvert.DeserializeObject<List<Estados>>(valorrespuesta).Where(w => w.IdEstado==1).ToList();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+            return Json(_clientes.ToDataSourceResult(request));
+        }
+
         public async Task<ActionResult> GetGrupoEstadoI([DataSourceRequest]DataSourceRequest request)
         {
             List<Estados> _clientes = new List<Estados>();
@@ -361,6 +386,31 @@ namespace ERPMVC.Controllers
         }
 
 
+        public async Task<ActionResult> GetporGrupoEstadoActivos([DataSourceRequest] DataSourceRequest request, int GrupoId)
+        {
+            List<Estados> _clientes = new List<Estados>();
+            try
+            {
+                string baseadress = _config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/Estados/GetEstadosByGrupo/" + GrupoId);
+
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _clientes = JsonConvert.DeserializeObject<List<Estados>>(valorrespuesta).Where(w => w.IdEstado ==1).ToList();
+                }
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+            return Json(_clientes.ToDataSourceResult(request));
+        }
 
         /// <summary>
         /// Obtiene los estados por grupo de cotizacion

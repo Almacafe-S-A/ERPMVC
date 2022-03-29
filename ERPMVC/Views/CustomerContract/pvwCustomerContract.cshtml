@@ -59,6 +59,173 @@
         var grid = $("#gridCustomerContract").getKendoGrid();
         grid.dataSource.read();
     }
+
+
+       function GetCustomerContractId() {
+        id = $("#CustomerContractId").val();
+        var dataObject = {
+            CustomerContractId: id
+        };
+        console.log(dataObject)
+        return dataObject;
+    }
+
+
+    function onClose() {
+        $("#showDialogBtn").fadeIn();
+    }
+
+    function onOpen() {
+        $("#showDialogBtn").fadeOut();
+    }
+
+    function showDialog() {
+        $('#dialog').data("kendoDialog").open();
+    }
+
+    function AddCustomerContractTerms() {
+        var dataObject = {
+            CustomerContractTermsId: 0,
+            CustomerContractId: @Model.CustomerContractId
+            };
+        $.ajax({
+                url: '@Url.Action("pvwCustomerContractLinesTerms", "CustomerContract")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (result) {
+                    $("#NumCustomerContractTerms").html('');
+                    $("#NumCustomerContractTerms").html(result);
+                    //$("#btnCAI").hide();
+                    $('#ModalCustomerContractTerms').modal('show');
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+                }
+            });
+      }
+
+
+    function EditCustomerContractTerms(e) {
+        //debugger;
+             e.preventDefault();
+            var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+             var dataObject = {
+                 Id: dataItem.Id,
+                 CustomerContractId: dataItem.CustomerContractId
+            };
+            $.ajax({
+                url: '@Url.Action("pvwCustomerContractLinesTerms", "CustomerContract")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (result) {
+                    $("#NumCustomerContractTerms").html('');
+                    $("#NumCustomerContractTerms").html(result);
+                    $('#ModalCustomerContractTerms').modal('show');
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+                }
+            });
+         }
+
+
+    function SaveCustomerContract(e) {
+        //debugger;
+
+        var notification = $("#notification").data("kendoNotification");
+        $("#btnSaveCustomerContract").hide();
+        $("#btnSaveCustomerContract").prop("disabled", true);
+        var dataObject = {
+            'CustomerContractId': $("#CustomerContractId").val(),
+            'ProductId': $("#ProductId").val(),
+            'ProductName': $("#ProductId").data("kendoDropDownList").text(),
+            'TypeInvoiceId': $("#TypeInvoiceId").val(),
+            'TypeInvoiceName': $("#TypeInvoiceId").data("kendoDropDownList").text(),
+            'CustomerId': $("#CustomerId").val(),
+            'CustomerName': $("#CustomerId").data("kendoDropDownList").text(),
+            'CustomerManager': $("#CustomerManager").val(),
+            'RTNCustomerManager': $("#RTNCustomerManager").val(),
+            'CustomerConstitution': $("#CustomerConstitution").val(),
+            'SalesOrderId': $("#SalesOrderId").val(),
+            'Manager': $("#Manager").val(),
+            'RTNMANAGER': $("#RTNMANAGER").val(),
+            'StorageTime': $("#StorageTime").val(),
+            'Estado': $("#Estado").val(),
+            'EstadoId': $("#EstadoId").val(),
+            'CustomerContractId_Source': $("#CustomerContractId_Source").val(),
+            'AdendumNo': $("#AdendumNo").val(),
+            'WareHouses': $("#WareHouses").val(),
+            'ComisionMax': $("#ComisionMax").val(),
+            'ComisionMin': $("#ComisionMin").val(),
+            'RelacionPartes': $('#RelacionPartes').val(),
+            'ContitucionAlmacafe': $('#ContitucionAlmacafe').val(),
+            'PrecioBaseProducto': $("#PrecioBaseProducto").val(),
+            'FechaContrato': $("#FechaContrato").getKendoDateTimePicker().value()!=null? $("#FechaContrato").getKendoDateTimePicker().value().toJSON() : null,
+            'FechaInicioContrato': $("#FechaInicioContrato").getKendoDateTimePicker().value() != null? $("#FechaInicioContrato").getKendoDateTimePicker().value().toJSON(): null,
+            'FechaVencimiento': $("#FechaVencimiento").getKendoDateTimePicker().value()!= null ? $("#FechaVencimiento").getKendoDateTimePicker().value().toJSON(): null,
+            'Plazo': $("#Plazo ").val(),
+            'IncrementoAnual': $('#IncrementoAnual').val(),
+
+        };
+        console.log(dataObject);
+        var validator = $("#frmCustomerContract").data("kendoValidator");
+
+            if (validator.validate()) {
+
+                $.ajax({
+                    url: '@Url.Action("SaveCustomerContract", "CustomerContract")',
+                    method: 'POST',
+                    datatype: "json",
+                    contentType: 'application/json',
+                    async: false,
+                    data: JSON.stringify( dataObject),
+                    success: function (data) {
+
+                        $.toast({
+                            heading: 'Satisfactorio',
+                            text: 'Datos guardados correctamente.',
+                            position: 'top-right',
+                            loaderBg: '#ff6849',
+                            icon: 'success',
+                            hideAfter: 30000,
+                            stack: 6
+                        });
+                        $('#myModalCustomerContract').modal('hide');
+                       // $('#myModalSalesOrder').modal('hide');
+
+                    },
+                    error: function (XMLHttpRequest, textStatus, errorThrown) {
+                        $("#btnSaveCustomerContract").show();
+                        $("#btnSaveCustomerContract").prop("disabled", false);
+                        notification.show({
+                            title: "Validacion",
+                            message: textStatus + ": " + XMLHttpRequest.responseText
+                        }, "error");
+
+                    }
+                });
+
+            }
+            else {
+
+                notification.show({
+                    title: "Validación",
+                    message: "Datos incompletos en el formulario"
+                }, "error");
+
+                $("#btnSaveCustomerContract").show();
+                $("#btnSaveCustomerContract").prop("disabled", false);
+
+            }
+
+
+    }
 </script>
 
 
@@ -594,11 +761,11 @@
                                     </form>
                                     @if (Model.Estado == "Generado")
 	                                    {
-                                                                    <div class="row">
-                                                                        <div class="col-md-12">
-                                                                            <button id="btnSaveCustomerContract" type="submit" class="form-control btn-miboton" style="min-width:80%" onclick="SaveCustomerContract(this);">Guardar</button>
-                                                                        </div>
-                                                                    </div>
+                                            <div class="row">
+                                                <div class="col-md-12">
+                                                    <button id="btnSaveCustomerContract" type="submit" class="form-control btn-miboton" style="min-width:80%" onclick="SaveCustomerContract(this);">Guardar</button>
+                                                </div>
+                                            </div>
 	                                    }
                                     
 
@@ -617,183 +784,3 @@
 <div id="NumCustomerContractTerms">
     @await Html.PartialAsync("pvwCustomerContractLinesTerms", new ERPMVC.Models.CustomerContractLinesTerms { Id = 0, CustomerContractId = 0 })
 </div>
-
-
-
-<script>
-    function onClose() {
-        $("#showDialogBtn").fadeIn();
-    }
-
-    function onOpen() {
-        $("#showDialogBtn").fadeOut();
-    }
-
-    function showDialog() {
-        $('#dialog').data("kendoDialog").open();
-    }
-</script>
-
-
-
-<script>
-    function AddCustomerContractTerms() {
-        var dataObject = {
-            CustomerContractTermsId: 0,
-            CustomerContractId: @Model.CustomerContractId
-            };
-        $.ajax({
-                url: '@Url.Action("pvwCustomerContractLinesTerms", "CustomerContract")',
-                method: 'POST',
-                datatype: "json",
-                contentType: 'application/json',
-                async: false,
-                data: JSON.stringify(dataObject),
-                success: function (result) {
-                    $("#NumCustomerContractTerms").html('');
-                    $("#NumCustomerContractTerms").html(result);
-                    //$("#btnCAI").hide();
-                    $('#ModalCustomerContractTerms').modal('show');
-                },
-                error: function (XMLHttpRequest, textStatus, errorThrown) {
-                    alert(textStatus + ": " + XMLHttpRequest.responseText);
-                }
-            });
-      }
-
-
-    function EditCustomerContractTerms(e) {
-        debugger;
-             e.preventDefault();
-            var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
-             var dataObject = {
-                 Id: dataItem.Id,
-                 CustomerContractId: dataItem.CustomerContractId
-            };
-            $.ajax({
-                url: '@Url.Action("pvwCustomerContractLinesTerms", "CustomerContract")',
-                method: 'POST',
-                datatype: "json",
-                contentType: 'application/json',
-                async: false,
-                data: JSON.stringify(dataObject),
-                success: function (result) {
-                    $("#NumCustomerContractTerms").html('');
-                    $("#NumCustomerContractTerms").html(result);
-                    $('#ModalCustomerContractTerms').modal('show');
-                },
-                error: function (XMLHttpRequest, textStatus, errorThrown) {
-                    alert(textStatus + ": " + XMLHttpRequest.responseText);
-                }
-            });
-         }
-
-
-
-    function GetCustomerContractId() {
-
-
-        id = $("#CustomerContractId").val();
-
-        var dataObject = {
-            CustomerContractId: id,
-
-
-        };
-        console.log(dataObject)
-
-
-        return dataObject;
-    }
-    function SaveCustomerContract(e) {
-        debugger;
-
-        var notification = $("#notification").data("kendoNotification");
-        $("#btnSaveCustomerContract").hide();
-        $("#btnSaveCustomerContract").prop("disabled", true);
-        var dataObject = {
-            'CustomerContractId': $("#CustomerContractId").val(),
-            'ProductId': $("#ProductId").val(),
-            'ProductName': $("#ProductId").data("kendoDropDownList").text(),
-            'TypeInvoiceId': $("#TypeInvoiceId").val(),
-            'TypeInvoiceName': $("#TypeInvoiceId").data("kendoDropDownList").text(),
-            'CustomerId': $("#CustomerId").val(),
-            'CustomerName': $("#CustomerId").data("kendoDropDownList").text(),
-            'CustomerManager': $("#CustomerManager").val(),
-            'RTNCustomerManager': $("#RTNCustomerManager").val(),
-            'CustomerConstitution': $("#CustomerConstitution").val(),
-            'SalesOrderId': $("#SalesOrderId").val(),
-            'Manager': $("#Manager").val(),
-            'RTNMANAGER': $("#RTNMANAGER").val(),
-            'StorageTime': $("#StorageTime").val(),
-            'Estado': $("#Estado").val(),
-            'EstadoId': $("#EstadoId").val(),
-            'CustomerContractId_Source': $("#CustomerContractId_Source").val(),
-            'AdendumNo': $("#AdendumNo").val(),
-            'WareHouses': $("#WareHouses").val(),
-            'ComisionMax': $("#ComisionMax").val(),
-            'ComisionMin': $("#ComisionMin").val(),
-            'RelacionPartes': $('#RelacionPartes').val(),
-            'ContitucionAlmacafe': $('#ContitucionAlmacafe').val(),
-            'PrecioBaseProducto': $("#PrecioBaseProducto").val(),
-            'FechaContrato': $("#FechaContrato").getKendoDateTimePicker().value()!=null? $("#FechaContrato").getKendoDateTimePicker().value().toJSON() : null,
-            'FechaInicioContrato': $("#FechaInicioContrato").getKendoDateTimePicker().value() != null? $("#FechaInicioContrato").getKendoDateTimePicker().value().toJSON(): null,
-            'FechaVencimiento': $("#FechaVencimiento").getKendoDateTimePicker().value()!= null ? $("#FechaVencimiento").getKendoDateTimePicker().value().toJSON(): null,
-            'Plazo': $("#Plazo ").val(),
-            'IncrementoAnual': $('#IncrementoAnual').val(),
-
-        };
-        console.log(dataObject);
-        var validator = $("#frmCustomerContract").data("kendoValidator");
-
-            if (validator.validate()) {
-
-                $.ajax({
-                    url: '@Url.Action("SaveCustomerContract", "CustomerContract")',
-                    method: 'POST',
-                    datatype: "json",
-                    contentType: 'application/json',
-                    async: false,
-                    data: JSON.stringify( dataObject),
-                    success: function (data) {
-
-                        $.toast({
-                            heading: 'Satisfactorio',
-                            text: 'Datos guardados correctamente.',
-                            position: 'top-right',
-                            loaderBg: '#ff6849',
-                            icon: 'success',
-                            hideAfter: 30000,
-                            stack: 6
-                        });
-                        $('#myModalCustomerContract').modal('hide');
-                       // $('#myModalSalesOrder').modal('hide');
-
-                    },
-                    error: function (XMLHttpRequest, textStatus, errorThrown) {
-                        $("#btnSaveCustomerContract").show();
-                        $("#btnSaveCustomerContract").prop("disabled", false);
-                        notification.show({
-                            title: "Validacion",
-                            message: textStatus + ": " + XMLHttpRequest.responseText
-                        }, "error");
-
-                    }
-                });
-
-            }
-            else {
-
-                notification.show({
-                    title: "Validación",
-                    message: "Datos incompletos en el formulario"
-                }, "error");
-
-                $("#btnSaveCustomerContract").show();
-                $("#btnSaveCustomerContract").prop("disabled", false);
-
-            }
-
-
-    }
-</script>

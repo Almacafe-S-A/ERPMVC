@@ -103,17 +103,40 @@ namespace ERPMVC.Controllers
                     _Periodo = _Periodo.OrderByDescending(q => q.Id).ToList();
                 }
 
-
             }
             catch (Exception ex)
             {
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 throw ex;
             }
-
-
             return _Periodo.ToDataSourceResult(request);
+        }
 
+
+        public async Task<DataSourceResult> GetActivo([DataSourceRequest] DataSourceRequest request)
+        {
+            List<Periodo> _Periodo = new List<Periodo>();
+            try
+            {
+
+                string baseadress = _config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/Periodo/GetPeriodo");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _Periodo = JsonConvert.DeserializeObject<List<Periodo>>(valorrespuesta).Where(w => w.IdEstado==1).OrderBy(o => o.Id).ToList();
+                    //_Periodo = _Periodo.OrderByDescending(q => q.Id).ToList();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+            return _Periodo.ToDataSourceResult(request);
         }
 
         [HttpPost]

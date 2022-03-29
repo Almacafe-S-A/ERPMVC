@@ -255,6 +255,32 @@ namespace ERPMVC.Controllers
         }
 
         [HttpGet("[controller]/[action]")]
+        public async Task<ActionResult<SubProduct>> GetSubProductoByTipoJsonActivos([DataSourceRequest] DataSourceRequest request, Int64 ProductTypeId)
+        {
+            List<SubProduct> _SubProducto = new List<SubProduct>();
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/SubProduct/GetSubProductbByProductTypeId/" + ProductTypeId);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _SubProducto = JsonConvert.DeserializeObject<List<SubProduct>>(valorrespuesta).Where(w => w.IdEstado==1).ToList();
+                    _SubProducto = _SubProducto.OrderByDescending(q => q.SubproductId).ToList();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+            return Json(_SubProducto.ToDataSourceResult(request));
+        }
+
+        [HttpGet("[controller]/[action]")]
         public async Task<ActionResult<SubProduct>> GetSubProductoByTipo(Int64 ProductTypeId)
         {
             List<SubProduct> _SubProducto = new List<SubProduct>();
@@ -381,6 +407,35 @@ namespace ERPMVC.Controllers
             }
             return Json(_SubProducto.ToDataSourceResult(request));
             // return Json(_SubProducto);
+        }
+
+
+        [HttpGet("[controller]/[action]")]
+        public async Task<ActionResult<SubProduct>> GetSubProductoByTipoByCustomerActivos([DataSourceRequest] DataSourceRequest request, CustomerTypeSubProduct _CustomerTypeSubProduct)
+        {
+            List<SubProduct> _SubProducto = new List<SubProduct>();
+            try
+            {
+                // CustomerTypeSubProduct _CustomerTypeSubProduct = new CustomerTypeSubProduct();
+                _CustomerTypeSubProduct.ProductTypeId = _CustomerTypeSubProduct.ProductTypeId == 0 ? 2 : _CustomerTypeSubProduct.ProductTypeId;
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.PostAsJsonAsync(baseadress + "api/SubProduct/GetSubProductoByTipoByCustomer", _CustomerTypeSubProduct);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _SubProducto = JsonConvert.DeserializeObject<List<SubProduct>>(valorrespuesta).Where(w => w.IdEstado == 1).ToList();
+                    _SubProducto = _SubProducto.OrderByDescending(q => q.SubproductId).ToList();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+            return Json(_SubProducto.ToDataSourceResult(request));
         }
 
 

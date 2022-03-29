@@ -183,7 +183,7 @@ namespace ERPMVC.Controllers
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _AccountManagement = JsonConvert.DeserializeObject<List<AccountManagement>>(valorrespuesta);
+                    _AccountManagement = JsonConvert.DeserializeObject<List<AccountManagement>>(valorrespuesta).Where(w => !string.IsNullOrEmpty(w.Status) && w.Status.Equals("Activo")).ToList();
                 }
             }
             catch (Exception ex)
