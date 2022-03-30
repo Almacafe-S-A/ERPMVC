@@ -101,12 +101,39 @@ namespace ERPMVC.Controllers
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 throw ex;
             }
+            return _CostCenter.ToDataSourceResult(request);
+        }
 
+        [HttpGet("[controller]/[action]")]
+        public async Task<DataSourceResult> GetActivos([DataSourceRequest] DataSourceRequest request)
+        {
+            List<CostCenter> _CostCenter = new List<CostCenter>();
+            try
+            {
+
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/CostCenter/GetCostCenter");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _CostCenter = JsonConvert.DeserializeObject<List<CostCenter>>(valorrespuesta).Where(w => w.IdEstado==1).ToList();
+
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
 
             return _CostCenter.ToDataSourceResult(request);
 
         }
 
+        /*se dejara de usar y se usara el getActivoS*/
         [HttpGet("[controller]/[action]")]
         public async Task<JsonResult> GetCostCenter([DataSourceRequest]DataSourceRequest request)
         {
@@ -157,24 +184,16 @@ namespace ERPMVC.Controllers
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _CostCenter = JsonConvert.DeserializeObject<List<CostCenter>>(valorrespuesta);
-
+                    _CostCenter = JsonConvert.DeserializeObject<List<CostCenter>>(valorrespuesta).Where(w => w.IdEstado ==1).ToList();
                     _CostCenter = _CostCenter.Where(q => q.BranchId == BranchId).ToList();
-
-
-    }
-
-
-}
+                }
+            }
             catch (Exception ex)
             {
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 throw ex;
             }
-
-
             return Json(_CostCenter.ToDataSourceResult(request));
-
         }
 
 

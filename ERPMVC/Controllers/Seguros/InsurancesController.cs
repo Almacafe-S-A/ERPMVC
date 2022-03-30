@@ -120,6 +120,31 @@ namespace ERPMVC.Controllers
 
         }
 
+        public async Task<DataSourceResult> GetActivos([DataSourceRequest] DataSourceRequest request)
+        {
+            List<Insurances> _Insurances = new List<Insurances>();
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/Insurances/GetInsurances");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _Insurances = JsonConvert.DeserializeObject<List<Insurances>>(valorrespuesta).Where(w => w.EstadoId == 1).ToList();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+            return _Insurances.ToDataSourceResult(request);
+        }
+
+
 
         /*[HttpGet("[action]")]
         public async Task<DataSourceResult> GeDocumentByCustomerId([DataSourceRequest]DataSourceRequest request, Int64 CustomerId)

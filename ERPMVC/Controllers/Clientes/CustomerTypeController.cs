@@ -73,6 +73,32 @@ namespace ERPMVC.Controllers
 
         }
 
+        [HttpGet("[controller]/[action]")]
+        public async Task<ActionResult> GetActivos([DataSourceRequest] DataSourceRequest request)
+        {
+            List<CustomerType> _CustomerType = new List<CustomerType>();
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/CustomerType/Get");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _CustomerType = JsonConvert.DeserializeObject<List<CustomerType>>(valorrespuesta).Where(w =>w.IdEstado ==1).ToList();
+                    _CustomerType = _CustomerType.OrderByDescending(e => e.CustomerTypeId).ToList();
+                }
+
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+            return Json(_CustomerType.ToDataSourceResult(request));
+        }
+
         [HttpPost("[action]")]
         public async Task<ActionResult> pvwAddCustomerType([FromBody]CustomerTypeDTO _sarpara)
         {

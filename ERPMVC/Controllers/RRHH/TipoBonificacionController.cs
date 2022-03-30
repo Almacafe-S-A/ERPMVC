@@ -54,6 +54,28 @@ namespace ERPMVC.Controllers
             }
         }
 
+        public async Task<ActionResult> GetTiposBonificacionesActivos()
+        {
+            try
+            {
+                var respuesta = await Utils.HttpGetAsync(HttpContext.Session.GetString("token"),
+                    config.Value.urlbase + "api/TipoBonificacion/GetTiposBonificacion");
+                if (respuesta.IsSuccessStatusCode)
+                {
+                    var contenido = await respuesta.Content.ReadAsStringAsync();
+                    var resultado = JsonConvert.DeserializeObject<List<TipoBonificacion>>(contenido).Where(w => w.EstadoId== 90).ToList();
+                    return Ok(resultado);
+                }
+
+                return BadRequest(await respuesta.Content.ReadAsStringAsync());
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Ocurrio un error al cargar los tipos de bonificaciones.");
+                return BadRequest(ex.Message);
+            }
+        }
+
         public async Task<ActionResult> Guardar(TipoBonificacion registro)
         {
             try

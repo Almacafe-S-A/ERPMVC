@@ -76,6 +76,34 @@ namespace ERPMVC.Controllers
             return Json(_country.ToDataSourceResult(request));
 
         }
+
+
+        public async Task<JsonResult> GetActivos([DataSourceRequest] DataSourceRequest request, bool GAFI)
+        {
+            List<Country> _country = new List<Country>();
+            try
+            {
+
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/Country/GetCountry");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _country = JsonConvert.DeserializeObject<List<Country>>(valorrespuesta).Where(w => w.IdEstado ==1).ToList();
+                    _country = _country.Where(q => q.GAFI == GAFI).OrderBy(q => q.Name).ToList();
+                    _country = _country.OrderByDescending(q => q.Id).ToList();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+            return Json(_country.ToDataSourceResult(request));
+        }
         //--------------------------------------------------------------------------------------
         [HttpGet]
         public async Task<JsonResult> GetBOX([DataSourceRequest]DataSourceRequest request)

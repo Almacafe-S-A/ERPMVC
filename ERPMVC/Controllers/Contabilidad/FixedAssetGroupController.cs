@@ -105,6 +105,32 @@ namespace ERPMVC.Controllers
 
         }
 
+
+        public async Task<DataSourceResult> GetActivos([DataSourceRequest] DataSourceRequest request)
+        {
+            List<FixedAssetGroup> _FixedAssetGroup = new List<FixedAssetGroup>();
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/FixedAssetGroup/GetFixedAssetGroup");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _FixedAssetGroup = JsonConvert.DeserializeObject<List<FixedAssetGroup>>(valorrespuesta).Where(w => w.IdEstado == 1).ToList();
+
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+            return _FixedAssetGroup.ToDataSourceResult(request);
+        }
+
         [HttpPost("[action]")]
         public async Task<ActionResult<FixedAssetGroup>> SaveFixedAssetGroup([FromBody]FixedAssetGroup _FixedAssetGroup)
         {

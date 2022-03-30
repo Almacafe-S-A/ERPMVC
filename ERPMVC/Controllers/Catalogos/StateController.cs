@@ -146,6 +146,33 @@ namespace ERPMVC.Controllers
 
 
         [HttpGet]
+        public async Task<DataSourceResult> GetActivos([DataSourceRequest] DataSourceRequest request)
+        {
+            List<State> _State = new List<State>();
+            try
+            {
+
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/State/GetState");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _State = JsonConvert.DeserializeObject<List<State>>(valorrespuesta).Where(w=> w.IdEstado==1).OrderByDescending(e => e.Id).ToList();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+            return _State.ToDataSourceResult(request);
+        }
+
+
+        [HttpGet]
         public async Task<JsonResult> GetJson([DataSourceRequest]DataSourceRequest request,Int64 CountryId)
         {
             List<State> _State = new List<State>();
@@ -173,6 +200,33 @@ namespace ERPMVC.Controllers
             }
 
 
+            return Json(_State.ToDataSourceResult(request));
+        }
+
+
+        [HttpGet]
+        public async Task<JsonResult> GetJsonActivos([DataSourceRequest] DataSourceRequest request, Int64 CountryId)
+        {
+            List<State> _State = new List<State>();
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/State/GetState");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _State = JsonConvert.DeserializeObject<List<State>>(valorrespuesta).Where(w => w.IdEstado==1).ToList();
+                    _State = _State.Where(q => q.CountryId == CountryId).OrderBy(q => q.Name).ToList();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
             return Json(_State.ToDataSourceResult(request));
         }
 

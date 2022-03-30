@@ -110,6 +110,33 @@ namespace ERPMVC.Controllers
 
         }
 
+
+        [HttpGet]
+        public async Task<DataSourceResult> GetActivos([DataSourceRequest] DataSourceRequest request)
+        {
+            List<Product> _Product = new List<Product>();
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/Product/GetProduct");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _Product = JsonConvert.DeserializeObject<List<Product>>(valorrespuesta).Where(w=> w.IdEstado==1).ToList();
+                    _Product = _Product.OrderByDescending(q => q.ProductId).ToList();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+            return _Product.ToDataSourceResult(request);
+        }
+
         [HttpPost]
         public async Task<ActionResult<Product>> SaveProduct([FromBody]ProductDTO _ProductS)
         {

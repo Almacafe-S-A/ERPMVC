@@ -109,6 +109,31 @@ namespace ERPMVC.Controllers
 
         }
 
+        [HttpGet]
+        public async Task<DataSourceResult> GetActivos([DataSourceRequest] DataSourceRequest request)
+        {
+            List<City> _City = new List<City>();
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/City/GetCity");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _City = JsonConvert.DeserializeObject<List<City>>(valorrespuesta).Where(w=>w.IdEstado==1).OrderByDescending(q => q.Id).ToList();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+            return _City.ToDataSourceResult(request);
+        }
+
 
         [HttpGet]
         public async Task<JsonResult> GetCityJson([DataSourceRequest]DataSourceRequest request,Int64 StateId)
@@ -128,18 +153,39 @@ namespace ERPMVC.Controllers
                     _City = JsonConvert.DeserializeObject<List<City>>(valorrespuesta);
                     _City = _City.Where(q => q.StateId == StateId).OrderBy(q => q.Name).ToList();
                 }
-
-
             }
             catch (Exception ex)
             {
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 throw ex;
             }
-
-
             return Json(_City.ToDataSourceResult(request));
+        }
 
+        public async Task<JsonResult> GetCityJsonActivos([DataSourceRequest] DataSourceRequest request, Int64 StateId)
+        {
+            List<City> _City = new List<City>();
+            try
+            {
+
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/City/GetCity");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _City = JsonConvert.DeserializeObject<List<City>>(valorrespuesta).Where(w => w.IdEstado == 1).ToList();
+                    _City = _City.Where(q => q.StateId == StateId).OrderBy(q => q.Name).ToList();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+            return Json(_City.ToDataSourceResult(request));
         }
 
 

@@ -152,7 +152,32 @@ namespace ERPMVC.Controllers
         }
 
 
-  
+        [HttpGet("[controller]/[action]")]
+        public async Task<JsonResult> GetBranchActivos([DataSourceRequest] DataSourceRequest request, BranchDTO _Branchp)
+        {
+            List<Branch> _branchs = new List<Branch>();
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                string apidir = "api/Branch/GetBranch";
+                var result = await _client.GetAsync(baseadress + apidir);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _branchs = JsonConvert.DeserializeObject<List<Branch>>(valorrespuesta).Where(w => w.IdEstado == 1).ToList();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+            return Json(_branchs.ToDataSourceResult(request));
+        }
+
 
 
 

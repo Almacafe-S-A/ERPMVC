@@ -334,6 +334,40 @@ namespace ERPMVC.Controllers
         }
 
 
+        [HttpGet("[controller]/[action]")]
+        public async Task<DataSourceResult> GetInsuracesPoliciesByPropertyActivos([DataSourceRequest] DataSourceRequest request, bool PolizaPropia, int CustomerId)
+        {
+            List<InsurancePolicy> _InsurancePolicy = new List<InsurancePolicy>();
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + $"api/InsurancePolicy/GetInsuracesPoliciesByProperty/{PolizaPropia}/{CustomerId}");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _InsurancePolicy = JsonConvert.DeserializeObject<List<InsurancePolicy>>(valorrespuesta).Where(w => w.EstadoId == 101).ToList();
+                    _InsurancePolicy = _InsurancePolicy.OrderByDescending(q => q.InsurancePolicyId).ToList();
+                    _InsurancePolicy = (from c in _InsurancePolicy.OrderByDescending(q => q.InsurancePolicyId)
+                                        select new InsurancePolicy
+                                        {
+                                            InsurancePolicyId = c.InsurancePolicyId,
+                                            PolicyNumber = c.InsurancesName + "--" + c.PolicyNumber
+                                        }
+                                  ).ToList();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+            return _InsurancePolicy.ToDataSourceResult(request);
+        }
+
+
         [HttpPost("[controller]/[action]")]
         public async Task<ActionResult<InsurancePolicy>> SaveInsurancePolicy(IEnumerable<IFormFile> files, InsurancePolicy _InsurancePolicyS)
         {

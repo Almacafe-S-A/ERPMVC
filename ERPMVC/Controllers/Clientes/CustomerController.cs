@@ -252,7 +252,34 @@ namespace ERPMVC.Controllers
 
         }
 
-       
+
+        [HttpGet]
+        public async Task<DataSourceResult> GetActivos([DataSourceRequest] DataSourceRequest request)
+        {
+            List<CustomerDTO> _customers = new List<CustomerDTO>();
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/Customer/GetCustomer");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _customers = JsonConvert.DeserializeObject<List<CustomerDTO>>(valorrespuesta).Where(w => w.IdEstado ==1).ToList();
+                    _customers = _customers.OrderByDescending(q => q.CustomerId).ToList();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+            return await Task.Run(() => _customers.ToDataSourceResult(request));
+        }
+
+
 
         [HttpGet("[action]")]
         public async Task<DataSourceResult> GetUsuario([DataSourceRequest]DataSourceRequest request)

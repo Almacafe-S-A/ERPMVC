@@ -72,6 +72,39 @@ namespace ERPMVC.Controllers
             return Json(_TypeJournal.ToDataSourceResult(request));
 
         }
+
+
+        [HttpGet("[action]")]
+        public async Task<JsonResult> GetTypeJournalActivos([DataSourceRequest] DataSourceRequest request)
+        {
+            List<TypeJournal> _TypeJournal = new List<TypeJournal>();
+            try
+            {
+
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/TypeJournal/GetTypeJournal");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _TypeJournal = JsonConvert.DeserializeObject<List<TypeJournal>>(valorrespuesta);
+
+                }
+
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+
+            return Json(_TypeJournal.ToDataSourceResult(request));
+
+        }
         public async Task<ActionResult<TypeJournal>> SaveTypeJournal([FromBody]TypeJournalDTO _TypeJournalP)
         {
             TypeJournal _TypeJournal = _TypeJournalP;

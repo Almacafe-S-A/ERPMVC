@@ -107,6 +107,31 @@ namespace ERPMVC.Controllers
         }
 
 
+        [HttpGet("[controller]/[action]")]
+        public async Task<ActionResult> GetCurrencyActivos([DataSourceRequest] DataSourceRequest request)
+        {
+            List<Currency> _Currency = new List<Currency>();
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/Currency/GetCurrency");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _Currency = JsonConvert.DeserializeObject<List<Currency>>(valorrespuesta).Where(w =>w.IdEstado==1).ToList();
+                    _Currency = _Currency.Where(q => q.Estado == "Activo").ToList();
+                }
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+            return Json(_Currency.ToDataSourceResult(request));
+        }
+
         [HttpPost]
         public async Task<ActionResult<Currency>> SaveCurrency([FromBody]CurrencyDTO _CurrencyS)
         {
@@ -363,6 +388,28 @@ namespace ERPMVC.Controllers
 
         }
 
-
+        public async Task<ActionResult> GetCurrencyPActivos([DataSourceRequest] DataSourceRequest request)
+        {
+            List<Currency> _cais = new List<Currency>();
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/Currency/GetCurrency");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _cais = JsonConvert.DeserializeObject<List<Currency>>(valorrespuesta).Where(w => w.IdEstado==1).ToList();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+            return Json(_cais.ToDataSourceResult(request));
+        }
     }
 }

@@ -110,6 +110,34 @@ namespace ERPMVC.Controllers
 
         }
 
+
+        [HttpGet("[action]")]
+        public async Task<DataSourceResult> GetBankActivos([DataSourceRequest] DataSourceRequest request)
+        {
+            List<Bank> _Bank = new List<Bank>();
+            try
+            {
+
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/Bank/GetBank");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _Bank = JsonConvert.DeserializeObject<List<Bank>>(valorrespuesta).Where(w => w.IdEstado==1).OrderByDescending(e => e.BankId).ToList();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+            return _Bank.ToDataSourceResult(request);
+
+        }
+
         [HttpGet("[controller]/[action]")]
         public async Task<JsonResult> GetJson([DataSourceRequest]DataSourceRequest request)
         {
@@ -126,20 +154,40 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _Bank = JsonConvert.DeserializeObject<List<Bank>>(valorrespuesta);
-
                 }
-
-
             }
             catch (Exception ex)
             {
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 throw ex;
             }
-
-
             return Json(_Bank.ToDataSourceResult(request));
 
+        }
+
+
+        public async Task<JsonResult> GetJsonActivos([DataSourceRequest] DataSourceRequest request)
+        {
+            List<Bank> _Bank = new List<Bank>();
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/Bank/GetBank");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _Bank = JsonConvert.DeserializeObject<List<Bank>>(valorrespuesta).Where(w => w.IdEstado ==1).ToList();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+            return Json(_Bank.ToDataSourceResult(request));
         }
 
         [HttpPost("[action]")]
