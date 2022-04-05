@@ -53,6 +53,8 @@ namespace ERPMVC.Models
         [Display(Name = "Bodega")]
         public string WareHouseName { get; set; }
 
+        public int? Estiba { get; set; }
+
 
         [Display(Name = "Centro de costos")]
         public Int64 CostCenterId { get; set; }

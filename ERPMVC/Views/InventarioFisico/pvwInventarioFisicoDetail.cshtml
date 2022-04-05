@@ -38,32 +38,7 @@
         
         return ++record;
     }
-    function CalcularTotalDocumento() {
-        var displayedData = $("#gridInventarioFisicoLine").data().kendoGrid.dataSource.view();
-        var total = 0, sumacantidad = 0, ValorImpuestos = 0, derechosfiscales = 0;
-
-        $(displayedData).each(function (index, element) {
-            var t = JSON.parse(JSON.stringify(element));
-            //console.log(t);
-            //console.log('Total 1'+total);
-            //  console.log('sumacantidad 2' + sumacantidad);
-            sumacantidad = sumacantidad + t["Quantity"];
-            total = total + t["Amount"];
-            ValorImpuestos = ValorImpuestos + t["ValorImpuestos"];
-            derechosfiscales += t["DerechosFiscales"];
-            t["Amount"] = t["Quantity"] * t["Price"]
-
-        });
-
-        //  console.log('Total Documento:' + total);
-        setearvalor("Quantitysum", sumacantidad);
-        //setearvalor("SujetasAPago", ValorImpuestos);
-        setearvalor("TotalDerechos", derechosfiscales);
-        setearvalor("Total", total);
-        //$("#Quantitysum").data("kendoNumericTextBox").value(sumacantidad);
-        //$("#Total").data("kendoNumericTextBox").value(total);
-
-    }
+   
 
     function setearvalor(nombrenumerico, valor) {
         var numeric = $("#" + nombrenumerico).data("kendoNumericTextBox");
@@ -83,10 +58,16 @@
         debugger;
         record = 0;
         if (e.container) {            
+
+            totalInventario
             var totalSpan = e.container.closest("TR").find(".totalSpan");
+            var totalInventario = e.container.closest("TR").find(".totalInventario");
             
-            e.model.Diferencia =   e.model.InventarioFisicoCantidad - e.model.SaldoLibros;
+            e.model.InventarioFisicoCantidad = parseFloat( e.model.FactorSacos * e.model.NSacos).toFixed(2);
+            e.model.Diferencia = parseFloat(  e.model.InventarioFisicoCantidad - e.model.SaldoLibros).toFixed(2);
+            
              totalSpan.html(e.model.Diferencia);
+             totalInventario.html(e.model.InventarioFisicoCantidad);
 
         }
         
@@ -145,7 +126,9 @@
         .ClientTemplate("#=typeof UnitOfMeasure === 'undefined'||UnitOfMeasure===null?UnitOfMeasureName:UnitOfMeasure.UnitOfMeasureName#").Width(150);
         columns.Bound(p => p.NSacos).Title("Cantidad").Width(120);
         columns.Bound(p => p.FactorSacos).Title("Factor Peso").Width(120);  
-        columns.Bound(p => p.InventarioFisicoCantidad).Title("Inventario Fisico").Width(120);  
+        columns.Bound(p => p.InventarioFisicoCantidad).Title("Inventario Fisico")
+        .ClientTemplate("<div style='text-align: right'><span class='totalInventario'>#= NSacos * FactorSacos #</span></div>") 
+        .Width(200);
         columns.Bound(p => p.SaldoLibros).Title("Saldo Libros").Width(120);        
         columns.Bound(p => p.Diferencia).Title("Diferencia")
         .ClientTemplate("<div style='text-align: right'><span class='totalSpan'>#= InventarioFisicoCantidad - SaldoLibros #</span></div>")        
