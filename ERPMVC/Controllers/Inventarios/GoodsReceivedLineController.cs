@@ -250,6 +250,7 @@ namespace ERPMVC.Controllers
                             obj.WareHouseId = _GoodsReceivedLinep.WareHouseId;
                             obj.WareHouseName = _GoodsReceivedLinep.WareHouseName;
                             obj.ControlPalletsId = _GoodsReceivedLinep.ControlPalletsId;
+                            obj.Estiba = _GoodsReceivedLinep.Estiba;
 
                         }
 
