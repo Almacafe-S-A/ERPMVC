@@ -73,6 +73,13 @@ namespace ERPMVC.Controllers
                 {
                     _CustomerContract = new CustomerContract { CustomerId = _CustomerContractp.CustomerId };
                 }
+                _CustomerContract.ListaWarehouseIds = new List<long>();
+                foreach (var item in _CustomerContract.customerContractWarehouse)
+                {
+                    int i = 1;
+                    _CustomerContract.ListaWarehouseIds.Add(item.WareHouseId); // + (i < _CustomerContract.customerContractWarehouse.Count ? "," : "");
+                }
+
             }
             catch (Exception ex)
             {
@@ -395,7 +402,6 @@ namespace ERPMVC.Controllers
         [HttpPost("[action]")]
         public async Task<ActionResult<CustomerContract>> SaveCustomerContract([FromBody]CustomerContract _CustomerContract)
         {
-
             try
             {
                 CustomerContract _listCustomerContract = new CustomerContract();
@@ -404,8 +410,7 @@ namespace ERPMVC.Controllers
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
                 var result = await _client.GetAsync(baseadress + "api/CustomerContract/GetCustomerContractById/" + _CustomerContract.CustomerContractId);
                 string valorrespuesta = "";
-                _CustomerContract.FechaModificacion = DateTime.Now;
-                _CustomerContract.UsuarioModificacion = HttpContext.Session.GetString("user");
+               
                 if (result.IsSuccessStatusCode)
                 {
 
@@ -415,6 +420,22 @@ namespace ERPMVC.Controllers
 
                 if (_listCustomerContract == null) { _listCustomerContract = new CustomerContract(); }
 
+                if (_CustomerContract.ListaWarehouseIds.Count > 0) {
+                    _CustomerContract.customerContractWarehouse = new List<CustomerContractWareHouse>();
+                    foreach (var item in _CustomerContract.ListaWarehouseIds)
+                    {
+                        var Warehouse = new CustomerContractWareHouse()
+                        {
+                            CustomerContractId = _CustomerContract.CustomerContractId,
+                            WareHouseId = Convert.ToInt32(item),
+                            EdificioName="",
+                            FechaCreacion = DateTime.Now,
+                            UsuarioCreacion = HttpContext.Session.GetString("user")
+                        };
+                        _CustomerContract.customerContractWarehouse.Add(Warehouse);
+                    }
+                }
+
                 if (_listCustomerContract.CustomerContractId == 0)
                 {
                     _CustomerContract.FechaCreacion = DateTime.Now;
@@ -423,9 +444,10 @@ namespace ERPMVC.Controllers
                 }
                 else
                 {
+                    _CustomerContract.FechaModificacion = DateTime.Now;
+                    _CustomerContract.UsuarioModificacion = HttpContext.Session.GetString("user");
                     var updateresult = await Update(_CustomerContract.CustomerContractId, _CustomerContract);
                 }
-
             }
             catch (Exception ex)
             {

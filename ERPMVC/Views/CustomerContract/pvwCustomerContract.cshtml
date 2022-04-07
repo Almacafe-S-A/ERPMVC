@@ -12,6 +12,9 @@
 
 <script>
 
+    var WareHousesDeleted = [];
+
+
     function customFunction(input) {
 
         if (input.attr('name') === "BranchId" && input.val() === "0") {
@@ -85,8 +88,8 @@
 
     function AddCustomerContractTerms() {
         var dataObject = {
-            CustomerContractTermsId: 0,
-            CustomerContractId: @Model.CustomerContractId
+                CustomerContractTermsId: 0,
+                CustomerContractId: @Model.CustomerContractId
             };
         $.ajax({
                 url: '@Url.Action("pvwCustomerContractLinesTerms", "CustomerContract")',
@@ -102,7 +105,7 @@
                     $('#ModalCustomerContractTerms').modal('show');
                 },
                 error: function (XMLHttpRequest, textStatus, errorThrown) {
-                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+                   MostrarMensaje(textStatus + ": " + XMLHttpRequest.responseText, "Error", "Error", 7000);
                 }
             });
       }
@@ -129,7 +132,7 @@
                     $('#ModalCustomerContractTerms').modal('show');
                 },
                 error: function (XMLHttpRequest, textStatus, errorThrown) {
-                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+                  MostrarMensaje(textStatus + ": " + XMLHttpRequest.responseText, "Error", "Error", 7000);
                 }
             });
          }
@@ -137,8 +140,8 @@
 
     function SaveCustomerContract(e) {
         //debugger;
+        EliminarWareHouses();
 
-        var notification = $("#notification").data("kendoNotification");
         $("#btnSaveCustomerContract").hide();
         $("#btnSaveCustomerContract").prop("disabled", true);
         var dataObject = {
@@ -166,11 +169,38 @@
             'RelacionPartes': $('#RelacionPartes').val(),
             'ContitucionAlmacafe': $('#ContitucionAlmacafe').val(),
             'PrecioBaseProducto': $("#PrecioBaseProducto").val(),
-            'FechaContrato': $("#FechaContrato").getKendoDateTimePicker().value()!=null? $("#FechaContrato").getKendoDateTimePicker().value().toJSON() : null,
-            'FechaInicioContrato': $("#FechaInicioContrato").getKendoDateTimePicker().value() != null? $("#FechaInicioContrato").getKendoDateTimePicker().value().toJSON(): null,
-            'FechaVencimiento': $("#FechaVencimiento").getKendoDateTimePicker().value()!= null ? $("#FechaVencimiento").getKendoDateTimePicker().value().toJSON(): null,
+            'FechaContrato': $("#FechaContrato").getKendoDateTimePicker().value() != null ? $("#FechaContrato").getKendoDateTimePicker().value().toJSON() : null,
+            'FechaInicioContrato': $("#FechaInicioContrato").getKendoDateTimePicker().value() != null ? $("#FechaInicioContrato").getKendoDateTimePicker().value().toJSON() : null,
+            'FechaVencimiento': $("#FechaVencimiento").getKendoDateTimePicker().value() != null ? $("#FechaVencimiento").getKendoDateTimePicker().value().toJSON() : null,
             'Plazo': $("#Plazo ").val(),
             'IncrementoAnual': $('#IncrementoAnual').val(),
+            'BranchId': $('#BranchId').val(),
+            'ListaWarehouseIds':  $("#ListaWarehouseIds").getKendoMultiSelect().value()
+               @*JSON.stringify( [
+                    {
+                        'CustomerContractWareHouseId': '',
+                        'CustomerContractId': '@Model.CustomerContractId',
+                        'WareHouseId': 25,
+                        'WareHouseName': '',
+                        'EdificioName': '',
+                        'FechaCreacion': moment().format('l'),
+                        'FechaModificacion': '',
+                        'UsuarioCreacion': 'usuario1',
+                        'UsuarioModificacion': ''
+                    },
+                    {
+                        'CustomerContractWareHouseId': '',
+                        'CustomerContractId': '@Model.CustomerContractId' +1,
+                        'WareHouseId': 25,
+                        'WareHouseName': '',
+                        'EdificioName': '',
+                        'FechaCreacion': moment().format('l'),
+                        'FechaModificacion': '',
+                        'UsuarioCreacion': 'usuario1',
+                        'UsuarioModificacion': ''
+                    }
+            ]),*@
+            //getJsonWareHouse(),
 
         };
         console.log(dataObject);
@@ -187,15 +217,16 @@
                     data: JSON.stringify( dataObject),
                     success: function (data) {
 
-                        $.toast({
-                            heading: 'Satisfactorio',
-                            text: 'Datos guardados correctamente.',
-                            position: 'top-right',
-                            loaderBg: '#ff6849',
-                            icon: 'success',
-                            hideAfter: 30000,
-                            stack: 6
-                        });
+                        //$.toast({
+                        //    heading: 'Satisfactorio',
+                        //    text: 'Datos guardados correctamente.',
+                        //    position: 'top-right',
+                        //    loaderBg: '#ff6849',
+                        //    icon: 'success',
+                        //    hideAfter: 30000,
+                        //    stack: 6
+                        //});
+                         MostrarMensaje('Datos guardados correctamente.', "success", "Satisfactorio", 7000);
                         $('#myModalCustomerContract').modal('hide');
                        // $('#myModalSalesOrder').modal('hide');
 
@@ -203,29 +234,50 @@
                     error: function (XMLHttpRequest, textStatus, errorThrown) {
                         $("#btnSaveCustomerContract").show();
                         $("#btnSaveCustomerContract").prop("disabled", false);
-                        notification.show({
-                            title: "Validacion",
-                            message: textStatus + ": " + XMLHttpRequest.responseText
-                        }, "error");
-
+                        //notification.show({
+                        //    title: "Validacion",
+                        //    message: textStatus + ": " + XMLHttpRequest.responseText
+                        //}, "error");
+                        MostrarMensaje(textStatus + ": " + XMLHttpRequest.responseText, "Error", "Error", 7000);
                     }
                 });
 
             }
             else {
 
-                notification.show({
-                    title: "Validación",
-                    message: "Datos incompletos en el formulario"
-                }, "error");
+                //notification.show({
+                //    title: "Validación",
+                //    message: "Datos incompletos en el formulario"
+                //}, "error");
+
+                MostrarMensaje("Datos incompletos en el formulario", "Error", "Validación", 7000);
 
                 $("#btnSaveCustomerContract").show();
                 $("#btnSaveCustomerContract").prop("disabled", false);
 
             }
-
-
     }
+
+
+    function EliminarWareHouses() {
+
+        if (WareHousesDeleted.length < 1)
+            return;
+
+        $.ajax({
+            type: "post",
+            url: "@Url.Action("DeleteCustomerConntractWareHouse","CustomerContractWareHouse")",
+            data: { ListaWareHousesId: WareHousesDeleted, CustomerContractId: $("#CustomerContractId").val() },
+            success: function (e) {
+                WareHousesDeleted = null;
+            },
+            error: function (e) {
+                 WareHousesDeleted = null;
+                MostrarMensaje(e.textStatus, "Error", "Error", 7000);
+            }
+        });
+    }
+   
 </script>
 
 
@@ -484,6 +536,115 @@
                                                     <span asp-validation-for="TypeInvoiceId" class="text-danger"></span>
                                                 </div>
                                             </div>
+
+                                            <div class="col-md-3">
+                                                <div class="form-group">
+                                                    <script>
+                                                        function refreshWarehouse() {
+                                                             $("#ListaWarehouseIds").data("kendoMultiSelect").dataSource.read();
+                                                        }
+                                                    </script>
+                                                    <label asp-for="BranchId" class="control-label" style="width:100%">Sucursal</label>
+
+                                                    <kendo-dropdownlist name="BranchId" filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                                        for="BranchId" data-required-msg="La sucursal es requerida"
+                                                                        datatextfield="BranchName"
+                                                                        datavaluefield="BranchId"
+                                                                        required
+                                                                        onchange="refreshWarehouse();"
+                                                                        enable="@Model.BranchId==0"
+                                                                        option-label="Seleccione la sucursal"
+                                                                        value="@Model.BranchId"
+                                                                        style="width: 100%;">
+                                                        <datasource type="DataSourceTagHelperType.WebApi">
+                                                            <transport>
+                                                                <read url="@Url.Action("GetBranchActivos", "Branch")" />
+                                                            </transport>
+                                                        </datasource>
+                                                    </kendo-dropdownlist>
+                                                    <span asp-validation-for="BranchId" class="text-danger"></span>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-md-3">
+                                                 <script>
+                                                        var hcustom = 0;
+                                                     function getWareHouse() {
+                                                         var branch = "@Model.BranchId";
+                                                         if (branch == 0) {
+                                                             return {
+                                                                'BranchId': $("#BranchId").val(),
+                                                            }
+                                                         }
+                                                            return {
+                                                                'BranchId': @Model.BranchId,
+                                                            }
+                                                        }
+
+                                                        function seleccionar() {
+                                                            var warehouse = $("#ListaWarehouseIds").val();
+                                                            if (!warehouse)
+                                                                return;
+
+                                                            var arreglo = warehouse.split(',');
+                                                            if (arreglo.length == 0) {
+                                                                arreglo.push(warehouse);
+                                                            }
+                                                            $("#ListaWarehouseIds").getKendoMultiSelect().value(arreglo);
+                                                        }
+
+                                                     function customerContractWarehouse_OnChange(e) {
+                                                         console.log(e.dataItem);
+
+                                                         WareHousesDeleted.push(e.dataItem.WarehouseId);
+
+                                                         @*var warehouse = {
+                                                                             'CustomerContractWareHouseId': '',
+                                                                             'CustomerContractId': '@Model.CustomerContractId',
+                                                                             'WareHouseId': e.dataItem.WarehouseId,
+                                                                             'WareHouseName': '',
+                                                                             'EdificioName': '',
+                                                                             'FechaCreacion': moment().format('l'),
+                                                                             'FechaModificacion': '',
+                                                                             'UsuarioCreacion': 'usuario1',
+                                                                             'UsuarioModificacion': ''
+                                                         };
+                                                         console.log(warehouse);
+                                                         $.ajax({
+                                                             type: "post",
+                                                             url: "@Url.Action("DeleteCustomerConntractWareHouse","CustomerContractWareHouse")",
+                                                             data: { _CustomerContractWareHouse: warehouse },
+                                                             success: function (e) {
+                                                             },
+                                                             error: function (e) {
+                                                                 MostrarMensaje(e.textStatus, "Error", "Error", 7000);
+                                                             }
+                                                         });*@
+                                                     }
+                                                    </script>
+
+                                                <div class="form-group">
+                                                    <label asp-for="ListaWarehouseIds" class="control-label">Seleccione la/las Bodegas</label>
+                                                    <kendo-multiselect id="ListaWarehouseIds" name="ListaBodegas" filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                                       for="ListaWarehouseIds"
+                                                                       option-label="Seleccione la/las bodegas."
+                                                                       datatextfield="WarehouseName"
+                                                                       datavaluefield="WarehouseId"
+                                                                       on-data-bound="seleccionar"
+                                                                       on-deselect="customerContractWarehouse_OnChange"
+                                                                       required data-required-msg="Debe seleccionar al menos una bodega."
+                                                                       style="min-width: 100%;">
+                                                        <datasource type="DataSourceTagHelperType.WebApi">
+                                                            <transport>
+                                                                <read url="@Url.Action("GetActivos", "Warehouse")" data="getWareHouse" />
+                                                            </transport>
+                                                        </datasource>
+                                                    </kendo-multiselect>
+                                                    <input type="hidden" asp-for="ListaWarehouseIds" id="ListaWarehouseIds" style="min-width:100%;" />
+                                                    <span asp-validation-for="ListaWarehouseIds" class="text-danger"></span>
+                                                </div>
+                                            </div>
+
                                         </div>
                                         <div class="row">
                                             @if (Model.TypeInvoiceId == 84)
@@ -566,198 +727,212 @@
                                             }
 
                                         </div>
-                                        <div class="row">
-                                            <div class="col-md-12">
-                                                <div class="form-group">
-                                                    <label asp-for="RelacionPartes" class="  control-label" style="width:100%"> Relacion de las Partes</label>
-                                                    <textarea class="form-control" asp-for="RelacionPartes" style="min-width:100%" rows="10">@Model.RelacionPartes</textarea>
-                                                    <span asp-validation-for="RelacionPartes" class="text-danger"></span>
+
+
+                                        @(
+                                        Html.Kendo().TabStrip().Name("DetallesContratos")
+                                        .Animation(a => a.Open(e => e.Fade(FadeDirection.In)))
+                                        .Collapsible()
+                                        .Items(i => {
+                                            i.Add().Text("Detalles").Selected(true).Content(@<text>
+                                                <div class="row">
+                                                <div class="col-md-12">
+                                                    <div class="form-group">
+                                                        <label asp-for="RelacionPartes" class="  control-label" style="width:100%"> Relación de las Partes</label>
+                                                        <textarea class="form-control" asp-for="RelacionPartes" style="min-width:100%" rows="10">@Model.RelacionPartes</textarea>
+                                                        <span asp-validation-for="RelacionPartes" class="text-danger"></span>
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                        <div class="row">
-                                            <div class="col-md-12">
-                                                <div class="form-group">
-                                                    <label asp-for="ContitucionAlmacafe" class="  control-label" style="width:100%">Constitución Almacafe</label>
-                                                    <textarea class="form-control" asp-for="ContitucionAlmacafe" style="min-width:100%" rows="10">@Model.ContitucionAlmacafe</textarea>
-                                                    <span asp-validation-for="ContitucionAlmacafe" class="text-danger"></span>
+                                            <div class="row">
+                                                <div class="col-md-12">
+                                                    <div class="form-group">
+                                                        <label asp-for="ContitucionAlmacafe" class="  control-label" style="width:100%">Constitución Almacafe</label>
+                                                        <textarea class="form-control" asp-for="ContitucionAlmacafe" style="min-width:100%" rows="10">@Model.ContitucionAlmacafe</textarea>
+                                                        <span asp-validation-for="ContitucionAlmacafe" class="text-danger"></span>
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                        <div class="row">
-                                            <div class="col-md-12">
-                                                <div class="form-group">
-                                                    <label asp-for="CustomerConstitution" class="  control-label" style="width:100%">Constitución Cliente</label>
-                                                    <textarea class="form-control" asp-for="CustomerConstitution" style="min-width:100%" rows="10">@Model.CustomerConstitution</textarea>
-                                                    <span asp-validation-for="CustomerConstitution" class="text-danger"></span>
+                                            <div class="row">
+                                                <div class="col-md-12">
+                                                    <div class="form-group">
+                                                        <label asp-for="CustomerConstitution" class="  control-label" style="width:100%">Constitución Cliente</label>
+                                                        <textarea class="form-control" asp-for="CustomerConstitution" style="min-width:100%" rows="10">@Model.CustomerConstitution</textarea>
+                                                        <span asp-validation-for="CustomerConstitution" class="text-danger"></span>
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                        
-                                        <h3 class="text-themecolor">Cargos</h3>
+                                        </text>);
+                                            i.Add().Text("Cargos").Content(@<text>
+                                            <div class="row">
 
-                                        @(Html.Kendo().Grid<ERPMVC.Models.CustomerContractLines>()
-                                                                  .Name("gridCotizacionesDetail")
-                                                                  .Columns(columns =>
-                                                                  {
-                                                                      columns.Bound(p => p.Id).Title("Id Line").Width(150).Visible(false);
-                                                                      columns.Bound(p => p.CustomerContractId).Title("Cotización Id").Width(150).Visible(false);
-                                                                      columns.Bound(p => p.SubProductId).Title("IdServicio").Width(150).Visible(false);
-                                                                      columns.Bound(p => p.SubProductName).Title("Subservicio").Width(120);
-                                                                      columns.Bound(p => p.Description).Title("Descripción").Width(120);
-                                                                      columns.Bound(p => p.UnitOfMeasureName).Format("{0:n2}").Title("Unidad de medida").Width(100);
-                                                                      columns.Bound(p => p.UnitOfMeasureId).Format("{0:n2}").Title("Unidad de medida").Width(180).Visible(false);
-                                                                      columns.Bound(p => p.Price).Format("{0:n2}").Title("Precio").Width(80).HtmlAttributes(new { @style = "text-align:right" });
-                                                                      columns.Bound(p => p.Quantity).Format("{0:n2}").Title("Cantidad").Width(80).HtmlAttributes(new { @style = "text-align:right" });
-                                                                      columns.Bound(p => p.TipoCobroName).Title("Tipo de Cobro").Width(80);
-                                                                      columns.Bound(p => p.TipoCobroId).Title("Tipo de Cobro Id").Width(80).Visible(false);
-                                                                      columns.Bound(p => p.PeriodoCobro).Format("{0:n2}").Title("Plazo").Width(80);
-                                                                  })
-                                                                      .Filterable(f => f.Operators(o => o.ForString(s => s
-                                                               .Clear()
-                                                               .Contains("Contiene")
-                                                               .DoesNotContain("No contiene")
-                                                               .EndsWith("Termina con")
-                                                               .IsEqualTo("Es igual a")
-                                                               .IsNotEqualTo("No es igual a")
-                                                               .IsNull("Es nulo")
-                                                               .StartsWith("Inicia con")
-                                                                     )
-                                                                     .ForNumber(n => n
-                                                                       .Clear()
-                                                                       .IsEqualTo("Es igual a")
-                                                                       .IsGreaterThan("Es mayor que")
-                                                                       .IsLessThan("Es menor que")
-                                                                       .IsNull("Es nulo")
-                                                                       .IsLessThanOrEqualTo("Es menor o igual que")
-                                                                       .IsGreaterThanOrEqualTo("Es mayor o igual que")
-                                                                     )
-                                                                     .ForDate(d => d
-                                                                     .Clear()
-                                                                     .IsEqualTo("Es igual que")
-                                                                     .IsGreaterThan("Es mayor que")
-                                                                     .IsLessThan("Es menor que")
-                                                                     .IsLessThanOrEqualTo("Es menor o igual que")
-                                                                     .IsGreaterThanOrEqualTo("Es mayor o igual que")
-                                                                     .IsNotEqualTo("No es igual que")
-                                                                      )
-                                                                   ))
-                                                                   .Editable(e => e.Mode(GridEditMode.PopUp))
-                                                                    .Sortable()
-                                                                    .AutoBind(true)
-                                                                    .Filterable()
-                                                                    .Scrollable()
-                                                                    .Pdf(pdf => pdf.FileName("Cotización_Detalle_Reporte" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-                                                                    + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
-                                                                    .ProxyURL(Url.Action("Export", "Home")).AllPages())
-                                                                      .Excel(excel => excel.FileName("Cotización_Detalle_Reporte_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-                                                                    + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
-                                                                    .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
-                                                                    .DataSource(dataSource =>
+                                                                                    @(Html.Kendo().Grid<ERPMVC.Models.CustomerContractLines>()
+                                                                                        .Name("gridCotizacionesDetail")
+                                                                                        .Columns(columns =>
+                                                                                        {
+                                                                                            columns.Bound(p => p.Id).Title("Id Line").Width(150).Visible(false);
+                                                                                            columns.Bound(p => p.CustomerContractId).Title("Cotización Id").Width(150).Visible(false);
+                                                                                            columns.Bound(p => p.SubProductId).Title("IdServicio").Width(150).Visible(false);
+                                                                                            columns.Bound(p => p.SubProductName).Title("Subservicio").Width(120);
+                                                                                            columns.Bound(p => p.Description).Title("Descripción").Width(120);
+                                                                                            columns.Bound(p => p.UnitOfMeasureName).Format("{0:n2}").Title("Unidad de medida").Width(100);
+                                                                                            columns.Bound(p => p.UnitOfMeasureId).Format("{0:n2}").Title("Unidad de medida").Width(180).Visible(false);
+                                                                                            columns.Bound(p => p.Price).Format("{0:n2}").Title("Precio").Width(80).HtmlAttributes(new { @style = "text-align:right" });
+                                                                                            columns.Bound(p => p.Quantity).Format("{0:n2}").Title("Cantidad").Width(80).HtmlAttributes(new { @style = "text-align:right" });
+                                                                                            columns.Bound(p => p.TipoCobroName).Title("Tipo de Cobro").Width(80);
+                                                                                            columns.Bound(p => p.TipoCobroId).Title("Tipo de Cobro Id").Width(80).Visible(false);
+                                                                                            columns.Bound(p => p.PeriodoCobro).Format("{0:n2}").Title("Plazo").Width(80);
+                                                                                        })
+                                                                                            .Filterable(f => f.Operators(o => o.ForString(s => s
+                                                                                    .Clear()
+                                                                                    .Contains("Contiene")
+                                                                                    .DoesNotContain("No contiene")
+                                                                                    .EndsWith("Termina con")
+                                                                                    .IsEqualTo("Es igual a")
+                                                                                    .IsNotEqualTo("No es igual a")
+                                                                                    .IsNull("Es nulo")
+                                                                                    .StartsWith("Inicia con")
+                                                                                            )
+                                                                                            .ForNumber(n => n
+                                                                                            .Clear()
+                                                                                            .IsEqualTo("Es igual a")
+                                                                                            .IsGreaterThan("Es mayor que")
+                                                                                            .IsLessThan("Es menor que")
+                                                                                            .IsNull("Es nulo")
+                                                                                            .IsLessThanOrEqualTo("Es menor o igual que")
+                                                                                            .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                                                                            )
+                                                                                            .ForDate(d => d
+                                                                                            .Clear()
+                                                                                            .IsEqualTo("Es igual que")
+                                                                                            .IsGreaterThan("Es mayor que")
+                                                                                            .IsLessThan("Es menor que")
+                                                                                            .IsLessThanOrEqualTo("Es menor o igual que")
+                                                                                            .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                                                                            .IsNotEqualTo("No es igual que")
+                                                                                            )
+                                                                                        ))
+                                                                                        .Editable(e => e.Mode(GridEditMode.PopUp))
+                                                                                        .Sortable()
+                                                                                        .AutoBind(true)
+                                                                                        .Filterable()
+                                                                                        .Scrollable()
+                                                                                        .Pdf(pdf => pdf.FileName("Cotización_Detalle_Reporte" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                                                                        + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+                                                                                        .ProxyURL(Url.Action("Export", "Home")).AllPages())
+                                                                                            .Excel(excel => excel.FileName("Cotización_Detalle_Reporte_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                                                                        + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+                                                                                        .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+                                                                                        .DataSource(dataSource =>
 
-                                                                   dataSource
-                                                                   .WebApi()
+                                                                                        dataSource
+                                                                                        .WebApi()
 
-                                                                    .ServerOperation(false)
-                                                                    .Model(model =>
-                                                                    {
-                                                                        model.Id(p => p.Id);
-                                                                        model.Field(p => p.CustomerContractId).Editable(false);
+                                                                                        .ServerOperation(false)
+                                                                                        .Model(model =>
+                                                                                        {
+                                                                                            model.Id(p => p.Id);
+                                                                                            model.Field(p => p.CustomerContractId).Editable(false);
 
-                                                                    })
-                                                                    .Events(events =>
-                                                                    {
-                                                                        events.Error("error_handler");
+                                                                                        })
+                                                                                        .Events(events =>
+                                                                                        {
+                                                                                            events.Error("error_handler");
 
-                                                                    })
-                                                            .Read(read => read.Action("GetCustomerContractLines", "CustomerContractLines").Data("GetCustomerContractId"))
-                                                              )
-        )
+                                                                                        })
+                                                                                .Read(read => read.Action("GetCustomerContractLines", "CustomerContractLines").Data("GetCustomerContractId"))
+                                                                                    )
+                                                                                )
+                                                </div>
+                                        </text>);
+                                            i.Add().Text("Cláusulas").Content(@<text>
+                                        <div class="row">
+                                                                        @(Html.Kendo().Grid<ERPMVC.Models.CustomerContractLinesTerms> ()
+                                                                                .Name("gridNumeracionCustomerContractTerms")
+                                                                                .Columns(columns =>
+                                                                                {
+                                                                                    if (true || User.HasClaim("Contabilidad.Centros de Costos.Editar", "true") && Model.Estado == "Generado")
+                                                                                    {
+                                                                                        columns.Command(command =>
+                                                                                        {
+                                                                                            command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditCustomerContractTerms");
+                                                                                        }).Title("Acciones").Width(80);
+                                                                                    }
+                                                                                    columns.Bound(p => p.CustomerContractTerm).Title("Código").Width(80).Visible(false);
+                                                                                    columns.Bound(p => p.Id).Title("Código").Width(80).Visible(false);
+                                                                                    columns.Bound(p => p.Position).Title("No").Width(80);
+                                                                                    columns.Bound(p => p.TermTitle).Title("Titulo").Width(200);
+                                                                                    columns.Bound(p => p.Term).Title("Clausula").Width(200).Visible(false);
+                                                                                })
+                                                                                    .Filterable(f => f.Operators(o => o.ForString(s => s
+                                                                                                            .Clear()
+                                                                                                            .Contains("Contiene")
+                                                                                                            .DoesNotContain("No contiene")
+                                                                                                            .EndsWith("Termina con")
+                                                                                                            .IsEqualTo("Es igual a")
+                                                                                                            .IsNotEqualTo("No es igual a")
+                                                                                                            .IsNull("Es nulo")
+                                                                                                            .StartsWith("Inicia con")
+                                                                                                        )
+                                                                                                        .ForNumber(n => n
+                                                                                                        .Clear()
+                                                                                                        .IsEqualTo("Es igual a")
+                                                                                                        .IsGreaterThan("Es mayor que")
+                                                                                                        .IsLessThan("Es menor que")
+                                                                                                        .IsNull("Es nulo")
+                                                                                                        .IsLessThanOrEqualTo("Es menor o igual que")
+                                                                                                        .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                                                                                        )
+                                                                                                        .ForDate(d => d
+                                                                                                        .Clear()
+                                                                                                        .IsEqualTo("Es igual que")
+                                                                                                        .IsGreaterThan("Es mayor que")
+                                                                                                        .IsLessThan("Es menor que")
+                                                                                                        .IsLessThanOrEqualTo("Es menor o igual que")
+                                                                                                        .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                                                                                        .IsNotEqualTo("No es igual que")
+                                                                                                        )
+                                                                                                    ))
+                                                                                .ToolBar(tools =>
+                                                                                {
+                                                                                    if (Model.Estado == "Generado")
+                                                                                    {
+                                                                                        tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+                                                                                                                                        .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddCustomerContractTerms()" });
+                                                                                    }
+                                                                                })
+                                                                                .Editable(e => e.Mode(GridEditMode.PopUp).ConfirmDelete("¿Esta seguro que desea eliminar este registro?"))
+                                                                                .Sortable()
+                                                                                .Pageable()
+                                                                                .Filterable()                                
+                                                                                .Scrollable()
+                                                                                .Pdf(pdf => pdf.FileName("CustomerContractTermsReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                                                                + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+                                                                                .ProxyURL(Url.Action("Export", "Home")).AllPages())
+                                                                                    .Excel(excel => excel.FileName("CustomerContractTermsReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                                                                + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+                                                                                .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+                                                                                .DataSource(dataSource =>
+                                                                                    dataSource
+                                                                                    .WebApi()
+
+                                                                                    .ServerOperation(true)
+                                                                                    .Model(model =>
+                                                                                    {
+                                                                                        model.Id(p => p.Id);
+                                                                                        model.Field(p => p.TermTitle).Editable(false);
+                                                                                        model.Field(p => p.Term).Editable(true);
+                                                                                    })
+                                                                                    .Events(events => events.Error("error_handler"))
+                                                                                    .Read(read => read.Action("GetCustomerContractLinesTerms", "CustomerContractLines").Data("GetCustomerContractId"))
+                                                                                )
+                                                                                )
+                                            </div>
+                                        </text>);
+                                        })
+                                        )
 
 
-                                        <div class="row"></div>
-                                        <h3 class="text-themecolor">Clausulas</h3>
-                                        @(Html.Kendo().Grid<ERPMVC.Models.CustomerContractLinesTerms>
-                                ()
-                                .Name("gridNumeracionCustomerContractTerms")
-                                .Columns(columns =>
-                                {
-                                    if (true || User.HasClaim("Contabilidad.Centros de Costos.Editar", "true") && Model.Estado == "Generado")
-                                    {
-                                        columns.Command(command =>
-                                        {
-                                            command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditCustomerContractTerms");
-                                        }).Title("Acciones").Width(80);
-                                    }
-                                    columns.Bound(p => p.CustomerContractTerm).Title("Código").Width(80).Visible(false);
-                                    columns.Bound(p => p.Id).Title("Código").Width(80).Visible(false);
-                                    columns.Bound(p => p.Position).Title("No").Width(80);
-                                    columns.Bound(p => p.TermTitle).Title("Titulo").Width(200);
-                                    columns.Bound(p => p.Term).Title("Clausula").Width(200).Visible(false);
-                                })
-                                    .Filterable(f => f.Operators(o => o.ForString(s => s
-                                                           .Clear()
-                                                           .Contains("Contiene")
-                                                           .DoesNotContain("No contiene")
-                                                           .EndsWith("Termina con")
-                                                           .IsEqualTo("Es igual a")
-                                                           .IsNotEqualTo("No es igual a")
-                                                           .IsNull("Es nulo")
-                                                           .StartsWith("Inicia con")
-                                                     )
-                                                     .ForNumber(n => n
-                                                       .Clear()
-                                                       .IsEqualTo("Es igual a")
-                                                       .IsGreaterThan("Es mayor que")
-                                                       .IsLessThan("Es menor que")
-                                                       .IsNull("Es nulo")
-                                                       .IsLessThanOrEqualTo("Es menor o igual que")
-                                                       .IsGreaterThanOrEqualTo("Es mayor o igual que")
-                                                     )
-                                                     .ForDate(d => d
-                                                     .Clear()
-                                                     .IsEqualTo("Es igual que")
-                                                     .IsGreaterThan("Es mayor que")
-                                                     .IsLessThan("Es menor que")
-                                                     .IsLessThanOrEqualTo("Es menor o igual que")
-                                                     .IsGreaterThanOrEqualTo("Es mayor o igual que")
-                                                     .IsNotEqualTo("No es igual que")
-                                                      )
-                                                   ))
-                                .ToolBar(tools =>
-                                {
-                                    if (Model.Estado == "Generado")
-                                    {
-                                        tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
-                                                                                       .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddCustomerContractTerms()" });
-                                    }
-                                })
-                                .Editable(e => e.Mode(GridEditMode.PopUp).ConfirmDelete("¿Esta seguro que desea eliminar este registro?"))
-                                .Sortable()
-                                .Pageable()
-                                .Filterable()                                
-                                .Scrollable()
-                                .Pdf(pdf => pdf.FileName("CustomerContractTermsReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-                                + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
-                                .ProxyURL(Url.Action("Export", "Home")).AllPages())
-                                    .Excel(excel => excel.FileName("CustomerContractTermsReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-                                + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
-                                .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
-                                .DataSource(dataSource =>
-                                    dataSource
-                                    .WebApi()
-
-                                    .ServerOperation(true)
-                                    .Model(model =>
-                                    {
-                                        model.Id(p => p.Id);
-                                        model.Field(p => p.TermTitle).Editable(false);
-                                        model.Field(p => p.Term).Editable(true);
-                                    })
-                                    .Events(events => events.Error("error_handler"))
-                                    .Read(read => read.Action("GetCustomerContractLinesTerms", "CustomerContractLines").Data("GetCustomerContractId"))
-                                )
-)
                                     </form>
                                     @if (Model.Estado == "Generado")
 	                                    {
