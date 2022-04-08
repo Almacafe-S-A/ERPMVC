@@ -142,5 +142,11 @@ namespace ERPMVC.Models
 
         public List<CustomerContractLinesTerms> customerContractLinesTerms { get; set; }
 
+        public int BranchId { get; set; }
+
+        public List<CustomerContractWareHouse> customerContractWarehouse { get; set; }
+
+        public List<Int64> ListaWarehouseIds { get; set; }
+
     }
 }
