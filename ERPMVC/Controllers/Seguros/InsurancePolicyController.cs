@@ -348,7 +348,7 @@ namespace ERPMVC.Controllers
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _InsurancePolicy = JsonConvert.DeserializeObject<List<InsurancePolicy>>(valorrespuesta).Where(w => w.EstadoId == 101).ToList();
+                    _InsurancePolicy = JsonConvert.DeserializeObject<List<InsurancePolicy>>(valorrespuesta).Where(w => w.EstadoId == 1).ToList();
                     _InsurancePolicy = _InsurancePolicy.OrderByDescending(q => q.InsurancePolicyId).ToList();
                     _InsurancePolicy = (from c in _InsurancePolicy.OrderByDescending(q => q.InsurancePolicyId)
                                         select new InsurancePolicy
