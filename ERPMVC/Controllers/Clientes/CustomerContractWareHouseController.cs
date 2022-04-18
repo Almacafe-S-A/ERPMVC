@@ -84,26 +84,19 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _CustomerContractWareHouse = JsonConvert.DeserializeObject<List<CustomerContractWareHouse>>(valorrespuesta);
-
                 }
-
-
             }
             catch (Exception ex)
             {
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 throw ex;
             }
-
-
             return _CustomerContractWareHouse.ToDataSourceResult(request);
-
         }
 
         [HttpPost("[action]")]
         public async Task<ActionResult<CustomerContractWareHouse>> SaveCustomerContractWareHouse([FromBody]CustomerContractWareHouse _CustomerContractWareHouse)
         {
-
             try
             {
                 CustomerContractWareHouse _listCustomerContractWareHouse = new CustomerContractWareHouse();
@@ -223,14 +216,43 @@ namespace ERPMVC.Controllers
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 return BadRequest($"Ocurrio un error: {ex.Message}");
             }
-
-
-
             return new ObjectResult(new DataSourceResult { Data = new[] { _CustomerContractWareHouse }, Total = 1 });
         }
 
 
+        public async Task<ActionResult<CustomerContractWareHouse>> DeleteCustomerConntractWareHouse(List<Int64> ListaWareHousesId, Int64 CustomerContractId )
+        {
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
 
+
+                foreach (var item in ListaWareHousesId)
+                {
+                    var _CustomerContractWareHouse = new CustomerContractWareHouse()
+                    {
+                        CustomerContractId = CustomerContractId,
+                        WareHouseId = item
+                    };
+
+                    var result = await _client.PostAsJsonAsync(baseadress + "api/CustomerContractWareHouse/DeleteCustomerContractWarehouse", _CustomerContractWareHouse);
+                    string valorrespuesta = "";
+                    if (result.IsSuccessStatusCode)
+                    {
+                        valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    }
+                }
+                
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+            return Ok(null);
+        }
 
 
     }

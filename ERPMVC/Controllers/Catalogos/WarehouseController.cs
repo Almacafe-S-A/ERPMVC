@@ -133,7 +133,7 @@ namespace ERPMVC.Controllers
 
 
         [HttpGet]
-        public async Task<DataSourceResult> GetActivos([DataSourceRequest] DataSourceRequest request, Warehouse _BranchId)
+        public async Task<DataSourceResult> GetActivos([DataSourceRequest] DataSourceRequest request, int BranchId)
         {
             List<Warehouse> _Warehouse = new List<Warehouse>();
             try
@@ -141,7 +141,7 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/Warehouse/GetWarehouseByBranchId/" + _BranchId.BranchId);
+                var result = await _client.GetAsync(baseadress + "api/Warehouse/GetWarehouseByBranchId/" + BranchId);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
