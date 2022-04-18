@@ -80,13 +80,22 @@
 
 
                             <div class="row">
-                                <div class=" col-md-3">
+                                <div class=" col-md-2">
                                     <div class="form-group">
                                         <label asp-for="Id" class="control-label">Id</label>
                                         <input class="k-textbox" type="number" name="Id" value="@Model.Id" asp-for="Id" style="min-width: 100%;" required readonly />
                                         <span asp-validation-for="Id" class="text-danger"></span>
                                     </div>
                                 </div>
+                                <div class="col-md-1">
+                                        <div class="form-group">
+                                            <label class="control-label">Control</label>
+                                            <kendo-switch checked="Model.Control" name="ProductoPesado"  for="Control" enabled="@editar">
+                                                <messages checked="Si" unchecked="No" />
+                                            </kendo-switch>
+
+                                        </div>
+                                    </div>
 
                                 <div class="col-md-3">
                                     <div class="form-group">
@@ -114,6 +123,41 @@
                                 </div>
                                 <div class="col-md-3">
                                     <div class="form-group">
+                                        <label asp-for="CustomerId" class="control-label">Cliente</label>
+
+                                        <kendo-dropdownlist name="CustomerId" for="@Model.CustomerId" filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                            option-label="Todos"
+                                                            datatextfield="CustomerName"
+                                                            datavaluefield="CustomerId" 
+                                                            auto-bind=true
+                                                            enable="editar"
+                                                            on-change = "RefrescarGridDetalle"
+                                                            style="min-width: 100%;">
+                                            <datasource type="DataSourceTagHelperType.WebApi" server-operation="true" page-size="9999999999">
+                                                <transport>
+                                                    <read url="@Url.Action("GetCustomer", "Common")" />
+                                                </transport>
+                                            </datasource>
+                                        </kendo-dropdownlist>
+                                    </div>
+                                </div>
+                               
+                                                             
+                            </div>
+                                
+                           
+
+
+                            <script>     
+                                function RefrescarGridDetalle() {
+                                    var grid = $("#gridInventarioFisicoLine").getKendoGrid();
+                                    grid.dataSource.read();
+                                }
+
+                            </script>
+                            <div class="row">
+                                 <div class="col-md-3">
+                                    <div class="form-group">
                                         <label asp-for="ProductId" class="control-label" style="width:100%">Servicio</label>
 
                                         <kendo-dropdownlist name="ProductId" filter="Kendo.Mvc.UI.FilterType.Contains"
@@ -136,20 +180,6 @@
                                         <span asp-validation-for="ProductId" class="text-danger"></span>
                                     </div>
                                 </div>
-                                                             
-                            </div>
-                                
-                           
-
-
-                            <script>     
-                                function RefrescarGridDetalle() {
-                                    var grid = $("#gridInventarioFisicoLine").getKendoGrid();
-                                    grid.dataSource.read();
-                                }
-
-                            </script>
-                            <div class="row">
                                <div class="col-md-3">
                                     <div class="form-group">
                                         <script>
@@ -189,25 +219,7 @@
                                         <span asp-validation-for="BranchId" class="text-danger"></span>
                                     </div>
                                 </div>   
-                                <div class="col-md-3">
-                                    <div class="form-group">
-                                        <label asp-for="CustomerId" class="control-label">Cliente</label>
-
-                                        <kendo-dropdownlist name="CustomerId" for="@Model.CustomerId" filter="Kendo.Mvc.UI.FilterType.Contains"
-                                                            option-label="Todos"
-                                                            datatextfield="CustomerName"
-                                                            datavaluefield="CustomerId" 
-                                                            auto-bind=true
-                                                            on-change = "RefrescarGridDetalle"
-                                                            style="min-width: 100%;">
-                                            <datasource type="DataSourceTagHelperType.WebApi" server-operation="true" page-size="9999999999">
-                                                <transport>
-                                                    <read url="@Url.Action("GetCustomer", "Common")" />
-                                                </transport>
-                                            </datasource>
-                                        </kendo-dropdownlist>
-                                    </div>
-                                </div>
+                                
                                 
                                 <div class="col-md-6">
                                     <div class="form-group">
@@ -382,14 +394,14 @@
     
     }
 
-     function SaveInventarioFisico(e) {
-        debugger
+     function SaveInventarioFisico(e) {        
          $("#btnSaveInventarioFisico").hide();
          $("#btnSaveInventarioFisico").prop("disabled", true);
          var displayedData = $("#gridInventarioFisicoLine").data().kendoGrid.dataSource.data();
          var displayedDatabh = $("#gridInventarioBodegaHabilitadaLine").data().kendoGrid.dataSource.data();
          var valido = true;
-        if (displayedData.length <= 0) {
+         var servicio = $("#ProductId").val();
+        if (displayedData.length <= 0  && servicio != 3) {
 
                  $.toast({
                      heading: 'Validación',
@@ -400,9 +412,26 @@
                      hideAfter: 3000,
                      stack: 6
                  });
+                  habilitarbotones();
+                 return;
 
              }
-         if (!valido ) {
+             if (displayedDatabh.length <= 0  && servicio == 3) {
+
+                 $.toast({
+                     heading: 'Validación',
+                     text: 'Debe agregar los productos!',
+                     position: 'top-right',
+                     loaderBg: '#ff6849',
+                     icon: 'error',
+                     hideAfter: 3000,
+                     stack: 6
+                 });
+                  habilitarbotones();
+                 return;
+
+             }
+            if (!valido ) {
 
                      $.toast({
                          heading: 'Validación',
@@ -413,18 +442,18 @@
                          hideAfter: 3000,
                          stack: 6
                      });
-                     $("#btnSaveInventarioFisico").show();
-                     $("#btnSaveInventarioFisico").prop("disabled", false);
+                      habilitarbotones();
+                     return;
                  }
-                 var fechacompletado =  $("#FechaCompletado").val()
-             var dataObject = {
+                 var fechacompletado =  $("#FechaCompletado").val();
+                  var Control = $("#Control").data("kendoSwitch").check();
+                 var dataObject = {
                          'Id': $("#Id").val(),                         
                          'CustomerId': $("#CustomerId").val()=="" ? null: $("#CustomerId").val(),
                          'Cliente': $("#CustomerId").data("kendoDropDownList").text(),
                          'BranchId': $("#BranchId").val(),
                          'Sucursal': $("#BranchId").data("kendoDropDownList").text(),
-                         //'WarehouseId': $("#WarehouseId").val(),        FechaCompletado
-                         //'Bodega': $("#WarehouseId").data("kendoDropDownList").text(),
+                         'Control': Control,
                          'Comentarios' : $("#Comentarios").val(),
                          'Fecha': $("#Fecha").data("kendoDatePicker").value().toJSON(),
                           'FechaCompletado': fechacompletado==""?null:  $("#FechaCompletado").data("kendoDatePicker").value().toJSON(),
@@ -473,9 +502,13 @@
                          }
                      });
 
+            habilitarbotones();
+             
          
+    }
+
+    function habilitarbotones(){
              $("#btnSaveInventarioFisico").show();
              $("#btnSaveInventarioFisico").prop("disabled", false);
-         
     }
 </script>
