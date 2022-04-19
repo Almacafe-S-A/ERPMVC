@@ -619,11 +619,6 @@ namespace ERPMVC.Controllers
         [HttpGet("[controller]/[action]/{id}")]
         public ActionResult SFGoodsDeliveryAuthorization(Int64 id)
         {
-
-            
-
-            //return View(_GoodsDeliveryAuthorization);
-
             GoodsDeliveryAuthorizationDTO _GoodsDeliveryAuthorization = new GoodsDeliveryAuthorizationDTO { GoodsDeliveryAuthorizationId = id, };
             try
             {
@@ -661,7 +656,44 @@ namespace ERPMVC.Controllers
             }
         }
 
+        [HttpGet("[controller]/[action]/{id}")]
+        public ActionResult SFAutorizacionRetiro(Int64 id)
+        {
+            GoodsDeliveryAuthorizationDTO _GoodsDeliveryAuthorization = new GoodsDeliveryAuthorizationDTO { GoodsDeliveryAuthorizationId = id, };
+            try
+            {
+                string basePath = _hostingEnvironment.WebRootPath;
+                FileStream inputStream = new FileStream(basePath + "/ReportsTemplate/AutorizacionDeRetiro.rdl", FileMode.Open, FileAccess.Read);
+                ReportWriter reportWriter = new ReportWriter(inputStream);
+                List<ReportParameter> parameters = new List<ReportParameter>();
+                parameters.Add(new ReportParameter() { Name = "GoodsDeliveryAuthorizationId", Labels = new List<string>() { _GoodsDeliveryAuthorization.GoodsDeliveryAuthorizationId.ToString() }, Values = new List<string>() { _GoodsDeliveryAuthorization.GoodsDeliveryAuthorizationId.ToString() } });
+                reportWriter.SetParameters(parameters);
+                Syncfusion.Report.DataSourceCredentials[] dscarray = new Syncfusion.Report.DataSourceCredentials[1];
+                Syncfusion.Report.DataSourceCredentials dsc = new Syncfusion.Report.DataSourceCredentials();
+                dsc.ConnectionString = Utils.ConexionReportes;
+                dsc.Name = "ERP";
+                dscarray[0] = dsc;
+                reportWriter.SetDataSourceCredentials(dscarray);
+                var format = Syncfusion.ReportWriter.WriterFormat.PDF;
+                string completepath = basePath + $"/AutorizacionesEntregas/Autorizacion_{id}.pdf";
+                MemoryStream ms = new MemoryStream();
 
+                reportWriter.Save(ms, format);
+                ms.Position = 0;
+
+                using (FileStream file = new FileStream(completepath, FileMode.Create, System.IO.FileAccess.Write))
+                    ms.WriteTo(file);
+
+                ViewBag.pathcontrato = completepath;
+                var stream = new FileStream(completepath, FileMode.Open);
+                return new FileStreamResult(stream, "application/pdf");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+        }
 
 
     }
