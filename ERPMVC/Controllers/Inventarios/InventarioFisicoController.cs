@@ -376,6 +376,7 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _InventarioFisico = JsonConvert.DeserializeObject<List<InventarioFisico>>(valorrespuesta);
+                    
                     _InventarioFisico = (from ce in _InventarioFisico
                                          select new InventarioFisico
                                          {
