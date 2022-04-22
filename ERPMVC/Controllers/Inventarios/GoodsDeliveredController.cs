@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Security.Claims;
@@ -11,11 +12,14 @@ using Kendo.Mvc.Extensions;
 using Kendo.Mvc.UI;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using Syncfusion.ReportWriter;
+using Syncfusion.Report;
 
 namespace ERPMVC.Controllers
 {
@@ -27,11 +31,13 @@ namespace ERPMVC.Controllers
         private readonly IOptions<MyConfig> config;
         private readonly ILogger _logger;
         private readonly ClaimsPrincipal _principal;
-        public GoodsDeliveredController(ILogger<GoodsDeliveredController> logger, IOptions<MyConfig> config, IHttpContextAccessor httpContextAccessor)
+        private readonly IHostingEnvironment _hostingEnvironment;
+        public GoodsDeliveredController(ILogger<GoodsDeliveredController> logger, IOptions<MyConfig> config, IHttpContextAccessor httpContextAccessor, IHostingEnvironment hostingEnvironment)
         {
             this.config = config;
             this._logger = logger;
             _principal = httpContextAccessor.HttpContext.User;
+            _hostingEnvironment = hostingEnvironment;
         }
 
         [Authorize(Policy = "Inventarios.Entrega de Mercaderia")]
@@ -373,6 +379,47 @@ namespace ERPMVC.Controllers
             GoodsDeliveredDTO _GoodsDelivered = new GoodsDeliveredDTO { GoodsDeliveredId = id, };
 
             return View(_GoodsDelivered);
+        }
+
+
+
+        public ActionResult SFEntregaMercaderia(Int64 id)
+        {
+
+            GoodsDelivered goodDelivered = new GoodsDelivered { GoodsDeliveredId = id };
+            try
+            {
+                string basePath = _hostingEnvironment.WebRootPath;
+                FileStream inputStream = new FileStream(basePath + "/ReportsTemplate/EntregaDeMercaderia.rdl", FileMode.Open, FileAccess.Read);
+                ReportWriter reportWriter = new ReportWriter(inputStream);
+                List<ReportParameter> parameters = new List<ReportParameter>();
+                parameters.Add(new ReportParameter() { Name = "GoodDeliveredID", Labels = new List<string>() { goodDelivered.GoodsDeliveredId.ToString() }, Values = new List<string>() { goodDelivered.GoodsDeliveredId.ToString() } });
+                reportWriter.SetParameters(parameters);
+                Syncfusion.Report.DataSourceCredentials[] dscarray = new Syncfusion.Report.DataSourceCredentials[1];
+                Syncfusion.Report.DataSourceCredentials dsc = new Syncfusion.Report.DataSourceCredentials();
+                dsc.ConnectionString = Utils.ConexionReportes;
+                dsc.Name = "ERP";
+                dscarray[0] = dsc;
+                reportWriter.SetDataSourceCredentials(dscarray);
+                var format = Syncfusion.ReportWriter.WriterFormat.PDF;
+                string completepath = basePath + $"/AutorizacionesEntregas/Autorizacion_{id}.pdf";
+                MemoryStream ms = new MemoryStream();
+
+                reportWriter.Save(ms, format);
+                ms.Position = 0;
+
+                using (FileStream file = new FileStream(completepath, FileMode.Create, System.IO.FileAccess.Write))
+                    ms.WriteTo(file);
+
+                ViewBag.pathcontrato = completepath;
+                var stream = new FileStream(completepath, FileMode.Open);
+                return new FileStreamResult(stream, "application/pdf");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
         }
 
 
