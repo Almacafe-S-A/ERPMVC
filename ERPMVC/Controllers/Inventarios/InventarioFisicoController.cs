@@ -245,6 +245,25 @@ namespace ERPMVC.Controllers
 
         }
 
+        public ActionResult SFInventario(Int32 id)
+        {
+
+            InventarioFisico inventario = new InventarioFisico { Id = id, }; //token = HttpContext.Session.GetString("token") };
+
+            return View(inventario);
+        }
+
+
+        public ActionResult SFInventarioBH(Int32 id)
+        {
+
+            InventarioFisico inventario = new InventarioFisico { Id = id, }; //token = HttpContext.Session.GetString("token") };
+
+            return View(inventario);
+        }
+
+
+
 
 
         [HttpGet("[controller]/[action]")]
