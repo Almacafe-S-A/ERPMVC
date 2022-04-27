@@ -61,6 +61,7 @@ namespace ERPMVC.Controllers
                 if (_BoletaDeSalida == null)
                 {
                     _BoletaDeSalida = new BoletaDeSalida();
+                    _BoletaDeSalida.DocumentDate = DateTime.Now;
                 }
             }
             catch (Exception ex)
@@ -203,6 +204,10 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _BoletaDeSalida = JsonConvert.DeserializeObject<BoletaDeSalida>(valorrespuesta);
+                }
+                else
+                {
+                    return BadRequest("Ha ocurrido un error al guardar los registros");
                 }
 
             }

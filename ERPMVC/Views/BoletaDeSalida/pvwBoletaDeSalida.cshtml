@@ -95,11 +95,11 @@
                                                 <div class="form-group">
                                                     <label asp-for="BoletaDeSalidaId" class="  control-label" style="width:100%"></label>
                                                     <kendo-numerictextbox name="BoletaDeSalidaId"
-                                                                          format="n"
-                                                                          enable="false"
-                                                                          min="0"
+                                                                          enable="false"                                                                          
+                                                                          decimals="0"
+                                                                          format="N"
                                                                           style="width:100%"
-                                                                          step="1"
+                                                                          spinners=false
                                                                           value="Model.BoletaDeSalidaId" />
 
                                                     <span asp-validation-for="BoletaDeSalidaId" class="text-danger"></span>
@@ -214,22 +214,8 @@
 
 
                                         <div class="row">
-                                            <div class="col-md-3">
-                                                <div class="form-group">
-                                                    <label asp-for="WeightBallot" class="control-label" style="width:100%"></label>
-                                                    <kendo-numerictextbox name="WeightBallot"
-                                                                          format="n"
-                                                                          data-val-required="El campo Boleta de peso es requerido"
-                                                                          min="0"
-                                                                          spinners="false"
-                                                                          max="99999999"
-                                                                          onchange="return GetBoletaPeso()"
-                                                                          step="1"
-                                                                          style="width: 100%;"
-                                                                          value="Model.WeightBallot" />
-                                                    <span asp-validation-for="WeightBallot" class="text-danger"></span>
-                                                </div>
-                                            </div>
+                                            
+                                            
                                             <div class="col-md-3">
                                                 <div class="form-group">
                                                     <script>
@@ -243,7 +229,15 @@
                                                             $("#WarehouseId").data("kendoDropDownList").dataSource.read();
 
                                                         }
+                                                        function onbound() {
+                                                            kendo.ui.progress($("#myModalBoletaDeSalida"), false);
+                                                        }
 
+                                                        function GetEsIngreso()
+                                                            {
+                                                                var esIngreso = true;
+                                                                return { CustomerTypeId: 1, CustomerId: $("#CustomerId").val(), esIngreso: esIngreso }
+                                                            }
 
                                                     </script>
 
@@ -273,7 +267,15 @@
                                                             // console.log(this.value());
                                                             //console.log(e);
                                                             $("#SubProductId").data("kendoDropDownList").dataSource.read();
+                                                            
+                                                            $("#WeightBallotddl").data("kendoDropDownList").enable(true);
+                                                            var datasource = $("#WeightBallotddl").data("kendoDropDownList").dataSource;
+                                                            datasource.async = false;
+                                                            datasource.read();
+                                                            $("#WeightBallotddl").data("kendoDropDownList").refresh();
                                                         }
+
+                                                        
                                                     </script>
                                                     <label asp-for="CustomerId" class="  control-label" style="width:100%"></label>
 
@@ -307,22 +309,27 @@
 
                                                         var hcustom = 0;
                                                         function GetProductTypeIdS() {
-                                                            ////debugger;
                                                             return {
                                                                 'CustomerId': $("#CustomerId").val(),
 
                                                             }
                                                         }
-
+                                                        function setRequiredAttr(evt) {
+                                                            if (evt.sender.dataSource.data().length < 1) {
+                                                                evt.sender.element.removeAttr("data-val-required");
+                                                            }
+                                                            else {
+                                                                evt.sender.element.attr("data-val-required", "La boleta de peso es requerida.");
+                                                            }
+                                                        }
                                                     </script>
                                                     <label asp-for="SubProductId" class="control-label" style="width:100%"></label>
 
                                                     <kendo-dropdownlist name="SubProductId" filter="Kendo.Mvc.UI.FilterType.Contains"
                                                                         for="SubProductId"
-                                                                        option-label="Seleccione el Producto"
+                                                                        option-label="Productos Varios"
                                                                         datatextfield="ProductName"
                                                                         datavaluefield="SubproductId"
-                                                                        data-val-required="El campo Producto es requerido"
                                                                         style="width: 100%;">
                                                         <datasource type="DataSourceTagHelperType.WebApi">
                                                             <transport>
@@ -333,7 +340,56 @@
                                                     <span asp-validation-for="SubProductId" class="text-danger"></span>
                                                 </div>
                                             </div>
+                                            <div class="col-md-3">
+                                                <div class="form-group">
+                                                    <label asp-for="WeightBallot" class="control-label" style="width: 100%;"></label>
 
+                                                    @if (Model.WeightBallot == 0)
+                                                    {
+                                                        <kendo-dropdownlist option-label="Sin Boleta de Peso"
+                                                                            datavaluefield="clave_e"
+                                                                            datatextfield="observa_e"
+                                                                            filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                                            id="WeightBallotddl"
+                                                                            on-change="CallPesaje"
+                                                                            enable="true"
+                                                                            style="min-width:100%">
+                                                            <datasource type="DataSourceTagHelperType.Ajax" on-request-end="onbound" page-size="99999">
+                                                                <transport>
+                                                                    <read url="@Url.Action("Virtualization_Read", "Boleto_Ent")" data="GetEsIngreso" />
+                                                                </transport>
+                                                            </datasource>
+
+                                                        </kendo-dropdownlist>
+
+                                                        <div hidden>
+                                                            <kendo-numerictextbox name="WeightBallot"
+                                                                          format="N"
+                                                                          data-val-required="El campo Boleta de peso es requerido"
+                                                                          min="0"
+                                                                          spinners="false"
+                                                                          max="99999999"
+                                                                          step="1"
+                                                                          style="width: 100%;"
+                                                                          value="Model.WeightBallot" />
+                                                        </div>
+                                                    }
+                                                    else
+                                                    {
+                                                       <kendo-numerictextbox name="WeightBallot"
+                                                                          format="N"
+                                                                          data-val-required="El campo Boleta de peso es requerido"
+                                                                          min="0"
+                                                                          spinners="false"
+                                                                          max="99999999"
+                                                                          step="1"
+                                                                          style="width: 100%;"
+                                                                          value="Model.WeightBallot" />
+                                                    }
+                                                    <span asp-validation-for="WeightBallot" class="text-danger"></span>
+                                                </div>
+
+                                         </div>
 
                                         </div>
 
@@ -362,12 +418,27 @@
                                                     <input type="text" id="Motorista" required class="k-textbox" style="min-width: 100%;" asp-for="Motorista" />
                                                 </div>
                                             </div>
-                                            <div class="col-md-3">
-                                                <div class="form-group">
-                                                    <label asp-for="Vigilante" class="control-label" style="width: 100%;"></label>
-                                                    <input type="text" id="Vigilante" data-val-required="El campo Vigilante es requerido" class="k-textbox" style="min-width:100%;" asp-for="Vigilante" />
-                                                </div>
-                                            </div>
+                                           <div class="col-md-3">
+                                        <div class="form-group">
+                                            <label asp-for="VigilanteId" class="  control-label" style="width:100%"></label>
+
+                                            <kendo-dropdownlist name="VigilanteId"
+                                                                for="VigilanteId"
+                                                                filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                                option-label="Seleccione Vigilante"
+                                                                datatextfield="Nombre"
+                                                                datavaluefield="Id"
+                                                                style="width: 100%;">
+                                                <datasource type="DataSourceTagHelperType.WebApi">
+                                                    <transport>
+                                                        <read url="@Url.Action("GetElementoByIdConfiguracion", "ElementoConfiguracion")" data="GrupoConfiguracionCargado" />
+                                                    </transport>
+                                                </datasource>
+                                            </kendo-dropdownlist>
+                                            <span asp-validation-for="VigilanteId" class="text-danger"></span>
+                                        </div>
+                                    </div>
+
                                         </div>
 
                                         <script>
@@ -381,6 +452,189 @@
                                             function GrupoConfiguracionCargado() {
                                                 return { Id: 18 };
                                             }
+
+                                            function DataSucursal() {
+                                                return {
+                                                    BranchId: $("#BranchId").val(),
+                                                     CustomerId: $("#CustomerId").val(),
+
+                                                }
+                                            }
+
+                                            function GetBoletaPeso() {
+
+                                                        var notification = $("#notification").data("kendoNotification");
+                                                        var dataObject = { 'clave_e': $("#WeightBallot").val(), 'Customer': $("#CustomerId").val() };
+
+                                                        if (Number($("#WeightBallot").val()) > 0) {
+                                                            $.ajax({
+                                                                url: '@Url.Action("GetBoleto_EntById", "Boleto_Ent")',
+                                                                method: 'GET',
+                                                                datatype: "json",
+                                                                contentType: 'application/json',
+                                                                async: false,
+                                                                data: dataObject,
+                                                                success: function (result) {
+                                                                    //console.log('Restful API:');
+                                                                    //console.log(result);
+                                                                    // debugger;
+
+
+                                                                    if (result == 0) {
+                                                                        $.toast({
+                                                                            heading: 'Error',
+                                                                            text: 'El producto que contiene la boleta no esta asignado a este Cliente.',
+                                                                            position: 'top-right',
+                                                                            loaderBg: '#ff6849',
+                                                                            icon: 'error',
+                                                                            hideAfter: 30000,
+                                                                            stack: 6
+                                                                        });
+                                                                        $("#btnSaveControlEstiba").prop("disabled", "disabled");
+                                                                    }
+                                                                    else if (result == "NoContienProducto") {
+                                                                        $.toast({
+                                                                            heading: 'Error',
+                                                                            text: 'No se encontro ningun Producto asociado en el sistema con el codigo de producto en la boleta',
+                                                                            position: 'top-right',
+                                                                            loaderBg: '#ff6849',
+                                                                            icon: 'error',
+                                                                            hideAfter: 30000,
+                                                                            stack: 6
+                                                                        });
+                                                                        $("#btnSaveControlEstiba").prop("disabled", "disabled");
+                                                                    }
+                                                                    else {
+                                                                        $("#btnSaveControlEstiba").prop("disabled", false);
+                                                                    }
+
+
+
+                                                                    var resultados = result;
+
+
+                                                                           if (resultados.clave_e == 0) {
+                                                                        //Web api local
+                                                                        var urlbase = "http://localhost:9200/api/code"
+                                                                        var dataObject2 = { 'id': $("#WeightBallot").val() };
+                                                                        $.ajax({
+                                                                            url: urlbase,
+                                                                            type: 'GET',
+                                                                            method: 'GET',
+                                                                            cache: 'true',
+                                                                            dataType: 'jsonp',
+                                                                            // contentType: 'application/json',
+                                                                            data: dataObject2,
+                                                                            async: false,
+                                                                            success: function (json) {
+                                                                                //  console.log(json);
+                                                                                resultados = json;
+                                                                                $.ajax({
+                                                                                    url: '@Url.Action("SaveBoleto_Ent", "Boleto_Ent")',
+                                                                                    type: 'POST',
+                                                                                    method: 'POST',
+                                                                                    dataType: 'json',
+                                                                                    // contentType: 'application/json',
+                                                                                    data: JSON.stringify(resultados),
+                                                                                    async: false,
+                                                                                    success: function (json) {
+                                                                                        //  console.log(json);
+                                                                                        //resultados = json;
+
+                                                                                    },
+                                                                                    error: function (parsedjson, textStatus, errorThrown) {
+
+                                                                                        $('body').append(
+                                                                                            "parsedJson status: " + parsedjson.status + '</br>' +
+                                                                                            "errorStatus: " + textStatus + '</br>' +
+                                                                                            "errorThrown: " + errorThrown);
+
+                                                                                    }
+                                                                                });
+
+
+
+                                                                            },
+                                                                            error: function (parsedjson, textStatus, errorThrown) {
+
+                                                                                $('body').append(
+                                                                                    "parsedJson status: " + parsedjson.status + '</br>' +
+                                                                                    "errorStatus: " + textStatus + '</br>' +
+                                                                                    "errorThrown: " + errorThrown);
+
+                                                                            }
+                                                                        });
+
+                                                                    }
+                                                                    $("#Motorista").val(resultados.conductor);
+                                                                    $("#Placa").val(resultados.placas);
+                                                                    $("#SubProductId").data("kendoDropDownList").value(resultados.ProductId);
+                                                                    var uom = $("#UnitOfMeasureId").val();
+                                                                    if (resultados.UnitOfMeasureId!=null && uom == null) {
+                                                                        $("#UnitOfMeasureId").data("kendoDropDownList").value(resultados.UnitOfMeasureId);
+
+                                                                    }
+
+                                                                    $("#SubProductId").data("kendoDropDownList").enable(false);
+                                                                    if ($("#EsIngreso").val() == 1) {
+                                                                        if (resultados.Boleto_Sal != null) {
+                                                                            if (resultados.Boleto_Sal.peso_s > resultados.peso_e) {
+                                                                                $.toast({
+                                                                                    heading: 'Validación',
+                                                                                    text: 'La boleta de peso es una salida de mercancía',
+                                                                                    position: 'top-right',
+                                                                                    loaderBg: '#ff6849',
+                                                                                    icon: 'error',
+                                                                                    hideAfter: 30000,
+                                                                                    stack: 6
+                                                                                });
+
+                                                                                $("#btnSaveControlEstiba").prop("disabled", true);
+                                                                                return false;
+                                                                            }
+                                                                            else {
+                                                                                $("#btnSaveControlEstiba").prop("disabled", false);
+                                                                            }
+                                                                        }
+
+                                                                    }
+                                                                    else if ($("#EsIngreso").val() == 0) {
+
+                                                                        if (resultados.Boleto_Sal.peso_s < resultados.peso_e) {
+                                                                            $.toast({
+                                                                                heading: 'Validación',
+                                                                                text: 'La boleta de peso es una entrada de mercancía',
+                                                                                position: 'top-right',
+                                                                                loaderBg: '#ff6849',
+                                                                                icon: 'error',
+                                                                                hideAfter: 30000,
+                                                                                stack: 6
+                                                                            });
+
+                                                                            $("#btnSaveControlEstiba").prop("disabled", true);
+                                                                            return false;
+                                                                        } else {
+                                                                            $("#btnSaveControlEstiba").prop("disabled", false);
+                                                                        }
+
+
+                                                                    }
+
+
+                                                                },
+                                                                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                                                                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+                                                                }
+                                                            });
+                                                        }
+                                                    }
+
+
+                                                    function CallPesaje() {
+                                                        $("#WeightBallot").data("kendoNumericTextBox").value($("#WeightBallotddl").val());
+                                                        GetBoletaPeso();
+                                                    }
+
                                         </script>
 
                                         
@@ -394,15 +648,17 @@
 
                               columns.Command(command =>
                               {
+                                  command.Destroy().Text(" ").IconClass("fa fa-trash-alt");
                               }).Title("Acciones").Width(120).Visible(Model.BoletaDeSalidaId == 0);
-                              columns.Bound(p => p.BoletaSalidaLineId).Width(150).Hidden(true);
-                              columns.Bound(p => p.SubProductId).Hidden(true).Width(150);
-                              columns.Bound(p => p.SubProductName).Width(150);
-                              columns.Bound(p => p.UnitOfMeasureName).Width(180);
+
+                              columns.Bound(p => p.SubProduct).Title("Producto")
+                                .ClientTemplate("#=typeof SubProduct === 'undefined'||SubProduct===null?SubProductName:SubProduct.ProductName#").Width(150);        
+                              columns.Bound(p => p.UnitOfMeasure).Title("Unidad de Medida")
+                                .ClientTemplate("#=typeof UnitOfMeasure === 'undefined'||UnitOfMeasure===null?UnitOfMeasureName:UnitOfMeasure.UnitOfMeasureName#").Width(150);
+                              
                               columns.Bound(p => p.Quantity).Width(150);
-                              columns.Bound(p => p.UnitOfMeasureId).Width(180).Hidden(true);
-                              columns.Bound(p => p.WarehouseName).Width(200).Title("Bodega");
-                              columns.Bound(p => p.Warehouseid).Visible(false);
+                              columns.Bound(p => p.Warehouse).Title("Bodega")
+                                .ClientTemplate("#=typeof Warehouse === 'undefined'||Warehouse===null?WarehouseName:Warehouse.WarehouseName#").Width(150);
 
 
                           })
@@ -439,8 +695,19 @@
                                              .IsNotEqualTo("No es igual que")
                                               )
                                            ))
+                          .ToolBar(tools =>
+                          {
+                              if(@Model.BoletaDeSalidaId == 0 ){
+                                tools.Create().Text("Agregar").HtmlAttributes(new { @style = "toolbar-field"});
+                              
+                              }
 
-                          .Editable(e => e.Mode(GridEditMode.PopUp))
+                             // tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+                              //                         .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddBoletaDeSalida();" });
+
+
+                          })
+                          .Editable(e => e.Mode(GridEditMode.InCell))
                           .Sortable()
                           .Filterable()
                           .Scrollable()
@@ -461,9 +728,9 @@
                                 })
                                 .Events(events => events.Error("error_handler"))
                                 .Read(read => read.Action("GetBoletaLines", "BoletaDeSalida", new { BoletaId = Model.BoletaDeSalidaId }))
-                                .Create(create => create.Action("Post", "BoletaDeSalida"))
-                                .Update(update => update.Action("Put", "BoletaDeSalida", new { id = "{0}" }))
-                                .Destroy(destroy => destroy.Action("Delete", "BoletaDeSalida", new { id = "{0}" }))
+                                //.Create(create => create.Action("Post", "BoletaDeSalida"))
+                                //.Update(update => update.Action("Put", "BoletaDeSalida", new { id = "{0}" }))
+                                //.Destroy(destroy => destroy.Action("Delete", "BoletaDeSalida", new { id = "{0}" }))
                                 .Sort(s => s.Add(m => m.BoletaSalidaLineId).Descending())
                           )
                             .Events(e =>
@@ -492,13 +759,14 @@
 
 <script>
     function SaveBoletaDeSalida(e) {
-
-        //var notification = $("#notification").data("kendoNotification");
-       // e.preventDefault();
+        debugger;
         $("#btnSaveBoletaDeSalida").hide();
         $("#btnSaveBoletaDeSalida").prop("disabled", true);
 
-        //var displayedData = $("#gridControlPalletsDetail").data().kendoGrid.dataSource.view();
+        var displayedData = $("#gridBoletaDeSalidaLines").data().kendoGrid.dataSource.view();
+        if(displayedData.length<=0){
+            MostrarMensaje("Debe agregar productos al detalle o seleccionar una boleta de peso", "Error", "Error", 30000);
+        }
 
         var dataObject = {                    
             'BoletaDeSalidaId': $("#BoletaDeSalidaId").val(),
@@ -518,75 +786,42 @@
             'CargadoId': $("#CargadoId").val(),
             'Cargadoname': $("#CargadoId").data("kendoDropDownList").text(),
             'SubProductId': $("#SubProductId").val(),
-            'SubProductName': $("#SubProductId").data("kendoDropDownList").text(),
-            'UnitOfMeasureId': $("#UnitOfMeasureId").val(),
-            'UnitOfMeasureName': $("#UnitOfMeasureId").data("kendoDropDownList").text(),
-            'Quantity': $("#Quantity").val(),       
+            'SubProductName': $("#SubProductId").data("kendoDropDownList").text(),     
             'WeightBallot': $("#WeightBallot").val(),
+            'BoletaDeSalidaLines' : displayedData,
            
         }; 
 
         var validator = $("#frmBoletaDeSalida").data("kendoValidator");
-        //var validator2 = $("#TotalesDocumento").data("kendoValidator");
         var status = $(".status");
 
-       // if (displayedData.length > 0) {
-            if (validator.validate()) {
+            if (!validator.validate()) {
+                MostrarMensaje("Ha ocurrido un error al validar los datos del formalario", "Error", "Error", 30000);
+                $("#btnSaveBoletaDeSalida").show();
+                $("#btnSaveBoletaDeSalida").prop("disabled", false);
+                return;
+            }
 
-                $.ajax({
+             $.ajax({
                     url: '@Url.Action("SaveBoletaDeSalida", "BoletaDeSalida")',
                     method: 'POST',
                     datatype: "json",
-                    //contentType: "application/x-www-form-urlencoded; charset=UTF-8", 
                     contentType: 'application/json',
                     async: false,
                     data: JSON.stringify( dataObject),
                     success: function (data) {
-
-                        //$.toast({
-                        //    heading: 'Satisfactorio',
-                        //    text: 'Datos guardados correctamente.',
-                        //    position: 'top-right',
-                        //    loaderBg: '#ff6849',
-                        //    icon: 'success',
-                        //    hideAfter: 7000,
-                        //    stack: 6
-                        //});
                          MostrarMensaje('Datos guardados correctamente.', "success", "Satisfactorio", 7000);
                         RefreshGridBoletaSalida();                        
-                        //$('#myModalSalesOrder').modal('hide');
+                        $('#myModalBoletaDeSalida').modal('hide');
 
                     },
                     error: function (XMLHttpRequest, textStatus, errorThrown) {
                         $("#btnSaveBoletaDeSalida").show();
                         $("#btnSaveBoletaDeSalida").prop("disabled", false);
-                      
-                        //notification.show({
-                        //    title: "Validacion",
-                        //    message: textStatus + ": " + XMLHttpRequest.responseText
-                        //}, "error");
                          MostrarMensaje(textStatus + ": " + XMLHttpRequest.responseText, "Error", "Error", 30000);
                     }
                 });
-
-            }
-            else {
                 $("#btnSaveBoletaDeSalida").show();
                 $("#btnSaveBoletaDeSalida").prop("disabled", false);
-            
-            }
-        //}
-        //else {
-        //    $("#btnSaveControlEstiba").show();
-        //    $("#btnSaveControlEstiba").prop("disabled", false);
-        //    notification.show({
-        //        title: "Validacion",
-        //        message: "Debe agregar los productos!"
-        //    }, "error");
-   
-       // }
-
-
-       
     }
 </script>

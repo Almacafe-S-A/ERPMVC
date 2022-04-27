@@ -176,24 +176,27 @@ namespace ERPMVC.Controllers
 
 
         [HttpPost("[controller]/[action]")]
-        public async Task<ActionResult> Aprobar([FromBody] InventarioFisico _InventarioFisico)
+        public async Task<ActionResult<InventarioFisico>> Aprobar([FromBody] InventarioFisico _InventarioFisico)
         {
             try
             {
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/InventarioFisico/GetInventarioFisicoById/" + _InventarioFisico.Id);
+
+                var result = await _client.PostAsJsonAsync(baseadress + "api/InventarioFisico/Aprobar", _InventarioFisico);
                 string valorrespuesta = "";
-                if (result.StatusCode == System.Net.HttpStatusCode.OK)
+                if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _InventarioFisico = JsonConvert.DeserializeObject<InventarioFisico>(valorrespuesta);
-                    _InventarioFisico.EstadoId = 1;
-                    _InventarioFisico.EstadoName = "Aprobado";
-                    await Update(_InventarioFisico.Id,_InventarioFisico);
-                    return Ok();
+                    return Ok(_InventarioFisico);
                 }
+                else
+                {
+                    return BadRequest();
+                }
+                
 
             }
             catch (Exception ex)
@@ -241,6 +244,25 @@ namespace ERPMVC.Controllers
             return BadRequest();
 
         }
+
+        public ActionResult SFInventario(Int32 id)
+        {
+
+            InventarioFisico inventario = new InventarioFisico { Id = id, }; //token = HttpContext.Session.GetString("token") };
+
+            return View(inventario);
+        }
+
+
+        public ActionResult SFInventarioBH(Int32 id)
+        {
+
+            InventarioFisico inventario = new InventarioFisico { Id = id, }; //token = HttpContext.Session.GetString("token") };
+
+            return View(inventario);
+        }
+
+
 
 
 
@@ -376,6 +398,7 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _InventarioFisico = JsonConvert.DeserializeObject<List<InventarioFisico>>(valorrespuesta);
+                    
                     _InventarioFisico = (from ce in _InventarioFisico
                                          select new InventarioFisico
                                          {
