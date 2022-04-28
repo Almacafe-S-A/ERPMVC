@@ -17,6 +17,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using ERPMVC.Models.Seguridad;
 
 namespace ERPMVC.Controllers
 {
@@ -51,6 +52,11 @@ namespace ERPMVC.Controllers
             return View();
         }
 
+        public IActionResult ReportePermisos()
+        {
+            return View();
+        }
+
 
         [HttpGet("[action]")]
         public async Task<JsonResult> GetJsonRoles([DataSourceRequest]DataSourceRequest request)
@@ -70,6 +76,33 @@ namespace ERPMVC.Controllers
                     _users = JsonConvert.DeserializeObject<List<ApplicationRole>>(valorrespuesta).Where(w => w.IdEstado ==1).ToList();
                 }
                 
+            }
+            catch (System.Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw (new Exception(ex.Message));
+            }
+            return Json(_users);
+        }
+
+        [HttpGet("[action]")]
+        public async Task<JsonResult> GetJsonAllRoles([DataSourceRequest] DataSourceRequest request)
+        {
+            List<ApplicationRole> _users = new List<ApplicationRole>();
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/Roles/GetJsonRoles");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _users = JsonConvert.DeserializeObject<List<ApplicationRole>>(valorrespuesta).ToList();
+                }
+
             }
             catch (System.Exception ex)
             {
@@ -482,6 +515,55 @@ namespace ERPMVC.Controllers
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 return BadRequest($"Ocurrio un error{ex.Message}");
             }
+        }
+
+
+        [HttpGet("[action]")]
+        public async Task<DataSourceResult> ListaReportePermisos([DataSourceRequest] DataSourceRequest request,Guid? UserId, Guid? RoleId)
+        {
+            List<ReportePermisos> _reportePermisos = new List<ReportePermisos>();
+            try
+            {
+                string baseDireccion = config.Value.urlbase;
+                HttpClient _cliente = new HttpClient();
+
+                _cliente.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+
+                string url = $"api/Roles/GetReportePermisos";
+                //if (UserId != null)
+                //    url = $"{url}/{UserId}";
+
+                //if (RoleId != null)
+                //    url = $"{url}/{RoleId}";
+
+                var result = await _cliente.GetAsync(baseDireccion + url); // $"api/Roles/GetReportePermisos/{UserId??"1"}/{RoleId??"1"}");
+
+                if (result.IsSuccessStatusCode)
+                {
+                    var respuesta = await (result.Content.ReadAsStringAsync());
+                    _reportePermisos = JsonConvert.DeserializeObject<List<ReportePermisos>>(respuesta);
+
+                    if (RoleId != null && UserId != null)
+                    {
+                        _reportePermisos = _reportePermisos.Where(w => w.RoleId.Equals(RoleId.ToString()) && w.UserId.Equals(UserId.ToString())).ToList();
+                    }
+                    else if (RoleId != null && UserId == null) {
+                        _reportePermisos = _reportePermisos.Where(w => w.RoleId.Equals(RoleId.ToString())).ToList();
+                    }
+                    else if (RoleId == null && UserId != null)
+                    {
+                        _reportePermisos = _reportePermisos.Where(w => w.UserId.Equals(UserId.ToString())).ToList();
+                    }
+                }
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                //return BadRequest($"Ocurrio un error{ex.Message}");
+            }
+            return _reportePermisos.ToDataSourceResult(request);
+            //return await Task.Run(() => Ok(_reportePermisos));
         }
     }
 }

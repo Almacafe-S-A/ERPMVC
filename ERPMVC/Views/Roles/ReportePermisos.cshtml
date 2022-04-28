@@ -1,0 +1,200 @@
+﻿
+@{
+    ViewData["Title"] = "ReportePermisos";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<style>
+    .btn-color {
+        background-color: #3c8dbc !important;
+        color: white !important;
+    }
+</style>
+<h3 class="text-themecolor">Reporte Roles y Usuarios</h3>
+
+ <div class="modal-body">
+
+      <div class="row">
+           
+          <div class="col-md-1">
+              @Html.Label("Rol")
+          </div>
+           <div class="col-md-4">
+                
+                @(Html.Kendo().DropDownList()
+                .Name("RoleId")
+                .DataValueField("Id")
+                .DataTextField("Name")
+                //.Events(ev => ev.DataBound("setRequiredRol"))
+                .Filter(Kendo.Mvc.UI.FilterType.Contains)
+                .HtmlAttributes(new { @style = "width:100%" })
+                .OptionLabel("Seleccione un rol")
+                .AutoBind(true)
+                .Enable(true)
+                .DataSource(Source => Source.Custom().Sort(s => s.Add("Name"))
+                .Transport(tr => tr.Read(r => r.Action("GetJsonAllRoles", "Roles"))))
+
+                )
+                <span class="k-invalid-msg" data-for="RoleId"></span>
+            </div>
+
+          <div class="col-md-1">
+              @Html.Label("Usuario")
+          </div>
+          <div class="col-md-4">
+                
+                @(Html.Kendo().DropDownList()
+                    .Name("UserId")
+                    .OptionLabel("Seleccione un usuario")
+                    .DataValueField("Id")
+                    .DataTextField("UserName")
+                    //.Events(ev => ev.DataBound("setRequiredAttr"))
+                    .Filter(Kendo.Mvc.UI.FilterType.Contains)
+                    .HtmlAttributes(new { @style = "width:100%"})
+                    .Enable(true)
+                    .DataSource(Source => Source.Custom().Sort(s => s.Add("UserName"))
+                    .Transport(tr => tr.Read(r => r.Action("GetJsonAllUsuarios", "Usuario"))))
+                )
+                <span id="c" class="k-invalid-msg" data-for="UserId"></span>
+            </div>
+
+          <div class="col-md-2">
+               @*@Html.Label(" ")
+              @(Html.Kendo().Button().Name("btnFiltrar")
+              .Icon("k-i-zoom k-i-search")
+              .Content("Filtrar")
+              .HtmlAttributes( new { type="button", @class="form-control btn-color" })
+               .Events(e => e.Click("btnFiltrar_Click"))
+              )*@
+               <button id="btnFiltraReporte" class="form-control btn-miboton" type="button" onclick="btnFiltrar_Click()"> Filtrar </button>
+          </div>
+          <div class="col-md-12">
+              <br />
+          </div>
+          <div class="col-md-12">
+              @(Html.Kendo().Grid<ERPMVC.Models.Seguridad.ReportePermisos>()
+                .Name("gridRolesReport")
+                .Columns(columns =>
+                {
+
+                    columns.Bound(p => p.RoleId).Title("Role Id").Width(250).Visible(false);
+                    columns.Bound(p => p.RoleName).Title("Nombre Rol").Width(150);
+                    columns.Bound(p => p.RoleNormalizedName).Title("Nombre Normalizado").Width(120).Visible(false);
+                    columns.Bound(p => p.IdEstado).Title("Estado Rol").Width(150).ClientTemplate("#= IdEstado==2 ? 'Inactivo' : 'Activo' #");
+
+                    columns.Bound(p => p.UserId).Title("Usuario Id").Width(120).Visible(false);
+                    columns.Bound(p => p.UserName).Title("Usuario").Width(150);
+                    columns.Bound(p => p.EstadoRolUser).Title("Usuario Rol Activo").Width(180).ClientTemplate("#= EstadoRolUser == null ? 'No asignado' : (EstadoRolUser == 0? 'Activo' : 'Inactivo') #");
+                    columns.Bound(p => p.ClaimType).Title("Permiso").Width(300);
+
+                    
+
+                    columns.Bound(p => p.UsuarioCreacionUser).Title("Usuario Creó").Width(180);
+                    columns.Bound(p => p.FechaCreacionRolUser).Format("{0:dd/MM/yyyy HH:mm:ss}").Width(180).Title("Fecha Creación");
+
+                    columns.Bound(p => p.UsuarioModificoUser).Title("Usuario Modificó").Width(180);
+                    columns.Bound(p => p.FechaModificacionUser).Format("{0:dd/MM/yyyy HH:mm:ss}").Width(180).Title("Fecha Modificación");
+
+                })
+                .Filterable(f => f.Operators(o => o.ForString(s => s
+                        .Clear()
+                        .Contains("Contiene")
+                        .DoesNotContain("No contiene")
+                        .EndsWith("Termina con")
+                        .IsEqualTo("Es igual a")
+                        .IsNotEqualTo("No es igual a")
+                        .IsNull("Es nulo")
+                        .StartsWith("Inicia con")
+                    )
+                    .ForNumber(n => n
+                        .Clear()
+                        .IsEqualTo("Es igual a")
+                        .IsGreaterThan("Es mayor que")
+                        .IsLessThan("Es menor que")
+                        .IsNull("Es nulo")
+                        .IsLessThanOrEqualTo("Es menor o igual que")
+                        .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                    )
+                    .ForDate(d => d
+                        .Clear()
+                        .IsEqualTo("Es igual que")
+                        .IsGreaterThan("Es mayor que")
+                        .IsLessThan("Es menor que")
+                        .IsLessThanOrEqualTo("Es menor o igual que")
+                        .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                        .IsNotEqualTo("No es igual que")
+                    )
+                ))
+                .ToolBar(tools =>{
+
+                    tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
+                    tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
+                })
+                .Editable(e => e.Mode(GridEditMode.PopUp))
+                .Sortable()
+                .AutoBind(true)
+                .Pageable(p => p.Refresh(true))
+                .Filterable()
+                .Scrollable()
+                //.ClientDetailTemplateId("templateUserId")
+                .Pdf(pdf => pdf.FileName("UsersRolesReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                    + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+                    .ProxyURL(Url.Action("Export", "Home")).AllPages()
+                )
+                .Excel(excel => excel.FileName("UsersRolesReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                    + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx")
+                    .Filterable(true).ProxyURL(Url.Action("Export", "Home")).AllPages(true)
+                )
+
+                .DataSource(dataSource =>
+                    dataSource
+                    .WebApi()
+                    .ServerOperation(true)
+                    .Model(model =>
+                    {
+                        model.Field(p => p.RoleId).Editable(false);
+                        model.Field(p => p.RoleName).Editable(false);
+                        model.Field(p => p.RoleNormalizedName).Editable(false);
+                        model.Field(p => p.IdEstado).Editable(false);
+                        model.Field(p => p.UserId).Editable(false);
+                        model.Field(p => p.UserName).Editable(false);
+                        model.Field(p => p.EstadoRolUser).Editable(false);
+                        model.Field(p => p.FechaCreacionRolUser).Editable(false);
+                        model.Field(p => p.UsuarioCreacionUser).Editable(false);
+                        model.Field(p => p.FechaModificacionUser).Editable(false);
+                        model.Field(p => p.UsuarioModificoUser).Editable(false);
+                        model.Field(p => p.ClaimType).Editable(false);
+                    })
+                    .Sort(s => s.Add(m => m.UserName).Ascending())
+                    .Events(events =>{
+                        events.Error("error_handler");
+                    })
+                    .Read(read => read.Action("ListaReportePermisos", "Roles").Data("gridRolesReport_data"))
+                )
+            )
+          </div>
+      </div>
+
+ </div>
+
+<script type="text/javascript">
+
+    function btnFiltrar_Click(e) {
+       $("#gridRolesReport").data("kendoGrid").dataSource.read();
+    }
+
+    function gridRolesReport_data(e) {
+        var userId = $("#UserId").data("kendoDropDownList").value();
+        var roleId = $("#RoleId").data("kendoDropDownList").value();
+
+        return {
+            'UserId': userId,
+            'RoleId': roleId,
+        }
+    }
+
+    function EstadRolUser_ClientTemplate(e) {
+        console.log(e);
+        return 'a';
+    }
+    //#= IdEstado == 0? 'Activo' : 'Inactivo' #
+</script>

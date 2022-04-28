@@ -238,9 +238,6 @@ namespace ERPMVC.Controllers
                         var resultclient = await _client.GetAsync(baseadress + "api/Usuario/GetUserById/" + item.UserId).Result.Content.ReadAsStringAsync();
                         item.UserName = (JsonConvert.DeserializeObject<ApplicationUser>(resultclient)).UserName;
                     }
-
-
-
                 }
             }
             catch (System.Exception ex)
@@ -338,12 +335,10 @@ namespace ERPMVC.Controllers
         public async Task<ActionResult> Details(Int64 UserId)
         {
             ApplicationUser _usuario = new ApplicationUser();
-
             try
             {
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
-
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
                 var result = await _client.GetAsync(baseadress + "api/UserRol/GetUserById/" + UserId);
                 string valorrespuesta = "";
@@ -351,7 +346,6 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _usuario = JsonConvert.DeserializeObject<ApplicationUser>(valorrespuesta);
-
                 }
             }
             catch (Exception ex)
@@ -359,9 +353,6 @@ namespace ERPMVC.Controllers
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 throw ex;
             }
-          
-
-
             return View(_usuario);
         }
 
@@ -370,18 +361,13 @@ namespace ERPMVC.Controllers
         {
             try
             {
-
-      
-
                 if (_role.RoleId.ToString() != "" && _role.UserId.ToString() != "" && _role.RoleId != null && _role.UserId != null)
                 {
                     // TODO: Add insert logic here
                     string baseadress = config.Value.urlbase;
                     HttpClient _client = new HttpClient();
                     _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-
                     List<ApplicationUserRole> _roles = new List<ApplicationUserRole>();
-
                     var result1 = await _client.GetAsync(baseadress + "api/UserRol/GetUserRoles");
 
                     string valorrespuesta1 = "";
@@ -389,39 +375,26 @@ namespace ERPMVC.Controllers
                     {
                         valorrespuesta1 = await (result1.Content.ReadAsStringAsync());
                         _roles = JsonConvert.DeserializeObject<List<ApplicationUserRole>>(valorrespuesta1);
-
                         _roles = _roles.Where(e => e.UserId == _role.UserId ).ToList();
-
                         if(_roles.Count > 0)
                         {
-
                             return await Task.Run(() => BadRequest("Este usuario ya tiene un rol asignado"));
-
                         }
-
                     }
-
                     _role.FechaCreacion = DateTime.Now;
-                    _role.FechaModificacion = DateTime.Now;
                     _role.UsuarioCreacion = HttpContext.Session.GetString("user");
-                    _role.UsuarioModificacion = HttpContext.Session.GetString("user");
-
-                    
                     var result = await _client.PostAsJsonAsync(baseadress + "api/UserRol/Insert", _role);
-
                     string valorrespuesta = "";
                     if (result.IsSuccessStatusCode)
                     {
                         valorrespuesta = await (result.Content.ReadAsStringAsync());
                         _role = JsonConvert.DeserializeObject<ApplicationUserRole>(valorrespuesta);
-
                     }
                     else
                     {
                         string request = await result.Content.ReadAsStringAsync();
                         return BadRequest(request);
                     }
-                 
                 }
                 else
                 {
@@ -434,9 +407,7 @@ namespace ERPMVC.Controllers
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 return BadRequest($"Ocurrio un error{ex.Message}");
             }
-
               return Ok("Datos Guardados Correctamente! ");
-           // return new ObjectResult(new DataSourceResult { Data = new[] { _role }, Total = 1 });
         }
 
         [HttpPut("[controller]/[action]")]
@@ -448,6 +419,8 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                _rol.FechaModificacion = DateTime.Now;
+                _rol.UsuarioModificacion = HttpContext.Session.GetString("user");
                 var result = await _client.PutAsJsonAsync(baseadress + "api/UserRol/Update", _rol);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
