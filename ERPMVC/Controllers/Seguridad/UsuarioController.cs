@@ -106,6 +106,33 @@ namespace ERPMVC.Controllers
         }
 
         [HttpGet("[controller]/[action]")]
+        public async Task<JsonResult> GetJsonAllUsuarios([DataSourceRequest] DataSourceRequest request)
+        {
+            List<ApplicationUser> _users = new List<ApplicationUser>();
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/Usuario/GetUsers");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _users = JsonConvert.DeserializeObject<List<ApplicationUser>>(valorrespuesta).ToList();
+
+                }
+
+            }
+            catch (System.Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw (new Exception(ex.Message));
+            }
+            return Json(_users);
+        }
+
+        [HttpGet("[controller]/[action]")]
         public async Task<JsonResult> GetUsuarios()
         {
             List<ApplicationUser> _users = new List<ApplicationUser>();
