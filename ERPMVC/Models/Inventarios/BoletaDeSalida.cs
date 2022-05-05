@@ -58,7 +58,7 @@ namespace ERPMVC.Models
         public string Cargadoname { get; set; }
 
         [Display(Name = "Producto")]
-        public Int64 SubProductId { get; set; }
+        public Int64? SubProductId { get; set; }
         [Display(Name = "Producto")]
         public string SubProductName { get; set; }
 

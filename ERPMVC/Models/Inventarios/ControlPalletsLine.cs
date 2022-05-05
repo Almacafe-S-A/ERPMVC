@@ -37,6 +37,7 @@ namespace ERPMVC.Models
         public string WarehouseName { get; set; }
 
         public string Observacion { get; set; }
+        public int Estiba { get; set; }
 
         [Display(Name = "Total de Línea")]
         public double Totallinea { get; set; }

@@ -26,12 +26,22 @@ namespace ERPMVC.Models
 
         [Display(Name = "Unidad de medida")]
         public string UnitOfMeasureName { get; set; }
+        [ForeignKey("SubProductId")]
+        [UIHint("Producto")]
+        public SubProduct SubProduct { get; set; }
+
+        
+        [ForeignKey("UnitOfMeasureId")]
+        [UIHint("UOM")]
+        public UnitOfMeasure UnitOfMeasure { get; set; }
 
         [Display(Name = "Cantidad")]
         public decimal Quantity { get; set; }
         public int? Warehouseid { get; set; }
         public string WarehouseName { get; set; }
         [ForeignKey("Warehouseid ")]
+        [UIHint("Bodega")]
         public Warehouse Warehouse { get; set; }
+
     }
 }

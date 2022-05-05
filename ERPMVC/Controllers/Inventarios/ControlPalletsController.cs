@@ -239,7 +239,7 @@ namespace ERPMVC.Controllers
                     _ControlPallets.pesoneto = Math.Round(Convert.ToDouble(_ControlPallets.pesobruto) - Convert.ToDouble(_ControlPallets.taracamion),2, MidpointRounding.AwayFromZero);
                     _ControlPallets._Boleto_Ent = _Boleto_Ent;
                     
-                    double yute = Math.Round(Convert.ToDouble(_ControlPallets.TotalSacosYute * 1) / Convert.ToDouble(100), 2, MidpointRounding.AwayFromZero);
+                    double yute = Math.Round((double)_ControlPallets.TotalSacosYute * 1 / 100, 2, MidpointRounding.AwayFromZero);
                     double polietileno = Math.Round(Convert.ToDouble((_ControlPallets.TotalSacosPolietileno * 0.5)) / Convert.ToDouble(100), 2, MidpointRounding.AwayFromZero);
                     double tarasaco = Math.Round(Math.Round(yute, 2) + Math.Round(polietileno, 2), 2, MidpointRounding.AwayFromZero);
                     _ControlPallets.Tara = tarasaco;
@@ -387,7 +387,7 @@ namespace ERPMVC.Controllers
                     _ControlPallets = 
                     (from c in _ControlPallets
                                        .Where(q => q.CustomerId == CustomerId
-                                       && q.EsIngreso == esIngreso
+                                       //&& q.EsIngreso == esIngreso
                                        && q.BranchId == BranchId
                                        && q.ProductId == ServicioId)
                      select new ControlPallets

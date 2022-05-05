@@ -36,6 +36,14 @@ namespace ERPMVC.Models
 
         public string Cliente { get; set; }
 
+        public bool? Control { get; set; }
+
+        public Int64? EstadoId { get; set; }
+        [ForeignKey("EstadoId")]
+        public Estados Estado { get; set; }
+
+        public string EstadoName { get; set; }
+
         public Int64? ProductId { get; set; }
         [ForeignKey("ProductId")]
         public Product Product { get; set; }
