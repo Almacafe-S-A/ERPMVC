@@ -13,16 +13,10 @@ namespace ERPMVC.Models
         [Display(Name = "Boleta de Salida")]
         public Int64 BoletaDeSalidaId { get; set; }
 
-        [Display(Name = "C/E No.")]
-        [Required(AllowEmptyStrings = false, ErrorMessage = "El campo {0} es requerido")]
-        public Int64 GoodsDeliveredId { get; set; }
+        public int DocumentoId { get; set; }
 
-        [Display(Name = "A/R No.")]
-        [Required(AllowEmptyStrings = false, ErrorMessage = "El campo {0} es requerido")]
-        public Int64 GoodsDeliveryAuthorizationId { get; set; }
+        public string DocumentoTipo { get; set; }
 
-        [Display(Name = "R/M No.")]
-        public Int64 GoodsReceivedId { get; set; }
 
         public int? GuiaRemisionId { get; set; }
 
@@ -72,9 +66,38 @@ namespace ERPMVC.Models
         [Required(AllowEmptyStrings = false, ErrorMessage = "El campo {0} es requerido")]
         public Int64 WeightBallot { get; set; }
 
+        public Int64? Producto { get; set; }
+        [ForeignKey("Producto")]
+        public Product Product { get; set; }
+
+        public string ProductName { get; set; }
+
 
         [Display(Name = "Cantidad")]
         public double Quantity { get; set; }
+
+        public string GuiRemisionNo { get; set; }
+
+        public string DireccionDestion { get; set; }
+
+        public string Transportista { get; set; }
+
+        public string Barco { get; set; }
+
+        public string OrdenNo { get; set; }
+
+        public decimal TonPuerto { get; set; }
+
+        public decimal QQPuerto { get; set; }
+
+        public decimal PesoBruto { get; set; }
+
+        public decimal Tara { get; set; }
+
+        public decimal PNInglesas { get; set; }
+
+        public decimal QQInglesas { get; set; }
+
 
         [Display(Name = "Fecha de Creación")]
         public DateTime? FechaCreacion { get; set; }
