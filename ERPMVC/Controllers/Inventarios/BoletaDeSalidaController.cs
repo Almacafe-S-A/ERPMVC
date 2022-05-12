@@ -62,6 +62,7 @@ namespace ERPMVC.Controllers
                 {
                     _BoletaDeSalida = new BoletaDeSalida();
                     _BoletaDeSalida.DocumentDate = DateTime.Now;
+                    _BoletaDeSalida.DocumentoId = 0;
                 }
             }
             catch (Exception ex)
@@ -169,10 +170,18 @@ namespace ERPMVC.Controllers
                     _BoletaDeSalida.FechaCreacion = DateTime.Now;
                     _BoletaDeSalida.UsuarioCreacion = HttpContext.Session.GetString("user");
                     var insertresult = await Insert(_BoletaDeSalida);
+                    if (insertresult.Result is BadRequestObjectResult)
+                    {
+                        return await Task.Run(() => BadRequest("Error al guardar"));
+                    }
                 }
                 else
                 {
                     var updateresult = await Update(_BoletaDeSalida.BoletaDeSalidaId, _BoletaDeSalida);
+                    if (updateresult.Result is BadRequestObjectResult)
+                    {
+                        return await Task.Run(() => BadRequest("Error al guardar"));
+                    }
                 }
 
             }
