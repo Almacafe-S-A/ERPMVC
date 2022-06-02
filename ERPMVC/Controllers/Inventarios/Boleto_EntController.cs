@@ -30,13 +30,13 @@ namespace ERPMVC.Controllers
             this._logger = logger;
         }
 
-        [HttpGet("[controller]/[action]")]
+        //[HttpGet("[controller]/[action]")]
         public IActionResult Index()
         {
             return View();
         }
 
-        [HttpGet("[controller]/[action]")]
+        //[HttpGet("[controller]/[action]")]
         public async Task<ActionResult> pvwBoleto_Ent(Int64 Id = 0)
         {
             Boleto_Ent _Boleto_Ent = new Boleto_Ent();
@@ -57,6 +57,8 @@ namespace ERPMVC.Controllers
                 if (_Boleto_Ent == null)
                 {
                     _Boleto_Ent = new Boleto_Ent();
+                    _Boleto_Ent.fecha_e = DateTime.Now;
+                    _Boleto_Ent.clave_e = 0;
                 }
             }
             catch (Exception ex)
@@ -72,7 +74,7 @@ namespace ERPMVC.Controllers
         }
 
         [HttpGet("[controller]/[action]")]
-        public async Task<DataSourceResult> Get([DataSourceRequest]DataSourceRequest request)
+        public async Task<DataSourceResult> Get([DataSourceRequest] DataSourceRequest request)
         {
             List<Boleto_Ent> _Boleto_Ent = new List<Boleto_Ent>();
             try
@@ -105,8 +107,8 @@ namespace ERPMVC.Controllers
 
 
         [HttpGet("[controller]/[action]")]
-        public async Task<ActionResult> GetBoleto_EntById([DataSourceRequest]DataSourceRequest request, Boleto_EntDTO _Boleto_Entp)
-       {
+        public async Task<ActionResult> GetBoleto_EntById([DataSourceRequest] DataSourceRequest request, Boleto_EntDTO _Boleto_Entp)
+        {
             Boleto_EntDTO _Boleto_Ent = new Boleto_EntDTO();
             try
             {
@@ -136,27 +138,27 @@ namespace ERPMVC.Controllers
                         valorrespuesta = await (result.Content.ReadAsStringAsync());
                         _subproduct = JsonConvert.DeserializeObject<SubProduct>(valorrespuesta);
 
-                       
+
 
 
                         if (_subproduct != null)
                         {
-                           
 
-                         int ProductAsignado = 0;
-                        var ProductoAsignadoCliente = await GetProductbyCsutomer(_subproduct.SubproductId, _Boleto_Entp.Customer);
-                        ProductAsignado = Convert.ToInt32(ProductoAsignadoCliente.Value);
 
-                        if (ProductAsignado == 0)
-                        {
-                            return Json(ProductAsignado);
+                            int ProductAsignado = 0;
+                            var ProductoAsignadoCliente = await GetProductbyCsutomer(_subproduct.SubproductId, _Boleto_Entp.Customer);
+                            ProductAsignado = Convert.ToInt32(ProductoAsignadoCliente.Value);
+
+                            if (ProductAsignado == 0)
+                            {
+                                return Json(ProductAsignado);
                             }
                             else
                             {
                                 _Boleto_Ent.ProductId = _subproduct.SubproductId;
                                 _Boleto_Ent.UnitOfMeasureId = _subproduct.UnitOfMeasureId == null ? 0 : _subproduct.UnitOfMeasureId.Value;
                             }
-                            
+
                         }
 
                         if (_subproduct == null)
@@ -267,7 +269,7 @@ namespace ERPMVC.Controllers
         //}
 
 
-        public async Task<ActionResult> Virtualization_Read([DataSourceRequest] DataSourceRequest request, Customer _customerp,bool esIngreso)
+        public async Task<ActionResult> Virtualization_Read([DataSourceRequest] DataSourceRequest request, Customer _customerp, bool esIngreso)
         {
             //var res = await GetBoletaEntrada(_customerp);
             bool completo = true;
@@ -289,12 +291,12 @@ namespace ERPMVC.Controllers
                                select new Boleto_Ent
                                {
                                    clave_e = c.clave_e,
-                                   observa_e = "No.:" + c.clave_e 
-                                            + "|| Placas:" + c.placas 
-                                           + "  || Conductor:" + c.conductor 
+                                   observa_e = "No.:" + c.clave_e
+                                            + "|| Placas:" + c.placas
+                                           + "  || Conductor:" + c.conductor
                                            + "|| Fecha:" + c.fecha_e.ToString("dd/MM/yyyy")
                                            //+ "|| ProductoCod:" + c.clave_p
-                                           +"|| Producto: " + c.NombreProducto,
+                                           + "|| Producto: " + c.NombreProducto,
                                    Boleto_Sal = c.Boleto_Sal,
                                    peso_e = c.peso_e
                                    //CustomerId = c.CustomerId,
@@ -345,7 +347,7 @@ namespace ERPMVC.Controllers
 
                     _client = new HttpClient();
                     _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                    result = await _client.GetAsync(baseadress + "api/Customer/GetCustomerById/"+ _customerp.CustomerId);
+                    result = await _client.GetAsync(baseadress + "api/Customer/GetCustomerById/" + _customerp.CustomerId);
                     valorrespuesta = "";
                     if (result.IsSuccessStatusCode)
                     {
@@ -419,6 +421,25 @@ namespace ERPMVC.Controllers
 
             return _Boleto_Ent;
         }
+
+        [HttpGet("[controller]/[action]")]
+        public string GetPesoBascula() {
+            Random rd = new Random();
+
+            decimal rand_num = rd.Next(100, 800);
+
+            Listener listener = new Listener(config.Value.PuertoBascula,config.Value.IpBascula);
+            listener.Server();
+            string peso = listener.HandleClientComm(null);
+            listener.ServerStop();
+            return peso;
+
+            //Console.WriteLine(rand_num);
+
+
+
+        }
+
 
 
         [HttpPost("[controller]/[action]")]
