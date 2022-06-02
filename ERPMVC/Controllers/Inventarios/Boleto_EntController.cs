@@ -423,16 +423,16 @@ namespace ERPMVC.Controllers
         }
 
         [HttpGet("[controller]/[action]")]
-        public decimal GetPesoBascula() {
+        public string GetPesoBascula() {
             Random rd = new Random();
 
             decimal rand_num = rd.Next(100, 800);
 
             Listener listener = new Listener(config.Value.PuertoBascula,config.Value.IpBascula);
-            //listener.Server();
-            //string peso = listener.HandleClientComm(null);
-
-            return rand_num;
+            listener.Server();
+            string peso = listener.HandleClientComm(null);
+            listener.ServerStop();
+            return peso;
 
             //Console.WriteLine(rand_num);
 
