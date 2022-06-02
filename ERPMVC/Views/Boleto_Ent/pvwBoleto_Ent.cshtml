@@ -1,0 +1,493 @@
+﻿@model ERPMVC.Models.Boleto_Ent
+
+@{ Layout = null;
+    var messages = new Dictionary<string, string>() { { "custom", "Ingrese un valor correcto." },
+                                        {"required"," El campo {0} es requerido" }
+                                    };
+    var rules = new Dictionary<string, string>() { { "custom", "customFunction" } };
+}
+
+
+
+<script>
+
+    function customFunction(input) {
+
+        if (input.attr('name') === "BranchId" && input.val() === "0") {
+            return false;
+        }
+
+        if (input.attr('name') === "CurrencyId" && input.val() === "0") {
+            return false;
+        }
+
+        if (input.attr('name') === "Quantity" && input.val() == 0) {
+            return false;
+        }
+
+        if (input.attr('name') === "Largo" && input.val() == 0) {
+            return false;
+        }
+
+        if (input.attr('name') === "UsedArea" && input.val() == 0) {
+            return false;
+        }
+
+        if (input.attr('name') === "Ancho" && input.val() == 0) {
+            return false;
+        }
+
+        if (input.attr('name') === "Alto" && input.val() == 0) {
+            return false;
+        }
+
+
+
+        return true;
+    }
+
+
+    function closeCustomer() {
+        
+        $("#myModalBoletaDeSalida").modal('hide');
+    }
+
+    function RefreshGridBoletaDeSalida() {
+        var grid = $("#gridBoletaDeSalida").getKendoGrid();
+        grid.dataSource.read();
+    }
+</script>
+
+
+
+
+<div id="myModalBoletaDeSalida" class="modal fade" style="min-width:100%" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
+
+        <!-- Modal content-->
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Boleta de Peso</h4>
+                <button type="button" class="close" onclick="closeCustomer();">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="container-fluid">
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-body">
+
+                                    <form id="frmBoletaDeSalida" kendo-validator="true" kendo-messages="messages" kendo-rules="rules"
+                                          data-ajax="true"
+                                          data-ajax-method="post"
+                                          method="post" class="validation-wizard wizard-circle">
+
+
+                                        <div class="row">
+                                            <div class="col-md-3">
+                                                <div class="form-group">
+                                                    <label asp-for="clave_e" class="  control-label" style="width:100%">Boleta No</label>
+                                                    
+                                                    <input type="text" id="BoletaDeSalidaId" required class="k-textbox" style="min-width:100%;" asp-for="clave_e"  readonly/>
+
+                                                    <span asp-validation-for="clave_e" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                            
+                                            
+                                            <div class="col-md-3">
+                                                <div class="form-group">
+                                                    <label asp-for="fecha_e" class=" control-label" style="width: 100%;">Fecha</label>
+                                                    <kendo-datetimepicker name="fecha_e"
+                                                                          style="width: 100%;"
+                                                                          format="dd/MM/yyyy hh:mm:ss"
+                                                                          time-format="hh:mm:ss"
+                                                                          data-val-required="La fecha es requerida"
+                                                                          value="Model.fecha_e" />
+                                                    <span asp-validation-for="fecha_e" class="text-danger"></span>
+                                                </div>
+                                            </div> 
+                                            <div class="col-md-3">
+                                                <div class="form-group">
+                                                    <label asp-for="CustomerId" class="  control-label" style="width:100%">Cliente</label>
+
+                                                    <kendo-dropdownlist name="CustomerId" for="@Model.CustomerId"
+                                                                        filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                                        option-label="Seleccione el Cliente"
+                                                                        on-change="GetSubProduct"
+                                                                        data-val-required="El campo Cliente es requerido"
+                                                                        datatextfield="CustomerName"
+                                                                        datavaluefield="CustomerId"
+                                                                        style="width: 100%;">
+                                                        <datasource type="DataSourceTagHelperType.WebApi" page-size="20000">
+                                                            <transport>
+                                                                <read url="@Url.Action("GetCustomerActivos", "Common")" />
+                                                            </transport>
+                                                        </datasource>
+                                                    </kendo-dropdownlist>
+                                                    <span asp-validation-for="CustomerId" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="form-group">
+                                                    <label class="control-label">Producto</label>
+                                                <kendo-dropdownlist name="SubProductId" filter="Kendo.Mvc.UI.FilterType.Contains" 
+                                                                            for="SubProductId"
+                                                                            option-label="Seleccione un Producto"
+                                                                            datatextfield="ProductName"
+                                                                            datavaluefield="SubproductId"
+                                                                            on-data-bound="OnProdutrctBound"
+                                                                            style="width: 100%;">
+                                                            <datasource type="DataSourceTagHelperType.WebApi">
+                                                                <transport>
+                                                                    <read url="@Url.Action("GetSubProductoByTipoByCustomerActivos", "SubProduct")" data="GetProductTypeIdS" />
+                                                                </transport>
+                                                            </datasource>
+                                                        </kendo-dropdownlist>
+                                                </div>
+                                            </div>
+                                            
+
+                                        </div>
+                                   
+                                            
+
+                                        
+                                        <script>
+                                            function OnProdutrctBound(e) {
+                                                             kendo.ui.progress($("#myModalBoletaDeSalida"), false);
+                                                        }
+                                                function GetSubProduct(e) {
+                                                            hcustom = this.value();
+                                                            // console.log(this.value());
+                                                            //console.log(e);
+                                                            $("#SubProductId").data("kendoDropDownList").dataSource.read();
+                                                            
+                                                             kendo.ui.progress($("#myModalBoletaDeSalida"), true);
+                                                        }
+                                                        function setsubproductname(e) {
+                                                            // console.log(e);
+                                                            var dataItem = e.dataItem;
+                                                            if (dataItem != null)
+                                                                $("#subproductname").val(dataItem.ProductName);
+                                                        }
+
+                                                        var hcustom = 0;
+                                                        function GetProductTypeIdS() {
+                                                            return {
+                                                                'CustomerId': $("#CustomerId").val(),
+
+                                                            }
+                                                        }
+                                                        function setRequiredAttr(evt) {
+                                                            if (evt.sender.dataSource.data().length < 1) {
+                                                                evt.sender.element.removeAttr("data-val-required");
+                                                            }
+                                                            else {
+                                                                evt.sender.element.attr("data-val-required", "La boleta de peso es requerida.");
+                                                            }
+                                                        }
+
+                                                        function onboundBoletas(){
+                                                            kendo.ui.progress($("#myModalControlPallets"), false);
+                                                        
+                                                        }
+                                                    </script>
+
+                                            
+
+                                        <div class="row">
+
+                                            <div class="col-md-3">
+                                                <div class="form-group">
+                                                    <label asp-for="placas" class="control-label" style="width: 100%;">Placa</label>
+                                                    <input type="text" id="placas" required class="k-textbox" style="min-width:100%;" asp-for="placas" />
+                                                </div>
+                                            </div>
+
+
+
+                                            <div class="col-md-3">
+                                                <div class="form-group">
+                                                    <label asp-for="MarcaVehiculo" class="control-label" style="width: 100%;">Marca Vehiculo</label>
+                                                    <input type="text" id="MarcaVehiculo" required class="k-textbox" style="min-width: 100%;" asp-for="MarcaVehiculo" />
+                                                </div>
+                                            </div>
+
+
+                                            <div class="col-md-3">
+                                                <div class="form-group">
+                                                    <label asp-for="Tranportista" class="control-label" style="width: 100%;">Transportista</label>
+                                                    <input type="text" id="Tranportista" required class="k-textbox" style="min-width: 100%;" asp-for="Tranportista" />
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="form-group">
+                                                    <label asp-for="conductor" class="control-label" style="width: 100%;">Motorista</label>
+                                                    <input type="text" id="conductor" required class="k-textbox" style="min-width: 100%;" asp-for="conductor" />
+                                                </div>
+                                            </div>
+                                        
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-3">
+                                                <div class="form-group">
+                                                        <label asp-for="Barco" class="control-label" style="width: 100%;"></label>
+                                                        <input type="text" id="Barco" required class="k-textbox" style="min-width: 100%;" asp-for="Barco" />
+                                                    </div>
+                                            </div>
+                                             <div class="col-md-3">
+                                                <div class="form-group">
+                                                        <label asp-for="Orden" class="control-label" style="width: 100%;">Orden No</label>
+                                                        <input type="number" id="Orden" required class="k-textbox" style="min-width: 100%;" asp-for="Orden" />
+                                                    </div>
+                                            </div>
+                                             <div class="col-md-3">
+                                                <div class="form-group">
+                                                        <label asp-for="PesoPuerto" class="control-label" style="width: 100%;">Peso Puerto</label>
+                                                        <input type="number" id="PesoPuerto" required class="k-textbox" style="min-width: 100%;" asp-for="PesoPuerto" />
+                                                    </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="form-group">
+                                                        <label asp-for="Destino" class="control-label" style="width: 100%;">Destino</label>
+                                                        <input type="text" id="Destino" required class="k-textbox" style="min-width: 100%;" asp-for="Destino" />
+                                                    </div>
+                                            </div>
+                                         
+                                         </div>
+                                        <div class="row">
+                                            <div class="col-md-2">
+                                                <h5>Primera Pesada LBE</h5>
+                                            </div>
+                                            <div class="col-md-1">
+                                                 <button class="btn btn-primary btn-sm" style="" onclick="GetPesoBascula(1)" type="button">Capturar</button>
+                                            </div>
+                                             <div class="col-md-2">
+                                                <h5>Segunda Pesada LBE</h5>
+                                            </div>
+                                            <div class="col-md-1">
+                                                 <button class="btn btn-primary btn-sm" style="" onclick="GetPesoBascula(0)" type="button">Capturar</button>
+                                            </div>
+
+                                             <div class="col-md-2">
+                                                <h5>Peso Neto LBE</h5>
+                                            </div>
+                                            
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-3">
+                                                <div class="form-group">
+                                                       
+                                                        <input type="text" id="peso_e" required class="k-textbox" style="min-width: 100%;" asp-for="peso_e" readonly/>
+                                                    </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="form-group">
+                                                        <input type="text" id="peso_s" required class="k-textbox" style="min-width: 100%;" asp-for="peso_e" readonly/>
+                                                    </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="form-group">
+                                                        <input type="text" id="peso_n" required class="k-textbox" style="min-width: 100%;" asp-for="peso_e" readonly/>
+                                                    </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="form-group">
+                                                    <label class="control-label">Peso Automatico</label>
+                                                    <kendo-switch checked="Model.CapturaAutomatica" name="ProductoPesado"  for="CapturaAutomatica" enabled="Model.clave_e == 0 ">
+                                                        <messages checked="Si" unchecked="No" />
+                                                    </kendo-switch>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="row">
+                                            <div class="col-md-3">
+                                                <div class="form-group">
+                                                        <label asp-for="PesoKG" class="control-label" style="width: 100%;">Peso KG</label>
+                                                        <input type="number" id="PesoKG" required class="k-textbox" style="min-width: 100%;" asp-for="PesoKG" readonly/>
+                                                    </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="form-group">
+                                                        <label asp-for="PesoQQ" class="control-label" style="width: 100%;">Peso QQ</label>
+                                                        <input type="number" id="PesoQQ" required class="k-textbox" style="min-width: 100%;" asp-for="PesoQQ" readonly />
+                                                    </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="form-group">
+                                                        <label asp-for="PesoTM" class="control-label" style="width: 100%;">Peso TM</label>
+                                                        <input type="number" id="PesoTM" required class="k-textbox" style="min-width: 100%;" asp-for="PesoTM"  readonly/>
+                                                    </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="form-group">
+                                                    <label class="control-label">Libras Españolas</label>
+                                                    <kendo-switch checked="Model.PesoLibrasEspañolas" name="PesoLibrasInglesas"  for="PesoLibrasEspañolas" enabled="Model.clave_e == 0 ">
+                                                        <messages checked="Si" unchecked="No" />
+                                                    </kendo-switch>
+                                                </div>
+                                            </div>
+
+                                         </div>
+
+                                        
+
+                                        
+
+                                         <div class="row">
+                                            <div class="col-md-12">
+                                                <div class="form-group">
+                                                        <label asp-for="observa_e" class="control-label" style="width: 100%;">Observaciones</label>
+                                                        <input type="text" id="observa_e" required class="k-textbox" style="min-width: 100%;" asp-for="observa_e" />
+                                                    </div>
+                                            </div>
+                                         </div>
+
+
+                                        <script>
+                                            function GetUnitOfMeasureId() {
+                                                        return { 'SubProductId': $("#SubProductId").val() }
+                                                    }
+                                            function CalcularArea() {
+                                                var UsedArea = $("#Ancho").val() * $("#Alto").val() * $("#Largo").val();
+                                                var numeric = $("#UsedArea").data("kendoNumericTextBox");
+                                                numeric.value(UsedArea);
+                                                numeric.trigger('change');
+                                                //$("#UsedArea").val(UsedArea);
+                                            }
+                                            function GrupoConfiguracionCargado() {
+                                                return { Id: 18 };
+                                            }
+
+                                            function DataSucursal() {
+                                                return {
+                                                    BranchId: $("#BranchId").val(),
+                                                     CustomerId: $("#CustomerId").val(),
+
+                                                }
+                                            }
+
+                                           
+
+
+                                                    function CallPesaje() {
+                                                        $("#WeightBallot").data("kendoNumericTextBox").value($("#WeightBallotddl").val());
+                                                        GetBoletaPeso();
+                                                    }
+
+                                        </script>
+
+                                        
+                                    </form>                                
+                                    </div>
+
+                                    <div class="row">
+                                      
+                                            <button id="btnSaveBoletaDeSalida" type="submit" class="form-control btn-miboton" onclick="SaveBoletaDeSalida(this);">Guardar</button>
+                                      
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+
+    function GetPesoBascula(origen){
+        $.ajax({
+                    url: '@Url.Action("GetPesoBascula", "Boleto_Ent")',
+                    method: 'GET',
+                    datatype: "json",
+                    contentType: 'application/json',
+                    async: false,
+                    success: function (data) {
+                        var peso = parseFloat(data).toFixed(2);
+                         if(origen ==1)  {
+                             $("#peso_e").val(peso);
+                         }else{
+                              $("#peso_s").val(peso);
+                         }
+
+                    },
+                    error: function (XMLHttpRequest, textStatus, errorThrown) {
+                        $("#btnSaveBoletaDeSalida").show();
+                        $("#btnSaveBoletaDeSalida").prop("disabled", false);
+                         MostrarMensaje(textStatus + ": " + XMLHttpRequest.responseText, "Error", "Error", 30000);
+                    }
+                });
+    
+    }
+
+    
+    function SaveBoletaDeSalida(e) {
+        debugger;
+        $("#btnSaveBoletaDeSalida").hide();
+        $("#btnSaveBoletaDeSalida").prop("disabled", true);       
+
+        var dataObject = {   
+            'clave_e' : $("#clave_e").val(),
+            'fecha_e' : $("#fecha_e").getKendoDateTimePicker().value().toJSON(),
+            'CustomerId' : $("#CustomerId").val(),
+            'CustomerName': $("#CustomerId").data("kendoDropDownList").text(),
+            'SubProductId' : $("#SubProductId").val(),
+            'placas' : $("#placas").val(),
+            'MarcaVehiculo' : $("#MarcaVehiculo").val(),
+            'Tranportista' : $("#Tranportista").val(),
+            'conductor' : $("#conductor").val(),
+            'peso_e' : $("#peso_e").val(),
+            'PesoKG' : $("#PesoKG").val(),
+            'PesoQQ' : $("#PesoQQ").val(),
+            'PesoTM' : $("#PesoTM").val(),
+            //'Boleto_Sal.peso_s' : $("Boleto_Sal.peso_s").val(),
+            'PesoKG' : $("#PesoKG").val(),
+            'PesoQQ' : $("#PesoQQ").val(),
+            'PesoTM' : $("#PesoTM").val(),
+            'Barco' : $("#Barco").val(),
+            'Orden' : $("#Orden").val(),
+            'PesoPuerto' : $("#PesoPuerto").val(),
+            'Destino' : $("#Destino").val(),
+            'observa_e' : $("#observa_e").val(),
+        }; 
+        console.log(dataObject)
+        var validator = $("#frmBoletaDeSalida").data("kendoValidator");
+        var status = $(".status");
+
+            if (!validator.validate()) {
+                MostrarMensaje("Ha ocurrido un error al validar los datos del formalario", "Error", "Error", 30000);
+                $("#btnSaveBoletaDeSalida").show();
+                $("#btnSaveBoletaDeSalida").prop("disabled", false);
+                return;
+            }
+
+             $.ajax({
+                    url: '@Url.Action("SaveBoleto_Ent", "Boleto_Ent")',
+                    method: 'POST',
+                    datatype: "json",
+                    contentType: 'application/json',
+                    async: false,
+                    data: JSON.stringify(dataObject),
+                    success: function (data) {
+                         MostrarMensaje('Datos guardados correctamente.', "success", "Satisfactorio", 7000);
+                        RefreshGridBoletaSalida();                        
+                        $('#myModalBoletaDeSalida').modal('hide');
+
+                    },
+                    error: function (XMLHttpRequest, textStatus, errorThrown) {
+                        $("#btnSaveBoletaDeSalida").show();
+                        $("#btnSaveBoletaDeSalida").prop("disabled", false);
+                         MostrarMensaje(textStatus + ": " + XMLHttpRequest.responseText, "Error", "Error", 30000);
+                    }
+                });
+                $("#btnSaveBoletaDeSalida").show();
+                $("#btnSaveBoletaDeSalida").prop("disabled", false);
+    }
+</script>

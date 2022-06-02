@@ -9,16 +9,59 @@ namespace ERPMVC.Models
 {
     public class Boleto_Ent
     {
-        //[Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        //public Int64 Boleto_EntId { get; set; }
-        [Display(Name = "Clave de entrada(Consecutivo)")]
+        //[Display(Name = "Clave de entrada(Consecutivo)")]
         [Key, DatabaseGenerated(DatabaseGeneratedOption.None)]
         public Int64 clave_e { get; set; }
         [Display(Name = "Clave de la compañia(cliente o proveedor)")]
         public string clave_C { get; set; }
+
+        public Int64? CustomerId { get; set; }
+        [ForeignKey("CustomerId")]
+        public Customer Customer { get; set; }
+
+        public string CustomerName { get; set; }
+
+        public string SubProductName { get; set; }
+
+        public Int64? SubProductId { get; set; }
+        [ForeignKey("SubProductId  ")]
+        public SubProduct SubProduct { get; set; }
+
+        public bool CapturaAutomatica { get; set; }
+
+        public bool PesoLibrasEspañolas { get; set; }
+
+        public decimal PesoLBS { get; set; }
+
+        public decimal PesoKG { get; set; }
+
+        public decimal PesoTM { get; set; }
+        public decimal PesoQQ { get; set; }
+
+        public string Destino { get; set; }
+
+        public string MarcaVehiculo { get; set; }
+
+        public string Barco { get; set; }
+
+        public decimal PesoPuerto { get; set; }
+
+        public string Tranportista { get; set; }
+
+        public string Orden { get; set; }
+
+
+
         [Display(Name = "Clave del operador")]
         public string clave_o { get; set; }
         [Display(Name = "Clave del producto")]
+        [NotMapped]
+        public string NombreProducto { get; set; }
+        [NotMapped]
+        public string Cliente { get; set; }
+
+        [NotMapped]
+        public string Unidad { get; set; }
         public string clave_p { get; set; }
         [Display(Name = "Salida")]
         public bool completo { get; set; }
@@ -28,9 +71,6 @@ namespace ERPMVC.Models
         public string hora_e { get; set; }
         [Display(Name = "Identificador del vehículo")]
         public string placas { get; set; }
-
-        [NotMapped]
-        public string NombreProducto { get; set; }
         [Display(Name = "Nombre del conductor del vehiculo")]
         public string conductor { get; set; }
         [Display(Name = "Valor del peso de entrada")]

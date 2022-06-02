@@ -15,6 +15,14 @@ namespace ERPMVC.Helpers
         public string smtp { get; set; }
         public string port { get; set; }
 
+        public string IpBascula { get; set; }
+
+        public int PuertoBascula { get; set; }
+
+
+
+        
+
         public string passwordsmtp { get; set; }
     }
 }

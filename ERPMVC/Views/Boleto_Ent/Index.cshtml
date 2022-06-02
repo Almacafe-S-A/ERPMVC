@@ -1,0 +1,318 @@
+﻿@using Kendo.Mvc.UI
+@using System.Security.Claims
+
+@{
+    ViewData["Title"] = "Boleta de Peso";
+    ClaimsPrincipal permisos = (ClaimsPrincipal)ViewData["permisos"];
+
+}
+<h3 class="text-themecolor">Boletas de Peso</h3>
+<script>
+
+      function clearsession() {
+            var dataObject = ["listadoproductos"];
+         $.ajax({
+            url: '@Url.Action("ClearSession","Common")',
+            method: 'POST',
+            datatype: "json",
+            contentType: 'application/json',
+            async: false,
+            data: JSON.stringify(dataObject),
+            success: function (result) {
+                  //  $('#myModalSalesOrder').modal('show');
+            },
+             error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+              }
+          });
+      }
+
+        function AddBoletaDeSalida() {
+            debugger;
+       //  clearsession();
+         var dataObject = {
+             clave_e: 0,
+        };
+
+        $.ajax({
+            url: '@Url.Action("pvwBoleto_Ent", "Boleto_Ent")',
+            method: 'POST',
+            datatype: "json",
+            contentType: 'application/json',
+            async: false,
+            data: JSON.stringify(dataObject),
+            success: function (result) {
+                $("#salesorder").html('');
+                $("#salesorder").html(result);
+                //RefreshCotizacionesDetail();
+                // $("#btnSaveCotizacion").show();
+                //RefreshGridDetalle();
+                $('#myModalBoletaDeSalida').modal('show');
+            },
+             error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+              }
+        });
+
+
+    }
+
+    function RefreshGridDetalle() {
+        var grid = $("#gridBoletaDeSalidaLines").getKendoGrid();
+        grid.dataSource.read();
+    }
+
+    function RefreshGridBoletaSalida() {
+        var grid = $("#gridBoletaDeSalida").getKendoGrid();
+        grid.dataSource.read();
+    }
+
+
+    function EditBoletaDeSalida(e) {
+        e.preventDefault();
+
+       // clearsession();
+
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        var dataObject = {
+            BoletaDeSalidaId: dataItem.BoletaDeSalidaId,
+            editar : 0
+        };
+
+        $.ajax({
+            url: '@Url.Action("pvwBoleto_Ent", "Boleto_Ent")',
+            method: 'POST',
+            datatype: "json",
+            contentType: 'application/json',
+            async: false,
+            data: JSON.stringify(dataObject),
+            success: function (result) {
+                $("#salesorder").html('');
+                $("#salesorder").html(result);
+
+              //  RefreshCotizacionesDetail();
+                // $("#btnSaveCotizacion").hide();
+                $('#myModalBoletaDeSalida').modal('show');
+            },
+             error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+              }
+        });
+    }
+
+
+       function ImprimirBoletaDeSalida(e) {
+           e.preventDefault();
+           //debugger;
+           var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+              //window.location.href = '@Url.Action("SFBoletaDeSalida", "BoletaDeSalida")/' + dataItem.KardexId;
+           var url = '@Url.Action("SFBoletaDeSalida", "BoletaDeSalida")/' + dataItem.BoletaDeSalidaId;
+           var win = window.open(url, '_blank');
+           win.focus();
+    }
+
+    function ImprimirGuia(e) {
+           e.preventDefault();
+           //debugger;
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        if (dataItem.GuiaRemisionId ==null) {
+            $.toast({
+                heading: 'Error',
+                text: 'No se encontro Guia de Remision para esta Boleta ',
+                position: 'top-right',
+                loaderBg: '#ff6849',
+                icon: 'error',
+                hideAfter: 7000,
+                stack: 6
+            });
+            return;
+        }
+           var url = '@Url.Action("SFGuiaRemision", "BoletaDeSalida")/' + dataItem.GuiaRemisionId;
+           var win = window.open(url, '_blank');
+           win.focus();
+    }
+
+    function GenerarGuia(e) {
+           e.preventDefault();
+           //debugger;
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        if (dataItem.GuiaRemisionId > 0) {
+            $.toast({
+                heading: 'Error',
+                text: 'Ya se ha generado una Guia de Remision para esta Boleta.',
+                position: 'top-right',
+                loaderBg: '#ff6849',
+                icon: 'error',
+                hideAfter: 7000,
+                stack: 6
+            });
+            return;
+        }
+
+        var dataObject = {
+            Id: dataItem.BoletaDeSalidaId
+
+        };
+
+        $.ajax({
+            url: '@Url.Action("GenerarGuia", "BoletaDeSalida")',
+            method: 'POST',
+            datatype: "json",
+            contentType: 'application/json',
+            async: false,
+            data: JSON.stringify(dataObject),
+            success: function (result) {
+                $.toast({
+                    heading: 'Exitoso!',
+                    text: 'Se ha generado una Guia de Remision para esta Boleta Exitosamente.',
+                    position: 'top-right',
+                    loaderBg: '#ff6849',
+                    icon: 'success',
+                    hideAfter: 7000,
+                    stack: 6
+                });
+                RefreshGridBoletaSalida();
+            },
+             error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+              }
+        });
+
+    }
+
+
+
+
+</script>
+
+
+@(Html.Kendo().Grid<ERPMVC.Models.Boleto_Ent>()
+                          .Name("gridBoletaDeSalida")
+                          .Columns(columns =>
+                          {
+
+                              columns.Command(command =>
+                              {
+
+                                  command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditBoletaDeSalida");
+                                  command.Custom("Imprimir").Text(" ").IconClass("fa fa-print").Click("ImprimirBoletaDeSalida");
+                              }).Title("Acciones").Width(100);
+                              columns.Bound(p => p.clave_e).Width(120).Title("Boleta No.");
+                              columns.Bound(p => p.fecha_e).Title("Fecha").Format("{0:dd/MM/yyyy}").Width(100);
+                              columns.Bound(p => p.Cliente).Width(200).Title("Cliente");
+                              columns.Bound(p => p.NombreProducto).Width(200).Title("Producto");
+                              columns.Bound(p => p.placas).Width("Placa").Width(150);
+                              columns.Bound(p => p.conductor).Title("Motorista").Width(150);
+                              columns.Bound(p => p.peso_e).Title("Peso Neto LBE").Width(150).Format("{0:N2}");
+                              columns.Bound(p => p.completo).ClientTemplate("#=completo?'Si':'No' #").Title("Completo").Width(150);
+
+
+                          })
+
+                              .Filterable(f => f.Operators(o => o.ForString(s => s
+                                                   .Clear()
+                                                   .Contains("Contiene")
+                                                   .DoesNotContain("No contiene")
+                                                   .EndsWith("Termina con")
+                                                   .IsEqualTo("Es igual a")
+                                                   .IsNotEqualTo("No es igual a")
+                                                   .IsNull("Es nulo")
+                                                   .StartsWith("Inicia con")
+                                             )
+                                             .ForNumber(n => n
+                                               .Clear()
+                                               .IsEqualTo("Es igual a")
+                                               .IsGreaterThan("Es mayor que")
+                                               .IsLessThan("Es menor que")
+                                               .IsNull("Es nulo")
+                                               .IsLessThanOrEqualTo("Es menor o igual que")
+                                               .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                             )
+
+                                             .ForDate(d => d
+                                             .Clear()
+                                             .IsEqualTo("Es igual que")
+                                             .IsGreaterThan("Es mayor que")
+                                             .IsLessThan("Es menor que")
+                                             .IsLessThanOrEqualTo("Es menor o igual que")
+                                             .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                             .IsNotEqualTo("No es igual que")
+                                              )
+                                           ))
+                          .ToolBar(tools =>
+                          {
+                              //tools.Create();
+
+                              tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+                                                       .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddBoletaDeSalida();" });
+
+                              tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
+                              tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
+
+
+                          })
+                          .Editable(e => e.Mode(GridEditMode.PopUp))
+                          .Sortable()
+                          .Pageable(s => s
+                          .Messages(m => m.Display("Elementos mostrados {0} - {1} de {2}")))
+
+                          .Filterable()
+                          .Scrollable()
+                          .Pdf(pdf => pdf.FileName("Boletas de Peso" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                           + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+                           .ProxyURL(Url.Action("Export", "Home")).AllPages())
+                             .Excel(excel => excel.FileName("BoletaDePesoReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                           + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+                           .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+                          .DataSource(dataSource =>
+                              dataSource
+                                .WebApi()
+                                .ServerOperation(true)
+                                .Model(model =>
+                                {
+                                    model.Id(p => p.clave_e);
+                                })
+                                .Events(events => events.Error("error_handler"))
+                                .Read(read => read.Action("Get", "Boleto_Ent"))
+                                .Create(create => create.Action("Post", "BoletaDeSalida"))
+                                .Update(update => update.Action("Put", "BoletaDeSalida", new { id = "{0}" }))
+                                .Destroy(destroy => destroy.Action("Delete", "BoletaDeSalida", new { id = "{0}" }))
+                                .Sort(s => s.Add(m => m.clave_e).Descending())
+                          )
+                            .Events(e =>
+                            {
+                                //e.Save("onsave");
+                            })
+)
+
+<div id="salesorder">
+    @await Html.PartialAsync("pvwBoleto_Ent", new ERPMVC.Models.Boleto_Ent { clave_e = 0, fecha_e = DateTime.Now, })
+</div>
+
+<script>
+
+    function setToolbarTooltip(btn_cl, btn_tooltip) {
+        $("#gridBoletaDeSalida").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+
+
+
+    function setRowButtonTooltip(btn_cl, btn_tooltip) {
+        $("#gridBoletaDeSalida").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+    
+
+
+    setToolbarTooltip(".k-grid-toolbar a.k-grid-Agregar", "Agregar un nuevo registro");
+    setRowButtonTooltip(".k-grid-Editar", "Editar registro");
+    setRowButtonTooltip(".k-grid-Imprimir", "Imprimir Boleta Salida");
+    setRowButtonTooltip(".k-grid-GenerarGuia", "Generar Guia Remision");
+    setRowButtonTooltip(".k-grid-ImprimirGuia", "Imprimir Guia Remision");
+
+</script>
