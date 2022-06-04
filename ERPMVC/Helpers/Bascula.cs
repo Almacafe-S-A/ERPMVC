@@ -3,6 +3,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace ERPMVC.Helpers
 {
@@ -10,61 +11,32 @@ namespace ERPMVC.Helpers
     {
     }
 
-    class Transmitter
-    {
-        public Boolean Transmit(String ip, String port, String data)
-        {
-            TcpClient client = new TcpClient();
-            int _port = 0;
-            int.TryParse(port, out _port);
-            IPEndPoint serverEndPoint = new IPEndPoint(IPAddress.Parse(ip), _port);
-            client.Connect(serverEndPoint);
-            NetworkStream clientStream = client.GetStream();
-            ASCIIEncoding encoder = new ASCIIEncoding();
-            byte[] buffer = encoder.GetBytes(data);
-            clientStream.Write(buffer, 0, buffer.Length);
-            clientStream.Flush();
-            return true;
-        }
-    }
 
-    public class Listener
+    class Listener
     {
 
         private TcpListener tcpListener;
         private Thread listenThread;
         // Set the TcpListener on port 13000.
-        Int32 port = 8081;
-        IPAddress localAddr = IPAddress.Parse("192.168.1.3");
+        Int32 port = 90;
+        IPAddress localAddr = IPAddress.Parse("192.168.0.7");
         Byte[] bytes = new Byte[256];
         //MainWindow mainwind = null;
-
-        public Listener(int puerto,string IP)
-        {
-            port = puerto;
-            localAddr = IPAddress.Parse(IP);
-        }
+        //public void Server(MainWindow wind)
         public void Server()
         {
-            //mainwind = wind;
             this.tcpListener = new TcpListener(IPAddress.Any, port);
-            this.listenThread = new Thread(new ThreadStart(ListenForClients));
+            //this.listenThread = new Thread(new ThreadStart(ListenForClients));
             this.listenThread.Start();
 
         }
-
-        public void ServerStop()
+        public async Task<string> ListenForClients()
         {
-            //mainwind = wind;
-            this.listenThread.Suspend();
-
-        }
-        private void ListenForClients()
-        {
+            this.tcpListener = new TcpListener(localAddr, port);
             this.tcpListener.Start();
+            string peso = "";
 
-
-            while (true)
+            while (peso.Length<1)
             {
                 //blocks until a client has connected to the server
                 TcpClient client = this.tcpListener.AcceptTcpClient();
@@ -73,20 +45,19 @@ namespace ERPMVC.Helpers
                 //with connected client
                 //Thread clientThread = new Thread(new ParameterizedThreadStart(HandleClientComm));
                 //clientThread.Start(client);
-                
-                string peso = HandleClientComm(client);
+                peso = await HandleClientComm(client);
             }
+            this.tcpListener.Stop();
+            return peso;
         }
-        public string HandleClientComm(object cliente)
+        private async Task<string> HandleClientComm(object client)
         {
-            this.tcpListener.Start();
-            TcpClient client = this.tcpListener.AcceptTcpClient();
-
             TcpClient tcpClient = (TcpClient)client;
             NetworkStream clientStream = tcpClient.GetStream();
 
             byte[] message = new byte[4096];
             int bytesRead;
+            string peso = "";
 
             while (true)
             {
@@ -94,25 +65,40 @@ namespace ERPMVC.Helpers
 
                 try
                 {
-                    bytesRead = clientStream.Read(message, 0, 4096);
+                    //blocks until a client sends a message
+                    bytesRead = clientStream.Read(message, 0, 8);
                 }
-                catch
+                catch(Exception ex)
                 {
+                    //a socket error has occured
+                    // System.Windows.MessageBox.Show("socket");
+                    Console.WriteLine("Error:" + ex.Message);
                     break;
                 }
 
-                if (bytesRead == 0)
+                //if (bytesRead == 0)
+                //{
+                //    //the client has disconnected from the server
+                //    // System.Windows.MessageBox.Show("disc");
+                //    break;
+                //}
+
+                //message has successfully been received
+                ASCIIEncoding encoder = new ASCIIEncoding();
+                //mainwind.setText();
+                peso = encoder.GetString(message);
+
+                Console.WriteLine("Peso:" + peso);
+                if (peso.Length>2)
                 {
                     break;
                 }
-
+                //System.Windows.MessageBox.Show(encoder.GetString(message, 0, bytesRead));
+                // System.Diagnostics.Debug.WriteLine(encoder.GetString(message, 0, bytesRead));
             }
-
-
+             
             tcpClient.Close();
-            ASCIIEncoding encoder = new ASCIIEncoding();
-            return encoder.GetString(message, 0, bytesRead);
+            return peso;
         }
     }
-
 }
