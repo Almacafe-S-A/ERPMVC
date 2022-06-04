@@ -32,8 +32,8 @@ namespace ERPMVC.Helpers
         }
         public async Task<string> ListenForClients()
         {
-            this.tcpListener = new TcpListener(localAddr, port);
-            this.tcpListener.Start();
+           // this.tcpListener = new TcpListener(localAddr., port);
+            //this.tcpListener.Start();
             string peso = "";
 
             while (peso.Length<1)
@@ -47,13 +47,17 @@ namespace ERPMVC.Helpers
                 //clientThread.Start(client);
                 peso = await HandleClientComm(client);
             }
-            this.tcpListener.Stop();
+            //this.tcpListener.Stop();
             return peso;
         }
-        private async Task<string> HandleClientComm(object client)
+        public async Task<string> HandleClientComm(object client)
         {
-            TcpClient tcpClient = (TcpClient)client;
-            NetworkStream clientStream = tcpClient.GetStream();
+            //TcpClient tcpClient = (TcpClient)client;
+
+            TcpClient cliente = new TcpClient("192.168.0.7", 90);
+            NetworkStream clientStream = cliente.GetStream();
+
+
 
             byte[] message = new byte[4096];
             int bytesRead;
@@ -74,6 +78,11 @@ namespace ERPMVC.Helpers
                     // System.Windows.MessageBox.Show("socket");
                     Console.WriteLine("Error:" + ex.Message);
                     break;
+                }
+                finally
+                {
+                    clientStream.Close();
+                    cliente.Close();
                 }
 
                 //if (bytesRead == 0)
@@ -96,8 +105,8 @@ namespace ERPMVC.Helpers
                 //System.Windows.MessageBox.Show(encoder.GetString(message, 0, bytesRead));
                 // System.Diagnostics.Debug.WriteLine(encoder.GetString(message, 0, bytesRead));
             }
-             
-            tcpClient.Close();
+
+            cliente.Close();
             return peso;
         }
     }
