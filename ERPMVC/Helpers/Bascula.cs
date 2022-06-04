@@ -70,7 +70,7 @@ namespace ERPMVC.Helpers
                 try
                 {
                     //blocks until a client sends a message
-                    bytesRead = clientStream.Read(message, 0, 8);
+                    bytesRead = clientStream.Read(message, 8, 14);
                 }
                 catch(Exception ex)
                 {
