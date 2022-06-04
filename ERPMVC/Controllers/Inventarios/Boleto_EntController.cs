@@ -433,7 +433,7 @@ namespace ERPMVC.Controllers
             //string peso = listener.HandleClientComm(null);
             //listener.ServerStop();
             Listener listener = new Listener();
-            string peso = await listener.ListenForClients();
+            string peso = await listener.HandleClientComm(null);
             
             return peso;
 
