@@ -361,7 +361,9 @@ namespace ERPMVC.Controllers
                 try
                 {
                     peso = await listener.ClienteTcpLectura(config.Value.IpBascula, config.Value.PuertoBascula);
-                    pesoobtenido = Convert.ToInt32(peso.Trim());
+                    peso = peso.Trim();
+                    peso = peso.Split('+', StringSplitOptions.None)[1];
+                    pesoobtenido = Convert.ToInt32();
                 }
                 catch (Exception ex)
                 {
