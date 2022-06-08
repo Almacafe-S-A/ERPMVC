@@ -350,24 +350,29 @@ namespace ERPMVC.Controllers
         public async Task<ActionResult<int>> GetPesoBascula() {
             string peso = "";
             Listener listener = new Listener();
+            int pesoobtenido = 0;
             if (config.Value.SimuladorBascula ==1)
             {
                 peso = SimuladorBascula();
+                pesoobtenido = Convert.ToInt32(peso);
             }
             else
             {
                 try
                 {
                     peso = await listener.ClienteTcpLectura(config.Value.IpBascula, config.Value.PuertoBascula);
+                    pesoobtenido = Convert.ToInt32(peso);
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
+                    _logger.LogError($"Ocurrio un error:valor: [{peso}]+ { ex.ToString() }");
                     return await Task.Run(() => BadRequest("Error al Conectar con Bascula"));
                 }
                 
             }
 
-            int pesoobtenido = Convert.ToInt32(peso);
+             
+
             return pesoobtenido;
         }
 
