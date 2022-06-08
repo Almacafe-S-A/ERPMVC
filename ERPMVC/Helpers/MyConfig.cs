@@ -19,9 +19,11 @@ namespace ERPMVC.Helpers
 
         public int PuertoBascula { get; set; }
 
+        public int SimuladorBascula { get; set; }
 
 
-        
+
+
 
         public string passwordsmtp { get; set; }
     }

@@ -57,6 +57,9 @@ namespace ERPMVC.Controllers
                 if (_Boleto_Ent == null)
                 {
                     _Boleto_Ent = new Boleto_Ent();
+                    _Boleto_Ent.Boleto_Sal = new Boleto_Sal();
+                    _Boleto_Ent.Boleto_Sal.peso_n = 0;
+                    _Boleto_Ent.Boleto_Sal.peso_s = 0;
                     _Boleto_Ent.fecha_e = DateTime.Now;
                     _Boleto_Ent.clave_e = 0;
                 }
@@ -177,77 +180,6 @@ namespace ERPMVC.Controllers
 
                 if (_Boleto_Ent == null) { _Boleto_Ent = new Boleto_EntDTO(); }
 
-                //string connetionString = null;
-                //OdbcConnection cnn;
-                //connetionString = @"Driver={Microsoft Access Driver (*.mdb, *.accdb)};DBQ=C:\Users\tomaturnos\Desktop\Old\Projects\BI\Documentos\ALMACAFE\Integracion balanza\rev_2000.accdb";
-                //cnn = new OdbcConnection(connetionString);
-                //try
-                //{
-                //    cnn.Open();
-                //    // Console.WriteLine("Connection Open ! ");
-                //   // OdbcConnection connection = new OdbcConnection("");
-                //    OdbcCommand command = new OdbcCommand("SELECT * FROM boleto_ent WHERE clave_e = ? ", cnn);
-                //    command.Parameters.Add("@clave_e", OdbcType.Int).Value = _Boleto_Entp.clave_e;
-
-                //    Boleto_Ent _boleta_ent = new Boleto_Ent();
-                //    using (OdbcDataReader reader = command.ExecuteReader())
-                //    {
-                //        while (reader.Read())
-                //        {
-                //            _boleta_ent.clave_e =   Convert.ToInt64(reader.GetValue(0).ToString());
-                //            _boleta_ent.clave_C =   reader.GetValue(1).ToString();
-                //            _boleta_ent.clave_o =   reader.GetValue(2).ToString();
-                //            _boleta_ent.clave_p =   reader.GetValue(3).ToString();
-                //            _boleta_ent.completo =  Convert.ToBoolean(reader.GetValue(4).ToString());
-                //            _boleta_ent.fecha_e =   Convert.ToDateTime(reader.GetValue(5).ToString());
-                //            _boleta_ent.hora_e =    reader.GetValue(6).ToString();
-                //            _boleta_ent.placas =    reader.GetValue(7).ToString();
-
-                //            _boleta_ent.conductor = reader.GetValue(8).ToString();
-                //            _boleta_ent.peso_e =    Convert.ToInt32(reader.GetValue(9).ToString());
-                //            _boleta_ent.observa_e = reader.GetValue(10).ToString();
-                //            _boleta_ent.nombre_oe = reader.GetValue(11).ToString();
-                //            _boleta_ent.turno_oe =  reader.GetValue(12).ToString();
-                //            _boleta_ent.unidad_e =  reader.GetValue(13).ToString();
-
-                //            _boleta_ent.bascula_e = reader.GetValue(14).ToString();
-                //            _boleta_ent.t_entrada = Convert.ToInt32(reader.GetValue(15).ToString());
-                //            _boleta_ent.clave_u = reader.GetValue(16).ToString();
-                //            // Word is from the database. Do something with it.
-                //        }
-                //    }
-
-                //OdbcCommand commandtara = new OdbcCommand("SELECT * FROM tara WHERE t_placas = ? ", cnn);
-                //commandtara.Parameters.Add("@t_placas", OdbcType.VarChar).Value = _boleta_ent.placas;
-                //Tara _Tara = new Tara();
-                //using (OdbcDataReader reader2 = commandtara.ExecuteReader())
-                //{
-                //    while (reader2.Read())
-                //    {
-                //        _Tara.t_placas = reader2.GetValue(0).ToString();
-
-                //        _Tara.t_peso = Convert.ToDouble(reader2.GetValue(1).ToString());
-                //        _Tara.t_unidad = reader2.GetValue(2).ToString();
-                //        _Tara.t_fecha = Convert.ToDateTime(reader2.GetValue(3).ToString());
-                //        _Tara.t_captura = reader2.GetValue(4).ToString();
-                //        _Tara.t_observaciones = reader2.GetValue(5).ToString();
-
-                //    }
-                //}
-
-                // _Pesaje.Boleto_Ent = _boleta_ent;
-                //_Pesaje.Tara = _Tara;
-                //cnn.Close();
-                //}
-                //catch (Exception ex)
-                //{
-                //    Console.WriteLine("Can not open connection ! " + ex.Message);
-                //}
-
-
-
-
-
             }
             catch (Exception ex)
             {
@@ -259,14 +191,6 @@ namespace ERPMVC.Controllers
             return Json(_Boleto_Ent); //_Pesaje.ToDataSourceResult(request);
 
         }
-
-
-        //[HttpPost]
-        //public async Task<ActionResult> GetBoletaEntrada_PlacaClave([DataSourceRequest] DataSourceRequest request,[FromBody]string name)
-        //{
-        //   // var res = await GetBoletaEntrada();
-        //    //return Json(res.ToDataSourceResult(request));
-        //}
 
 
         public async Task<ActionResult> Virtualization_Read([DataSourceRequest] DataSourceRequest request, Customer _customerp, bool esIngreso)
@@ -423,23 +347,37 @@ namespace ERPMVC.Controllers
         }
 
         [HttpGet("[controller]/[action]")]
-        public async Task<string> GetPesoBascula() {
-            Random rd = new Random();
-
-            decimal rand_num = rd.Next(100, 800);
-
-            //Listener listener = new Listener(config.Value.PuertoBascula,config.Value.IpBascula);
-            //listener.Server();
-            //string peso = listener.HandleClientComm(null);
-            //listener.ServerStop();
+        public async Task<ActionResult<int>> GetPesoBascula() {
+            string peso = "";
             Listener listener = new Listener();
-            string peso = await listener.HandleClientComm(null);
-            
+            if (config.Value.SimuladorBascula ==1)
+            {
+                peso = SimuladorBascula();
+            }
+            else
+            {
+                try
+                {
+                    peso = await listener.ClienteTcpLectura(config.Value.IpBascula, config.Value.PuertoBascula);
+                }
+                catch (Exception)
+                {
+                    return await Task.Run(() => BadRequest("Error al Conectar con Bascula"));
+                }
+                
+            }
+
+            int pesoobtenido = Convert.ToInt32(peso);
+            return pesoobtenido;
+        }
+
+        private string SimuladorBascula() {
+            Random rd = new Random();
+            int rand_num = rd.Next(100, 800);
+            string peso = "";
+            peso = "ST,GS,+" + rand_num.ToString().PadLeft(7, '0');
+            peso = peso.Split('+', StringSplitOptions.None)[1];
             return peso;
-
-            //Console.WriteLine(rand_num);
-
-
 
         }
 
