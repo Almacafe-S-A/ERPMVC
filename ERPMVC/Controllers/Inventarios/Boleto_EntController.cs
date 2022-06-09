@@ -62,6 +62,8 @@ namespace ERPMVC.Controllers
                     _Boleto_Ent.Boleto_Sal.peso_s = 0;
                     _Boleto_Ent.fecha_e = DateTime.Now;
                     _Boleto_Ent.clave_e = 0;
+                    _Boleto_Ent.PesoLibrasEspañolas = true;
+                    _Boleto_Ent.CapturaAutomatica = true;
                 }
             }
             catch (Exception ex)
