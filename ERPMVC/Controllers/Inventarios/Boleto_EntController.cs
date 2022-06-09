@@ -37,7 +37,7 @@ namespace ERPMVC.Controllers
         }
 
         //[HttpGet("[controller]/[action]")]
-        public async Task<ActionResult> pvwBoleto_Ent(Int64 Id = 0)
+        public async Task<ActionResult> pvwBoleto_Ent([FromBody]Boleto_Ent boleto_Ent )
         {
             Boleto_Ent _Boleto_Ent = new Boleto_Ent();
             try
@@ -45,7 +45,7 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/Boleto_Ent/GetBoleto_EntById/" + Id);
+                var result = await _client.GetAsync(baseadress + "api/Boleto_Ent/GetBoleto_EntById/" + boleto_Ent.clave_e);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
@@ -424,7 +424,7 @@ namespace ERPMVC.Controllers
                 }
                 else
                 {
-                   // var updateresult = await Update(_Boleto_Ent.clave_e, _Boleto_Ent);
+                    var updateresult = await Update(_Boleto_Ent.clave_e, _Boleto_Ent);
                 }
 
             }
