@@ -54,7 +54,7 @@ namespace ERPMVC.Controllers
 
                 }
 
-                if (_Boleto_Ent == null)
+                if (_Boleto_Ent == null||_Boleto_Ent.clave_e == 0)
                 {
                     _Boleto_Ent = new Boleto_Ent();
                     _Boleto_Ent.Boleto_Sal = new Boleto_Sal();
