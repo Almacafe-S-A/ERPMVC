@@ -390,6 +390,27 @@ namespace ERPMVC.Controllers
 
         }
 
+        [HttpGet("[controller]/[action]/{id}")]
+        public async Task<ActionResult> SFBoletaPeso(int id)
+         {
+            Boleto_Ent boleto_Ent = new Boleto_Ent();
+            try
+            {
+
+                boleto_Ent.clave_e = id;
+
+
+                return View(boleto_Ent);
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+        }
+
 
 
         [HttpPost("[controller]/[action]")]
