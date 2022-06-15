@@ -14,8 +14,6 @@ namespace ERPMVC.Models
         [Display(Name = "Clave de la entrada(Boleta correspondiente)")]
         [Key, DatabaseGenerated(DatabaseGeneratedOption.None)]
         public Int64 clave_e { get; set; }
-        [Display(Name = "Clave del operador")]
-        public string clave_o { get; set; }
         [Display(Name = "Fecha de captura de la salida")]
         public DateTime fecha_s { get; set; }
         [Display(Name = "Hora de la captura de la salida")]
@@ -24,8 +22,6 @@ namespace ERPMVC.Models
         public double peso_s { get; set; }
         [Display(Name = "Peso neto")]
         public double peso_n { get; set; }
-        [Display(Name = "Observaciones del registro de salida")]
-        public string observa_s { get; set; }
         [Display(Name = "Turno")]
         public string turno_s { get; set; }
         [Display(Name = "Báscula de salida")]

@@ -29,14 +29,20 @@ namespace ERPMVC.Models
 
         public bool CapturaAutomatica { get; set; }
 
-        public bool PesoLibrasEspañolas { get; set; }
-
         public decimal PesoLBS { get; set; }
 
         public decimal PesoKG { get; set; }
 
         public decimal PesoTM { get; set; }
         public decimal PesoQQ { get; set; }
+
+
+        public decimal PesoLBSI { get; set; }
+
+        public decimal PesoKGI { get; set; }
+
+        public decimal PesoTMI { get; set; }
+        public decimal PesoQQI { get; set; }
 
         public string Destino { get; set; }
 
@@ -48,12 +54,11 @@ namespace ERPMVC.Models
 
         public string Tranportista { get; set; }
 
+        public string RTNTransportista { get; set; }
+
         public string Orden { get; set; }
 
 
-
-        [Display(Name = "Clave del operador")]
-        public string clave_o { get; set; }
         [Display(Name = "Clave del producto")]
         [NotMapped]
         public string NombreProducto { get; set; }
@@ -72,7 +77,9 @@ namespace ERPMVC.Models
         [Display(Name = "Identificador del vehículo")]
         public string placas { get; set; }
         [Display(Name = "Nombre del conductor del vehiculo")]
-        public string conductor { get; set; }
+        public string conductor { get; set; }   
+
+        public string DNIConductor { get; set; }
         [Display(Name = "Valor del peso de entrada")]
         public Int32 peso_e { get; set; }
         [Display(Name = "Observaciones del proceso de captura")]
