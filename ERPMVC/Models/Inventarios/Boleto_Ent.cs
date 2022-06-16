@@ -58,6 +58,8 @@ namespace ERPMVC.Models
 
         public string Orden { get; set; }
 
+        public string PlacaContenedor { get; set; }
+
 
         [Display(Name = "Clave del producto")]
         [NotMapped]
