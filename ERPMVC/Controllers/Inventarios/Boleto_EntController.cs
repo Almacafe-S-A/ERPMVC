@@ -409,6 +409,25 @@ namespace ERPMVC.Controllers
             }
 
         }
+        
+
+
+        [HttpGet("[controller]/[action]")]
+        public async Task<ActionResult> SFMovimientosBoletaPeso()
+        {
+           
+            try
+            {
+                return View();
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+        }
 
 
 
