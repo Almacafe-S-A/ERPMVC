@@ -150,7 +150,7 @@ namespace ERPMVC.Controllers
 
 
                             int ProductAsignado = 0;
-                            var ProductoAsignadoCliente = await GetProductbyCsutomer(_subproduct.SubproductId, _Boleto_Entp.Customer);
+                            var ProductoAsignadoCliente = await GetProductbyCsutomer(_subproduct.SubproductId, (long)_Boleto_Ent.CustomerId);
                             ProductAsignado = Convert.ToInt32(ProductoAsignadoCliente.Value);
 
                             if (ProductAsignado == 0)

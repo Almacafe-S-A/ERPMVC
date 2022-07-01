@@ -8,10 +8,9 @@ namespace ERPMVC.DTO
 {
     public class Boleto_EntDTO: Boleto_Ent
     {
-        public Int64 ProductId { get; set; }
+        public Int64? ProductId { get; set; }
 
-        public Int64 UnitOfMeasureId { get; set; }
-
-        public Int64 Customer { get; set; }
+        public Int64? UnitOfMeasureId { get; set; }
+        
     }
 }
