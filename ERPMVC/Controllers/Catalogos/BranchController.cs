@@ -127,16 +127,43 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _branchs = JsonConvert.DeserializeObject<List<Branch>>(valorrespuesta);
-             
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
 
-                    //if(_Branchp.ServicioId==2 && _Branchp.CustomerId>0)
-                    //{
-                    //    _branchs = _branchs.Where(q => q.CustomerId == _Branchp.CustomerId).ToList();
-                    //}
-                    //else
-                    //{
-                    //    _branchs = _branchs.Where(q => q.CustomerId == null).ToList();
-                    //}
+
+
+            return Json(_branchs.ToDataSourceResult(request));
+
+        }
+
+        /// <summary>
+        /// Obtiene las sucursales omitiewndo las bodegas habilitadas
+        /// </summary>
+        /// <param name="request"></param>
+        /// <param name="_Branchp"></param>
+        /// <returns></returns>
+        [HttpGet("[controller]/[action]")]
+        public async Task<JsonResult> GetSucursales([DataSourceRequest] DataSourceRequest request)
+        {
+            List<Branch> _branchs = new List<Branch>();
+
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                string apidir = "api/Branch/GetSucursales";
+                var result = await _client.GetAsync(baseadress + apidir);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _branchs = JsonConvert.DeserializeObject<List<Branch>>(valorrespuesta);
                 }
             }
             catch (Exception ex)
@@ -238,7 +265,7 @@ namespace ERPMVC.Controllers
                         valorrespuesta1 = await (result1.Content.ReadAsStringAsync());
                         Branch = JsonConvert.DeserializeObject<List<Branch>>(valorrespuesta1);
 
-                        Branch = Branch.Where(q => q.BranchCode == _BranchP.BranchCode).ToList();
+                        Branch = Branch.Where(q => q.BranchCode == _BranchP.BranchCode && q.BranchCode != null).ToList();
                         if (Branch.Count > 0)
                         {
                             return await Task.Run(() => BadRequest("Ya exíste una Sucursal con este código de sucursal"));
