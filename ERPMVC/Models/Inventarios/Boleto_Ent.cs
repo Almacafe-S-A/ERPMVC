@@ -16,7 +16,6 @@ namespace ERPMVC.Models
         public string clave_C { get; set; }
 
         public Int64? CustomerId { get; set; }
-        [ForeignKey("CustomerId")]
         public Customer Customer { get; set; }
 
         public string CustomerName { get; set; }
@@ -24,7 +23,6 @@ namespace ERPMVC.Models
         public string SubProductName { get; set; }
 
         public Int64? SubProductId { get; set; }
-        [ForeignKey("SubProductId  ")]
         public SubProduct SubProduct { get; set; }
 
         public bool CapturaAutomatica { get; set; }
