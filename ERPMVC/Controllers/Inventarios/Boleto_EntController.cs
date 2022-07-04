@@ -195,10 +195,10 @@ namespace ERPMVC.Controllers
         }
 
 
-        public async Task<ActionResult> Virtualization_Read([DataSourceRequest] DataSourceRequest request, Customer _customerp, bool esIngreso)
+        public async Task<ActionResult> Virtualization_Read([DataSourceRequest] DataSourceRequest request, Customer _customerp, bool esIngreso,bool completo = true)
         {
             //var res = await GetBoletaEntrada(_customerp);
-            bool completo = true;
+            //bool completo = true;
             List<Boleto_Ent> _Boleto_Ent = new List<Boleto_Ent>();
             string baseadress = config.Value.urlbase;
             HttpClient _client = new HttpClient();

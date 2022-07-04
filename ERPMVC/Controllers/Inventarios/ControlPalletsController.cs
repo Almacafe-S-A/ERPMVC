@@ -314,7 +314,7 @@ namespace ERPMVC.Controllers
                                            WarehouseName = c.WarehouseName,
                                            SubProductName = c.SubProductName,
                                            UsuarioModificacion = c.UsuarioModificacion,
-                                           
+                                           WeightBallot =  c.WeightBallot
 
 
                                            
