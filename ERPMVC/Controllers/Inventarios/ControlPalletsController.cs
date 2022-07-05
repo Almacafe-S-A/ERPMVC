@@ -531,6 +531,7 @@ namespace ERPMVC.Controllers
                     UnitofMeasureId = item.UnitofMeasureId,
                     UnitofMeasureName = item.UnitofMeasureName,
                     Totallinea = item.Totallinea,
+                    Estiba = item.Estiba,
                     
 
                     

@@ -159,6 +159,7 @@ namespace ERPMVC.Controllers
                             obj.UnitofMeasureName = _ControlPalletsLinep.UnitofMeasureName;
                             obj.Qty = _ControlPalletsLinep.Qty;
                             obj.Observacion = _ControlPalletsLinep.Observacion;
+                            obj.Estiba = _ControlPalletsLinep.Estiba;
                             //obj. = _ControlPalletsLinep.TotalCantidad;
 
                         }
