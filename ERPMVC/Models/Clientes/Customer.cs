@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ERPMVC.Models.Clientes;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -61,7 +62,6 @@ namespace ERPMVC.Models
         [Display(Name = "Teléfonos")]
         public string Phone { get; set; }
 
-        [Required]
         [Display(Name = "Identidad del contacto")]
         public string Identidad { get; set; }
 
@@ -90,7 +90,7 @@ namespace ERPMVC.Models
         public string GrupoEconomico { get; set; }
 
         [Display(Name = "Monto de activos")]
-        public double MontoActivos { get; set; }
+        public double? MontoActivos { get; set; }
 
         [Display(Name = "Ingresos anuales")]
 
@@ -148,6 +148,20 @@ namespace ERPMVC.Models
         //  public List<CustomersOfCustomer> _Customers { get; set; }
 
         //        public List<VendorOfCustomer> _Vendor { get; set; }
+
+        public string LugarNacimiento { get; set; }
+        public DateTime? FechaNacimiento { get; set; }
+        public int? Edad { get; set; }
+        public EstadoCivilEnum? EstadoCivil { get; set; }
+        public string ProfesionOficio { get; set; }
+        public string Nacionalidad { get; set; }
+        public string GiroActividadNegocio { get; set; }
+        public bool? CargosPublicos { get; set; }
+        public string Familiares { get; set; }
+        public string Conyugue { get; set; }
+        public bool? InstitucionSupervisada { get; set; }
+        public string NombreFuncionario { get; set; }
+        public string FirmaAuditoriaExterna { get; set; }
 
     }
 }
