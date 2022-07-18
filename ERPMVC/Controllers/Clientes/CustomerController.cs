@@ -187,6 +187,8 @@ namespace ERPMVC.Controllers
         public async Task<ActionResult> Details(Int64 CustomerId)
         {
             Customer _customers = new Customer();
+            string viewDetail = "Details";
+
             try
             {
                 string baseadress = config.Value.urlbase;
@@ -208,9 +210,12 @@ namespace ERPMVC.Controllers
                 throw ex;
             }
 
+            if (_customers.CustomerTypeId == 2)
+            {
+                viewDetail = "DetailsNaturalPerson";
+            }
 
-
-            return await Task.Run(() => View(_customers));
+            return await Task.Run(() => View(viewDetail, _customers));
         }
 
         // GET: Customer/Create
