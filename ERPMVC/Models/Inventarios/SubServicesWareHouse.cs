@@ -46,6 +46,10 @@ namespace ERPMVC.Models
         [Display(Name = "Sub Servicio")]
         public string SubServiceName { get; set; }
 
+        public string Motivo { get; set; }
+
+        public string Solicitante { get; set; }
+
         [Display(Name = "Estado")]
         public Int64 IdEstado { get; set; }
 
