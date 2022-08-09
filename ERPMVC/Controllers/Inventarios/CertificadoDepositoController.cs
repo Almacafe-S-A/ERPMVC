@@ -478,7 +478,7 @@ namespace ERPMVC.Controllers
                     }
                     else
                     {
-                        return await Task.Run(() => BadRequest("No se anulo el documento!"));
+                        return await Task.Run(() => BadRequest(result.Content.ReadAsStringAsync()));
                     }
 
                 }
@@ -583,6 +583,7 @@ namespace ERPMVC.Controllers
                         valorrespuesta = await (result.Content.ReadAsStringAsync());
                         _listCertificadoDeposito = JsonConvert.DeserializeObject<CertificadoDeposito>(valorrespuesta);
                     }
+                    
 
                     if (_listCertificadoDeposito == null) { _listCertificadoDeposito = new CertificadoDeposito(); }
                     if (_listCertificadoDeposito.IdCD == 0)
@@ -590,6 +591,10 @@ namespace ERPMVC.Controllers
                         _CertificadoDeposito.FechaCreacion = DateTime.Now;
                         _CertificadoDeposito.UsuarioCreacion = HttpContext.Session.GetString("user");
                         var insertresult = await Insert(_CertificadoDeposito);
+                        if (insertresult.Result is BadRequestObjectResult)
+                        {
+                            return await Task.Run(() => BadRequest(((BadRequestObjectResult)insertresult.Result).Value));
+                        }
                         var value = (insertresult.Result as ObjectResult).Value;
                         _CertificadoDeposito = ((CertificadoDepositoDTO)(value));
                         if (_CertificadoDeposito.IdCD <= 0)
@@ -639,7 +644,7 @@ namespace ERPMVC.Controllers
                 }
                 else
                 {
-                    _CertificadoDeposito.IdCD = 0;
+                    return BadRequest(result.Content.ReadAsStringAsync());
                 }
 
             }
@@ -877,7 +882,7 @@ namespace ERPMVC.Controllers
 
                 reportWriter.Save(ms, format);
                 ms.Position = 0;
-                //MarcarImpresion(_CertificadoDepositoDTO.IdCD, false);
+                MarcarImpresion(_CertificadoDepositoDTO.IdCD, false);
 
                 return new FileStreamResult(ms, "application/pdf");
             }
@@ -891,8 +896,99 @@ namespace ERPMVC.Controllers
             return await Task.Run(()=> View(_CertificadoDepositoDTO));
         }
 
+        [HttpGet]
+        public async Task<ActionResult> SFImprimirTalon(Int64 id)
+        {
+            CertificadoDepositoDTO _CertificadoDepositoDTO = new CertificadoDepositoDTO { IdCD = id, };
+            try
+            {
 
-  
+                string basePath = _hostingEnvironment.WebRootPath;
+                FileStream inputStream = new FileStream(basePath + "/ReportsTemplate/CertificadoDeDepositoTalon.rdl", FileMode.Open, FileAccess.Read);
+                ReportWriter reportWriter = new ReportWriter(inputStream);
+                List<ReportParameter> parameters = new List<ReportParameter>();
+                parameters.Add(new ReportParameter() { Name = "IdCD", Labels = new List<string>() { _CertificadoDepositoDTO.IdCD.ToString() }, Values = new List<string>() { _CertificadoDepositoDTO.IdCD.ToString() } });
+                reportWriter.SetParameters(parameters);
+                Syncfusion.Report.DataSourceCredentials[] dscarray = new Syncfusion.Report.DataSourceCredentials[1];
+                Syncfusion.Report.DataSourceCredentials dsc = new Syncfusion.Report.DataSourceCredentials();
+                dsc.ConnectionString = Utils.ConexionReportes;
+                dsc.Name = "ERP";
+                dscarray[0] = dsc;
+                reportWriter.SetDataSourceCredentials(dscarray);
+                var format = Syncfusion.ReportWriter.WriterFormat.PDF;
+                string completepath = basePath + $"/CertificadosDeposito/CertificadoDeDeposito{id}.pdf";
+                MemoryStream ms = new MemoryStream();
+
+                reportWriter.Save(ms, format);
+                ms.Position = 0;
+
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+
+                MarcarImpresion(_CertificadoDepositoDTO.IdCD, true);
+                
+                return new FileStreamResult(ms, "application/pdf");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+
+            return await Task.Run(() => View(_CertificadoDepositoDTO));
+        }
+
+
+
+        public async Task<ActionResult> MarcarImpresion(Int64 id, bool talon)
+        {
+            CertificadoDeposito _CertificadoDeposito = new CertificadoDeposito { IdCD = id, };
+            try
+            {
+
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/CertificadoDeposito/GetCertificadoDepositoById/" + id);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _CertificadoDeposito = JsonConvert.DeserializeObject<CertificadoDepositoDTO>(valorrespuesta);
+
+                }
+
+                if (talon)
+                {
+                    _CertificadoDeposito.impresionesTalon = _CertificadoDeposito.impresionesTalon+1;
+
+                }
+                else
+                {
+                    _CertificadoDeposito.Impresiones = _CertificadoDeposito.Impresiones+1;
+                }
+
+                var resultadoUpdate = await _client.PostAsJsonAsync(baseadress + "api/CertificadoDeposito/Update", _CertificadoDeposito);
+                
+                if (!result.IsSuccessStatusCode)
+                {
+                   
+                }
+
+                //await Update(id,_CertificadoDeposito);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+
+            return await Task.Run(() => View(_CertificadoDeposito));
+        }
+
 
 
 
