@@ -12,8 +12,16 @@ namespace ERPMVC.Models
 
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
+        public int? Anio { get; set; }
 
-        public DateTime FechaCierre { get; set; }
+        public int? Mes { get; set; }
+
+        public int? PeriodoId { get; set; }
+
+        [ForeignKey("PeriodoId")]
+        public Periodo Periodo { get; set; }
+
+        public DateTime? FechaCierre { get; set; }
 
         public Int64 EstatusId { get; set; }
 
