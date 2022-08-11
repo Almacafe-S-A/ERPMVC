@@ -152,7 +152,7 @@ namespace ERPMVC.Controllers.Inventarios
                     else
                     {
                         item.PrecioUnitarioCIF = item.TotalDerechos / item.Cantidad;
-                        item.TotalFinal = (decimal)item.PrecioUnitarioCIF * item.CantidadRecibida;
+                        item.TotalFinal = Decimal.Round((decimal)item.PrecioUnitarioCIF,2) * item.CantidadRecibida;
                         item.ValorTotalCIF = Decimal.Round((decimal)item.TotalCIFLPS,2) + Decimal.Round((decimal)item.TotalDerechosmasImpuestos,2);
                     }
 
