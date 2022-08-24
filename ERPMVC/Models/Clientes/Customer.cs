@@ -31,7 +31,7 @@ namespace ERPMVC.Models
         public string RTN { get; set; }
 
         [Display(Name = "Tipo de cliente")]
-        public long CustomerTypeId { get; set; }
+        public long? CustomerTypeId { get; set; }
 
         [Display(Name = "Tipo de cliente")]
         public string CustomerTypeName { get; set; }
