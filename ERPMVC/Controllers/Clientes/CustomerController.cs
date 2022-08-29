@@ -339,7 +339,7 @@ namespace ERPMVC.Controllers
                     _customer.CustomerName = _so.SalesOrderName;
                     _customer.RTN = _so.RTN;
                     _customer.Phone = _so.Tefono;
-                    _customer.Identidad = _so.RTN;
+                    _customer.RTNGerenteGeneral = _so.RTN;
                     _customer.Email = _so.Correo;
                     //_customer. = _so.SalesOrderName;
 

@@ -869,20 +869,15 @@ namespace ERPMVC.Controllers
                 Syncfusion.Report.DataSourceCredentials dsc = new Syncfusion.Report.DataSourceCredentials();
                 dsc.ConnectionString = Utils.ConexionReportes;
                 dsc.Name = "ERP";
+                reportWriter.DisablePageSplitting = true;
                 dscarray[0] = dsc;
                 reportWriter.SetDataSourceCredentials(dscarray);
-                var format = Syncfusion.ReportWriter.WriterFormat.PDF;
+                var format = WriterFormat.PDF;
                 string completepath = basePath + $"/CertificadosDeposito/CertificadoDeDeposito{id}.pdf";
                 MemoryStream ms = new MemoryStream();
 
                 reportWriter.Save(ms, format);
                 ms.Position = 0;
-
-               // using (FileStream file = new FileStream(completepath, FileMode.Create, System.IO.FileAccess.Write))
-                    //ms.WriteTo(file);
-
-                //ViewBag.pathcontrato = completepath;
-                //var stream = new FileStream(completepath, FileMode.Open);
                 return new FileStreamResult(ms, "application/pdf");
             }
             catch (Exception ex)

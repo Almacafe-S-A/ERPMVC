@@ -273,8 +273,8 @@ namespace ERPMVC.Controllers
                 List<ReportParameter> parameters = new List<ReportParameter>();
                 parameters.Add(new ReportParameter() { Name = "idSCD", Labels = new List<string>() { _SolicitudCertificadoDepositoDTO.IdSCD.ToString() }, Values = new List<string>() { _SolicitudCertificadoDepositoDTO.IdSCD.ToString() } });
                 reportWriter.SetParameters(parameters);
-                Syncfusion.Report.DataSourceCredentials[] dscarray = new Syncfusion.Report.DataSourceCredentials[1];
-                Syncfusion.Report.DataSourceCredentials dsc = new Syncfusion.Report.DataSourceCredentials();
+                DataSourceCredentials[] dscarray = new Syncfusion.Report.DataSourceCredentials[1];
+                DataSourceCredentials dsc = new Syncfusion.Report.DataSourceCredentials();
                 dsc.ConnectionString = Utils.ConexionReportes;
                 dsc.Name = "ERP";
                 dscarray[0] = dsc;
@@ -285,12 +285,6 @@ namespace ERPMVC.Controllers
 
                 reportWriter.Save(ms, format);
                 ms.Position = 0;
-
-               // using (FileStream file = new FileStream(completepath, FileMode.Create, System.IO.FileAccess.Write))
-                    //ms.WriteTo(file);
-
-                //ViewBag.pathcontrato = completepath;
-               // var stream = new FileStream(completepath, FileMode.Open);
                 return new FileStreamResult(ms, "application/pdf");
             }
             catch (Exception ex)
