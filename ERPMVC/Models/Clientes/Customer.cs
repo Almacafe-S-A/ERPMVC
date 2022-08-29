@@ -62,8 +62,8 @@ namespace ERPMVC.Models
         [Display(Name = "Teléfonos")]
         public string Phone { get; set; }
 
-        [Display(Name = "Identidad del contacto")]
-        public string Identidad { get; set; }
+        [Display(Name = "RTN Gerente General")]
+        public string RTNGerenteGeneral { get; set; }
 
         [EmailAddress]
         [RegularExpression(@"\w+([-+.']\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*", ErrorMessage = "Correo invalido")]
@@ -72,6 +72,12 @@ namespace ERPMVC.Models
         public string Email { get; set; }
         [Display(Name = "Persona de Contacto ")]
         public string ContactPerson { get; set; }
+
+        public string NombreEmpresaPN { get; set; }
+
+        public string TelefonoEmpresaPN { get; set; }
+
+        public string DireccionEmpresaPN { get; set; }
 
         [Display(Name = "Activo/Inactivo ")]
         public Int64? IdEstado { get; set; }
@@ -185,7 +191,7 @@ namespace ERPMVC.Models
                 this.State = dto.State;
                 this.ZipCode = dto.ZipCode;
                 this.Phone = dto.Phone;
-                this.Identidad = dto.Identidad;
+                this.RTNGerenteGeneral = dto.RTNGerenteGeneral;
                 this.Email = dto.Email;
                 this.ContactPerson = dto.ContactPerson;
                 this.IdEstado = dto.IdEstado;
