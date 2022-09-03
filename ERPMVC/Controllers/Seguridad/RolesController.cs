@@ -557,9 +557,10 @@ namespace ERPMVC.Controllers
                                             UserId  = r.UserId,
                                             UsuarioCreacionUser = r.UsuarioCreacionUser,
                                             UsuarioModificoUser = r.UsuarioModificoUser,
-                                            Nivel1 = r.ClaimType.Split(".").Length > 0 ? r.ClaimType.Split(".")[0] : "" ,
-                                           Nivel2 = r.ClaimType.Split(".").Length > 1 ? r.ClaimType.Split(".")[1] : "",
-                                           Nivel3 = r.ClaimType.Split(".").Length > 2 ? r.ClaimType.Split(".")[2] : "",
+                                            Categoria = r.ClaimType.Split(".").Length > 0 ? r.ClaimType.Split(".")[0] : "" ,
+                                            Nivel1 = r.ClaimType.Split(".").Length > 1 ? r.ClaimType.Split(".")[1] : "",
+                                            Nivel2 = r.ClaimType.Split(".").Length > 2 ? r.ClaimType.Split(".")[2] : "",
+                                            Nivel3 = r.ClaimType.Split(".").Length > 3 ? r.ClaimType.Split(".")[3] : "",
 
                                        }).ToList();
 
