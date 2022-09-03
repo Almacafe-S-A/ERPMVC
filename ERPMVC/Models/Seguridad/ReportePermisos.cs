@@ -26,6 +26,8 @@ namespace ERPMVC.Models.Seguridad
 
         public string Nivel3 { get; set; }
 
+        public string Categoria { get; set; }
+
 
 
     }
