@@ -49,6 +49,31 @@ namespace ERPMVC.Controllers
             return await Task.Run(()=> PartialView());
         }
 
+
+        [HttpGet("[controller]/[action]")]
+        public async Task<DataSourceResult> GetBranchByServiceCustomer([DataSourceRequest] DataSourceRequest request, Int64 CustomerId, int Servicio)
+        {
+            List<Branch> _Branch = new List<Branch>();
+            try
+            {
+
+                if (Servicio!=3) {
+                    return await GetSucursales(request);
+                }
+                return await GetBranchByCustomer(request,CustomerId);
+
+                
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                return null;
+            }
+
+
+            
+        }
+
         [HttpGet("[controller]/[action]")]
         public async Task<DataSourceResult> GetBranchByCustomer([DataSourceRequest]DataSourceRequest request, Int64 CustomerId)
         {
@@ -148,7 +173,7 @@ namespace ERPMVC.Controllers
         /// <param name="_Branchp"></param>
         /// <returns></returns>
         [HttpGet("[controller]/[action]")]
-        public async Task<JsonResult> GetSucursales([DataSourceRequest] DataSourceRequest request)
+        public async Task<DataSourceResult> GetSucursales([DataSourceRequest] DataSourceRequest request)
         {
             List<Branch> _branchs = new List<Branch>();
 
@@ -174,7 +199,7 @@ namespace ERPMVC.Controllers
 
 
 
-            return Json(_branchs.ToDataSourceResult(request));
+            return _branchs.ToDataSourceResult(request);
 
         }
 

@@ -32,7 +32,7 @@ namespace ERPMVC.Controllers
             _principal = httpContextAccessor.HttpContext.User;
         }
 
-        //[Authorize(Policy = "Inventarios.Areas Ocupadas Bodega")]
+        [Authorize(Policy = "Inventarios.Areas Ocupadas")]
         [HttpGet("[controller]/[action]")]
         public IActionResult Index()
         {
@@ -80,7 +80,8 @@ namespace ERPMVC.Controllers
                 {
                     _CustomerArea = new CustomerArea();
                     _CustomerArea.DocumentDate = DateTime.Now;
-                    _CustomerArea.BranchId =     Convert.ToInt32(HttpContext.Session.GetString("BranchId"));
+                    //_CustomerArea.BranchId =     Convert.ToInt32(HttpContext.Session.GetString("BranchId"));
+                    
 
                 }
                
