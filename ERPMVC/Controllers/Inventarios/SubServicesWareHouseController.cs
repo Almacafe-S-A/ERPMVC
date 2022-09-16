@@ -34,7 +34,7 @@ namespace ERPMVC.Controllers
             _principal = httpContextAccessor.HttpContext.User;
         }
 
-        [Authorize(Policy = "Clientes.Subservicios Utilizados")]
+        [Authorize(Policy = "Inventarios.Servicios Utilizados")]
         public async Task<IActionResult> Index()
         {
             ViewData["permisos"] = _principal;
