@@ -41,7 +41,7 @@ namespace ERPMVC.Controllers
             _principal = httpContextAccessor.HttpContext.User;
         }
 
-        [Authorize(Policy = "Inventarios.Entrega de Mercaderia")]
+        [Authorize(Policy = "Inventarios.Autorizacion")]
         [HttpGet("[controller]/[action]")]
         [HttpGet("[action]")]
         public IActionResult Index()
