@@ -95,7 +95,7 @@ namespace ERPMVC.Controllers
                             {
                                 DateTime fechaactual = DateTime.Now;
                                 fechaactual = fechaactual.AddDays(-1);
-                                Utils.Cerrado = cierre.FechaCierre.Date >= fechaactual.Date;
+                                //Utils.Cerrado = cierre.FechaCierre.Date >= fechaactual.Date;
                             }
                             else
                             {

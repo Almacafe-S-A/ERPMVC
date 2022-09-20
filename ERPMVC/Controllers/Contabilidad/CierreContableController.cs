@@ -40,7 +40,7 @@ namespace ERPMVC.Controllers
             BitacoraCierreContable NuevoCierre = new BitacoraCierreContable();
             if (ultimocierre != null)
             {
-                NuevoCierre.FechaCierre = ultimocierre.FechaCierre.AddDays(1);
+                //NuevoCierre.FechaCierre = ultimocierre.FechaCierre.AddDays(1);
             }
             else
             {
