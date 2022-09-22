@@ -79,6 +79,14 @@ namespace ERPMVC.Models
         [Display(Name = "Valor neto")]
         public double NetValue { get; set; }
 
+        public string Codigo { get; set; }
+
+        public string Marca { get; set; }
+
+        public string Serie { get; set; }
+
+        public string Modelo { get; set; }
+
         [Display(Name = "Depreciacion Acumulada")]
         public double AccumulatedDepreciation { get; set; }
 
