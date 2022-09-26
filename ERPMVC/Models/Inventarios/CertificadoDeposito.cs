@@ -77,7 +77,7 @@ namespace ERPMVC.Models
         public DateTime FechaVencimientoDeposito { get; set; }
 
         [Display(Name = "Número de traslado")]
-        public string NoTraslado { get; set; }
+        public Int64? NoTraslado { get; set; }
 
 
         [Display(Name = "Aduana")]
@@ -136,10 +136,6 @@ namespace ERPMVC.Models
         public EndososCertificados Endoso { get; set; }
 
         public string Impreso { get; set; }
-
-        public int Impresiones { get; set; }
-
-        public int impresionesTalon { get; set; }
 
         public List<CertificadoLine> _CertificadoLine { get; set; } = new List<CertificadoLine>();
 

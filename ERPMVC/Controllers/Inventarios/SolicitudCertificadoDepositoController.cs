@@ -253,10 +253,17 @@ namespace ERPMVC.Controllers
         }
 
 
+
+
         [HttpGet]
-        public async Task<ActionResult> SFSolicitudCertificadoDeposito(Int64 id)
+        public ActionResult SFSolicitudCertificadoDeposito(Int64 id)
         {
-            SolicitudCertificadoDeposito _CertificadoDepositoDTO = new SolicitudCertificadoDeposito { IdSCD = id, };
+
+            //SolicitudCertificadoDepositoDTO _SolicitudCertificadoDepositoDTO = new SolicitudCertificadoDepositoDTO { NoCD = id, };
+
+            //return View(_SolicitudCertificadoDepositoDTO);
+
+            SolicitudCertificadoDepositoDTO _SolicitudCertificadoDepositoDTO = new SolicitudCertificadoDepositoDTO { IdSCD = id, };
             try
             {
 
@@ -264,7 +271,7 @@ namespace ERPMVC.Controllers
                 FileStream inputStream = new FileStream(basePath + "/ReportsTemplate/SolicitudCertificadoDeposito.rdl", FileMode.Open, FileAccess.Read);
                 ReportWriter reportWriter = new ReportWriter(inputStream);
                 List<ReportParameter> parameters = new List<ReportParameter>();
-                parameters.Add(new ReportParameter() { Name = "idSCD", Labels = new List<string>() { _CertificadoDepositoDTO.IdSCD.ToString() }, Values = new List<string>() { _CertificadoDepositoDTO.IdSCD.ToString() } });
+                parameters.Add(new ReportParameter() { Name = "idSCD", Labels = new List<string>() { _SolicitudCertificadoDepositoDTO.IdSCD.ToString() }, Values = new List<string>() { _SolicitudCertificadoDepositoDTO.IdSCD.ToString() } });
                 reportWriter.SetParameters(parameters);
                 Syncfusion.Report.DataSourceCredentials[] dscarray = new Syncfusion.Report.DataSourceCredentials[1];
                 Syncfusion.Report.DataSourceCredentials dsc = new Syncfusion.Report.DataSourceCredentials();
@@ -273,6 +280,7 @@ namespace ERPMVC.Controllers
                 dscarray[0] = dsc;
                 reportWriter.SetDataSourceCredentials(dscarray);
                 var format = Syncfusion.ReportWriter.WriterFormat.PDF;
+                string completepath = basePath + $"/SolicitudesCertificados/Solicitud{id}.pdf";
                 MemoryStream ms = new MemoryStream();
 
                 reportWriter.Save(ms, format);
@@ -285,23 +293,6 @@ namespace ERPMVC.Controllers
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 throw ex;
             }
-
-
-            return await Task.Run(() => View(_CertificadoDepositoDTO));
-        }
-          
-
-
-
-    [HttpGet]
-        public ActionResult SFSolicitudCertificadoDepositoVista(Int64 id)
-        {
-
-            SolicitudCertificadoDepositoDTO _SolicitudCertificadoDepositoDTO = new SolicitudCertificadoDepositoDTO { NoCD = id, };
-
-            return View(_SolicitudCertificadoDepositoDTO);
-
-           
         }
 
 
