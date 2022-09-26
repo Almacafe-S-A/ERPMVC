@@ -1,6 +1,7 @@
 ﻿@model ERPMVC.Models.GoodsDeliveryAuthorization
 @using System.Security.Claims
-@{ Layout = null;
+@{
+    Layout = null;
     var messages = new Dictionary<string, string>() { { "custom", "Ingrese un valor correcto." },
                                 {"required","Valor requerido" }
                             };
@@ -8,6 +9,8 @@
 
     string mostrar = "block";
     ClaimsPrincipal permisos = (ClaimsPrincipal)ViewData["permisos"];
+
+    bool editar= Model.GoodsDeliveryAuthorizationId == 0;
 }
 
 
@@ -107,29 +110,50 @@
                                                     <span asp-validation-for="AuthorizationDate" class="text-danger"></span>
                                                 </div>
                                             </div>
-
-
                                             <div class="col-md-3">
                                                 <div class="form-group">
-                                                    <input type="hidden" id="warehousesetid" />
-                                                    <label asp-for="BranchId" class="control-label"></label>
-                                                    <kendo-dropdownlist name="BranchId" for="BranchId" filter="Kendo.Mvc.UI.FilterType.Contains"
-                                                                        option-label="Seleccione Sucursal"
-                                                                        datatextfield="BranchName"
-                                                                        datavaluefield="BranchId"
+                                                    <script>
+                                                        function fiscal() {
+                                                            RefrescarCertificados();
+                                                            var grid = $("#gridGoodsDeliveredAuthorizationLine").data("kendoGrid");
+                                                           
+                                                            
+
+
+
+                                                            if ($("#ProductId").val() == 2) {
+                                                                $("#importacion").show();
+                                                                 grid.showColumn("DerechosFiscales");
+                                                                 grid.showColumn("ValorUnitarioDerechos");
+                                                            }
+                                                            else {
+                                                                $("#importacion").hide();
+                                                                grid.hideColumn("DerechosFiscales");
+                                                                 grid.hideColumn("ValorUnitarioDerechos");
+                                                            }
+
+                                                        }
+                                                    </script>
+                                                    <label asp-for="ProductId" class="control-label" style="width:100%">Servicio</label>
+
+                                                    <kendo-dropdownlist name="ProductId" filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                                        for="ProductId"
+                                                                        option-label="Seleccione el Servicio"
+                                                                        datatextfield="ProductName"
+                                                                        datavaluefield="ProductId"
+                                                                        on-change="fiscal"
+                                                                        enable="Model.GoodsDeliveryAuthorizationId==0"
                                                                         required
-                                                                        enable="false"
-                                                                        auto-bind="true"
                                                                         style="width: 100%;">
                                                         <datasource type="DataSourceTagHelperType.WebApi">
                                                             <transport>
-                                                                <read url="@Url.Action("GetBranchActivos", "Branch")" />
+                                                                <read url="@Url.Action("GetProductActivos", "Common")" />
                                                             </transport>
                                                         </datasource>
                                                     </kendo-dropdownlist>
-                                                    <span asp-validation-for="BranchId" class="text-danger"></span>
+                                                    <span asp-validation-for="ProductId" class="text-danger"></span>
                                                 </div>
-                                            </div>
+                                            </div>                                           
 
 
                                             <div class="col-md-3">
@@ -159,42 +183,26 @@
 
 
 
-                                        <div class="row">
-                                            
-
+                                        <div class="row">                                           
                                             <div class="col-md-3">
                                                 <div class="form-group">
-                                                    <script>
-                                                        function fiscal() {
-                                                            RefrescarCertificados();
-
-                                                            if ($("#ProductId").val() == 2) {
-                                                                $("#importacion").show();
-                                                            }
-                                                            else {
-                                                                $("#importacion").hide();
-                                                            }
-
-                                                        }
-                                                    </script>
-                                                    <label asp-for="ProductId" class="control-label" style="width:100%">Servicio</label>
-
-                                                    <kendo-dropdownlist name="ProductId" filter="Kendo.Mvc.UI.FilterType.Contains"
-                                                                        for="ProductId"
-                                                                        option-label="Seleccione el Servicio"
-                                                                        datatextfield="ProductName"
-                                                                        datavaluefield="ProductId"
-                                                                        on-change="fiscal"
-                                                                        enable="Model.GoodsDeliveryAuthorizationId==0"
+                                                    <input type="hidden" id="warehousesetid" />
+                                                    <label asp-for="BranchId" class="control-label"></label>
+                                                    <kendo-dropdownlist name="BranchId" for="BranchId" filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                                        option-label="Seleccione Sucursal"
+                                                                        datatextfield="BranchName"
+                                                                        datavaluefield="BranchId"
                                                                         required
+                                                                        enable="editar"
+                                                                        auto-bind="true"
                                                                         style="width: 100%;">
                                                         <datasource type="DataSourceTagHelperType.WebApi">
                                                             <transport>
-                                                                <read url="@Url.Action("GetProductActivos", "Common")" />
+                                                                <read url="@Url.Action("GetBranchActivos", "Branch")" />
                                                             </transport>
                                                         </datasource>
                                                     </kendo-dropdownlist>
-                                                    <span asp-validation-for="ProductId" class="text-danger"></span>
+                                                    <span asp-validation-for="BranchId" class="text-danger"></span>
                                                 </div>
                                             </div>
                                             <div class="col-md-6">
@@ -205,8 +213,8 @@
                                                     {
                                                         <kendo-multiselect name="AsociarCertificados" id="AsociarCertificados" style="min-width:100%"
                                                                            no-data-template="No se encontraron certificados el cliente"
-                                                                           required data-required-msg="Seleccione un Certificados" on-change="RefrescarGridDetalle"
-                                                                           datatextfield="Comentario" datavaluefield="IdCD" option-label="Seleccione los recibos">
+                                                                            on-change="RefrescarGridDetalle"
+                                                                           datatextfield="IdCD" datavaluefield="IdCD" option-label="Seleccione los recibos">
                                                             <datasource page-size="999" type="DataSourceTagHelperType.WebApi" server-operation="true">
                                                                 <transport>
                                                                     <read url="@Url.Action("GetCertificadosPendientesAutorizar","CertificadoDeposito")" data="GetCustomerService" />

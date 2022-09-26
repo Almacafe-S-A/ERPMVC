@@ -104,10 +104,10 @@ namespace ERPMVC.Models
         public string Proveedor2 { get; set; }
 
         [Display(Name = "Cliente pasara a recogerla a las oficinas de ALMACAFE")]
-        public bool ClienteRecoger { get; set; }
+        public bool? ClienteRecoger { get; set; }
 
         [Display(Name = "Enviarla con el mensajero")]
-        public bool EnviarlaMensajero { get; set; }
+        public bool? EnviarlaMensajero { get; set; }
 
         [Display(Name = "Dirección de envío")]
         public string DireccionEnvio { get; set; }
@@ -122,7 +122,7 @@ namespace ERPMVC.Models
         public string ColorHexadecimal { get; set; }
 
         [Display(Name = "Confirmación por correo")]
-        public bool ConfirmacionCorreo { get; set; }
+        public bool? ConfirmacionCorreo { get; set; }
 
         public Int64? ProductTypeId { get; set; }
         [ForeignKey("ProductTypeId")]
