@@ -614,7 +614,37 @@ namespace ERPMVC.Controllers
             return new ObjectResult(new DataSourceResult { Data = new[] { _GoodsDeliveryAuthorization }, Total = 1 });
         }
 
+        public async Task<ActionResult<GoodsDeliveryAuthorization>> Aprobar([FromBody] GoodsDeliveryAuthorization autorizacion)
+        {
+            try
+            {
+                if (autorizacion == null)
+                {
+                    return await Task.Run(() => BadRequest("No llego correctamente el modelo!"));
+                }
 
+                GoodsDeliveryAuthorization goodsDeliveryAuthorization = new GoodsDeliveryAuthorization();
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + $"api/GoodsDeliveryAuthorization/Aprobar/{ autorizacion.GoodsDeliveryAuthorizationId}");
+                string valorrespuesta = "";
+                if (!result.IsSuccessStatusCode)
+                {
+                    return await Task.Run(() => BadRequest("No se Aprobo el documento!"));
+                }
+
+                return await Task.Run(() => Json(goodsDeliveryAuthorization));
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+            
+        }
 
         [HttpGet("[controller]/[action]/{id}")]
         public ActionResult SFGoodsDeliveryAuthorization(Int64 id)
@@ -676,17 +706,23 @@ namespace ERPMVC.Controllers
                 reportWriter.SetDataSourceCredentials(dscarray);
                 var format = Syncfusion.ReportWriter.WriterFormat.PDF;
                 string completepath = basePath + $"/AutorizacionesEntregas/Autorizacion_{id}.pdf";
+                //MemoryStream ms = new MemoryStream();
+
+                //reportWriter.Save(ms, format);
+                //ms.Position = 0;
+
+                //using (FileStream file = new FileStream(completepath, FileMode.Create, System.IO.FileAccess.Write))
+                //    ms.WriteTo(file);
+
+                //ViewBag.pathcontrato = completepath;
+                //var stream = new FileStream(completepath, FileMode.Open);
+                //return new FileStreamResult(stream, "application/pdf");
+
                 MemoryStream ms = new MemoryStream();
 
                 reportWriter.Save(ms, format);
                 ms.Position = 0;
-
-                using (FileStream file = new FileStream(completepath, FileMode.Create, System.IO.FileAccess.Write))
-                    ms.WriteTo(file);
-
-                ViewBag.pathcontrato = completepath;
-                var stream = new FileStream(completepath, FileMode.Open);
-                return new FileStreamResult(stream, "application/pdf");
+                return new FileStreamResult(ms, "application/pdf");
             }
             catch (Exception ex)
             {

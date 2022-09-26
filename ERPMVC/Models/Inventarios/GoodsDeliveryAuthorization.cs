@@ -100,6 +100,10 @@ namespace ERPMVC.Models
         [NotMapped]
         public int[] Firmas { get; set; }
 
+        public string Estado { get; set; }
+
+        public int EstadoId { get; set; }
+
         public List<GoodsDeliveryAuthorizationLine> GoodsDeliveryAuthorizationLine { get; set; } = new List<GoodsDeliveryAuthorizationLine>();
 
 
