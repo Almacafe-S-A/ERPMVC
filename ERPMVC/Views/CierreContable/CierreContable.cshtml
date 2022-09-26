@@ -8,20 +8,6 @@
 
 
 <script>
-
-    //$.ajaxSetup({
-    //    beforeSend:function (xhr, settings) {
-    //        if (settings.context != undefined && settings.context.hasClass('btn')) {
-    //            settings.context.button('loading');
-    //        }
-    //    },
-    //    complete:function () {
-    //        this.button('reset');
-    //    }
-    //});
-
-
-
     function RefrescarGridCierreContable() {
         var grid = $("#gridBitacoraCierreContable").getKendoGrid();
         grid.dataSource.read();
@@ -93,6 +79,28 @@
             $('#loading').hide();
 
         });
+
+
+        function GetPeriodo(){
+            var periodo = $("#PeriodoId").val();
+            return{
+                PeriodoId: periodo,
+            }
+
+        
+        }
+
+        function EjecutarProceso(){
+            $.toast({
+                        heading: 'Satisfactorio',
+                        text: '' + 'Se aplico el cierre contable.',
+                        position: 'top-right',
+                        loaderBg: '#ff6849',
+                        icon: 'success',
+                        hideAfter: 30000,
+                        stack: 6
+                    });
+        }
 </script>
 
 <h4>Cierre Contable Manual</h4>
@@ -103,20 +111,29 @@
                 <div class="row">
                     <div class="col-md-4">
                         <div class="form-group">
-                            <label style="width:100%">Fecha</label>
-                            <kendo-datepicker name="Date" style="width: 100%;"
-                                              id="FechaCierre"
-                                              format="dd/MM/yyyy"
-                                              required
-                                              value="@Model.FechaCierre"
-                                              data-val-required="La fecha es requerida"/>
-                            <span class="text-danger k-invalid-msg" data-for="Date"></span>
+                            <label asp-for="Id" class="control-label" style="width:100%">Periodo</label>
+                            <kendo-dropdownlist name="PeriodoId" filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                id="PeriodoId"
+                                                option-label="Seleccione el periodo"                                                
+                                                on-change="RefrescarGridCierreContable"
+                                                datatextfield="Anio"
+                                                datavaluefield="Id"
+                                                auto-bind="true"
+                                                data-val-required="EL Periodo es requerido"
+                                                style="width: 100%;">
+                                <datasource type="DataSourceTagHelperType.WebApi">
+                                    <transport>
+                                        <read url="@Url.Action("Get", "Periodo")" />
+                                    </transport>
+                                </datasource>
+
+                            </kendo-dropdownlist>
+                            <span asp-validation-for="Id" class="text-danger"></span>
                         </div>
-                    </div>
+                </div>
                     <div class="col-md-4">
                         <div class="form-group">
                             <label style="width:100%"></label>
-                            <button type="button" id="Cierre" class="btn btn-primary" style="min-width:100%" onclick="Cierre();">Ejecutar </button>
 
                             <div id="loading">
                                 <svg class="circular" viewBox="25 25 50 50">
@@ -145,7 +162,8 @@
                                                                             //command.Custom("Editar").Click("EditBank");
                                                                             //command.Destroy().Text("Eliminar");
                                                                             //}).Width(10);
-                                                                            columns.Bound(p => p.Id).Width(100);
+                                                                            columns.Bound(p => p.Id).Width(100).Visible(false);
+                                                                            columns.Bound(p => p.Mes).Width(100).ClientTemplate("#=new Date(Anio,Mes,1).toLocaleString()#").Format("{0:MMMM}");
                                                                             columns.Bound(p => p.FechaCierre).Format("{0:dd/MM/yyyy}").Width(200);
                                                                             //columns.Bound(p => p.EstatusId).Width(150);
                                                                             columns.Bound(p => p.Estatus).Width(150);
@@ -180,14 +198,14 @@
                                                                                              .IsNotEqualTo("No es igual que")
                                                                                               )
                                                                                            ))
-                                                                        .ToolBar(tools =>
+                                                                        @*.ToolBar(tools =>
                                                                         {
                                                                             // tools.Create();
                                                                             //tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
                                                                             //    .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddBank()" });
                                                                                 tools.Excel().HtmlAttributes(new { @class = "toolbar-field" }).Text("Exportar a Excel");
                                                                                 tools.Pdf().HtmlAttributes(new { @class = "toolbar-field" }).Text("Exportar a PDF");
-                                                                        })
+                                                                        })*@
                                                                         .Editable(e => e.Mode(GridEditMode.PopUp))
                                                                         .Sortable()
                                                                         .AutoBind(true)
@@ -211,8 +229,7 @@
                                                                                 model.Field(p => p.Id).Editable(false);
                                                                             })
                                                                             .Events(events => events.Error("error_handler"))
-                                                                        .Read(read => read.Action("GetBitacoraCierreContable", "BitacoraCierreContable"))
-                                                                        )
+                                                                        .Read(read => read.Action("GetBitacoraCierreContable", "BitacoraCierreContable").Data("GetPeriodo")))
                                                                         .Events(e =>
                                                                         {
                                                                             //e.Save("onsave");
@@ -225,18 +242,19 @@
                                               .Name("grid_#=Id#")
                                               .Columns(columns =>
                                               {
-                                      //columns.Command(command =>
-                                      //{
-                                      //    // command.Destroy();
-                                      //    command.Custom("Delete").Text(" ").IconClass("fa fa-trash").Click("EliminarUsuarioRol");
-                                      //}).Width(10);
+                                      columns.Command(command =>
+                                      {
+                                          // command.Destroy();
+                                          command.Custom("ProcesarCierre").Text(" ").IconClass("fa fa-play").Click("EjecutarProceso");
+                                      }).Width(80);
                                       columns.Bound(o => o.IdProceso).Title("Id").Width(80).Visible(false);
                                                   columns.Bound(o => o.IdBitacoraCierre).Title("Id Bitacora Cierre").Width(150).Visible(false);
-                                                  columns.Bound(o => o.FechaCierre).Title("Fecha Cierre").Format("{0:dd/MM/yyyy}").Width(150).Visible(false);
+                                                  columns.Bound(o => o.FechaCierre).Title("Fecha Ejecucion").Format("{0:dd/MM/yyyy}").Width(150).Visible(true);
                                                   columns.Bound(o => o.PasoCierre).Title("Paso Cierre").Width(150).Visible(true);
                                                   columns.Bound(o => o.Proceso).Title("Proceso").Width(200).Visible(true);
-                                                  columns.Bound(o => o.Mensaje).Title("Mensaje").Width(200).Visible(true);
-                                                  columns.Bound(o => o.Estatus).Title("Estatus").Width(200).Visible(true);
+                                                  columns.Bound(o => o.Asientos).Title("Asientos Generados").Width(150);
+                                                  columns.Bound(o => o.Mensaje).Title("Mensaje").Width(150);
+                                                  columns.Bound(o => o.Estatus).Title("Estatus").Width(120);
                                               })
                                               .DataSource(dataSource => dataSource
                                                  .WebApi()

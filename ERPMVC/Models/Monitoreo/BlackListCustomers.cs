@@ -12,11 +12,9 @@ namespace ERPMVC.Models
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         [Display(Name = "Id")]
         public Int64 BlackListId { get; set; }
-        [Display(Name = "Cliente")]
-        public Int64 CustomerId { get; set; }
-        [Display(Name = "Cliente")]
-        public string CustomerName { get; set; }
-        
+       
+        public string Nombre { get; set; }
+
         [Display(Name = "Cliente referencia")]
         public string CustomerReference { get; set; }
         [Display(Name = "Fecha")]

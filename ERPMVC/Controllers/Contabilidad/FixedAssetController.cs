@@ -64,6 +64,7 @@ namespace ERPMVC.Controllers
                 if (_FixedAsset == null)
                 {
                     _FixedAsset = new FixedAssetDTO { AssetDate = DateTime.Now };
+                    _FixedAsset.ResidualValuePercent = 1;
                 }
                 ViewData["permisos"] = _principal;
             }

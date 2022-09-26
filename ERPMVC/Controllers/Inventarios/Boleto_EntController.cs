@@ -431,6 +431,23 @@ namespace ERPMVC.Controllers
         }
 
 
+        [HttpGet("[controller]/[action]")]
+        public async Task<ActionResult> SFMovimientosDetalleBoletaPeso()
+        {
+
+            try
+            {
+                return View();
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+        }
+
 
         [HttpPost("[controller]/[action]")]
         public async Task<ActionResult<Boleto_Ent>> SaveBoleto_Ent([FromBody]Boleto_Ent _Boleto_Ent)

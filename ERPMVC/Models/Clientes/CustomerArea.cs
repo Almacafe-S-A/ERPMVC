@@ -84,5 +84,6 @@ namespace ERPMVC.Models
 
         public string listaproductos { get; set; }
 
+        public bool Cerrado { get; set; }
     }
 }

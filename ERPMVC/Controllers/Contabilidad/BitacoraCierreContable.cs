@@ -32,7 +32,7 @@ namespace ERPMVC.Controllers
 
 
         [HttpGet("[action]")]
-        public async Task<DataSourceResult> GetBitacoraCierreContable([DataSourceRequest]DataSourceRequest request)
+        public async Task<DataSourceResult> GetBitacoraCierreContable([DataSourceRequest]DataSourceRequest request, int PeriodoId)
         {
             List<BitacoraCierreContable> _cierre = new List<BitacoraCierreContable>();
             try
@@ -41,7 +41,7 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/BitacoraCierreContable/GetBitacoraCierreContable");
+                var result = await _client.GetAsync(baseadress + $"api/BitacoraCierreContable/GetBitacoraCierreContable/{PeriodoId}");
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {

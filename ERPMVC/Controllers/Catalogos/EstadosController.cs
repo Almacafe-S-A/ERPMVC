@@ -400,7 +400,9 @@ namespace ERPMVC.Controllers
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _clientes = JsonConvert.DeserializeObject<List<Estados>>(valorrespuesta).Where(w => w.IdEstado ==1).ToList();
+                    _clientes = JsonConvert.DeserializeObject<List<Estados>>(valorrespuesta)
+                        //.Where(w => w.IdEstado ==1)
+                        .ToList();
                 }
 
             }

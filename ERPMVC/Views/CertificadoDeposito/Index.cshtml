@@ -127,9 +127,28 @@
                 async: false,
                 data: JSON.stringify(dataObject),
                 success: function (result) {
+                        $.toast({
+                        heading: 'Satisfactorio',
+                        text: 'El Certificado se ha anulado correctamente.',
+                        position: 'top-right',
+                        loaderBg: '#ff6849',
+                        icon: 'success',
+                        hideAfter: 7000,
+                        stack: 6
+                    });
+                        RefreshCertificadoDeposito();
                 },
                 error: function (XMLHttpRequest, textStatus, errorThrown) {
-                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+                    
+                    $.toast({
+                        heading: 'Satisfactorio',
+                        text: XMLHttpRequest.responseText,
+                        position: 'top-right',
+                        loaderBg: '#ff6849',
+                        icon: 'error',
+                        hideAfter: 7000,
+                        stack: 6
+                    });
                 }
             });
         }
@@ -139,9 +158,11 @@
       function ImprimirCertificadoDeposito(e) {
         e.preventDefault();
         var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        if(!confirm("Esta seguro que desea imprimir esta accion se agrega a la auditoria")) return;
 
         var url = '@Url.Action("SFCertificadoDeposito", "CertificadoDeposito")/' + dataItem.IdCD;
        // var url = './SFCertificadoDeposito/' + dataItem.IdCD;
+       RefreshCertificadoDeposito();
         var win = window.open(url , '_blank');
         win.focus();
 
@@ -150,16 +171,33 @@
     }
 
 
-    function ImprimirSolicitudDeposito(e) {
+    function ImprimirTalon(e) {
         e.preventDefault();
         var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        if(!confirm("Esta seguro que desea imprimir esta accion se agrega a la auditoria")) return;
+        var url = '@Url.Action("SFTalon", "CertificadoDeposito")/' + dataItem.IdCD;
+       // var url = './SFCertificadoDeposito/' + dataItem.IdCD;
+       RefreshCertificadoDeposito();
+        var win = window.open(url , '_blank');
+        win.focus();
 
-        if (dataItem.IdEstado != 6) {
-            notification.show({
-                title: "Validación",
-                message: "El Certificado no ha sido aprobado"
-            }, "error");
-        }
+
+    }
+
+
+    function ImprimirSolicitudDeposito(e) {
+        e.preventDefault();
+        debugger;
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+
+        //if (dataItem.IdEstado != 6) {
+            
+        //    notification.show({
+        //            title: "Validación",
+        //            message: "El Certificado no ha sido aprobado"
+        //        }, "error");
+        //    return;
+        //}
 
         var url = '@Url.Action("SFSolicitudCertificadoDeposito", "SolicitudCertificadoDeposito")/' + dataItem.SolicitudCertificadoId;
         var win = window.open(url , '_blank');
@@ -180,13 +218,8 @@
 
 
     function Aprobar(e) {
-        var notification = $("#notification").data("kendoNotification");
         var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
         if (dataItem.IdEstado != 5) {
-                    notification.show({
-                    title: "Validación",
-                    message: "El Certificado ya ha sido aprobado"
-                }, "error");
             }
         if (!confirm('Esta seguro de aprobar este Certificado?')) {
             return;
@@ -254,6 +287,7 @@
                                                   if (User.HasClaim("Inventarios.Solicitud Certificado Deposito.Imprimir Certificado", "true"))
                                                   {
                                                       command.Custom("Imprimir").Text(" ").IconClass("fa fa-print").Click("ImprimirCertificadoDeposito");
+                                                      command.Custom("ImprimirTalon").Text(" ").IconClass("fa fa-print").Click("ImprimirTalon");
                                                   }
                                                   if (User.HasClaim("Inventarios.Solicitud Certificado Deposito.Anular", "true"))
                                                   {
@@ -272,11 +306,13 @@
                                           columns.Bound(p => p.FechaVencimientoDeposito).Format("{0:dd/MM/yyyy}").Title("Fecha de Vencimiento").Width(150);
                                           columns.Bound(p => p.CustomerName).Title("Cliente").Width(200);
                                           columns.Bound(p => p.ServicioName).Title("Servicio").Width(150);
-                                          //columns.Bound(p => p.NombreEmpresa).Title("Nombre empresa").Width(150);
                                           columns.Bound(p => p.NoPoliza).Title("NoPoliza").Width(150);
                                           columns.Bound(p => p.Producto).Title("Producto").Width(150);
-                                          columns.Bound(p => p.Quantitysum).Title("Cantidad").Width(150);
+                                          columns.Bound(p => p.Quantitysum).Title("Cantidad").Format("{0:N2}").Width(150)
+                                          .HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" });
                                           columns.Bound(p => p.Estado).Title("Estado").Width(150);
+                                          columns.Bound(p => p.Impresiones).Title("Impresiones").Width(150);
+                                          columns.Bound(p => p.impresionesTalon).Title("Impresiones Talon").Width(150);
                                       }).Filterable(f => f.Operators(o => o.ForString(s => s
                                                              .Clear()
                                                              .Contains("Contiene")
@@ -367,13 +403,7 @@
     {
         IdCD = 0,
         FechaCertificado = DateTime.Now,
-        FechaVencimientoCertificado = DateTime.Now.AddDays(60)
-     
-        //FechaVencimientoCertificado = DateTime.Now.AddDays(30),
-        //FechaFirma = DateTime.Now,
-        //FechaInicioComputo = DateTime.Now,
-        //FechaPagoBanco = DateTime.Now
-,
+        FechaVencimientoCertificado = DateTime.Now.AddDays(60),     
         BranchId = Convert.ToInt32(Context.Session.GetString("BranchId"))
 })
 </div>
@@ -398,6 +428,7 @@
     //setRowButtonTooltip(".k-grid-edit", "Tooltip for Edit button");
     setRowButtonTooltip(".k-grid-Anular", "Anular un certificado de deposito!");
     setRowButtonTooltip(".k-grid-Imprimir", "Imprimir Certificado");
+    setRowButtonTooltip(".k-grid-ImprimirTalon", "Imprimir Talon");
     setRowButtonTooltip(".k-grid-ImprimirSolicitud", "Imprimir Solicitud");
     setRowButtonTooltip(".k-grid-Editar", "Editar registro");
 

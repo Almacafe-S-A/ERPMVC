@@ -543,16 +543,42 @@ namespace ERPMVC.Controllers
                     var respuesta = await (result.Content.ReadAsStringAsync());
                     _reportePermisos = JsonConvert.DeserializeObject<List<ReportePermisos>>(respuesta);
 
+                    _reportePermisos = (from r in _reportePermisos 
+                                       select new ReportePermisos { 
+                                            ClaimType = r.ClaimType,
+                                            EstadoRolUser = r.EstadoRolUser,
+                                            FechaCreacionRolUser = r.FechaCreacionRolUser,
+                                            FechaModificacionUser = r.FechaModificacionUser,
+                                            IdEstado = r.IdEstado,
+                                            RoleId = r.RoleId,
+                                            RoleName = r.RoleName,
+                                            RoleNormalizedName = r.RoleNormalizedName,
+                                            UserName = r.UserName,
+                                            UserId  = r.UserId,
+                                            UsuarioCreacionUser = r.UsuarioCreacionUser,
+                                            UsuarioModificoUser = r.UsuarioModificoUser,
+                                            Categoria = r.ClaimType.Split(".").Length > 0 ? r.ClaimType.Split(".")[0] : "" ,
+                                            Nivel1 = r.ClaimType.Split(".").Length > 1 ? r.ClaimType.Split(".")[1] : "",
+                                            Nivel2 = r.ClaimType.Split(".").Length > 2 ? r.ClaimType.Split(".")[2] : "",
+                                            Nivel3 = r.ClaimType.Split(".").Length > 3 ? r.ClaimType.Split(".")[3] : "",
+
+                                       }).ToList();
+
+
                     if (RoleId != null && UserId != null)
                     {
-                        _reportePermisos = _reportePermisos.Where(w => w.RoleId.Equals(RoleId.ToString()) && w.UserId.Equals(UserId.ToString())).ToList();
+                        _reportePermisos = _reportePermisos.Where(w => w.RoleId.Equals(RoleId.ToString()) && w.UserId.Equals(UserId.ToString())).OrderBy(o => o.Nivel1).ToList();
                     }
-                    else if (RoleId != null && UserId == null) {
-                        _reportePermisos = _reportePermisos.Where(w => w.RoleId.Equals(RoleId.ToString())).ToList();
+                    if (RoleId != null && UserId == null) {
+                        _reportePermisos = _reportePermisos.Where(w => w.RoleId.Equals(RoleId.ToString())).OrderBy(o => o.Nivel1).ToList();
                     }
-                    else if (RoleId == null && UserId != null)
+                    if (RoleId == null && UserId != null)
                     {
-                        _reportePermisos = _reportePermisos.Where(w => w.UserId.Equals(UserId.ToString())).ToList();
+                        _reportePermisos = _reportePermisos.Where(w => w.UserId.Equals(UserId.ToString())).OrderBy(o => o.Nivel1).ToList();
+                    }
+                    if (RoleId == null && UserId == null)
+                    {
+                        _reportePermisos = _reportePermisos.OrderBy(o => o.Nivel1).ToList();
                     }
                 }
 

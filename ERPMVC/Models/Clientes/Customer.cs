@@ -62,8 +62,8 @@ namespace ERPMVC.Models
         [Display(Name = "Teléfonos")]
         public string Phone { get; set; }
 
-        [Display(Name = "Identidad del contacto")]
-        public string Identidad { get; set; }
+        [Display(Name = "RTN Gerente General")]
+        public string RTNGerenteGeneral { get; set; }
 
         [EmailAddress]
         [RegularExpression(@"\w+([-+.']\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*", ErrorMessage = "Correo invalido")]
@@ -72,6 +72,12 @@ namespace ERPMVC.Models
         public string Email { get; set; }
         [Display(Name = "Persona de Contacto ")]
         public string ContactPerson { get; set; }
+
+        public string NombreEmpresaPN { get; set; }
+
+        public string TelefonoEmpresaPN { get; set; }
+
+        public string DireccionEmpresaPN { get; set; }
 
         [Display(Name = "Activo/Inactivo ")]
         public Int64? IdEstado { get; set; }
@@ -139,11 +145,11 @@ namespace ERPMVC.Models
 
         [Required]
         [Display(Name = "Fecha de creación")]
-        public DateTime FechaCreacion { get; set; }
+        public DateTime? FechaCreacion { get; set; }
 
         [Required]
         [Display(Name = "Fecha de modificación")]
-        public DateTime FechaModificacion { get; set; }
+        public DateTime? FechaModificacion { get; set; }
 
         //  public List<CustomersOfCustomer> _Customers { get; set; }
 
@@ -163,5 +169,82 @@ namespace ERPMVC.Models
         public string NombreFuncionario { get; set; }
         public string FirmaAuditoriaExterna { get; set; }
 
+        public Customer(dynamic dto)
+        {
+            try
+            {
+               
+                this.CustomerId = dto.CustomerId;
+                this.CustomerName = dto.CustomerName;
+                this.IdentidadApoderado = dto.IdentidadApoderado;
+                this.NombreApoderado = dto.NombreApoderado;
+                this.CustomerRefNumber = dto.CustomerRefNumber;
+                this.RTN = dto.RTN;
+                this.CustomerTypeId = dto.CustomerTypeId;
+                this.CustomerTypeName = dto.CustomerTypeName;
+                this.Address = dto.Address;
+                this.CountryId = dto.CountryId;
+                this.CountryName = dto.CountryName;
+                this.CityId = dto.CityId;
+                this.City = dto.City;
+                this.StateId = dto.StateId;
+                this.State = dto.State;
+                this.ZipCode = dto.ZipCode;
+                this.Phone = dto.Phone;
+                this.RTNGerenteGeneral = dto.RTNGerenteGeneral;
+                this.Email = dto.Email;
+                this.ContactPerson = dto.ContactPerson;
+                this.IdEstado = dto.IdEstado;
+                this.UnitOfMeasurePreference = dto.UnitOfMeasurePreference;
+                this.UnitOfMeasure = dto.UnitOfMeasure;
+                this.Estado = dto.Estado;
+                this.GrupoEconomicoId = dto.GrupoEconomicoId;
+                this.GrupoEconomico = dto.GrupoEconomico;
+                this.MontoActivos = dto.MontoActivos;
+                this.MontoIngresosAnuales = dto.MontoIngresosAnuales;
+                this.Proveedor1 = dto.Proveedor1;
+                this.Proveedor2 = dto.Proveedor2;
+                this.ClienteRecoger = dto.ClienteRecoger;
+                this.EnviarlaMensajero = dto.EnviarlaMensajero;
+                this.DireccionEnvio = dto.DireccionEnvio;
+                this.PerteneceEmpresa = dto.PerteneceEmpresa;
+                this.ValorSeveridadRiesgo = dto.ValorSeveridadRiesgo;
+                this.NivelSeveridad = dto.NivelSeveridad;
+                this.ColorHexadecimal = dto.ColorHexadecimal;
+                this.ConfirmacionCorreo = dto.ConfirmacionCorreo;
+                this.ProductTypeId = dto.ProductTypeId;
+                this.ProductType = dto.ProductType;
+                this.UsuarioCreacion = dto.UsuarioCreacion;
+                this.UsuarioModificacion = dto.UsuarioModificacion;
+                this.FechaCreacion = dto.FechaCreacion;
+                this.FechaModificacion = dto.FechaModificacion;
+                this.LugarNacimiento = dto.LugarNacimiento;
+                this.FechaNacimiento = dto.FechaNacimiento;
+                this.Edad = dto.Edad;
+                this.EstadoCivil = dto.EstadoCivil;
+                this.ProfesionOficio = dto.ProfesionOficio;
+                this.Nacionalidad = dto.Nacionalidad;
+                this.GiroActividadNegocio = dto.GiroActividadNegocio;
+                this.CargosPublicos = dto.CargosPublicos;
+                this.Familiares = dto.Familiares;
+                this.Conyugue = dto.Conyugue;
+                this.InstitucionSupervisada = dto.InstitucionSupervisada;
+                this.NombreFuncionario = dto.NombreFuncionario;
+                this.FirmaAuditoriaExterna = dto.FirmaAuditoriaExterna;
+                
+            }
+            catch (Exception ex)
+            {
+                
+                throw;
+            }
+            
+
+        }
+        public Customer()
+        {
+            
+
+        }
     }
 }
