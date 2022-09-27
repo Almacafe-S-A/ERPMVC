@@ -21,6 +21,8 @@ namespace ERPMVC.Models
         [ForeignKey("PeriodoId")]
         public Periodo Periodo { get; set; }
 
+        public DateTime? PeriodoMes { get; set; }
+
         public DateTime? FechaCierre { get; set; }
 
         public Int64 EstatusId { get; set; }

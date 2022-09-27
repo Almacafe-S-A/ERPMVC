@@ -98,6 +98,37 @@ namespace ERPMVC.Controllers
         }
 
 
+        [HttpPost]
+        public async Task<ActionResult> EjecutarProceso([FromBody] BitacoraCierreProcesos _Cierrep)
+        {
+            
+            BitacoraCierreContable _Cierre = new BitacoraCierreContable();
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/CierreContable/EjecutarPasoCierre/" + _Cierrep.IdProceso);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    return Ok();
+                }
+                else
+                {
+                    string error = await result.Content.ReadAsStringAsync();
+                    return await Task.Run(() => BadRequest($"Error: {error},No se puede aplicar este cierre."));
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Tiempo de espera agotado");
+                throw ex;
+            }
+            return Json(_Cierre);
+        }
+
+
         public async Task<BitacoraCierreContable> GetUltimoCierre() {
             string baseadress = config.Value.urlbase;
             HttpClient cliente = new HttpClient();
