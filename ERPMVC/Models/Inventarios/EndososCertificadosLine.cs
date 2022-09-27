@@ -41,5 +41,9 @@ namespace ERPMVC.Models
         public double ValorEndoso { get; set; }
 
         public double Saldo { get; set; }
+
+        public decimal? DerechosFiscales { get; set; }
+
+        public decimal? ValorUnitarioDerechos { get; set; }
     }
 }
