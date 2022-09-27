@@ -43,10 +43,16 @@ namespace ERPMVC.Controllers
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
                 var result = await _client.GetAsync(baseadress + $"api/BitacoraCierreContable/GetBitacoraCierreContable/{PeriodoId}");
                 string valorrespuesta = "";
+                
+
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _cierre = JsonConvert.DeserializeObject<List<BitacoraCierreContable>>(valorrespuesta);
+                    foreach (var item in _cierre)
+                    {
+                        item.PeriodoMes = new DateTime((int)item.Anio, (int)item.Mes,1);
+                    }
                 }
             }
             catch (Exception ex)

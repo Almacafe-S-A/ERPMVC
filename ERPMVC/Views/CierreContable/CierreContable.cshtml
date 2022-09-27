@@ -74,6 +74,58 @@
 
         }
     }
+
+     function EjecutarProcesoCierre(e) {
+        e.preventDefault();
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        var dataObject = {
+            IdProceso: dataItem.IdProceso,
+        };
+        $('#loading').show();
+        $("#Cierre").prop('value', 'Ejecutando ...');
+        
+
+        $.ajax({
+                url: '@Url.Action("EjecutarProceso", "CierreContable")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: true,
+                data: JSON.stringify(dataObject),
+                success: function (result) {
+                    $('#loading').hide();
+                    $("#Cierre").prop('value', 'Ejecutar');
+                    $.toast({
+                        heading: 'Satisfactorio',
+                        text: '' + 'Se aplico el cierre contable.',
+                        position: 'top-right',
+                        loaderBg: '#ff6849',
+                        icon: 'success',
+                        hideAfter: 30000,
+                        stack: 6
+                    });
+                    $("#FechaCierre").val('');
+                    RefrescarGridCierreContable();
+                    location.reload();
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    console.log(textStatus + ": " + XMLHttpRequest.responseText);
+                    $.toast({
+                        heading: 'Error',
+                        text: '' + XMLHttpRequest.responseText,
+                        position: 'top-right',
+                        loaderBg: '#ff6849',
+                        icon: 'error',
+                        hideAfter: 30000,
+                        stack: 6
+                    });
+                    $('#loading').hide();
+                    $("#Cierre").prop('value', 'Ejecutar');
+
+                }
+            });
+           // RefrescarGridCierreProcesos();
+    }
         $(function () {
             debugger;
             $('#loading').hide();
@@ -163,7 +215,8 @@
                                                                             //command.Destroy().Text("Eliminar");
                                                                             //}).Width(10);
                                                                             columns.Bound(p => p.Id).Width(100).Visible(false);
-                                                                            columns.Bound(p => p.Mes).Width(100).ClientTemplate("#=new Date(Anio,Mes,1).toLocaleString()#").Format("{0:MMMM}");
+                                                                            columns.Bound(p => p.PeriodoMes).Width(100).Format("{0:MMMM}");
+                                                                            //columns.Bound(p => p.Mes).Width(100).ClientTemplate("#=new Date(Anio,Mes,1).toLocaleString()#").Format("{0:MMMM}");
                                                                             columns.Bound(p => p.FechaCierre).Format("{0:dd/MM/yyyy}").Width(200);
                                                                             //columns.Bound(p => p.EstatusId).Width(150);
                                                                             columns.Bound(p => p.Estatus).Width(150);
@@ -245,7 +298,7 @@
                                       columns.Command(command =>
                                       {
                                           // command.Destroy();
-                                          command.Custom("ProcesarCierre").Text(" ").IconClass("fa fa-play").Click("EjecutarProceso");
+                                          command.Custom("ProcesarCierre").Text(" ").IconClass("fa fa-play").Click("EjecutarProcesoCierre");
                                       }).Width(80);
                                       columns.Bound(o => o.IdProceso).Title("Id").Width(80).Visible(false);
                                                   columns.Bound(o => o.IdBitacoraCierre).Title("Id Bitacora Cierre").Width(150).Visible(false);
