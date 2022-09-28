@@ -76,6 +76,12 @@ namespace ERPMVC.Models
         [Display(Name = "Valor residual porcentaje")]
         public double ResidualValuePercent { get; set; }
 
+        public decimal VidaUtilNIIF { get; set; }
+
+        public decimal DepreciacionMensualNIIF { get; set; }
+
+        public decimal TotalaDepreciarNIIF { get; set; }
+
         [Display(Name = "Valor neto")]
         public double NetValue { get; set; }
 
