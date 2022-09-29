@@ -218,21 +218,22 @@ namespace ERPMVC.Controllers
         }
 
 
-        public async Task<ActionResult<FixedAsset>> Delete([FromBody] FixedAsset _FixedAsset)
+        public async Task<ActionResult<FixedAsset>> BajaActivo([FromBody]FixedAssetDTO _data)
         {
+            FixedAsset fixedAsset = null;
             try
             {
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
 
-                var result = await _client.PostAsJsonAsync(baseadress + "api/FixedAsset/Delete", _FixedAsset);
+                var result = await _client.GetAsync(baseadress + $"api/FixedAsset/BajaActivo/{_data.FixedAssetId}/{_data.MotivoId}");
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
-                    await Task.Run(() => DeleteDepreciation(_FixedAsset.FixedAssetId));
+                    //await Task.Run(() => DeleteDepreciation(_FixedAsset.FixedAssetId));
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _FixedAsset = JsonConvert.DeserializeObject<FixedAsset>(valorrespuesta);
+                    fixedAsset = JsonConvert.DeserializeObject<FixedAsset>(valorrespuesta);
                 }
                 else
                 {
@@ -247,7 +248,7 @@ namespace ERPMVC.Controllers
                 return BadRequest($"Ocurrio un error: {ex.Message}");
             }
 
-            return new ObjectResult(new DataSourceResult { Data = new[] { _FixedAsset }, Total = 1 });
+            return fixedAsset;
         }
 
 
