@@ -63,22 +63,32 @@
         RefrescarGrid();
 
     }
+    function ModalMotivo(e) {
+           debugger;
+            e.preventDefault();
+		    var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+            $("#ActivoId").val( dataItem.FixedAssetId);
+            $("#ActivoNombre").val( dataItem.FixedAssetName);
+             $('#ModalBaja').modal('show');
+		    
+        }
 
 
-    function DardeBaja(e) {
+
+    function DardeBaja() {
         debugger;
         if (!confirm("Esta seguro que desea darle de baja al activo esto tendra un efecto contable")) {
             return;
         }
-		e.preventDefault();
-		var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        
 		var dataObject = {
-			FixedAssetId: dataItem.FixedAssetId,
-			//editar: 0
+			FixedAssetId: $("#ActivoId").val(),
+			MotivoId: $("#Motivo").val(),
 		};
 
+
 		$.ajax({
-			url: '@Url.Action("Delete", "FixedAsset")',
+			url: '@Url.Action("BajaActivo", "FixedAsset")',
 			method: 'POST',
 			datatype: "json",
 			contentType: 'application/json',
@@ -108,8 +118,10 @@
                     hideAfter: 30000,
                     stack: 6
                 });
+                 
 			}
         });
+        $('#ModalBaja').modal('hide');
         RefrescarGrid();
 
 	}
@@ -145,7 +157,7 @@
                                         if (permisos.HasClaim("Contabilidad.Activos.Activos Fijos.Eliminar", "true"))
                                         {
                                             //cmd.Destroy().Text(" ").IconClass("fa fa-trash-alt");
-                                            cmd.Custom("DardeBaja").Text(" ").IconClass("fa fa-trash").Click("DardeBaja");
+                                            cmd.Custom("Baja").Text(" ").IconClass("fa fa-arrow-down").Click("ModalMotivo");
                                         }
                                     }).Title("Acciones").Width(110);
                                 }
@@ -242,6 +254,68 @@
 
 
 
+
+<div id="ModalBaja" style="padding-left:35%; padding-top:10%; padding-bottom:30%"  class="modal fade" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+
+        <!-- Modal content-->
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Seleccione el Motivo de Baja</h4>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <form id="frmGenerar"
+                  data-ajax="true"
+                  data-ajax-method="post"
+                  data-ajax-begin="DardeBaja"
+                  kendo-validator="true">
+                <div class="modal-body">
+                    <div class="row">
+                        <h5></h5>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="control-label" style="min-width:100%">Seleccione Motivo</label>
+                                @(Html.Kendo().DropDownList().Name("Motivo")
+                                    .DataValueField("MotivoId")
+                                    .DataTextField("Motivo")
+                                    .BindTo(new List<Object>() {
+                                      new  {
+                                          Motivo = "Venta",
+                                          MotivoId = 1
+                                      },
+                                      new  {
+                                          Motivo = "Obsolecencia",
+                                          MotivoId = 2
+                                      },
+                                  }).Value("1")
+)
+                                <span class="text-danger" style="min-width:100%"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="control-label">Activo:</label>
+                                 <input  name="ActivoNombre" id="ActivoNombre" type="text" class="k-textbox" readonly
+                                                           validationMessage="El Nombre es requerido" autocomplete="off" style="min-width:100%;" required />
+                                <input type="text" name="ActivoId" id="ActivoId" hidden />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-primary" type="submit">Dar de Baja</button>
+                </div>
+
+            </form>
+            
+        </div>
+    </div>
+</div>
+
+
 <script>
 
     function setToolbarTooltip(btn_cl, btn_tooltip) {
@@ -263,7 +337,7 @@
 
 
     setToolbarTooltip(".k-grid-toolbar a.k-grid-Agregar", "Agregar nuevo registro");
-    setRowButtonTooltip(".k-grid-delete", "Dar de baja");
+    setRowButtonTooltip(".k-grid-Baja", "Dar de baja");
     setRowButtonTooltip(".k-grid-Editar", "Editar registro");
 
 </script>
