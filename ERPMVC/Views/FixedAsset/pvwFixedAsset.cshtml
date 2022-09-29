@@ -67,7 +67,7 @@
                                             <div class="col-sm-3">
                                                 <div class="form-group">
                                                     <label asp-for="AssetDate" class="control-label" style="min-width:100%;">Fecha de Adquisición</label>
-                                                    <kendo-datepicker name="AssetDate"
+                                                    <kendo-datepicker name="AssetDate" date-input=false
                                                                       value="Model.AssetDate"
 																	  min="new DateTime(DateTime.Now.Year,DateTime.Now.Month,1)"
                                                                       format="dd/MM/yyyy"
@@ -179,7 +179,7 @@
                                                     <span asp-validation-for="CenterCostId" class="text-danger"></span>
                                                 </div>
                                             </div>
-                                            <div class="col-md-3" hidden>
+                                            <div class="col-md-3" hidden >
 
                                                 <div class="form-group">
                                                     <label asp-for="IdEstado" class="control-label"></label>
@@ -401,8 +401,8 @@
             'AccumulatedDepreciation': $('#AccumulatedDepreciation').val() === "" ? "0" : $("#AccumulatedDepreciation").val(),
 			'ToDepreciate': $('#ToDepreciate').val(),
 			'TotalDepreciated': $('#TotalDepreciated').val(),
-			'IdEstado': $("#IdEstado").val(),
-            'Estado': $("#BranchId").data("kendoDropDownList").text(),
+			'IdEstado': $("#IdEstado").data("kendoDropDownList").value() ,
+            'Estado': $("#IdEstado").data("kendoDropDownList").text(),
 			'Codigo' : $("#Codigo").val(),
 			'Marca' : $("#Marca").val(),
 			'Serie' : $("#Serie").val(),
@@ -410,8 +410,6 @@
             'VidaUtilNIIF' :$("#VidaUtilNIIF").val(),
             'DepreciacionMensualNIIF' :$("#DepreciacionMensualNIIF").val(),
             'TotalaDepreciarNIIF' :$("#TotalaDepreciarNIIF").val(),
-
-            
 
 
 		};
@@ -431,7 +429,6 @@
 				success: function (data) {
 					$("#btnFixedAsset").show();
 					$("#warning").show();
-					SaveHistorial(data)
 					$.toast({
                         heading: 'Satisfactorio',
                         text: 'Datos guardados correctamente.',
@@ -441,13 +438,14 @@
                         hideAfter: 3000,
                         stack: 6
 					});
+                     $("#btnFixedAsset").prop("disabled", false);
 					$('#ModalFixedAsset').modal('hide');
 				},
 				error: function (XMLHttpRequest, textStatus, errorThrown) {
 					notification.show({
 						title: "Validación",
-						message: textStatus + ": " + XMLHttpRequest.responseText
-					}, "error");
+						message:"Error al guardar activo" }, "error");
+                         $("#btnFixedAsset").prop("disabled", false);
 				}
 			});
         }
@@ -462,7 +460,6 @@
         }
         $("#btnFixedAsset").show();
         $("#btnFixedAsset").prop("disabled", true);
-        $('#ModalFixedAsset').modal('hide');
         RefrescarGrid();
 
 	}
@@ -501,13 +498,7 @@
         var _monto = $("#Amount").val();
         var _costosadicionales = $("#Cost").val() === "" ? "0" : $("#Cost").val();
         var _vidaUtil = $("#FixedActiveLife").val();
-
         var vidautilniif = $("#VidaUtilNIIF").val();
-
-        
-
-
-
 
         // Costo total Activo = Valor adquisicion + Costos adicionales
         _costoTotalActivo = parseFloat(_monto) + parseFloat(_costosadicionales);
@@ -537,15 +528,15 @@
         //$("#NetValue").val(formatter.format(round(_valorLibros, 2)));
         $("#NetValue").data("kendoNumericTextBox").value(formatter.format(round(_valorLibros, 2)));
 
-        if(vidautilniif != 0){
-             _depreciacionAnual = (_valorADepreciar / vidautilniif);
-            _totalDepreciacionMensual = (_totalDepreciacionMensual / 12);
-            $("#DepreciacionMensualNIIF").data("kendoNumericTextBox").value(formatter.format(round(_totalDepreciacionMensual, 2)));
-            $("#TotalaDepreciarNIIF").data("kendoNumericTextBox").value(formatter.format(round(_valorADepreciar, 2)));
+        if(vidautilniif != 0){ //la niif no lleva residual 
+             var depreciacionanual  = (_valorADepreciar / vidautilniif);
+            var depreciacionmensual = (depreciacionanual / 12);
+            $("#DepreciacionMensualNIIF").data("kendoNumericTextBox").value(formatter.format(round(depreciacionmensual, 2)));
+            $("#TotalaDepreciarNIIF").data("kendoNumericTextBox").value(formatter.format(round(_costoTotalActivo, 2)));
 
         }else{
              $("#DepreciacionMensualNIIF").data("kendoNumericTextBox").value(0);
-            $("#TotalaDepreciarNIIF").data("kendoNumericTextBox").value(f0);
+            $("#TotalaDepreciarNIIF").data("kendoNumericTextBox").value(0);
         }
        
 
