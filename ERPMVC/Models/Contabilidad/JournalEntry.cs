@@ -74,6 +74,12 @@ namespace ERPMVC.Models
         [Display(Name = "Fecha de aprobación")]
         public DateTime? ApprovedDate { get; set; }
 
+        public string Periodo { get; set; }
+
+        public int? PeriodoId { get; set; }
+        [ForeignKey("PeriodoId")]
+        public Periodo PeriodoNav { get; set; }
+
 
         public virtual ICollection<JournalEntryLine> JournalEntryLines { get; set; }
         [Required]

@@ -112,6 +112,40 @@ namespace ERPMVC.Controllers
 
         }
 
+
+
+        [HttpGet]
+        public async Task<DataSourceResult> GetPreuspuestosByPeriodo([DataSourceRequest] DataSourceRequest request, int PeriodoId)
+        {
+            List<Presupuesto> _Presupuesto = new List<Presupuesto>();
+            try
+            {
+
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + $"api/Presupuesto/GetPreuspuestosByPeriodo/{PeriodoId}");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _Presupuesto = JsonConvert.DeserializeObject<List<Presupuesto>>(valorrespuesta);
+                    _Presupuesto = _Presupuesto.OrderByDescending(q => q.Id).ToList();
+                }
+
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+
+            return _Presupuesto.ToDataSourceResult(request);
+
+        }
+
         [HttpPost("savepresupuesto")]
         public async Task<ActionResult<Presupuesto>> savepresupuesto(PresupuestoDTO _PresupuestoS)
         {

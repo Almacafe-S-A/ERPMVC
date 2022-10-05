@@ -211,7 +211,7 @@ namespace ERPMVC.Controllers
 
                 _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                result = await _client.GetAsync(baseadress + "api/Boleto_Ent/GetBoleto_EntById/"+ _ControlPallets.WeightBallot);
+                result = await _client.GetAsync(baseadress + "api/Boleto_Ent/GetBoleto_EntByIdCustomerUOM/"+ _ControlPallets.WeightBallot);
                 valorrespuesta = "";
                 Boleto_Ent _Boleto_Ent = new Boleto_Ent();
                 if (result.IsSuccessStatusCode)
@@ -232,10 +232,10 @@ namespace ERPMVC.Controllers
                     }
                     else if (_Boleto_Ent.peso_e < _Boleto_Ent.Boleto_Sal.peso_n)
                     {
-                        _ControlPallets.taracamion = Convert.ToDouble((_Boleto_Ent.peso_e)) / Convert.ToDouble(100);
+                        _ControlPallets.taracamion = Convert.ToDouble((_Boleto_Ent.PesoUnidadPreferida)) / Convert.ToDouble(100);
                     }
 
-                    _ControlPallets.pesobruto = Math.Round(Convert.ToDouble(_Boleto_Ent.peso_e) / Convert.ToDouble(100),2, MidpointRounding.AwayFromZero);
+                    _ControlPallets.pesobruto = Math.Round(Convert.ToDouble(_Boleto_Ent.PesoUnidadPreferida) / Convert.ToDouble(100),2, MidpointRounding.AwayFromZero);
                     _ControlPallets.pesoneto = Math.Round(Convert.ToDouble(_ControlPallets.pesobruto) - Convert.ToDouble(_ControlPallets.taracamion),2, MidpointRounding.AwayFromZero);
                     _ControlPallets._Boleto_Ent = _Boleto_Ent;
                     

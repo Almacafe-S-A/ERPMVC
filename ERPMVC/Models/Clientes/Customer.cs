@@ -83,9 +83,6 @@ namespace ERPMVC.Models
         public Int64? IdEstado { get; set; }
 
         public int? UnitOfMeasurePreference { get; set; }
-        [ForeignKey("UnitOfMeasurePreference")]
-
-        public UnitOfMeasure UnitOfMeasure { get; set; }
 
         public string Estado { get; set; }
 
@@ -196,7 +193,7 @@ namespace ERPMVC.Models
                 this.ContactPerson = dto.ContactPerson;
                 this.IdEstado = dto.IdEstado;
                 this.UnitOfMeasurePreference = dto.UnitOfMeasurePreference;
-                this.UnitOfMeasure = dto.UnitOfMeasure;
+                //this.UnitOfMeasure = dto.UnitOfMeasure;
                 this.Estado = dto.Estado;
                 this.GrupoEconomicoId = dto.GrupoEconomicoId;
                 this.GrupoEconomico = dto.GrupoEconomico;
