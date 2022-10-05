@@ -211,7 +211,7 @@ namespace ERPMVC.Controllers
 
                 _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                result = await _client.GetAsync(baseadress + "api/Boleto_Ent/GetBoleto_EntById/"+ _ControlPallets.WeightBallot);
+                result = await _client.GetAsync(baseadress + "api/Boleto_Ent/GetBoleto_EntByIdCustomerUOM/"+ _ControlPallets.WeightBallot);
                 valorrespuesta = "";
                 Boleto_Ent _Boleto_Ent = new Boleto_Ent();
                 if (result.IsSuccessStatusCode)
