@@ -99,6 +99,8 @@ namespace ERPMVC.Models
         [Display(Name = "Clave del usuario")]
         public string clave_u { get; set; }
 
+        public decimal PesoUnidadPreferida { get; set; }
+
         public virtual Boleto_Sal Boleto_Sal { get; set; }
     }
 }
