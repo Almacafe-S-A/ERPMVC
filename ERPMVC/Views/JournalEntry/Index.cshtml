@@ -1,5 +1,6 @@
 ﻿@using Kendo.Mvc.UI
 @using System.Security.Claims
+@model ERPMVC.Models.JournalEntry
 
 @{
     ViewData["Title"] = "Movimientos Financieros";
@@ -305,9 +306,44 @@
         var win = window.open(url, '_blank');
         win.focus();
     }
+
+     function GetPeriodo(){
+        var periodo = $("#PeriodoId").val();
+        return {
+            PeriodoId : periodo,
+        }
+    }
+
+
+    
 </script>
 
 <h3 class="text-themecolor">Asiento Contable</h3>
+<div class ="row">
+        <div class="col-md-4">
+            <div class="form-group">
+                <label  class="control-label" style="width:100%">Periodo</label>
+                <kendo-dropdownlist name="Id" filter="Kendo.Mvc.UI.FilterType.Contains"
+                                    id="PeriodoId"
+                                    option-label="Seleccione el periodo"
+                                    for="PeriodoId"
+                                    on-change=" RefrescarGrid"
+                                    datatextfield="Anio"
+                                    datavaluefield="Id"
+                                    auto-bind="true"
+                                    data-val-required="Seleccione el periodo para visualizar asiento"
+                                    style="width: 100%;">
+                    <datasource type="DataSourceTagHelperType.WebApi">
+                        <transport>
+                            <read url="@Url.Action("Get", "Periodo")" />
+                        </transport>
+                    </datasource>
+
+                </kendo-dropdownlist>
+                <span asp-validation-for="PeriodoId" class="text-danger"></span>
+            </div>
+    </div>
+</div>
 <div id="example">
     
     @(Html.Kendo().Grid<ERPMVC.Models.JournalEntry>
@@ -430,7 +466,7 @@
     .Filter(f => f.Add(m => m.TypeOfAdjustmentId).IsEqualTo(65))
     .Sort(s => s.Add(m => m.JournalEntryId).Descending())
     .Events(events => events.Error("error_handler"))
-    .Read(read => read.Action("GetJournalEntryAsientos", "JournalEntry"))
+    .Read(read => read.Action("GetJournalEntryAsientosByPeriodo", "JournalEntry").Data("GetPeriodo"))
     .Create(create => create.Action("Insert", "JournalEntry"))
     .Update(update => update.Action("Update", "JournalEntry", new { id = "{0}" }))
     //.Update(update => update.Action("Update", "JournalEntry", new { JournalEntryId = "{0}" }).Type(HttpVerbs.Put))
