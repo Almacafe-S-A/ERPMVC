@@ -36,10 +36,26 @@ namespace ERPMVC.Controllers
 
         // GET: Purch
         [Authorize(Policy = "Contabilidad.Movimientos.Asiento Contable")]
-        public ActionResult Index()
+        public async Task<ActionResult> Index()
         {
             ViewData["permisos"] = _principal;
-            return View();
+            JournalEntry journalEntry = new JournalEntry();
+            Periodo periodo = new Periodo();
+            string baseadress = config.Value.urlbase;
+            HttpClient _client = new HttpClient();
+            _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+            var result = await _client.GetAsync(baseadress + "api/Periodo/GetPeriodoActivo");
+            string valorrespuesta = "";
+            if (result.IsSuccessStatusCode)
+            {
+                valorrespuesta = await(result.Content.ReadAsStringAsync());
+                periodo = JsonConvert.DeserializeObject<Periodo>(valorrespuesta);
+                journalEntry.Periodo = periodo.Anio.ToString();
+                journalEntry.PeriodoId = periodo.Id;
+
+
+            }
+            return View(journalEntry);
         }
 
         [Authorize(Policy = "Contabilidad.Movimientos.Ajustes Contables")]
