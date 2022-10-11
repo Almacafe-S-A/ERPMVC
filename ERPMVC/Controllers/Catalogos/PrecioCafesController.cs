@@ -161,7 +161,7 @@ namespace ERPMVC.Controllers
 
 
         [HttpPost("[controller]/[action]")]
-        public async Task<ActionResult<CustomerDocument>> SaveImage(IEnumerable<IFormFile> files, PrecioCafe precioCafe)
+        public async Task<ActionResult<PrecioCafe>> SaveImage(IEnumerable<IFormFile> files, PrecioCafe precioCafe)
         {
             PrecioCafe precio = new PrecioCafe();
             IFormFile Image = files.FirstOrDefault();
@@ -189,11 +189,7 @@ namespace ERPMVC.Controllers
 
                 }
                 FileInfo info = new FileInfo(Image.FileName);
-                if (!(info.Extension.Equals(".pdf") || info.Extension.Equals(".jpeg")
-                    || info.Extension.Equals(".png") || info.Extension.Equals(".txt")))
-                {
-                    return BadRequest("Formato de Imagen No Válido");                   
-                }
+                
                 string filename = precioCafe.Id + "_PrecioCafe" + info.Extension;
                 var filePath = _hostingEnvironment.WebRootPath + "/PrecioCafeImg/" +filename;
 
@@ -373,6 +369,7 @@ namespace ERPMVC.Controllers
         async Task<PrecioCafeDTO> ObtenerCoinfiguracionCafe()
         {
             IEnumerable<ElementoConfiguracion> configuracion = null;
+            PrecioCafeDTO precio = new PrecioCafeDTO();
             try
             {
                 string baseadress = config.Value.urlbase;
@@ -385,25 +382,26 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     configuracion = JsonConvert.DeserializeObject<IEnumerable<ElementoConfiguracion>>(valorrespuesta);
+                    if (precio != null)
+                    {
+                        precio.PermisoExportacionUSD = configuracion.Where(q => q.Nombre == "Permiso de Exportacion").FirstOrDefault().Valordecimal;
+                        precio.UtilidadUSD = configuracion.Where(q => q.Nombre == "Utilidad").FirstOrDefault().Valordecimal;
+                        precio.FideicomisoUSD = configuracion.Where(q => q.Nombre == "Fideicomiso").FirstOrDefault().Valordecimal;
+                        precio.BeneficiadoUSD = configuracion.Where(q => q.Nombre == "Beneficiado").FirstOrDefault().Valordecimal;
+                        precio.PorcentajeIngreso = configuracion.Where(q => q.Nombre == "Porcentaje de Ingreso").FirstOrDefault().Valordecimal;
+                        precio.PorcentajeConsumoInterno = configuracion.Where(q => q.Nombre == "Porcentaje Consumo").FirstOrDefault().Valordecimal;
+
+
+                    }
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
-                throw ex;
+                _logger.LogError($"Ocurrio un error: No existe configuracion parametrizada en el grupo 141");
+                
             }
-            PrecioCafeDTO precio = new PrecioCafeDTO();
-            if (precio!=null)
-            {
-                precio.PermisoExportacionUSD = configuracion.Where(q => q.Id == 189).FirstOrDefault().Valordecimal;
-                precio.UtilidadUSD = configuracion.Where(q => q.Id == 188).FirstOrDefault().Valordecimal;
-                precio.FideicomisoUSD = configuracion.Where(q => q.Id == 187).FirstOrDefault().Valordecimal;
-                precio.BeneficiadoUSD = configuracion.Where(q => q.Id == 186).FirstOrDefault().Valordecimal;
-                precio.PorcentajeIngreso = configuracion.Where(q => q.Id == 185).FirstOrDefault().Valordecimal;
-                precio.PorcentajeConsumoInterno =configuracion.Where(q => q.Id == 190).FirstOrDefault().Valordecimal;
-
-
-            }
+            
+            
             return precio;
 
         }
