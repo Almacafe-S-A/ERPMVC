@@ -17,5 +17,9 @@ namespace ERPMVC.DTO
         public int Periodo { get; set; }
 
         public int Mes { get; set; }
+
+        public string Mensaje { get; set; }
+
+        public bool bloquearapertura { get; set; }
     }
 }
