@@ -61,11 +61,31 @@ namespace ERPMVC.Controllers
                     _Periodo = JsonConvert.DeserializeObject<PeriodoDTO>(valorrespuesta);
 
                 }
-
-                if (_Periodo == null)
+                if(_Periodo == null)
                 {
-                    _Periodo = new PeriodoDTO();
+                    var result2 = await _client.GetAsync(baseadress + "api/Periodo/GetPeriodoActivo");
+
+                    if (result2.IsSuccessStatusCode)
+                    {
+                        valorrespuesta = await (result2.Content.ReadAsStringAsync());
+                        _Periodo = JsonConvert.DeserializeObject<PeriodoDTO>(valorrespuesta);
+
+                    }
+                    if (_Periodo == null)
+                    {
+                        _Periodo = new PeriodoDTO();
+                        _Periodo.IdEstado = 105;
+                    }
+                    else
+                    {
+                        _Periodo.Mensaje = "No se puede aperturar un periodo mientras se encuentre un periodo abierto, debe cerrar todos los periodos abiertos previamente";
+                        _Periodo.bloquearapertura = true;
+                    }
                 }
+
+               
+
+               
             }
             catch (Exception ex)
             {
@@ -248,6 +268,69 @@ namespace ERPMVC.Controllers
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _Periodo = JsonConvert.DeserializeObject<Periodo>(valorrespuesta);
+                }
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                return BadRequest($"Ocurrio un error{ex.Message}");
+            }
+
+            return Ok(_Periodo);
+        }
+
+
+        [HttpPost]
+        public async Task<ActionResult<Periodo>> BloquearDesbloquear([FromBody] Periodo periodo)
+        {
+            Periodo _Periodo = new Periodo(); 
+            try
+            {
+                string baseadress = _config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+               
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/Periodo/GetPeriodoById/" + periodo.Id);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _Periodo = JsonConvert.DeserializeObject<PeriodoDTO>(valorrespuesta);
+                    _Periodo.IdEstado = periodo.IdEstado;
+                    switch (periodo.IdEstado)
+                    {
+                        case 105:
+                            _Periodo.Estado =  "Abierto";
+                            break;
+                        case 106:
+                            _Periodo.Estado = "Cerrado";
+                            break;
+                        case 107:
+                            _Periodo.Estado = "Temporalmente Abierto";
+                            break;
+                        case 108:
+                            _Periodo.Estado = "Bloqueado";
+                            break;
+                        default:
+                            _Periodo.Estado = "Error";
+                            break;
+                    }
+
+                    
+
+                }
+                else
+                {
+                    return BadRequest($"Ocurrio un error");
+                }
+
+                var resultupdate = await _client.PutAsJsonAsync(baseadress + "api/Periodo/Update", _Periodo);
+                string respuestaupdate = "";
+                if (resultupdate.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (resultupdate.Content.ReadAsStringAsync());
                     _Periodo = JsonConvert.DeserializeObject<Periodo>(valorrespuesta);
                 }
 
