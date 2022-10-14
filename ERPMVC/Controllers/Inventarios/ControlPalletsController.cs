@@ -220,7 +220,7 @@ namespace ERPMVC.Controllers
                     _Boleto_Ent = JsonConvert.DeserializeObject<Boleto_Ent>(valorrespuesta);
                 }
 
-                if (_Boleto_Ent != null )
+                if (_Boleto_Ent != null)
                 {
                     if (_Boleto_Ent.Boleto_Sal == null)
                     {
@@ -228,28 +228,38 @@ namespace ERPMVC.Controllers
                     }
                     if (_Boleto_Ent.peso_e > _Boleto_Ent.Boleto_Sal.peso_n)
                     {
-                        _ControlPallets.taracamion = Convert.ToDouble((_Boleto_Ent.peso_e - _Boleto_Ent.Boleto_Sal.peso_n) / Convert.ToDouble(100));
+                        _ControlPallets.taracamion = Convert.ToDouble((_Boleto_Ent.peso_e - _Boleto_Ent.Boleto_Sal.peso_n) );
                     }
                     else if (_Boleto_Ent.peso_e < _Boleto_Ent.Boleto_Sal.peso_n)
                     {
-                        _ControlPallets.taracamion = Convert.ToDouble((_Boleto_Ent.PesoUnidadPreferida)) / Convert.ToDouble(100);
+                        _ControlPallets.taracamion = Convert.ToDouble((_Boleto_Ent.peso_e)) ;
                     }
 
-                    _ControlPallets.pesobruto = Math.Round(Convert.ToDouble(_Boleto_Ent.PesoUnidadPreferida) / Convert.ToDouble(100),2, MidpointRounding.AwayFromZero);
-                    _ControlPallets.pesoneto = Math.Round(Convert.ToDouble(_ControlPallets.pesobruto) - Convert.ToDouble(_ControlPallets.taracamion),2, MidpointRounding.AwayFromZero);
+                    //_ControlPallets.pesobruto = Math.Round(Convert.ToDouble(_Boleto_Ent.peso_e) / Convert.ToDouble(100), 2, MidpointRounding.AwayFromZero);
+                    _ControlPallets.pesobruto = Math.Round(Convert.ToDouble(_Boleto_Ent.peso_e) , 2, MidpointRounding.AwayFromZero);
+                    _ControlPallets.pesoneto = Math.Round(Convert.ToDouble(_ControlPallets.pesobruto) - Convert.ToDouble(_ControlPallets.taracamion), 2, MidpointRounding.AwayFromZero);
                     _ControlPallets._Boleto_Ent = _Boleto_Ent;
-                    
-                    double yute = Math.Round((double)_ControlPallets.TotalSacosYute * 1 / 100, 2, MidpointRounding.AwayFromZero);
-                    double polietileno = Math.Round(Convert.ToDouble((_ControlPallets.TotalSacosPolietileno * 0.5)) / Convert.ToDouble(100), 2, MidpointRounding.AwayFromZero);
+
+                    double yute = Math.Round((double)_ControlPallets.TotalSacosYute * 1 , 2, MidpointRounding.AwayFromZero);
+                    double polietileno = Math.Round(Convert.ToDouble((_ControlPallets.TotalSacosPolietileno * 0.5)) , 2, MidpointRounding.AwayFromZero);
                     double tarasaco = Math.Round(Math.Round(yute, 2) + Math.Round(polietileno, 2), 2, MidpointRounding.AwayFromZero);
                     _ControlPallets.Tara = tarasaco;
                     _ControlPallets.pesoneto2 = Convert.ToDouble(_ControlPallets.pesoneto) - Convert.ToDouble(tarasaco);
+
+                    _ControlPallets.Tara  = Convert.ToDouble( _Boleto_Ent.Convercion(_ControlPallets.Tara, _Boleto_Ent.UnidadPreferidaId));
+                    _ControlPallets.pesoneto2 = Convert.ToDouble(_Boleto_Ent.Convercion(_ControlPallets.pesoneto2, _Boleto_Ent.UnidadPreferidaId));
+                    _ControlPallets.pesobruto = Convert.ToDouble(_Boleto_Ent.Convercion(_ControlPallets.pesobruto, _Boleto_Ent.UnidadPreferidaId));
+                    _ControlPallets.pesoneto = Convert.ToDouble(_Boleto_Ent.Convercion(_ControlPallets.pesoneto, _Boleto_Ent.UnidadPreferidaId));
+                    _ControlPallets.taracamion = Convert.ToDouble(_Boleto_Ent.Convercion(_ControlPallets.taracamion, _Boleto_Ent.UnidadPreferidaId));
+                    _ControlPallets.UnitOfMeasureId = _Boleto_Ent.UnidadPreferidaId;
                 }
                 else
                 {
                     return Json(_ControlPallets);
                     // return await Task.Run(() => BadRequest("No se encontro la boleta de peso, cierre el proceso"));
                 }
+
+
 
             }
             catch (Exception ex)
