@@ -67,21 +67,7 @@
 
 <script>
 
-                                                function ConvertirUOM(valor,uom) {
-                                                    let valorconversion = 0;
-                                                    let valorlibrasinglesas = (valor * 460) / 453.59;
-                                                    switch (uom) {
-                                                        case "Libras Inglesas": /// Libras Inglesas
-                                                            valorconversion = valorlibrasinglesas;
-                                                        case "Tonelada Metrica":///Tonelada Metrica
-                                                            valorconversion = valorlibrasinglesas / 2204.62;
-                                                        case "Kilos":///Kilos
-                                                            valorconversion = valorlibrasinglesas / 2.20462;
-                                                        default:
-                                                            valorconversion = valor;
-                                                    }
-                                                    return valorconversion;
-                                                }
+                                                
                                                         function valueMapper(options) {
                                                             $.ajax({
                                                                 url: "@Url.Action("Orders_ValueMapper", "ControlPallets")",
@@ -116,7 +102,7 @@
                                                                     async: false,
                                                                     data: dataObject,
                                                                     success: function (data) {
-                                                                        //debugger;
+                                                                        debugger;
                                                                         $("#CustomerId").data("kendoDropDownList").value(data.CustomerId);
                                                                         $("#CustomerId").data("kendoDropDownList").trigger('change');
                                                                         $("#BranchId").data("kendoDropDownList").value(data.BranchId);
@@ -135,12 +121,12 @@
                                                                         var datasource = grid.dataSource;
                                                                         if (data._Boleto_Ent != null) {
                                                                             $("#Comments").val(data._Boleto_Ent.observa_e);
-                                                                            $("#TaraCamion").data("kendoNumericTextBox").value(ConvertirUOM(data.taracamion, data.UnitOfMeasureName));
-                                                                            $("#TaraUnidadMedida").data("kendoNumericTextBox").value(ConvertirUOM(data.Tara, data.UnitOfMeasureName));
-                                                                            $("#PesoBruto").data("kendoNumericTextBox").value(ConvertirUOM(data.pesobruto, data.UnitOfMeasureName));
-                                                                            $("#PesoNeto").data("kendoNumericTextBox").value(ConvertirUOM(data.pesoneto, data.UnitOfMeasureName));
-                                                                            $("#PesoNeto2").data("kendoNumericTextBox").value(ConvertirUOM(data.pesoneto2, data.UnitOfMeasureName));
-                                                                            $("#WeightBallot").data("kendoNumericTextBox").value(ConvertirUOM(data.WeightBallot, data.UnitOfMeasureName));
+                                                                            $("#TaraCamion").data("kendoNumericTextBox").value(data.taracamion);
+                                                                            $("#TaraUnidadMedida").data("kendoNumericTextBox").value(data.Tara);
+                                                                            $("#PesoBruto").data("kendoNumericTextBox").value(data.pesobruto);
+                                                                            $("#PesoNeto").data("kendoNumericTextBox").value(data.pesoneto);
+                                                                            $("#PesoNeto2").data("kendoNumericTextBox").value(data.pesoneto2);
+                                                                            $("#WeightBallot").data("kendoNumericTextBox").value(data.WeightBallot);
 
 
                                                                             var raw = datasource._data;
@@ -151,7 +137,7 @@
                                                                             console.log(data);
                                                                             datasource.insert({
                                                                                 GoodsReceiveLinedId: 1, GoodsReceivedId: 0
-                                                                                , UnitOfMeasureName: data.UnitOfMeasureName
+                                                                                , UnitOfMeasureName: $("#CustomerUnitOfMeasureId").data("kendoDropDownList").text()
                                                                                 , UnitOfMeasureId: data.UnitOfMeasureId
                                                                                 , SubProductId: data.SubProductId
                                                                                 , SubProductName: data.SubProductName
@@ -168,8 +154,8 @@
                                                                             let lineas = data._ControlPalletsLine.map((item) => {
                                                                                 return {
                                                                                     GoodsReceiveLinedId: 1, GoodsReceivedId: 0
-                                                                                    , UnitOfMeasureName: item.UnitofMeasureName
-                                                                                    , UnitOfMeasureId: item.UnitofMeasureId
+                                                                                    , UnitOfMeasureName: $("#CustomerUnitOfMeasureId").data("kendoDropDownList").text()
+                                                                                    , UnitOfMeasureId: data.UnitOfMeasureId
                                                                                     , SubProductId: item.SubProductId
                                                                                     , SubProductName: item.SubProductName
                                                                                     , Quantity: item.Qty
@@ -712,22 +698,48 @@
                                                             }
 
                                                         </script>
-                                                        <label asp-for="PesoBruto" class="control-label">Unidad de Medida</label>
-                                                        <kendo-dropdownlist name="CustomerUnitOfMeasureId" for="CustomerUnitOfMeasureId"
-                                                                            filter="Kendo.Mvc.UI.FilterType.Contains"
-                                                                            option-label="No Pesado"
-                                                                            required
-                                                                            enable=false
-                                                                            auto-bind="true"
-                                                                            datatextfield="UnitOfMeasureName"
-                                                                            datavaluefield="UnitOfMeasureId"
-                                                                            style="width: 100%;">
-                                                            <datasource type="DataSourceTagHelperType.WebApi" page-size="30000">
-                                                                <transport>
-                                                                    <read url="@Url.Action("GetUnitOfMeasureJsonActivos", "UnitOfMeasure")" data="GetUnitOfMeasureId" />
-                                                                </transport>
-                                                            </datasource>
-                                                        </kendo-dropdownlist>
+                                                        <label class="control-label" style="min-width:100%">Unidad de Medida</label>
+                                                        
+                                                             @(Html.Kendo().DropDownList().Name("CustomerUnitOfMeasureId").OptionLabel("Unidad de Medida")
+                                                                .DataValueField("Id")
+                                                                .DataTextField("UOM")
+                                                                .Enable(false)
+                                                                .BindTo(new List<Object>() {
+                                                                  new  {
+                                                                      UOM = "LBE",
+                                                                      Id = 1
+                                                                  },
+                                                                  new  {
+                                                                      UOM = "KG E",
+                                                                      Id = 2
+                                                                  },
+                                                                  new  {
+                                                                      UOM = "QQ E",
+                                                                      Id = 3
+                                                                  },
+                                                                  new  {
+                                                                      UOM = "TM E",
+                                                                      Id = 4
+                                                                  },
+                                                                  new  {
+                                                                      UOM = "LBS I",
+                                                                      Id = 5
+                                                                  },
+                                                                  new  {
+                                                                      UOM = "KG I",
+                                                                      Id = 6
+                                                                  }
+                                                                  ,
+                                                                  new  {
+                                                                      UOM = "QQ I",
+                                                                      Id = 7
+                                                                  },
+                                                                  new  {
+                                                                      UOM = "TM I",
+                                                                      Id = 8
+                                                                  }
+                                                              }).Value(Model.CustomerUnitOfMeasureId.ToString()))
+                                                        
                                             </div>
                                             <div class="col-md-4">
                                                  <label asp-for="PesoBruto" class="control-label"></label>

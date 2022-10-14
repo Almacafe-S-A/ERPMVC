@@ -99,7 +99,67 @@ namespace ERPMVC.Models
         [Display(Name = "Clave del usuario")]
         public string clave_u { get; set; }
 
-        public decimal PesoUnidadPreferida { get; set; }
+        [NotMapped]
+        public decimal PesoUnidadPreferidaEntrada { get; set; }
+        [NotMapped]
+        public decimal PesoUnidadPreferidaSalida { get; set; }
+        [NotMapped]
+        public decimal PesoUnidadPreferidaNeto { get; set; }
+        [NotMapped]
+        public string UnidadPreferida { get; set; }
+        [NotMapped]
+        public int UnidadPreferidaId { get; set; }
+
+         public decimal Convercion(double pesoLBE, int UOM)
+        {
+
+            double pesonetoLBI = (pesoLBE * 460) / 453.59;
+            double qq = pesoLBE / 100;
+            double tm = pesoLBE / 2204.62;
+            
+            double kg = pesoLBE / 2.20462;
+
+            double qqi = pesonetoLBI / 100;
+            double tmi = pesonetoLBI / 2204.62;
+            double kgi = pesonetoLBI / 2.20462;
+
+
+
+            switch (UOM)
+            {
+                case 1:
+                    return Decimal.Round(Convert.ToDecimal(pesoLBE), 3);
+                    
+                case 2:
+                    return Decimal.Round(Convert.ToDecimal(kg), 3);
+                    
+                case 3:
+                    return Decimal.Round(Convert.ToDecimal(qq), 3);
+                   
+                case 4:
+                    return Decimal.Round(Convert.ToDecimal(tm), 3);
+                    
+                case 5:
+                    return Decimal.Round(Convert.ToDecimal(pesonetoLBI), 3);
+                    
+                case 6:
+
+                    return Decimal.Round(Convert.ToDecimal(kgi), 3);
+                    
+                case 7:
+                    return Decimal.Round(Convert.ToDecimal(qqi), 3);
+                    
+                case 8:
+                    return Decimal.Round(Convert.ToDecimal(tmi), 3);
+                    
+            }
+
+            return Decimal.Round(Convert.ToDecimal(pesoLBE),3);
+
+            
+
+
+        }
 
         public virtual Boleto_Sal Boleto_Sal { get; set; }
     }
