@@ -115,7 +115,7 @@ namespace ERPMVC.Controllers
 
 
         [HttpGet]
-        public async Task<DataSourceResult> GetPreuspuestosByPeriodo([DataSourceRequest] DataSourceRequest request, int PeriodoId)
+        public async Task<DataSourceResult> GetPreuspuestosByPeriodo([DataSourceRequest] DataSourceRequest request, int PeriodoId, int CentroCosto)
         {
             List<Presupuesto> _Presupuesto = new List<Presupuesto>();
             try
@@ -124,7 +124,7 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + $"api/Presupuesto/GetPreuspuestosByPeriodo/{PeriodoId}");
+                var result = await _client.GetAsync(baseadress + $"api/Presupuesto/GetPreuspuestosByPeriodo/{PeriodoId}/{CentroCosto}");
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
