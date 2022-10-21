@@ -30,9 +30,9 @@
         };
         $('#loading').show();
         $("#Cierre").prop('value', 'Ejecutando ...');
-        
 
-        $.ajax({
+        try{
+            $.ajax({
                 url: '@Url.Action("EjecutarProceso", "CierreContable")',
                 method: 'POST',
                 datatype: "json",
@@ -57,9 +57,13 @@
                 },
                 error: function (XMLHttpRequest, textStatus, errorThrown) {
                     console.log(textStatus + ": " + XMLHttpRequest.responseText);
+                    var mensaje = XMLHttpRequest.responseText;
+                    if(mensaje.length>150){
+                        mesaje = 'Se esta ejecutando el proceso de cierre puede utilizar las demas funciones mientras continua su ejecucion.';
+                    }
                     $.toast({
                         heading: 'Error',
-                        text: '' + XMLHttpRequest.responseText,
+                        text: '' + mensaje,
                         position: 'top-right',
                         loaderBg: '#ff6849',
                         icon: 'error',
@@ -71,6 +75,24 @@
 
                 }
             });
+
+        }catch(e){
+             $.toast({
+                        heading: 'Error',
+                        text: 'Se esta ejecutando el proceso de cierre puede utilizar las demas funciones mientras continua su ejecucion.',
+                        position: 'top-right',
+                        loaderBg: '#ff6849',
+                        icon: 'error',
+                        hideAfter: 30000,
+                        stack: 6
+                    });
+        
+        
+        }
+        
+
+        
+             RefrescarGridCierreContable(e);
            // RefrescarGridCierreProcesos();
     }
         $(function () {
@@ -209,7 +231,7 @@
                                                                         .Editable(e => e.Mode(GridEditMode.PopUp))
                                                                         .Sortable()
                                                                         .AutoBind(true)
-                                                                        .Pageable()
+                                                                        //.Pageable(s =>s.PageSizes(false))
                                                                         .Filterable()
                                                                         .Scrollable()
                                                                         .ClientDetailTemplateId("template")

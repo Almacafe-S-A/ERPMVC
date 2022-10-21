@@ -124,6 +124,8 @@ namespace ERPMVC.Controllers
                                           TaraCamion = c.TaraCamion,
                                           PesoNeto = c.PesoNeto,
                                           CustomerUnitOfMeasure = c.CustomerUnitOfMeasure,
+                                          PesoNeto2= c.PesoNeto2,
+
                                           //QQPesoNeto = c.QQPesoNeto,
                                           //TotalSacos = c.TotalSacos,
                                           //UnitOfMeasureName = c.UnitOfMeasureName,
