@@ -14,6 +14,10 @@ namespace ERPMVC.Models
         public Int64 SubproductId { get; set; }
         [Display(Name = "SubServicio")]
         public string ProductName { get; set; }
+
+        public string SubProductName { get; set; }
+
+
         [Display(Name = "Tipo de Subservicio/Producto")]
         public Int64 ProductTypeId { get; set; }
 
