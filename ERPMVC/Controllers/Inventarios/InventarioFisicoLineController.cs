@@ -37,13 +37,14 @@ namespace ERPMVC.Controllers
         public async Task<DataSourceResult> GetInventarioFisicoLines([DataSourceRequest] DataSourceRequest request
             , [FromQuery(Name = "Id")] int InventarioId
             , [FromQuery(Name = "BranchId")] int branchid
-            , [FromQuery(Name = "CustomerId")] int CustomerId)
+            , [FromQuery(Name = "CustomerId")] int CustomerId
+            , [FromQuery(Name = "ProductId")] int ProductId)
         {
             try
             {
                 if (InventarioId == 0)
                 {
-                    return await  GetSaldoLibros(request,branchid, CustomerId);
+                    return await  GetSaldoLibros(request,branchid, CustomerId, ProductId);
                 }
                 else
                 {
@@ -103,7 +104,8 @@ namespace ERPMVC.Controllers
 
         public async Task<DataSourceResult> GetSaldoLibros([DataSourceRequest] DataSourceRequest request
             ,  int branchid
-            ,  int CustomerId)
+            ,  int CustomerId
+            , int ProductId)
         {
             List<InventarioFisicoLine> InventarioFisicoLines = new List<InventarioFisicoLine>();
             try
@@ -112,7 +114,7 @@ namespace ERPMVC.Controllers
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
                 string requestURl;
-                requestURl = $"api/InventarioFisico/GetSaldoLibros/{branchid}/{CustomerId}";
+                requestURl = $"api/InventarioFisico/GetSaldoLibros/{branchid}/{CustomerId}/{ProductId}";
                 var result = await _client.GetAsync(baseadress + requestURl);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)

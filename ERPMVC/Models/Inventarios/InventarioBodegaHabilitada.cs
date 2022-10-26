@@ -26,7 +26,7 @@ namespace ERPMVC.Models
 
         public Int64 ProductoId { get; set; }
         [ForeignKey("ProductoId")]
-        [UIHint("Producto")]
+        [UIHint("ProductoCliente")]
         public SubProduct Product { get; set; }
 
         public string Descripcion { get; set; }
