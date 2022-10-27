@@ -41,7 +41,7 @@ namespace ERPMVC.Models
 
         public decimal? FactorSacos { get; set; }
 
-        public int? NSacos { get; set; }
+        public decimal? NSacos { get; set; }
 
         public decimal SaldoLibros { get; set; }
 
