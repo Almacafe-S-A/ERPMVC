@@ -99,6 +99,13 @@ namespace ERPMVC.Controllers
 
         }
 
+        [HttpGet("[controller]/[action]")]
+        public ActionResult SFAreasOcupadas()
+        {
+            return View();
+
+        }
+
 
         [HttpGet]
         public async Task<DataSourceResult> Get([DataSourceRequest]DataSourceRequest request)
