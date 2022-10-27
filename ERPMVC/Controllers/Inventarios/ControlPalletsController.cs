@@ -242,7 +242,7 @@ namespace ERPMVC.Controllers
 
                     double yute = Math.Round((double)_ControlPallets.TotalSacosYute * 1 , 2, MidpointRounding.AwayFromZero);
                     double polietileno = Math.Round(Convert.ToDouble((_ControlPallets.TotalSacosPolietileno * 0.5)) , 2, MidpointRounding.AwayFromZero);
-                    double tarasaco = Math.Round(Math.Round(yute, 2) + Math.Round(polietileno, 2), 2, MidpointRounding.AwayFromZero);
+                    double tarasaco = (Math.Round(Math.Round(yute, 2) + Math.Round(polietileno, 2), 2, MidpointRounding.AwayFromZero))/100;
                     _ControlPallets.Tara = tarasaco;
                     _ControlPallets.pesoneto2 = Convert.ToDouble(_ControlPallets.pesoneto) - Convert.ToDouble(tarasaco);
 
@@ -256,7 +256,6 @@ namespace ERPMVC.Controllers
                 else
                 {
                     return Json(_ControlPallets);
-                    // return await Task.Run(() => BadRequest("No se encontro la boleta de peso, cierre el proceso"));
                 }
 
 
