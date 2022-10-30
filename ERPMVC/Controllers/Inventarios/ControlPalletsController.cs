@@ -242,7 +242,7 @@ namespace ERPMVC.Controllers
 
                     double yute = Math.Round((double)_ControlPallets.TotalSacosYute * 1 , 2, MidpointRounding.AwayFromZero);
                     double polietileno = Math.Round(Convert.ToDouble((_ControlPallets.TotalSacosPolietileno * 0.5)) , 2, MidpointRounding.AwayFromZero);
-                    double tarasaco = (Math.Round(Math.Round(yute, 2) + Math.Round(polietileno, 2), 2, MidpointRounding.AwayFromZero))/100;
+                    double tarasaco = (Math.Round(Math.Round(yute, 2) + Math.Round(polietileno, 2), 2, MidpointRounding.AwayFromZero));
                     _ControlPallets.Tara = tarasaco;
                     _ControlPallets.pesoneto2 = Convert.ToDouble(_ControlPallets.pesoneto) - Convert.ToDouble(tarasaco);
 
