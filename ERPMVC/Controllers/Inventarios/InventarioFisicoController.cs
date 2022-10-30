@@ -213,6 +213,43 @@ namespace ERPMVC.Controllers
 
 
         [HttpPost("[controller]/[action]")]
+        public async Task<ActionResult<InventarioFisico>> Revisar([FromBody] InventarioFisico _InventarioFisico)
+        {
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+
+                var result = await _client.PostAsJsonAsync(baseadress + "api/InventarioFisico/Revisar", _InventarioFisico);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _InventarioFisico = JsonConvert.DeserializeObject<InventarioFisico>(valorrespuesta);
+                    return Ok(_InventarioFisico);
+                }
+                else
+                {
+                    return BadRequest();
+                }
+
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+
+
+            return BadRequest();
+
+        }
+
+
+        [HttpPost("[controller]/[action]")]
         public async Task<ActionResult> Cerrar([FromBody] InventarioFisico _InventarioFisico)
         {
             try
@@ -248,7 +285,7 @@ namespace ERPMVC.Controllers
         public ActionResult SFInventario(Int32 id)
         {
 
-            InventarioFisico inventario = new InventarioFisico { Id = id, }; //token = HttpContext.Session.GetString("token") };
+            InventarioFisico inventario = new InventarioFisico { Id = id, }; 
 
             return View(inventario);
         }
@@ -257,16 +294,25 @@ namespace ERPMVC.Controllers
         public ActionResult SFInventarioBH(Int32 id)
         {
 
-            InventarioFisico inventario = new InventarioFisico { Id = id, }; //token = HttpContext.Session.GetString("token") };
+            InventarioFisico inventario = new InventarioFisico { Id = id, }; 
 
             return View(inventario);
         }
 
+        public ActionResult SFImprimirPosicionBH(Int32 id)
+        {
+
+            InventarioFisico inventario = new InventarioFisico { Id = id, }; 
+
+            return View(inventario);
+        }
+        
 
 
 
 
-        [HttpGet("[controller]/[action]")]
+
+     [HttpGet("[controller]/[action]")]
         public async Task<DataSourceResult> GetInventarioFisicoCustomerService([DataSourceRequest] DataSourceRequest request, [FromQuery(Name = "clienteid")] int clienteid, [FromQuery(Name = "servicioid")] int servicioid, [FromQuery(Name = "pendienteliquidacion")] int pendienteliquidacion)
         {
             List<InventarioFisico> InventarioFisico = new List<InventarioFisico>();

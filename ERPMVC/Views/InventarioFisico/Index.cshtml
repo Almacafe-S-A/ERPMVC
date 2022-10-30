@@ -117,7 +117,7 @@
             IdCD: dataItem.IdCD
         }
 
-        if (confirm("Esta seguro que desea anular el certificado de deposito?")) {
+        if (confirm("Esta seguro que desea anular el Inventario de deposito?")) {
             $.ajax({
                 url: '@Url.Action("AnularCD", "InventarioFisico")',
                 method: 'POST',
@@ -156,7 +156,7 @@
         if (dataItem.IdEstado != 6) {
             notification.show({
                 title: "Validación",
-                message: "El Certificado no ha sido aprobado"
+                message: "El Inventario no ha sido aprobado"
             }, "error");
         }
 
@@ -168,14 +168,30 @@
 
     function dataBound(e) {
         $.each(this.dataSource.data(), function () {
-            if (Number(this.EstadoName) != 'Cerrado') {
+            if (this.EstadoName != 'Revisado') {
                 $('[data-uid=' + this.uid + ']').find('.k-grid-Aprobar').hide();
             }
-            //if (Number(this.IdEstado) != 6) {
-            //    $('[data-uid=' + this.uid + ']').find('.k-grid-Imprimir').hide();
-            //}
+            if (this.EstadoName != 'Cerrado') {
+                $('[data-uid=' + this.uid + ']').find('.k-grid-Revisar').hide();
+            }
+            if (this.EstadoName != 'Abierto') {
+                $('[data-uid=' + this.uid + ']').find('.k-grid-Cerrar').hide();
+            }
+            if (this.EstadoName != 'Abierto') {
+                $('[data-uid=' + this.uid + ']').find('.k-grid-Cerrar').hide();
+            }
+
+            if (this.ProductId ==3) {
+                            $('[data-uid=' + this.uid + ']').find('.k-grid-ImprimirAG').hide();
+                        }else  {
+                            $('[data-uid=' + this.uid + ']').find('.k-grid-ImprimirBH').hide();
+                            $('[data-uid=' + this.uid + ']').find('.k-grid-ImprimirPosicionBH').hide();
+                        } 
         })
     }
+
+
+
     function ImprimirAlmacenGeneral(e, id) {
        // debugger;
         var dataItem;
@@ -204,77 +220,28 @@
         var url = '@Url.Action("SFInventarioBH", "InventarioFisico")/' + dataItem.Id;
            var win = window.open(url, '_blank');
            win.focus();
+    }  
+
+    function ImprimirPosicionBH(e, id) {
+       // debugger;
+        var dataItem;
+        if (e != null) {
+            e.preventDefault();
+            dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        }
+        else {
+            dataItem = { Id: $("#Id").val() };
+        }
+        var url = '@Url.Action("SFImprimirPosicionBH", "InventarioFisico")/' + dataItem.Id;
+           var win = window.open(url, '_blank');
+           win.focus();
     }
 
 
 
     function Aprobar(e) {
-        var notification = $("#notification").data("kendoNotification");
-        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
-        if (dataItem.IdEstado != 5) {
-                    notification.show({
-                    title: "Validación",
-                    message: "El Certificado ya ha sido aprobado"
-                }, "error");
-            }
-        if (!confirm('Esta seguro de aprobar este Certificado?')) {
-            return;
-
-        }
-
-        var dataObject = {
-                IdCD: dataItem.IdCD,
-            };
-
-            $.ajax({
-                url: '@Url.Action("Aprobar", "InventarioFisico")',
-                method: 'POST',
-                datatype: "json",
-                contentType: 'application/json',
-                async: false,
-                data: JSON.stringify(dataObject),
-                success: function (result) {
-                    $.toast({
-                        heading: 'Satisfactorio',
-                        text: 'El Certificado se ha aprobado correctamente.',
-                        position: 'top-right',
-                        loaderBg: '#ff6849',
-                        icon: 'success',
-                        hideAfter: 7000,
-                        stack: 6
-                    });
-                    RefreshInventarioFisico();
-                },
-                error: function (XMLHttpRequest, textStatus, errorThrown) {
-                    notification.show({
-                        title: "Validación",
-                        message: textStatus + ": " + XMLHttpRequest.responseText
-                    }, "error");
-                    alert(textStatus + ": " + XMLHttpRequest.responseText);
-                }
-            });
-            }
-
-            function dataBound(e) {
-                debugger;
-                    $.each(this.dataSource.data(), function () {
-                        if (this.FechaCompletado != null ) {
-                            $('[data-uid=' + this.uid + ']').find('.k-grid-Cerrar').hide();
-                        }
-                        if ((this.EstadoName != 'Cerrado'||this.EstadoName == 'Aprobado') || this.Control||this.Servicio !='Bodega Habilitada') {
-                            $('[data-uid=' + this.uid + ']').find('.k-grid-Aprobar').hide();
-                        }
-                        if (this.ProductId ==3) {
-                            $('[data-uid=' + this.uid + ']').find('.k-grid-ImprimirAG').hide();
-                        }else  {
-                            $('[data-uid=' + this.uid + ']').find('.k-grid-ImprimirBH').hide();
-                        } 
-                    })
-                }
-
-                function Aprobar(e) {
                     debugger;
-                    if (!confirm('Esta seguro de aprobar este Inventario?')) return;     
+                    if (!confirm('Esta seguro de Aprobar este Inventario?')) return;     
                     var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
                     var dataObject = {
                             Id: dataItem.Id
@@ -309,6 +276,42 @@
                         });
     }
 
+    function Revisar(e) {
+                    debugger;
+                    if (!confirm('Esta seguro de marcar como revisado este Inventario?')) return;     
+                    var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+                    var dataObject = {
+                            Id: dataItem.Id
+                        };
+
+                    $.ajax({
+                            url: '@Url.Action("Revisar","InventarioFisico")',
+                            method: 'POST',
+                            datatype: "json",
+                            contentType: 'application/json',
+                            async: false,
+                            data: JSON.stringify(dataObject),
+                            success: function (result) {
+                                $.toast({
+                                    heading: 'Satisfactorio',
+                                    text: 'El Inventario se ha revisado correctamente.',
+                                    position: 'top-right',
+                                    loaderBg: '#ff6849',
+                                    icon: 'success',
+                                    hideAfter: 7000,
+                                    stack: 6
+                                });
+                                RefreshInventarioFisico();
+                            },
+                            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                                notification.show({
+                                    title: "Validación",
+                                    message: textStatus + ": " + XMLHttpRequest.responseText
+                                }, "error");
+                                alert(textStatus + ": " + XMLHttpRequest.responseText);
+                            }
+                        });
+    }
                  function Cerrar(e) {
                     debugger;
                     if (!confirm('Esta seguro de aprobar este Inventario?')) return;     
@@ -360,13 +363,19 @@
                                           {
                                               columns.Command(command =>
                                               {
-                                                   command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditInventarioFisico");
-                                                   command.Custom("Aprobar").Text(" ").IconClass("fa fa-thumbs-up").Click("Aprobar");
+                                                   command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditInventarioFisico");                                                   
                                                    command.Custom("ImprimirAG").Text(" ").IconClass("fa fa-print").Click("ImprimirAlmacenGeneral");
                                                    command.Custom("ImprimirBH").Text(" ").IconClass("fa fa-print").Click("ImprimirBH");
+                                                   command.Custom("ImprimirPosicionBH").Text(" ").IconClass("fa fa-print").Click("ImprimirPosicionBH");
+                                                   if(User.HasClaim("Inventarios.InventarioFisico.Revisar","true")){
+                                                        command.Custom("Revisar").Text(" ").IconClass("fa fa-check").Click("Revisar");
+                                                   }
+                                                   if(User.HasClaim("Inventarios.InventarioFisico.Aprobar","true")){                                                        
+                                                        command.Custom("Aprobar").Text(" ").IconClass("fa fa-thumbs-up").Click("Aprobar");
+                                                   }
                                                    command.Custom("Cerrar").Text(" ").IconClass("fa fa-lock").Click("Cerrar");
                                                  
-                                              }).Width(150).Title("Acciones");
+                                              }).Width(200).Title("Acciones");
                                           }
                                           columns.Bound(p => p.Id).Title("No.").Width(80 );
                                           columns.Bound(p => p.Fecha).Title("Fecha").Width(130).Format("{0:dd/MM/yyyy}");
@@ -425,7 +434,7 @@
                                         .Sortable()
                                         .AutoBind(true)
                                         .Pageable(p => p.Input(true))
-                                        
+                                        .Resizable(s => s.Columns(true))
                                         .Filterable()
                                         .Scrollable()
                                         // .ClientDetailTemplateId("template")
@@ -488,9 +497,13 @@
 
     setToolbarTooltip(".k-button k-button-icontext k-grid-Agregar k-i-plus-sm", "Agregar");
     //setRowButtonTooltip(".k-grid-edit", "Tooltip for Edit button");
-    setRowButtonTooltip(".k-grid-Imprimir", "Imprimir Certificado");
+    setRowButtonTooltip(".k-grid-ImprimirAG", "Imprimir Inventario Fisico");
+    setRowButtonTooltip(".k-grid-ImprimirPosicionBH", "Imprimir Posición");
+     setRowButtonTooltip(".k-grid-ImprimirBH", "Imprimir Existencias");
+    setRowButtonTooltip(".k-grid-Editar", "Editar registro");
     setRowButtonTooltip(".k-grid-Editar", "Editar registro");
     setRowButtonTooltip(".k-grid-Aprobar", "Aprobar");
+    setRowButtonTooltip(".k-grid-Revisar", "Revisar");
     setRowButtonTooltip(".k-grid-Cerrar", "Cerrar");
 
 </script>
