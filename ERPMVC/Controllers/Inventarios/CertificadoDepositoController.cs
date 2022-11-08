@@ -882,7 +882,8 @@ namespace ERPMVC.Controllers
 
                 reportWriter.Save(ms, format);
                 ms.Position = 0;
-                MarcarImpresion(_CertificadoDepositoDTO.IdCD, false);
+                await MarcarImpresion(_CertificadoDepositoDTO.IdCD, false);
+                //return View(_CertificadoDepositoDTO);
 
                 return new FileStreamResult(ms, "application/pdf");
             }

@@ -5,7 +5,7 @@
     <DataSource Name="ERP">
       <ConnectionProperties>
         <DataProvider>SQL</DataProvider>
-        <ConnectString>Data Source=(local);Initial Catalog=ERP</ConnectString>
+        <ConnectString>Data Source=(local);Initial Catalog=ERP-PRODUCCION</ConnectString>
         <IntegratedSecurity>true</IntegratedSecurity>
       </ConnectionProperties>
       <rd:SecurityType>Integrated</rd:SecurityType>
@@ -22,6 +22,8 @@
           </QueryParameter>
         </QueryParameters>
         <CommandText>SET LANGUAGE SPANISH
+
+
 SELECT SD.IdSCD
       ,SD.NoCD
       ,CD.Mensaje
@@ -31,6 +33,7 @@ SELECT SD.IdSCD
       ,SD.ServicioId
       ,SD.ServicioName
       ,SD.Direccion
+      ,SD.SituadoEn
       ,BB.Address DireccionServicio
       ,dbo.F_OBTENER_FECHA(SD.FechaCertificado) FechaCertificado
       ,dbo.F_OBTENER_TEXTO_ESPACIADO(SD.NombreEmpresa, 40)  NombreEmpresa
@@ -59,14 +62,15 @@ SELECT SD.IdSCD
       ,COALESCE( EC.TasaDeInteres,0.00 ) TasaDeInteres   
       ,dbo.F_OBTENER_TEXTO_ESPACIADO('', 80) Ubicacion
       ,dbo.F_OBTENER_TEXTO_ESPACIADO('', 80) EstaMercaderia
-FROM [ERP].[dbo].[SolicitudCertificadoDeposito] SD INNER JOIN
+FROM [dbo].[SolicitudCertificadoDeposito] SD LEFT JOIN
 DBO.CertificadoDeposito CD ON SD.IdSCD = CD.SolicitudCertificadoId LEFT JOIN
-Product PP ON CD.ServicioId = PP.ProductId INNER JOIN 
-DBO.Branch  BB ON BB.BranchId = PP.BranchId LEFT JOIN
+Product PP ON CD.ServicioId = PP.ProductId LEFT JOIN 
+DBO.Branch  BB ON BB.BranchId = CD.BranchId LEFT JOIN
 dbo.InsurancePolicy IP ON CD.InsurancePolicyId = IP.InsurancePolicyId LEFT JOIN
 DBO.Insurances II ON IP.InsurancesId = II.InsurancesId LEFT JOIN
 EndososCertificados EC ON CD.idCD = EC.idCD
-Where idSCD = @idSCD</CommandText>
+Where SD.IdSCD =@idSCD</CommandText>
+        <rd:UseGenericDesigner>true</rd:UseGenericDesigner>
       </Query>
       <Fields>
         <Field Name="IdSCD">
@@ -103,6 +107,10 @@ Where idSCD = @idSCD</CommandText>
         </Field>
         <Field Name="Direccion">
           <DataField>Direccion</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="SituadoEn">
+          <DataField>SituadoEn</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
         <Field Name="DireccionServicio">
@@ -599,7 +607,7 @@ WHERE IdEstado =1</CommandText>
                     <Style />
                   </TextRun>
                   <TextRun>
-                    <Value>=First(Fields!FechaActual.Value, "DataSet1")</Value>
+                    <Value>=First(Fields!FechaCertificado.Value, "DataSet1")</Value>
                     <Style>
                       <FontWeight>Bold</FontWeight>
                       <TextDecoration>None</TextDecoration>
@@ -1440,15 +1448,8 @@ WHERE IdEstado =1</CommandText>
                     <Value>Solicito(amos) a Ustedes y sujeto a las condiciones generales de Depósito que estipule ALMACAFE / que se describen al reverso del CERTIFICADO DE DEPÓSITO, aceptar en depósito en sus almacenes/bodegas habilitadas ubicados en </Value>
                     <Style />
                   </TextRun>
-                </TextRuns>
-                <Style>
-                  <LineHeight>10pt</LineHeight>
-                </Style>
-              </Paragraph>
-              <Paragraph>
-                <TextRuns>
                   <TextRun>
-                    <Value>=First(Fields!DireccionServicio.Value, "DataSet1")</Value>
+                    <Value>=First(Fields!SituadoEn.Value, "DataSet1")</Value>
                     <Style>
                       <FontWeight>Bold</FontWeight>
                       <TextDecoration>Underline</TextDecoration>
@@ -1553,7 +1554,6 @@ WHERE IdEstado =1</CommandText>
             </Style>
           </Textbox>
           <Textbox Name="TextBox21">
-            <CanGrow>true</CanGrow>
             <KeepTogether>true</KeepTogether>
             <Paragraphs>
               <Paragraph>
@@ -1613,10 +1613,10 @@ WHERE IdEstado =1</CommandText>
                 </Style>
               </Paragraph>
             </Paragraphs>
-            <Top>0.85393in</Top>
-            <Left>2.24074in</Left>
-            <Height>0.7183in</Height>
-            <Width>4.4094in</Width>
+            <Top>0.84004in</Top>
+            <Left>1.68241in</Left>
+            <Height>0.73497in</Height>
+            <Width>5.2844in</Width>
             <ZIndex>7</ZIndex>
             <Style>
               <Border />
@@ -1751,20 +1751,7 @@ WHERE IdEstado =1</CommandText>
                     </Style>
                   </TextRun>
                   <TextRun>
-                    <Value>, Además hago constar que las tarifas abajo descritas han sido aceptadas de mi parte por el almacenamiento y manejo de las mercaderías arriba detalladas, y queda entendido que en caso de mora por más de 30 días en el pago de sus servicios, pagaré el </Value>
-                    <Style>
-                      <FontWeight>Normal</FontWeight>
-                    </Style>
-                  </TextRun>
-                  <TextRun>
-                    <Value>=Sum(Fields!TasaDeInteres.Value, "DataSet1")</Value>
-                    <Style>
-                      <FontWeight>Bold</FontWeight>
-                      <TextDecoration>None</TextDecoration>
-                    </Style>
-                  </TextRun>
-                  <TextRun>
-                    <Value> % mensual sobre el saldo adeudado.</Value>
+                    <Value>, Además hago constar que las tarifas abajo descritas han sido aceptadas de mi parte por el almacenamiento y manejo de las mercaderías arriba detalladas, y queda entendido que en caso de mora de más de 30 días en el pago de sus servicios, pagaré el 3 % mensual sobre el saldo adeudado.</Value>
                     <Style>
                       <FontWeight>Normal</FontWeight>
                     </Style>
