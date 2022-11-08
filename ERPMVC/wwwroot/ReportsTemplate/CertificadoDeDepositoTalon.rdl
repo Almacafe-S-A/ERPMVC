@@ -5,7 +5,7 @@
     <DataSource Name="ERP">
       <ConnectionProperties>
         <DataProvider>SQL</DataProvider>
-        <ConnectString>Data Source=DESKTOP-4VQCP3V\SQLEXPRESS; Initial Catalog=ERPQA</ConnectString>
+        <ConnectString>Data Source=(local);Initial Catalog=ERP-produccion</ConnectString>
         <IntegratedSecurity>true</IntegratedSecurity>
       </ConnectionProperties>
       <rd:SecurityType>Integrated</rd:SecurityType>
@@ -27,11 +27,12 @@ SELECT
 	CD.Comentario,
 	CD.NoCD,
 	CD.ServicioId,
-    CD.ServicioName,
+                CD.ServicioName,
 	DBO.F_OBTENER_FECHA(CD.FechaCertificado) FechaCertificado,
 	CD.CustomerName CustomerName,
 	CD.Direccion Direccion,
 	BB.Address DireccionServicio,
+                CD.SituadoEn,
 	CD.SolicitudCertificadoId ,
 	CD.InsuranceId,
 	II.InsurancesName,
@@ -45,6 +46,7 @@ SELECT
     CD.Almacenaje,
 	CD.Seguro,
 	CD.OtrosCargos,
+                CD.NoTraslado,
 	EC.BankName,
     EC.FirmadoEn,
 	COALESCE(EC.TasaDeInteres,0)  TasaDeInteres,
@@ -117,6 +119,10 @@ CD.IdCD = @IdCD</CommandText>
           <DataField>SolicitudCertificadoId</DataField>
           <rd:TypeName>System.Int32</rd:TypeName>
         </Field>
+        <Field Name="SituadoEn">
+          <DataField>SituadoEn</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
         <Field Name="InsuranceId">
           <DataField>InsuranceId</DataField>
           <rd:TypeName>System.Int32</rd:TypeName>
@@ -165,6 +171,10 @@ CD.IdCD = @IdCD</CommandText>
           <DataField>OtrosCargos</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
+        <Field Name="NoTraslado_1">
+          <DataField>NoTraslado</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
         <Field Name="BankName">
           <DataField>BankName</DataField>
           <rd:TypeName>System.String</rd:TypeName>
@@ -207,7 +217,7 @@ CD.IdCD = @IdCD</CommandText>
         </Field>
         <Field Name="SujetasAPago">
           <DataField>SujetasAPago</DataField>
-          <rd:TypeName>System.Double</rd:TypeName>
+          <rd:TypeName>System.Decimal</rd:TypeName>
         </Field>
         <Field Name="DocumentDate">
           <DataField>DocumentDate</DataField>
@@ -244,6 +254,10 @@ CD.IdCD = @IdCD</CommandText>
         <Field Name="AnioActual">
           <DataField>AnioActual</DataField>
           <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="NoTraslado">
+          <DataField>NoTraslado</DataField>
+          <rd:UserDefined>true</rd:UserDefined>
         </Field>
       </Fields>
     </DataSet>
@@ -405,16 +419,218 @@ WHERE IdEstado =1</CommandText>
         </Field>
       </Fields>
     </DataSet>
+    <DataSet Name="Sucursal">
+      <Query>
+        <DataSourceName>ERP</DataSourceName>
+        <CommandText>SELECT top(1) * FROM DBO.BRANCH
+WHERE IdEstado =1</CommandText>
+      </Query>
+      <Fields>
+        <Field Name="BranchId">
+          <DataField>BranchId</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="BranchCode">
+          <DataField>BranchCode</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="Numero">
+          <DataField>Numero</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="CustomerId">
+          <DataField>CustomerId</DataField>
+          <rd:TypeName>System.Int64</rd:TypeName>
+        </Field>
+        <Field Name="CustomerName">
+          <DataField>CustomerName</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="BranchName">
+          <DataField>BranchName</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="Description">
+          <DataField>Description</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="CurrencyId">
+          <DataField>CurrencyId</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="CurrencyName">
+          <DataField>CurrencyName</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="Address">
+          <DataField>Address</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="CityId">
+          <DataField>CityId</DataField>
+          <rd:TypeName>System.Int64</rd:TypeName>
+        </Field>
+        <Field Name="City">
+          <DataField>City</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="CountryId">
+          <DataField>CountryId</DataField>
+          <rd:TypeName>System.Int64</rd:TypeName>
+        </Field>
+        <Field Name="CountryName">
+          <DataField>CountryName</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="LimitCNBS">
+          <DataField>LimitCNBS</DataField>
+          <rd:TypeName>System.Decimal</rd:TypeName>
+        </Field>
+        <Field Name="StateId">
+          <DataField>StateId</DataField>
+          <rd:TypeName>System.Int64</rd:TypeName>
+        </Field>
+        <Field Name="State">
+          <DataField>State</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="ZipCode">
+          <DataField>ZipCode</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="Phone">
+          <DataField>Phone</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="Email">
+          <DataField>Email</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="ContactPerson">
+          <DataField>ContactPerson</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="UsuarioCreacion">
+          <DataField>UsuarioCreacion</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="IdEstado">
+          <DataField>IdEstado</DataField>
+          <rd:TypeName>System.Int64</rd:TypeName>
+        </Field>
+        <Field Name="Estado">
+          <DataField>Estado</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="URL">
+          <DataField>URL</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="Observation">
+          <DataField>Observation</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="UsuarioModificacion">
+          <DataField>UsuarioModificacion</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="FechaCreacion">
+          <DataField>FechaCreacion</DataField>
+          <rd:TypeName>System.DateTime</rd:TypeName>
+        </Field>
+        <Field Name="FechaModificacion">
+          <DataField>FechaModificacion</DataField>
+          <rd:TypeName>System.DateTime</rd:TypeName>
+        </Field>
+      </Fields>
+    </DataSet>
   </DataSets>
   <ReportSections>
     <ReportSection>
       <Body>
         <ReportItems>
+          <Textbox Name="Textbox17">
+            <KeepTogether>true</KeepTogether>
+            <Paragraphs>
+              <Paragraph>
+                <TextRuns>
+                  <TextRun>
+                    <Value>por: </Value>
+                    <Style>
+                      <FontFamily>Calibri</FontFamily>
+                      <FontSize>9pt</FontSize>
+                      <Format>dd/MM/yyyy</Format>
+                    </Style>
+                  </TextRun>
+                </TextRuns>
+                <Style>
+                  <TextAlign>General</TextAlign>
+                </Style>
+              </Paragraph>
+            </Paragraphs>
+            <rd:DefaultName>Textbox16</rd:DefaultName>
+            <Top>1.286in</Top>
+            <Left>0.47372in</Left>
+            <Height>0.18222in</Height>
+            <Width>0.31592in</Width>
+            <Style>
+              <Border>
+                <Style>None</Style>
+              </Border>
+              <VerticalAlign>Top</VerticalAlign>
+              <PaddingLeft>2pt</PaddingLeft>
+              <PaddingRight>2pt</PaddingRight>
+              <PaddingTop>2pt</PaddingTop>
+              <PaddingBottom>2pt</PaddingBottom>
+            </Style>
+          </Textbox>
+          <Textbox Name="Textbox16">
+            <KeepTogether>true</KeepTogether>
+            <Paragraphs>
+              <Paragraph>
+                <TextRuns>
+                  <TextRun>
+                    <Value>=First(Fields!CustomerName.Value, "CertificadoDepositoInformacion")</Value>
+                    <Style>
+                      <FontFamily>Calibri</FontFamily>
+                      <FontSize>8pt</FontSize>
+                      <FontWeight>Normal</FontWeight>
+                      <Format>dd/MM/yyyy</Format>
+                      <TextDecoration>None</TextDecoration>
+                    </Style>
+                  </TextRun>
+                </TextRuns>
+                <Style>
+                  <TextAlign>Left</TextAlign>
+                </Style>
+              </Paragraph>
+            </Paragraphs>
+            <rd:DefaultName>Textbox16</rd:DefaultName>
+            <Top>1.286in</Top>
+            <Left>0.78964in</Left>
+            <Height>0.16834in</Height>
+            <Width>7.20328in</Width>
+            <ZIndex>1</ZIndex>
+            <Style>
+              <Border>
+                <Style>None</Style>
+              </Border>
+              <BottomBorder>
+                <Color>Black</Color>
+                <Style>Solid</Style>
+                <Width>0.5pt</Width>
+              </BottomBorder>
+              <PaddingLeft>2pt</PaddingLeft>
+              <PaddingRight>2pt</PaddingRight>
+              <PaddingTop>2pt</PaddingTop>
+              <PaddingBottom>2pt</PaddingBottom>
+            </Style>
+          </Textbox>
           <Tablix Name="Tablix1">
             <TablixBody>
               <TablixColumns>
                 <TablixColumn>
-                  <Width>0.63044in</Width>
+                  <Width>0.48808in</Width>
                 </TablixColumn>
                 <TablixColumn>
                   <Width>1.11959in</Width>
@@ -426,7 +642,7 @@ WHERE IdEstado =1</CommandText>
                   <Width>2.80088in</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>1.20309in</Width>
+                  <Width>1.18853in</Width>
                 </TablixColumn>
                 <TablixColumn>
                   <Width>1.04004in</Width>
@@ -434,7 +650,7 @@ WHERE IdEstado =1</CommandText>
               </TablixColumns>
               <TablixRows>
                 <TablixRow>
-                  <Height>0.325in</Height>
+                  <Height>0.33773in</Height>
                   <TablixCells>
                     <TablixCell>
                       <CellContents>
@@ -484,6 +700,7 @@ WHERE IdEstado =1</CommandText>
                               <Width>1pt</Width>
                             </RightBorder>
                             <BackgroundColor>White</BackgroundColor>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -555,6 +772,7 @@ WHERE IdEstado =1</CommandText>
                               <Width>1pt</Width>
                             </RightBorder>
                             <BackgroundColor>White</BackgroundColor>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -626,6 +844,7 @@ WHERE IdEstado =1</CommandText>
                               <Width>1pt</Width>
                             </RightBorder>
                             <BackgroundColor>White</BackgroundColor>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -682,6 +901,7 @@ WHERE IdEstado =1</CommandText>
                               <Width>1pt</Width>
                             </RightBorder>
                             <BackgroundColor>White</BackgroundColor>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -753,6 +973,7 @@ WHERE IdEstado =1</CommandText>
                               <Width>1pt</Width>
                             </RightBorder>
                             <BackgroundColor>White</BackgroundColor>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -824,6 +1045,7 @@ WHERE IdEstado =1</CommandText>
                               <Width>1pt</Width>
                             </RightBorder>
                             <BackgroundColor>White</BackgroundColor>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -835,7 +1057,7 @@ WHERE IdEstado =1</CommandText>
                   </TablixCells>
                 </TablixRow>
                 <TablixRow>
-                  <Height>0.25in</Height>
+                  <Height>0.16898in</Height>
                   <TablixCells>
                     <TablixCell>
                       <CellContents>
@@ -849,13 +1071,13 @@ WHERE IdEstado =1</CommandText>
                                   <Value>=Sum(Fields!PdaNo.Value)</Value>
                                   <Style>
                                     <FontFamily>Calibri</FontFamily>
-                                    <FontSize>9pt</FontSize>
-                                    <FontWeight>Bold</FontWeight>
+                                    <FontSize>8pt</FontSize>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
                               <Style>
-                                <TextAlign>Right</TextAlign>
+                                <TextAlign>Center</TextAlign>
+                                <LineHeight>8pt</LineHeight>
                               </Style>
                             </Paragraph>
                           </Paragraphs>
@@ -890,14 +1112,14 @@ WHERE IdEstado =1</CommandText>
                                   <Value>=Fields!Cantidad.Value</Value>
                                   <Style>
                                     <FontFamily>Calibri</FontFamily>
-                                    <FontSize>9pt</FontSize>
-                                    <FontWeight>Bold</FontWeight>
-                                    <Format>#,0.00;</Format>
+                                    <FontSize>8pt</FontSize>
+                                    <Format>#,0.00;(#,0.00)</Format>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
                               <Style>
                                 <TextAlign>Right</TextAlign>
+                                <LineHeight>8pt</LineHeight>
                               </Style>
                             </Paragraph>
                           </Paragraphs>
@@ -932,12 +1154,14 @@ WHERE IdEstado =1</CommandText>
                                   <Value>=Fields!UnitMeasurName.Value</Value>
                                   <Style>
                                     <FontFamily>Calibri</FontFamily>
-                                    <FontSize>9pt</FontSize>
-                                    <FontWeight>Bold</FontWeight>
+                                    <FontSize>8pt</FontSize>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
-                              <Style />
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                                <LineHeight>8pt</LineHeight>
+                              </Style>
                             </Paragraph>
                           </Paragraphs>
                           <rd:DefaultName>UnitMeasurName1</rd:DefaultName>
@@ -971,12 +1195,14 @@ WHERE IdEstado =1</CommandText>
                                   <Value>=Fields!SubProductName.Value</Value>
                                   <Style>
                                     <FontFamily>Calibri</FontFamily>
-                                    <FontSize>9pt</FontSize>
-                                    <FontWeight>Bold</FontWeight>
+                                    <FontSize>8pt</FontSize>
+                                    <FontWeight>Normal</FontWeight>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
-                              <Style />
+                              <Style>
+                                <LineHeight>8pt</LineHeight>
+                              </Style>
                             </Paragraph>
                           </Paragraphs>
                           <rd:DefaultName>SubProductName</rd:DefaultName>
@@ -1011,13 +1237,14 @@ WHERE IdEstado =1</CommandText>
                                   <Style>
                                     <FontFamily>Calibri</FontFamily>
                                     <FontSize>9pt</FontSize>
-                                    <FontWeight>Bold</FontWeight>
-                                    <Format>#,0.00;</Format>
+                                    <FontWeight>Normal</FontWeight>
+                                    <Format>#,0.00;(#,0.00)</Format>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
                               <Style>
                                 <TextAlign>Right</TextAlign>
+                                <LineHeight>8pt</LineHeight>
                               </Style>
                             </Paragraph>
                           </Paragraphs>
@@ -1053,13 +1280,14 @@ WHERE IdEstado =1</CommandText>
                                   <Style>
                                     <FontFamily>Calibri</FontFamily>
                                     <FontSize>9pt</FontSize>
-                                    <FontWeight>Bold</FontWeight>
+                                    <FontWeight>Normal</FontWeight>
                                     <Format>#,0.00;(#,0.00)</Format>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
                               <Style>
                                 <TextAlign>Right</TextAlign>
+                                <LineHeight>8pt</LineHeight>
                               </Style>
                             </Paragraph>
                           </Paragraphs>
@@ -1085,7 +1313,7 @@ WHERE IdEstado =1</CommandText>
                   </TablixCells>
                 </TablixRow>
                 <TablixRow>
-                  <Height>0.25in</Height>
+                  <Height>0.12523in</Height>
                   <TablixCells>
                     <TablixCell>
                       <CellContents>
@@ -1121,6 +1349,7 @@ WHERE IdEstado =1</CommandText>
                               <Width>1pt</Width>
                             </LeftBorder>
                             <BackgroundColor>White</BackgroundColor>
+                            <VerticalAlign>Top</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -1163,6 +1392,7 @@ WHERE IdEstado =1</CommandText>
                               <Width>1pt</Width>
                             </LeftBorder>
                             <BackgroundColor>White</BackgroundColor>
+                            <VerticalAlign>Top</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -1205,6 +1435,7 @@ WHERE IdEstado =1</CommandText>
                               <Width>1pt</Width>
                             </LeftBorder>
                             <BackgroundColor>White</BackgroundColor>
+                            <VerticalAlign>Top</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -1222,17 +1453,17 @@ WHERE IdEstado =1</CommandText>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>:::::::::::::::::ÚLTIMA LÍNEA:::::::::::::::::</Value>
+                                  <Value>=First(Fields!Comentario.Value, "CertificadoDepositoInformacion")</Value>
                                   <Style>
                                     <FontFamily>Calibri</FontFamily>
-                                    <FontSize>9pt</FontSize>
-                                    <FontWeight>Normal</FontWeight>
-                                    <Color>#333333</Color>
+                                    <FontSize>8pt</FontSize>
+                                    <Format>dd/MM/yyyy</Format>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
                               <Style>
-                                <TextAlign>Center</TextAlign>
+                                <TextAlign>Left</TextAlign>
+                                <LineHeight>8pt</LineHeight>
                               </Style>
                             </Paragraph>
                           </Paragraphs>
@@ -1247,6 +1478,7 @@ WHERE IdEstado =1</CommandText>
                               <Width>1pt</Width>
                             </LeftBorder>
                             <BackgroundColor>White</BackgroundColor>
+                            <VerticalAlign>Top</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -1289,6 +1521,7 @@ WHERE IdEstado =1</CommandText>
                               <Width>1pt</Width>
                             </LeftBorder>
                             <BackgroundColor>White</BackgroundColor>
+                            <VerticalAlign>Top</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -1331,6 +1564,7 @@ WHERE IdEstado =1</CommandText>
                               <Width>1pt</Width>
                             </LeftBorder>
                             <BackgroundColor>White</BackgroundColor>
+                            <VerticalAlign>Top</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -1342,7 +1576,7 @@ WHERE IdEstado =1</CommandText>
                   </TablixCells>
                 </TablixRow>
                 <TablixRow>
-                  <Height>0.25in</Height>
+                  <Height>0.12315in</Height>
                   <TablixCells>
                     <TablixCell>
                       <CellContents>
@@ -1395,7 +1629,7 @@ WHERE IdEstado =1</CommandText>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Sum(Fields!Cantidad.Value)</Value>
+                                  <Value />
                                   <Style>
                                     <FontFamily>Calibri</FontFamily>
                                     <FontSize>9pt</FontSize>
@@ -1480,17 +1714,17 @@ WHERE IdEstado =1</CommandText>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=First(Fields!Comentario.Value, "CertificadoDepositoInformacion")</Value>
+                                  <Value>:::::::::::::::::ÚLTIMA LÍNEA:::::::::::::::::</Value>
                                   <Style>
                                     <FontFamily>Calibri</FontFamily>
-                                    <FontWeight>Bold</FontWeight>
-                                    <Format>dd/MM/yyyy</Format>
-                                    <TextDecoration>Underline</TextDecoration>
+                                    <FontSize>8pt</FontSize>
+                                    <Color>#333333</Color>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
                               <Style>
-                                <TextAlign>Left</TextAlign>
+                                <TextAlign>Center</TextAlign>
+                                <LineHeight>8pt</LineHeight>
                               </Style>
                             </Paragraph>
                           </Paragraphs>
@@ -1522,7 +1756,7 @@ WHERE IdEstado =1</CommandText>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Sum(Fields!Price.Value)</Value>
+                                  <Value />
                                   <Style>
                                     <FontFamily>Calibri</FontFamily>
                                     <FontSize>9pt</FontSize>
@@ -1565,7 +1799,7 @@ WHERE IdEstado =1</CommandText>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Sum(Fields!Monto.Value)</Value>
+                                  <Value />
                                   <Style>
                                     <FontFamily>Calibri</FontFamily>
                                     <FontSize>9pt</FontSize>
@@ -1602,7 +1836,527 @@ WHERE IdEstado =1</CommandText>
                   </TablixCells>
                 </TablixRow>
                 <TablixRow>
-                  <Height>0.25in</Height>
+                  <Height>0.16666in</Height>
+                  <TablixCells>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox125">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value />
+                                  <Style>
+                                    <FontFamily>Calibri</FontFamily>
+                                    <FontSize>9pt</FontSize>
+                                    <FontWeight>Normal</FontWeight>
+                                    <Color>#333333</Color>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Right</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox125</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Style>None</Style>
+                            </Border>
+                            <LeftBorder>
+                              <Color>Black</Color>
+                              <Style>Solid</Style>
+                              <Width>1pt</Width>
+                            </LeftBorder>
+                            <BackgroundColor>White</BackgroundColor>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox126">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Sum(Fields!Cantidad.Value)</Value>
+                                  <Style>
+                                    <FontFamily>Calibri</FontFamily>
+                                    <FontSize>8pt</FontSize>
+                                    <FontWeight>Bold</FontWeight>
+                                    <Format>#,0.00;(#,0.00)</Format>
+                                    <Color>#333333</Color>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Right</TextAlign>
+                                <LineHeight>8pt</LineHeight>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox126</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Style>None</Style>
+                            </Border>
+                            <LeftBorder>
+                              <Color>Black</Color>
+                              <Style>Solid</Style>
+                              <Width>1pt</Width>
+                            </LeftBorder>
+                            <BackgroundColor>White</BackgroundColor>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox127">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value />
+                                  <Style>
+                                    <FontFamily>Calibri</FontFamily>
+                                    <FontSize>9pt</FontSize>
+                                    <FontWeight>Normal</FontWeight>
+                                    <Color>#333333</Color>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Right</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox127</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Style>None</Style>
+                            </Border>
+                            <LeftBorder>
+                              <Color>Black</Color>
+                              <Style>Solid</Style>
+                              <Width>1pt</Width>
+                            </LeftBorder>
+                            <BackgroundColor>White</BackgroundColor>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox128">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=First(Fields!Mensaje.Value, "CertificadoDepositoInformacion")</Value>
+                                  <Style>
+                                    <FontFamily>Calibri</FontFamily>
+                                    <FontSize>8pt</FontSize>
+                                    <Format>dd/MM/yyyy</Format>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Left</TextAlign>
+                                <LineHeight>8pt</LineHeight>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox128</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Style>None</Style>
+                            </Border>
+                            <LeftBorder>
+                              <Color>Black</Color>
+                              <Style>Solid</Style>
+                              <Width>1pt</Width>
+                            </LeftBorder>
+                            <BackgroundColor>White</BackgroundColor>
+                            <VerticalAlign>Middle</VerticalAlign>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox129">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value />
+                                  <Style>
+                                    <FontFamily>Calibri</FontFamily>
+                                    <FontSize>9pt</FontSize>
+                                    <FontWeight>Bold</FontWeight>
+                                    <Format>#,0.00;(#,0.00)</Format>
+                                    <Color>#333333</Color>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Right</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox129</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Style>None</Style>
+                            </Border>
+                            <LeftBorder>
+                              <Color>Black</Color>
+                              <Style>Solid</Style>
+                              <Width>1pt</Width>
+                            </LeftBorder>
+                            <BackgroundColor>White</BackgroundColor>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox130">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Sum(Fields!Monto.Value)</Value>
+                                  <Style>
+                                    <FontFamily>Calibri</FontFamily>
+                                    <FontSize>8pt</FontSize>
+                                    <FontWeight>Bold</FontWeight>
+                                    <Format>#,0.00;(#,0.00)</Format>
+                                    <Color>#333333</Color>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Right</TextAlign>
+                                <LineHeight>8pt</LineHeight>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox130</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Style>None</Style>
+                            </Border>
+                            <LeftBorder>
+                              <Color>Black</Color>
+                              <Style>Solid</Style>
+                              <Width>1pt</Width>
+                            </LeftBorder>
+                            <BackgroundColor>White</BackgroundColor>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                  </TablixCells>
+                </TablixRow>
+                <TablixRow>
+                  <Height>0.15834in</Height>
+                  <TablixCells>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox119">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value />
+                                  <Style>
+                                    <FontFamily>Calibri</FontFamily>
+                                    <FontSize>9pt</FontSize>
+                                    <FontWeight>Normal</FontWeight>
+                                    <Color>#333333</Color>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox119</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Style>None</Style>
+                            </Border>
+                            <LeftBorder>
+                              <Color>Black</Color>
+                              <Style>Solid</Style>
+                              <Width>1pt</Width>
+                            </LeftBorder>
+                            <BackgroundColor>White</BackgroundColor>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox120">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value />
+                                  <Style>
+                                    <FontFamily>Calibri</FontFamily>
+                                    <FontSize>9pt</FontSize>
+                                    <FontWeight>Normal</FontWeight>
+                                    <Color>#333333</Color>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox120</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Style>None</Style>
+                            </Border>
+                            <LeftBorder>
+                              <Color>Black</Color>
+                              <Style>Solid</Style>
+                              <Width>1pt</Width>
+                            </LeftBorder>
+                            <BackgroundColor>White</BackgroundColor>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox121">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value />
+                                  <Style>
+                                    <FontFamily>Calibri</FontFamily>
+                                    <FontSize>9pt</FontSize>
+                                    <FontWeight>Normal</FontWeight>
+                                    <Color>#333333</Color>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox121</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Style>None</Style>
+                            </Border>
+                            <LeftBorder>
+                              <Color>Black</Color>
+                              <Style>Solid</Style>
+                              <Width>1pt</Width>
+                            </LeftBorder>
+                            <BackgroundColor>White</BackgroundColor>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox122">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value />
+                                  <Style>
+                                    <FontFamily>Calibri</FontFamily>
+                                    <FontSize>8pt</FontSize>
+                                    <Color>#333333</Color>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                                <LineHeight>8pt</LineHeight>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox122</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Style>None</Style>
+                            </Border>
+                            <LeftBorder>
+                              <Color>Black</Color>
+                              <Style>Solid</Style>
+                              <Width>1pt</Width>
+                            </LeftBorder>
+                            <BackgroundColor>White</BackgroundColor>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox123">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value />
+                                  <Style>
+                                    <FontFamily>Calibri</FontFamily>
+                                    <FontSize>9pt</FontSize>
+                                    <FontWeight>Normal</FontWeight>
+                                    <Color>#333333</Color>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox123</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Style>None</Style>
+                            </Border>
+                            <LeftBorder>
+                              <Color>Black</Color>
+                              <Style>Solid</Style>
+                              <Width>1pt</Width>
+                            </LeftBorder>
+                            <BackgroundColor>White</BackgroundColor>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox124">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value />
+                                  <Style>
+                                    <FontFamily>Calibri</FontFamily>
+                                    <FontSize>9pt</FontSize>
+                                    <FontWeight>Normal</FontWeight>
+                                    <Color>#333333</Color>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox124</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Style>None</Style>
+                            </Border>
+                            <LeftBorder>
+                              <Color>Black</Color>
+                              <Style>Solid</Style>
+                              <Width>1pt</Width>
+                            </LeftBorder>
+                            <BackgroundColor>White</BackgroundColor>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                  </TablixCells>
+                </TablixRow>
+                <TablixRow>
+                  <Height>0.15857in</Height>
                   <TablixCells>
                     <TablixCell>
                       <CellContents>
@@ -1742,14 +2496,14 @@ WHERE IdEstado =1</CommandText>
                                   <Value />
                                   <Style>
                                     <FontFamily>Calibri</FontFamily>
-                                    <FontSize>9pt</FontSize>
-                                    <FontWeight>Normal</FontWeight>
+                                    <FontSize>8pt</FontSize>
                                     <Color>#333333</Color>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
                               <Style>
                                 <TextAlign>Center</TextAlign>
+                                <LineHeight>8pt</LineHeight>
                               </Style>
                             </Paragraph>
                           </Paragraphs>
@@ -1859,7 +2613,264 @@ WHERE IdEstado =1</CommandText>
                   </TablixCells>
                 </TablixRow>
                 <TablixRow>
-                  <Height>0.25in</Height>
+                  <Height>0.16667in</Height>
+                  <TablixCells>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox109">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value />
+                                  <Style>
+                                    <FontFamily>Calibri</FontFamily>
+                                    <FontSize>9pt</FontSize>
+                                    <FontWeight>Normal</FontWeight>
+                                    <Color>#333333</Color>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox109</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Style>None</Style>
+                            </Border>
+                            <LeftBorder>
+                              <Color>Black</Color>
+                              <Style>Solid</Style>
+                              <Width>1pt</Width>
+                            </LeftBorder>
+                            <BackgroundColor>White</BackgroundColor>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox110">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value />
+                                  <Style>
+                                    <FontFamily>Calibri</FontFamily>
+                                    <FontSize>9pt</FontSize>
+                                    <FontWeight>Normal</FontWeight>
+                                    <Color>#333333</Color>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox110</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Style>None</Style>
+                            </Border>
+                            <LeftBorder>
+                              <Color>Black</Color>
+                              <Style>Solid</Style>
+                              <Width>1pt</Width>
+                            </LeftBorder>
+                            <BackgroundColor>White</BackgroundColor>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox114">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value />
+                                  <Style>
+                                    <FontFamily>Calibri</FontFamily>
+                                    <FontSize>9pt</FontSize>
+                                    <FontWeight>Normal</FontWeight>
+                                    <Color>#333333</Color>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox114</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Style>None</Style>
+                            </Border>
+                            <LeftBorder>
+                              <Color>Black</Color>
+                              <Style>Solid</Style>
+                              <Width>1pt</Width>
+                            </LeftBorder>
+                            <BackgroundColor>White</BackgroundColor>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox115">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value />
+                                  <Style>
+                                    <FontFamily>Calibri</FontFamily>
+                                    <FontSize>8pt</FontSize>
+                                    <Color>#333333</Color>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                                <LineHeight>8pt</LineHeight>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox115</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Style>None</Style>
+                            </Border>
+                            <LeftBorder>
+                              <Color>Black</Color>
+                              <Style>Solid</Style>
+                              <Width>1pt</Width>
+                            </LeftBorder>
+                            <BackgroundColor>White</BackgroundColor>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox116">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value />
+                                  <Style>
+                                    <FontFamily>Calibri</FontFamily>
+                                    <FontSize>9pt</FontSize>
+                                    <FontWeight>Normal</FontWeight>
+                                    <Color>#333333</Color>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox116</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Style>None</Style>
+                            </Border>
+                            <LeftBorder>
+                              <Color>Black</Color>
+                              <Style>Solid</Style>
+                              <Width>1pt</Width>
+                            </LeftBorder>
+                            <BackgroundColor>White</BackgroundColor>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox117">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value />
+                                  <Style>
+                                    <FontFamily>Calibri</FontFamily>
+                                    <FontSize>9pt</FontSize>
+                                    <FontWeight>Normal</FontWeight>
+                                    <Color>#333333</Color>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox117</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Style>None</Style>
+                            </Border>
+                            <LeftBorder>
+                              <Color>Black</Color>
+                              <Style>Solid</Style>
+                              <Width>1pt</Width>
+                            </LeftBorder>
+                            <BackgroundColor>White</BackgroundColor>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                  </TablixCells>
+                </TablixRow>
+                <TablixRow>
+                  <Height>0.16898in</Height>
                   <TablixCells>
                     <TablixCell>
                       <CellContents>
@@ -1999,14 +3010,14 @@ WHERE IdEstado =1</CommandText>
                                   <Value />
                                   <Style>
                                     <FontFamily>Calibri</FontFamily>
-                                    <FontSize>9pt</FontSize>
-                                    <FontWeight>Normal</FontWeight>
+                                    <FontSize>8pt</FontSize>
                                     <Color>#333333</Color>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
                               <Style>
                                 <TextAlign>Center</TextAlign>
+                                <LineHeight>8pt</LineHeight>
                               </Style>
                             </Paragraph>
                           </Paragraphs>
@@ -2116,7 +3127,7 @@ WHERE IdEstado =1</CommandText>
                   </TablixCells>
                 </TablixRow>
                 <TablixRow>
-                  <Height>0.25in</Height>
+                  <Height>0.16898in</Height>
                   <TablixCells>
                     <TablixCell>
                       <CellContents>
@@ -2256,14 +3267,14 @@ WHERE IdEstado =1</CommandText>
                                   <Value />
                                   <Style>
                                     <FontFamily>Calibri</FontFamily>
-                                    <FontSize>9pt</FontSize>
-                                    <FontWeight>Normal</FontWeight>
+                                    <FontSize>8pt</FontSize>
                                     <Color>#333333</Color>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
                               <Style>
                                 <TextAlign>Center</TextAlign>
+                                <LineHeight>8pt</LineHeight>
                               </Style>
                             </Paragraph>
                           </Paragraphs>
@@ -2373,7 +3384,7 @@ WHERE IdEstado =1</CommandText>
                   </TablixCells>
                 </TablixRow>
                 <TablixRow>
-                  <Height>0.25in</Height>
+                  <Height>0.15857in</Height>
                   <TablixCells>
                     <TablixCell>
                       <CellContents>
@@ -2513,14 +3524,14 @@ WHERE IdEstado =1</CommandText>
                                   <Value />
                                   <Style>
                                     <FontFamily>Calibri</FontFamily>
-                                    <FontSize>9pt</FontSize>
-                                    <FontWeight>Normal</FontWeight>
+                                    <FontSize>8pt</FontSize>
                                     <Color>#333333</Color>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
                               <Style>
                                 <TextAlign>Center</TextAlign>
+                                <LineHeight>8pt</LineHeight>
                               </Style>
                             </Paragraph>
                           </Paragraphs>
@@ -2629,263 +3640,6 @@ WHERE IdEstado =1</CommandText>
                     </TablixCell>
                   </TablixCells>
                 </TablixRow>
-                <TablixRow>
-                  <Height>0.25in</Height>
-                  <TablixCells>
-                    <TablixCell>
-                      <CellContents>
-                        <Textbox Name="Textbox97">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value />
-                                  <Style>
-                                    <FontFamily>Calibri</FontFamily>
-                                    <FontSize>9pt</FontSize>
-                                    <FontWeight>Normal</FontWeight>
-                                    <Color>#333333</Color>
-                                  </Style>
-                                </TextRun>
-                              </TextRuns>
-                              <Style>
-                                <TextAlign>Center</TextAlign>
-                              </Style>
-                            </Paragraph>
-                          </Paragraphs>
-                          <rd:DefaultName>Textbox97</rd:DefaultName>
-                          <Style>
-                            <Border>
-                              <Style>None</Style>
-                            </Border>
-                            <LeftBorder>
-                              <Color>Black</Color>
-                              <Style>Solid</Style>
-                              <Width>1pt</Width>
-                            </LeftBorder>
-                            <BackgroundColor>White</BackgroundColor>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
-                    <TablixCell>
-                      <CellContents>
-                        <Textbox Name="Textbox98">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value />
-                                  <Style>
-                                    <FontFamily>Calibri</FontFamily>
-                                    <FontSize>9pt</FontSize>
-                                    <FontWeight>Normal</FontWeight>
-                                    <Color>#333333</Color>
-                                  </Style>
-                                </TextRun>
-                              </TextRuns>
-                              <Style>
-                                <TextAlign>Center</TextAlign>
-                              </Style>
-                            </Paragraph>
-                          </Paragraphs>
-                          <rd:DefaultName>Textbox98</rd:DefaultName>
-                          <Style>
-                            <Border>
-                              <Style>None</Style>
-                            </Border>
-                            <LeftBorder>
-                              <Color>Black</Color>
-                              <Style>Solid</Style>
-                              <Width>1pt</Width>
-                            </LeftBorder>
-                            <BackgroundColor>White</BackgroundColor>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
-                    <TablixCell>
-                      <CellContents>
-                        <Textbox Name="Textbox99">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value />
-                                  <Style>
-                                    <FontFamily>Calibri</FontFamily>
-                                    <FontSize>9pt</FontSize>
-                                    <FontWeight>Normal</FontWeight>
-                                    <Color>#333333</Color>
-                                  </Style>
-                                </TextRun>
-                              </TextRuns>
-                              <Style>
-                                <TextAlign>Center</TextAlign>
-                              </Style>
-                            </Paragraph>
-                          </Paragraphs>
-                          <rd:DefaultName>Textbox99</rd:DefaultName>
-                          <Style>
-                            <Border>
-                              <Style>None</Style>
-                            </Border>
-                            <LeftBorder>
-                              <Color>Black</Color>
-                              <Style>Solid</Style>
-                              <Width>1pt</Width>
-                            </LeftBorder>
-                            <BackgroundColor>White</BackgroundColor>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
-                    <TablixCell>
-                      <CellContents>
-                        <Textbox Name="Textbox100">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value />
-                                  <Style>
-                                    <FontFamily>Calibri</FontFamily>
-                                    <FontSize>9pt</FontSize>
-                                    <FontWeight>Normal</FontWeight>
-                                    <Color>#333333</Color>
-                                  </Style>
-                                </TextRun>
-                              </TextRuns>
-                              <Style>
-                                <TextAlign>Center</TextAlign>
-                              </Style>
-                            </Paragraph>
-                          </Paragraphs>
-                          <rd:DefaultName>Textbox100</rd:DefaultName>
-                          <Style>
-                            <Border>
-                              <Style>None</Style>
-                            </Border>
-                            <LeftBorder>
-                              <Color>Black</Color>
-                              <Style>Solid</Style>
-                              <Width>1pt</Width>
-                            </LeftBorder>
-                            <BackgroundColor>White</BackgroundColor>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
-                    <TablixCell>
-                      <CellContents>
-                        <Textbox Name="Textbox101">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value />
-                                  <Style>
-                                    <FontFamily>Calibri</FontFamily>
-                                    <FontSize>9pt</FontSize>
-                                    <FontWeight>Normal</FontWeight>
-                                    <Color>#333333</Color>
-                                  </Style>
-                                </TextRun>
-                              </TextRuns>
-                              <Style>
-                                <TextAlign>Center</TextAlign>
-                              </Style>
-                            </Paragraph>
-                          </Paragraphs>
-                          <rd:DefaultName>Textbox101</rd:DefaultName>
-                          <Style>
-                            <Border>
-                              <Style>None</Style>
-                            </Border>
-                            <LeftBorder>
-                              <Color>Black</Color>
-                              <Style>Solid</Style>
-                              <Width>1pt</Width>
-                            </LeftBorder>
-                            <BackgroundColor>White</BackgroundColor>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
-                    <TablixCell>
-                      <CellContents>
-                        <Textbox Name="Textbox105">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value />
-                                  <Style>
-                                    <FontFamily>Calibri</FontFamily>
-                                    <FontSize>9pt</FontSize>
-                                    <FontWeight>Normal</FontWeight>
-                                    <Color>#333333</Color>
-                                  </Style>
-                                </TextRun>
-                              </TextRuns>
-                              <Style>
-                                <TextAlign>Center</TextAlign>
-                              </Style>
-                            </Paragraph>
-                          </Paragraphs>
-                          <rd:DefaultName>Textbox105</rd:DefaultName>
-                          <Style>
-                            <Border>
-                              <Style>None</Style>
-                            </Border>
-                            <LeftBorder>
-                              <Color>Black</Color>
-                              <Style>Solid</Style>
-                              <Width>1pt</Width>
-                            </LeftBorder>
-                            <BackgroundColor>White</BackgroundColor>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
-                  </TablixCells>
-                </TablixRow>
               </TablixRows>
             </TablixBody>
             <TablixColumnHierarchy>
@@ -2910,11 +3664,26 @@ WHERE IdEstado =1</CommandText>
                   </TablixMembers>
                 </TablixMember>
                 <TablixMember>
+                  <Visibility>
+                    <Hidden>=IIF(First(Fields!Comentario.Value, "CertificadoDepositoInformacion")="",true,false)</Hidden>
+                  </Visibility>
+                  <KeepWithGroup>Before</KeepWithGroup>
+                </TablixMember>
+                <TablixMember>
+                  <KeepWithGroup>Before</KeepWithGroup>
+                </TablixMember>
+                <TablixMember>
                   <KeepWithGroup>Before</KeepWithGroup>
                 </TablixMember>
                 <TablixMember>
                   <Visibility>
-                    <Hidden>=(First(Fields!Mensaje.Value, "CertificadoDepositoInformacion") = "" )</Hidden>
+                    <Hidden>=Count(Fields!PdaNo.Value, "DataSet2") &gt; 6</Hidden>
+                  </Visibility>
+                  <KeepWithGroup>Before</KeepWithGroup>
+                </TablixMember>
+                <TablixMember>
+                  <Visibility>
+                    <Hidden>=Count(Fields!PdaNo.Value, "DataSet2") &gt; 6</Hidden>
                   </Visibility>
                   <KeepWithGroup>Before</KeepWithGroup>
                 </TablixMember>
@@ -2942,19 +3711,14 @@ WHERE IdEstado =1</CommandText>
                   </Visibility>
                   <KeepWithGroup>Before</KeepWithGroup>
                 </TablixMember>
-                <TablixMember>
-                  <Visibility>
-                    <Hidden>=Count(Fields!PdaNo.Value, "DataSet2") &gt; 1</Hidden>
-                  </Visibility>
-                  <KeepWithGroup>Before</KeepWithGroup>
-                </TablixMember>
               </TablixMembers>
             </TablixRowHierarchy>
             <DataSetName>DataSet2</DataSetName>
-            <Top>1.90351in</Top>
-            <Left>0.29251in</Left>
-            <Height>2.325in</Height>
-            <Width>7.67909in</Width>
+            <Top>1.70022in</Top>
+            <Left>0.48081in</Left>
+            <Height>1.90186in</Height>
+            <Width>7.52217in</Width>
+            <ZIndex>2</ZIndex>
             <Style>
               <Border>
                 <Style>Solid</Style>
@@ -2982,7 +3746,6 @@ WHERE IdEstado =1</CommandText>
             </Style>
           </Tablix>
           <Textbox Name="TextBox113">
-            <CanGrow>true</CanGrow>
             <KeepTogether>true</KeepTogether>
             <Paragraphs>
               <Paragraph>
@@ -3014,11 +3777,11 @@ WHERE IdEstado =1</CommandText>
                 </Style>
               </Paragraph>
             </Paragraphs>
-            <Top>8.00132in</Top>
-            <Left>0.33037in</Left>
-            <Height>0.17541in</Height>
-            <Width>0.7879in</Width>
-            <ZIndex>1</ZIndex>
+            <Top>7.84412in</Top>
+            <Left>0.48069in</Left>
+            <Height>0.19207in</Height>
+            <Width>0.70659in</Width>
+            <ZIndex>3</ZIndex>
             <Style>
               <Border />
               <PaddingLeft>2pt</PaddingLeft>
@@ -3055,11 +3818,11 @@ WHERE IdEstado =1</CommandText>
                 </Style>
               </Paragraph>
             </Paragraphs>
-            <Top>6.57405in</Top>
-            <Left>0.32419in</Left>
-            <Height>0.19532in</Height>
-            <Width>7.64123in</Width>
-            <ZIndex>2</ZIndex>
+            <Top>6.41502in</Top>
+            <Left>0.50675in</Left>
+            <Height>0.22173in</Height>
+            <Width>7.47433in</Width>
+            <ZIndex>4</ZIndex>
             <Style>
               <Border />
               <BottomBorder>
@@ -3072,7 +3835,6 @@ WHERE IdEstado =1</CommandText>
             </Style>
           </Textbox>
           <Textbox Name="TextBox150">
-            <CanGrow>true</CanGrow>
             <KeepTogether>true</KeepTogether>
             <Paragraphs>
               <Paragraph>
@@ -3090,15 +3852,19 @@ WHERE IdEstado =1</CommandText>
                 </Style>
               </Paragraph>
             </Paragraphs>
-            <Top>9.03521in</Top>
-            <Left>0.33095in</Left>
-            <Height>0.25in</Height>
-            <Width>2.60246in</Width>
-            <ZIndex>3</ZIndex>
+            <Top>9.96467in</Top>
+            <Left>0.47854in</Left>
+            <Height>0.17361in</Height>
+            <Width>2.45228in</Width>
+            <ZIndex>5</ZIndex>
             <Style>
-              <Border />
+              <Border>
+                <Style>None</Style>
+              </Border>
               <BottomBorder>
+                <Color>Black</Color>
                 <Style>Solid</Style>
+                <Width>0.5pt</Width>
               </BottomBorder>
               <PaddingLeft>2pt</PaddingLeft>
               <PaddingRight>2pt</PaddingRight>
@@ -3107,7 +3873,6 @@ WHERE IdEstado =1</CommandText>
             </Style>
           </Textbox>
           <Textbox Name="TextBox148">
-            <CanGrow>true</CanGrow>
             <KeepTogether>true</KeepTogether>
             <Paragraphs>
               <Paragraph>
@@ -3126,11 +3891,11 @@ WHERE IdEstado =1</CommandText>
                 </Style>
               </Paragraph>
             </Paragraphs>
-            <Top>8.72967in</Top>
-            <Left>4.50022in</Left>
-            <Height>0.25in</Height>
-            <Width>3.48505in</Width>
-            <ZIndex>4</ZIndex>
+            <Top>9.65034in</Top>
+            <Left>4.63845in</Left>
+            <Height>0.18194in</Height>
+            <Width>3.33487in</Width>
+            <ZIndex>6</ZIndex>
             <Style>
               <Border>
                 <Style>None</Style>
@@ -3138,7 +3903,7 @@ WHERE IdEstado =1</CommandText>
               <TopBorder>
                 <Color>Black</Color>
                 <Style>Solid</Style>
-                <Width>1pt</Width>
+                <Width>0.5pt</Width>
               </TopBorder>
               <PaddingLeft>2pt</PaddingLeft>
               <PaddingRight>2pt</PaddingRight>
@@ -3147,7 +3912,6 @@ WHERE IdEstado =1</CommandText>
             </Style>
           </Textbox>
           <Textbox Name="TextBox147">
-            <CanGrow>true</CanGrow>
             <KeepTogether>true</KeepTogether>
             <Paragraphs>
               <Paragraph>
@@ -3166,11 +3930,11 @@ WHERE IdEstado =1</CommandText>
                 </Style>
               </Paragraph>
             </Paragraphs>
-            <Top>8.7084in</Top>
-            <Left>0.33094in</Left>
-            <Height>0.25in</Height>
-            <Width>3.38544in</Width>
-            <ZIndex>5</ZIndex>
+            <Top>9.65034in</Top>
+            <Left>0.45978in</Left>
+            <Height>0.18933in</Height>
+            <Width>3.23526in</Width>
+            <ZIndex>7</ZIndex>
             <Style>
               <Border>
                 <Style>None</Style>
@@ -3178,7 +3942,7 @@ WHERE IdEstado =1</CommandText>
               <TopBorder>
                 <Color>Black</Color>
                 <Style>Solid</Style>
-                <Width>1pt</Width>
+                <Width>0.5pt</Width>
               </TopBorder>
               <PaddingLeft>2pt</PaddingLeft>
               <PaddingRight>2pt</PaddingRight>
@@ -3187,7 +3951,6 @@ WHERE IdEstado =1</CommandText>
             </Style>
           </Textbox>
           <Textbox Name="TextBox146">
-            <CanGrow>true</CanGrow>
             <KeepTogether>true</KeepTogether>
             <Paragraphs>
               <Paragraph>
@@ -3207,11 +3970,11 @@ WHERE IdEstado =1</CommandText>
                 </Style>
               </Paragraph>
             </Paragraphs>
-            <Top>8.48229in</Top>
-            <Left>3.11595in</Left>
-            <Height>0.15667in</Height>
-            <Width>2.0875in</Width>
-            <ZIndex>6</ZIndex>
+            <Top>8.97645in</Top>
+            <Left>3.26795in</Left>
+            <Height>0.17334in</Height>
+            <Width>1.93732in</Width>
+            <ZIndex>8</ZIndex>
             <Style>
               <Border />
               <PaddingLeft>2pt</PaddingLeft>
@@ -3221,7 +3984,6 @@ WHERE IdEstado =1</CommandText>
             </Style>
           </Textbox>
           <Textbox Name="TextBox145">
-            <CanGrow>true</CanGrow>
             <KeepTogether>true</KeepTogether>
             <Paragraphs>
               <Paragraph>
@@ -3240,11 +4002,11 @@ WHERE IdEstado =1</CommandText>
                 </Style>
               </Paragraph>
             </Paragraphs>
-            <Top>8.23229in</Top>
-            <Left>4.48037in</Left>
-            <Height>0.25in</Height>
-            <Width>3.49593in</Width>
-            <ZIndex>7</ZIndex>
+            <Top>8.69589in</Top>
+            <Left>4.61696in</Left>
+            <Height>0.20279in</Height>
+            <Width>3.34575in</Width>
+            <ZIndex>9</ZIndex>
             <Style>
               <Border>
                 <Style>None</Style>
@@ -3261,7 +4023,6 @@ WHERE IdEstado =1</CommandText>
             </Style>
           </Textbox>
           <Textbox Name="TextBox144">
-            <CanGrow>true</CanGrow>
             <KeepTogether>true</KeepTogether>
             <Paragraphs>
               <Paragraph>
@@ -3280,11 +4041,11 @@ WHERE IdEstado =1</CommandText>
                 </Style>
               </Paragraph>
             </Paragraphs>
-            <Top>8.23229in</Top>
-            <Left>0.33095in</Left>
-            <Height>0.25in</Height>
-            <Width>3.36558in</Width>
-            <ZIndex>8</ZIndex>
+            <Top>8.69589in</Top>
+            <Left>0.46754in</Left>
+            <Height>0.20279in</Height>
+            <Width>3.2154in</Width>
+            <ZIndex>10</ZIndex>
             <Style>
               <Border>
                 <Style>None</Style>
@@ -3301,7 +4062,6 @@ WHERE IdEstado =1</CommandText>
             </Style>
           </Textbox>
           <Textbox Name="TextBox151">
-            <CanGrow>true</CanGrow>
             <KeepTogether>true</KeepTogether>
             <Paragraphs>
               <Paragraph>
@@ -3319,11 +4079,11 @@ WHERE IdEstado =1</CommandText>
                 </Style>
               </Paragraph>
             </Paragraphs>
-            <Top>9.03521in</Top>
-            <Left>2.98897in</Left>
-            <Height>0.25in</Height>
-            <Width>4.9963in</Width>
-            <ZIndex>9</ZIndex>
+            <Top>9.96467in</Top>
+            <Left>3.01297in</Left>
+            <Height>0.17361in</Height>
+            <Width>4.93605in</Width>
+            <ZIndex>11</ZIndex>
             <Style>
               <Border />
               <PaddingLeft>2pt</PaddingLeft>
@@ -3332,18 +4092,6 @@ WHERE IdEstado =1</CommandText>
               <PaddingBottom>2pt</PaddingBottom>
             </Style>
           </Textbox>
-          <Line Name="Line2">
-            <Top>6.22336in</Top>
-            <Left>4.51382in</Left>
-            <Height>0in</Height>
-            <Width>3.4516in</Width>
-            <ZIndex>10</ZIndex>
-            <Style>
-              <Border>
-                <Style>Solid</Style>
-              </Border>
-            </Style>
-          </Line>
           <Textbox Name="TextBox104">
             <CanGrow>true</CanGrow>
             <KeepTogether>true</KeepTogether>
@@ -3364,13 +4112,20 @@ WHERE IdEstado =1</CommandText>
                 </Style>
               </Paragraph>
             </Paragraphs>
-            <Top>6.2928in</Top>
-            <Left>4.51382in</Left>
-            <Height>0.2813in</Height>
-            <Width>3.45572in</Width>
-            <ZIndex>11</ZIndex>
+            <Top>6.13377in</Top>
+            <Left>4.70471in</Left>
+            <Height>0.21181in</Height>
+            <Width>3.28892in</Width>
+            <ZIndex>12</ZIndex>
             <Style>
-              <Border />
+              <Border>
+                <Style>None</Style>
+              </Border>
+              <TopBorder>
+                <Color>Black</Color>
+                <Style>Solid</Style>
+                <Width>0.5pt</Width>
+              </TopBorder>
               <PaddingLeft>2pt</PaddingLeft>
               <PaddingRight>2pt</PaddingRight>
               <PaddingTop>2pt</PaddingTop>
@@ -3378,7 +4133,6 @@ WHERE IdEstado =1</CommandText>
             </Style>
           </Textbox>
           <Textbox Name="TextBox10">
-            <CanGrow>true</CanGrow>
             <KeepTogether>true</KeepTogether>
             <Paragraphs>
               <Paragraph>
@@ -3387,6 +4141,7 @@ WHERE IdEstado =1</CommandText>
                     <Value>                   De las mercaderías abajo especificadas, depositadas con designación Individual (  ) Genérica(  )</Value>
                     <Style>
                       <FontFamily>Calibri</FontFamily>
+                      <FontSize>9pt</FontSize>
                     </Style>
                   </TextRun>
                 </TextRuns>
@@ -3395,11 +4150,11 @@ WHERE IdEstado =1</CommandText>
                 </Style>
               </Paragraph>
             </Paragraphs>
-            <Top>1.11874in</Top>
-            <Left>0.30433in</Left>
-            <Height>0.20555in</Height>
-            <Width>7.66521in</Width>
-            <ZIndex>12</ZIndex>
+            <Top>0.94679in</Top>
+            <Left>0.48622in</Left>
+            <Height>0.18226in</Height>
+            <Width>7.52747in</Width>
+            <ZIndex>13</ZIndex>
             <Style>
               <Border>
                 <Style>None</Style>
@@ -3417,10 +4172,11 @@ WHERE IdEstado =1</CommandText>
               <Paragraph>
                 <TextRuns>
                   <TextRun>
-                    <Value>TALONDE DEPÓSITO</Value>
+                    <Value>TALÓN</Value>
                     <Style>
                       <FontFamily>Calibri</FontFamily>
                       <FontSize>14pt</FontSize>
+                      <FontWeight>Bold</FontWeight>
                     </Style>
                   </TextRun>
                 </TextRuns>
@@ -3430,11 +4186,11 @@ WHERE IdEstado =1</CommandText>
                 </Style>
               </Paragraph>
             </Paragraphs>
-            <Top>0.81406in</Top>
-            <Left>1.75417in</Left>
+            <Top>0.67656in</Top>
+            <Left>1.91733in</Left>
             <Height>0.28055in</Height>
-            <Width>4.78153in</Width>
-            <ZIndex>13</ZIndex>
+            <Width>4.69568in</Width>
+            <ZIndex>14</ZIndex>
             <Style>
               <Border />
               <BackgroundColor>Pink</BackgroundColor>
@@ -3445,18 +4201,6 @@ WHERE IdEstado =1</CommandText>
               <PaddingBottom>2pt</PaddingBottom>
             </Style>
           </Textbox>
-          <Line Name="Line1">
-            <Top>6.22336in</Top>
-            <Left>0.29253in</Left>
-            <Height>0in</Height>
-            <Width>3.38543in</Width>
-            <ZIndex>14</ZIndex>
-            <Style>
-              <Border>
-                <Style>Solid</Style>
-              </Border>
-            </Style>
-          </Line>
           <Textbox Name="TextBox103">
             <CanGrow>true</CanGrow>
             <KeepTogether>true</KeepTogether>
@@ -3477,13 +4221,20 @@ WHERE IdEstado =1</CommandText>
                 </Style>
               </Paragraph>
             </Paragraphs>
-            <Top>6.2928in</Top>
-            <Left>0.32419in</Left>
-            <Height>0.28125in</Height>
-            <Width>3.35377in</Width>
+            <Top>6.12822in</Top>
+            <Left>0.51508in</Left>
+            <Height>0.21181in</Height>
+            <Width>3.20359in</Width>
             <ZIndex>15</ZIndex>
             <Style>
-              <Border />
+              <Border>
+                <Style>None</Style>
+              </Border>
+              <TopBorder>
+                <Color>Black</Color>
+                <Style>Solid</Style>
+                <Width>0.5pt</Width>
+              </TopBorder>
               <PaddingLeft>2pt</PaddingLeft>
               <PaddingRight>2pt</PaddingRight>
               <PaddingTop>2pt</PaddingTop>
@@ -3491,13 +4242,12 @@ WHERE IdEstado =1</CommandText>
             </Style>
           </Textbox>
           <Textbox Name="TextBox89">
-            <CanGrow>true</CanGrow>
             <KeepTogether>true</KeepTogether>
             <Paragraphs>
               <Paragraph>
                 <TextRuns>
                   <TextRun>
-                    <Value>=First(Fields!FirmadoEn.Value, "CertificadoDepositoInformacion")</Value>
+                    <Value>=First(Fields!City.Value, "Sucursal")</Value>
                     <Style>
                       <FontFamily>Calibri</FontFamily>
                       <FontSize>9pt</FontSize>
@@ -3507,6 +4257,42 @@ WHERE IdEstado =1</CommandText>
                   </TextRun>
                   <TextRun>
                     <Value xml:space="preserve"> </Value>
+                    <Style>
+                      <FontFamily>Calibri</FontFamily>
+                      <FontSize>9pt</FontSize>
+                      <FontWeight>Normal</FontWeight>
+                      <TextDecoration>None</TextDecoration>
+                    </Style>
+                  </TextRun>
+                  <TextRun>
+                    <Value>=", "</Value>
+                    <Style>
+                      <FontFamily>Calibri</FontFamily>
+                      <FontSize>9pt</FontSize>
+                      <FontWeight>Normal</FontWeight>
+                      <TextDecoration>None</TextDecoration>
+                    </Style>
+                  </TextRun>
+                  <TextRun>
+                    <Value>=First(Fields!State.Value, "Sucursal")</Value>
+                    <Style>
+                      <FontFamily>Calibri</FontFamily>
+                      <FontSize>9pt</FontSize>
+                      <FontWeight>Normal</FontWeight>
+                      <TextDecoration>None</TextDecoration>
+                    </Style>
+                  </TextRun>
+                  <TextRun>
+                    <Value xml:space="preserve"> </Value>
+                    <Style>
+                      <FontFamily>Calibri</FontFamily>
+                      <FontSize>9pt</FontSize>
+                      <FontWeight>Normal</FontWeight>
+                      <TextDecoration>None</TextDecoration>
+                    </Style>
+                  </TextRun>
+                  <TextRun>
+                    <Value>="          "</Value>
                     <Style>
                       <FontFamily>Calibri</FontFamily>
                       <FontSize>9pt</FontSize>
@@ -3532,10 +4318,10 @@ WHERE IdEstado =1</CommandText>
                 </Style>
               </Paragraph>
             </Paragraphs>
-            <Top>5.54387in</Top>
-            <Left>2.31052in</Left>
-            <Height>0.17319in</Height>
-            <Width>5.6549in</Width>
+            <Top>5.13559in</Top>
+            <Left>1.67564in</Left>
+            <Height>0.21486in</Height>
+            <Width>6.33805in</Width>
             <ZIndex>16</ZIndex>
             <Style>
               <Border>
@@ -3544,7 +4330,7 @@ WHERE IdEstado =1</CommandText>
               <BottomBorder>
                 <Color>Black</Color>
                 <Style>Solid</Style>
-                <Width>1pt</Width>
+                <Width>0.25pt</Width>
               </BottomBorder>
               <PaddingLeft>2pt</PaddingLeft>
               <PaddingRight>2pt</PaddingRight>
@@ -3553,7 +4339,6 @@ WHERE IdEstado =1</CommandText>
             </Style>
           </Textbox>
           <Textbox Name="TextBox102">
-            <CanGrow>true</CanGrow>
             <KeepTogether>true</KeepTogether>
             <Paragraphs>
               <Paragraph>
@@ -3573,10 +4358,10 @@ WHERE IdEstado =1</CommandText>
                 </Style>
               </Paragraph>
             </Paragraphs>
-            <Top>5.78651in</Top>
-            <Left>0.33865in</Left>
-            <Height>0.2195in</Height>
-            <Width>7.62677in</Width>
+            <Top>5.39212in</Top>
+            <Left>0.5129in</Left>
+            <Height>0.18617in</Height>
+            <Width>7.47659in</Width>
             <ZIndex>17</ZIndex>
             <Style>
               <Border />
@@ -3623,10 +4408,10 @@ WHERE IdEstado =1</CommandText>
                 </Style>
               </Paragraph>
             </Paragraphs>
-            <Top>0.25848in</Top>
-            <Left>1.77499in</Left>
+            <Top>0.12098in</Top>
+            <Left>1.92565in</Left>
             <Height>0.5417in</Height>
-            <Width>4.78153in</Width>
+            <Width>4.69568in</Width>
             <ZIndex>18</ZIndex>
             <Style>
               <Border />
@@ -3664,10 +4449,9 @@ WHERE IdEstado =1</CommandText>
                   </Paragraph>
                 </Paragraphs>
                 <rd:DefaultName>Textbox6</rd:DefaultName>
-                <Top>0.44169in</Top>
-                <Left>0.0347in</Left>
+                <Top>0.42781in</Top>
                 <Height>0.32222in</Height>
-                <Width>1.41207in</Width>
+                <Width>1.31484in</Width>
                 <Style>
                   <Border>
                     <Style>None</Style>
@@ -3689,14 +4473,14 @@ WHERE IdEstado =1</CommandText>
                         <Value>No.</Value>
                         <Style>
                           <FontFamily>Calibri</FontFamily>
-                          <FontSize>11pt</FontSize>
+                          <FontSize>12pt</FontSize>
                         </Style>
                       </TextRun>
                       <TextRun>
                         <Value>=First(Fields!IdCD.Value, "CertificadoDepositoInformacion")</Value>
                         <Style>
                           <FontFamily>Calibri</FontFamily>
-                          <FontSize>11pt</FontSize>
+                          <FontSize>12pt</FontSize>
                           <FontWeight>Bold</FontWeight>
                         </Style>
                       </TextRun>
@@ -3707,9 +4491,8 @@ WHERE IdEstado =1</CommandText>
                     </Style>
                   </Paragraph>
                 </Paragraphs>
-                <Left>0.00693in</Left>
                 <Height>0.42781in</Height>
-                <Width>1.43984in</Width>
+                <Width>1.31484in</Width>
                 <ZIndex>1</ZIndex>
                 <Style>
                   <Border>
@@ -3729,10 +4512,10 @@ WHERE IdEstado =1</CommandText>
               </Textbox>
             </ReportItems>
             <KeepTogether>true</KeepTogether>
-            <Top>0.25848in</Top>
-            <Left>6.59126in</Left>
+            <Top>0.12098in</Top>
+            <Left>6.69885in</Left>
             <Height>0.79082in</Height>
-            <Width>1.44677in</Width>
+            <Width>1.32287in</Width>
             <ZIndex>19</ZIndex>
             <Style>
               <Border>
@@ -3760,83 +4543,7 @@ WHERE IdEstado =1</CommandText>
               </RightBorder>
             </Style>
           </Rectangle>
-          <Textbox Name="Textbox16">
-            <CanGrow>true</CanGrow>
-            <KeepTogether>true</KeepTogether>
-            <Paragraphs>
-              <Paragraph>
-                <TextRuns>
-                  <TextRun>
-                    <Value>=First(Fields!CustomerName.Value, "CertificadoDepositoInformacion")</Value>
-                    <Style>
-                      <FontFamily>Calibri</FontFamily>
-                      <FontWeight>Bold</FontWeight>
-                      <Format>dd/MM/yyyy</Format>
-                      <TextDecoration>None</TextDecoration>
-                    </Style>
-                  </TextRun>
-                </TextRuns>
-                <Style>
-                  <TextAlign>Left</TextAlign>
-                </Style>
-              </Paragraph>
-            </Paragraphs>
-            <rd:DefaultName>Textbox16</rd:DefaultName>
-            <Top>1.51515in</Top>
-            <Left>0.66473in</Left>
-            <Height>0.17668in</Height>
-            <Width>7.30481in</Width>
-            <ZIndex>20</ZIndex>
-            <Style>
-              <Border>
-                <Style>None</Style>
-              </Border>
-              <BottomBorder>
-                <Color>Black</Color>
-                <Style>Solid</Style>
-                <Width>1pt</Width>
-              </BottomBorder>
-              <PaddingLeft>2pt</PaddingLeft>
-              <PaddingRight>2pt</PaddingRight>
-              <PaddingTop>2pt</PaddingTop>
-              <PaddingBottom>2pt</PaddingBottom>
-            </Style>
-          </Textbox>
-          <Textbox Name="Textbox17">
-            <CanGrow>true</CanGrow>
-            <KeepTogether>true</KeepTogether>
-            <Paragraphs>
-              <Paragraph>
-                <TextRuns>
-                  <TextRun>
-                    <Value>por:</Value>
-                    <Style>
-                      <FontFamily>Calibri</FontFamily>
-                      <Format>dd/MM/yyyy</Format>
-                    </Style>
-                  </TextRun>
-                </TextRuns>
-                <Style />
-              </Paragraph>
-            </Paragraphs>
-            <rd:DefaultName>Textbox16</rd:DefaultName>
-            <Top>1.51128in</Top>
-            <Left>0.29663in</Left>
-            <Height>0.18056in</Height>
-            <Width>0.35833in</Width>
-            <ZIndex>21</ZIndex>
-            <Style>
-              <Border>
-                <Style>None</Style>
-              </Border>
-              <PaddingLeft>2pt</PaddingLeft>
-              <PaddingRight>2pt</PaddingRight>
-              <PaddingTop>2pt</PaddingTop>
-              <PaddingBottom>2pt</PaddingBottom>
-            </Style>
-          </Textbox>
           <Textbox Name="Textbox18">
-            <CanGrow>true</CanGrow>
             <KeepTogether>true</KeepTogether>
             <Paragraphs>
               <Paragraph>
@@ -3845,6 +4552,7 @@ WHERE IdEstado =1</CommandText>
                     <Value>C</Value>
                     <Style>
                       <FontFamily>Calibri</FontFamily>
+                      <FontSize>9pt</FontSize>
                       <FontWeight>Normal</FontWeight>
                       <Format>dd/MM/yyyy</Format>
                     </Style>
@@ -3853,12 +4561,14 @@ WHERE IdEstado =1</CommandText>
                     <Value>on domicilio en:</Value>
                     <Style>
                       <FontFamily>Calibri</FontFamily>
+                      <FontSize>9pt</FontSize>
                     </Style>
                   </TextRun>
                   <TextRun>
                     <Value xml:space="preserve"> </Value>
                     <Style>
                       <FontFamily>Calibri</FontFamily>
+                      <FontSize>9pt</FontSize>
                       <Format>dd/MM/yyyy</Format>
                     </Style>
                   </TextRun>
@@ -3867,11 +4577,11 @@ WHERE IdEstado =1</CommandText>
               </Paragraph>
             </Paragraphs>
             <rd:DefaultName>Textbox16</rd:DefaultName>
-            <Top>1.70572in</Top>
-            <Left>0.29251in</Left>
-            <Height>0.16in</Height>
-            <Width>1.125in</Width>
-            <ZIndex>22</ZIndex>
+            <Top>1.46822in</Top>
+            <Left>0.47449in</Left>
+            <Height>0.18201in</Height>
+            <Width>1.01561in</Width>
+            <ZIndex>20</ZIndex>
             <Style>
               <Border>
                 <Style>None</Style>
@@ -3884,7 +4594,6 @@ WHERE IdEstado =1</CommandText>
             </Style>
           </Textbox>
           <Textbox Name="Textbox19">
-            <CanGrow>true</CanGrow>
             <KeepTogether>true</KeepTogether>
             <Paragraphs>
               <Paragraph>
@@ -3893,7 +4602,7 @@ WHERE IdEstado =1</CommandText>
                     <Value xml:space="preserve"> </Value>
                     <Style>
                       <FontFamily>Calibri</FontFamily>
-                      <FontWeight>Bold</FontWeight>
+                      <FontSize>8pt</FontSize>
                       <Format>dd/MM/yyyy</Format>
                       <TextDecoration>None</TextDecoration>
                     </Style>
@@ -3902,7 +4611,7 @@ WHERE IdEstado =1</CommandText>
                     <Value>=First(Fields!Direccion.Value, "CertificadoDepositoInformacion")</Value>
                     <Style>
                       <FontFamily>Calibri</FontFamily>
-                      <FontWeight>Bold</FontWeight>
+                      <FontSize>8pt</FontSize>
                       <TextDecoration>None</TextDecoration>
                     </Style>
                   </TextRun>
@@ -3911,11 +4620,11 @@ WHERE IdEstado =1</CommandText>
               </Paragraph>
             </Paragraphs>
             <rd:DefaultName>Textbox16</rd:DefaultName>
-            <Top>1.70572in</Top>
-            <Left>1.43142in</Left>
-            <Height>0.15613in</Height>
-            <Width>6.534in</Width>
-            <ZIndex>23</ZIndex>
+            <Top>1.48211in</Top>
+            <Left>1.53321in</Left>
+            <Height>0.15978in</Height>
+            <Width>6.49658in</Width>
+            <ZIndex>21</ZIndex>
             <Style>
               <Border>
                 <Style>None</Style>
@@ -3923,7 +4632,7 @@ WHERE IdEstado =1</CommandText>
               <BottomBorder>
                 <Color>Black</Color>
                 <Style>Solid</Style>
-                <Width>1pt</Width>
+                <Width>0.25pt</Width>
               </BottomBorder>
               <PaddingLeft>2pt</PaddingLeft>
               <PaddingRight>2pt</PaddingRight>
@@ -3932,7 +4641,6 @@ WHERE IdEstado =1</CommandText>
             </Style>
           </Textbox>
           <Textbox Name="Textbox22">
-            <CanGrow>true</CanGrow>
             <KeepTogether>true</KeepTogether>
             <Paragraphs>
               <Paragraph>
@@ -3941,6 +4649,7 @@ WHERE IdEstado =1</CommandText>
                     <Value>en el Almacén:</Value>
                     <Style>
                       <FontFamily>Calibri</FontFamily>
+                      <FontSize>9pt</FontSize>
                     </Style>
                   </TextRun>
                 </TextRuns>
@@ -3948,11 +4657,11 @@ WHERE IdEstado =1</CommandText>
               </Paragraph>
             </Paragraphs>
             <rd:DefaultName>Textbox22</rd:DefaultName>
-            <Top>1.32794in</Top>
-            <Left>0.30433in</Left>
-            <Height>0.16944in</Height>
-            <Width>0.92778in</Width>
-            <ZIndex>24</ZIndex>
+            <Top>1.12905in</Top>
+            <Left>0.48004in</Left>
+            <Height>0.17969in</Height>
+            <Width>0.83056in</Width>
+            <ZIndex>22</ZIndex>
             <Style>
               <Border>
                 <Style>None</Style>
@@ -3964,7 +4673,6 @@ WHERE IdEstado =1</CommandText>
             </Style>
           </Textbox>
           <Textbox Name="Textbox23">
-            <CanGrow>true</CanGrow>
             <KeepTogether>true</KeepTogether>
             <Paragraphs>
               <Paragraph>
@@ -3973,7 +4681,8 @@ WHERE IdEstado =1</CommandText>
                     <Value>=First(Fields!ServicioName.Value, "CertificadoDepositoInformacion")</Value>
                     <Style>
                       <FontFamily>Calibri</FontFamily>
-                      <FontWeight>Bold</FontWeight>
+                      <FontSize>8pt</FontSize>
+                      <FontWeight>Normal</FontWeight>
                       <TextDecoration>None</TextDecoration>
                     </Style>
                   </TextRun>
@@ -3982,11 +4691,11 @@ WHERE IdEstado =1</CommandText>
               </Paragraph>
             </Paragraphs>
             <rd:DefaultName>Textbox22</rd:DefaultName>
-            <Top>1.32794in</Top>
-            <Left>1.23211in</Left>
-            <Height>0.15556in</Height>
-            <Width>1.50333in</Width>
-            <ZIndex>25</ZIndex>
+            <Top>1.14155in</Top>
+            <Left>1.33838in</Left>
+            <Height>0.16858in</Height>
+            <Width>1.13802in</Width>
+            <ZIndex>23</ZIndex>
             <Style>
               <Border>
                 <Style>None</Style>
@@ -3994,7 +4703,7 @@ WHERE IdEstado =1</CommandText>
               <BottomBorder>
                 <Color>Black</Color>
                 <Style>Solid</Style>
-                <Width>1pt</Width>
+                <Width>0.25pt</Width>
               </BottomBorder>
               <PaddingLeft>2pt</PaddingLeft>
               <PaddingRight>2pt</PaddingRight>
@@ -4002,49 +4711,16 @@ WHERE IdEstado =1</CommandText>
               <PaddingBottom>2pt</PaddingBottom>
             </Style>
           </Textbox>
-          <Textbox Name="Textbox24">
-            <CanGrow>true</CanGrow>
-            <KeepTogether>true</KeepTogether>
-            <Paragraphs>
-              <Paragraph>
-                <TextRuns>
-                  <TextRun>
-                    <Value> Situado en: </Value>
-                    <Style>
-                      <FontFamily>Calibri</FontFamily>
-                    </Style>
-                  </TextRun>
-                </TextRuns>
-                <Style />
-              </Paragraph>
-            </Paragraphs>
-            <rd:DefaultName>Textbox24</rd:DefaultName>
-            <Top>1.33818in</Top>
-            <Left>2.76322in</Left>
-            <Height>0.15556in</Height>
-            <Width>0.76667in</Width>
-            <ZIndex>26</ZIndex>
-            <Style>
-              <Border>
-                <Style>None</Style>
-              </Border>
-              <PaddingLeft>2pt</PaddingLeft>
-              <PaddingRight>2pt</PaddingRight>
-              <PaddingTop>2pt</PaddingTop>
-              <PaddingBottom>2pt</PaddingBottom>
-            </Style>
-          </Textbox>
           <Textbox Name="Textbox25">
-            <CanGrow>true</CanGrow>
             <KeepTogether>true</KeepTogether>
             <Paragraphs>
               <Paragraph>
                 <TextRuns>
                   <TextRun>
-                    <Value>=First(Fields!Direccion.Value, "CertificadoDepositoInformacion")</Value>
+                    <Value>=First(Fields!SituadoEn.Value, "CertificadoDepositoInformacion")</Value>
                     <Style>
                       <FontFamily>Calibri</FontFamily>
-                      <FontWeight>Bold</FontWeight>
+                      <FontSize>8pt</FontSize>
                       <TextDecoration>None</TextDecoration>
                     </Style>
                   </TextRun>
@@ -4053,11 +4729,11 @@ WHERE IdEstado =1</CommandText>
               </Paragraph>
             </Paragraphs>
             <rd:DefaultName>Textbox25</rd:DefaultName>
-            <Top>1.34183in</Top>
-            <Left>3.54378in</Left>
-            <Height>0.15556in</Height>
-            <Width>2.55222in</Width>
-            <ZIndex>27</ZIndex>
+            <Top>1.15683in</Top>
+            <Left>3.15078in</Left>
+            <Height>0.16719in</Height>
+            <Width>3.28164in</Width>
+            <ZIndex>24</ZIndex>
             <Style>
               <Border>
                 <Style>None</Style>
@@ -4065,79 +4741,7 @@ WHERE IdEstado =1</CommandText>
               <BottomBorder>
                 <Color>Black</Color>
                 <Style>Solid</Style>
-                <Width>1pt</Width>
-              </BottomBorder>
-              <PaddingLeft>2pt</PaddingLeft>
-              <PaddingRight>2pt</PaddingRight>
-              <PaddingTop>2pt</PaddingTop>
-              <PaddingBottom>2pt</PaddingBottom>
-            </Style>
-          </Textbox>
-          <Textbox Name="Textbox26">
-            <CanGrow>true</CanGrow>
-            <KeepTogether>true</KeepTogether>
-            <Paragraphs>
-              <Paragraph>
-                <TextRuns>
-                  <TextRun>
-                    <Value>el día:</Value>
-                    <Style>
-                      <FontFamily>Calibri</FontFamily>
-                    </Style>
-                  </TextRun>
-                </TextRuns>
-                <Style />
-              </Paragraph>
-            </Paragraphs>
-            <rd:DefaultName>Textbox26</rd:DefaultName>
-            <Top>1.32794in</Top>
-            <Left>6.15155in</Left>
-            <Height>0.16944in</Height>
-            <Width>0.44663in</Width>
-            <ZIndex>28</ZIndex>
-            <Style>
-              <Border>
-                <Style>None</Style>
-              </Border>
-              <PaddingLeft>2pt</PaddingLeft>
-              <PaddingRight>2pt</PaddingRight>
-              <PaddingTop>2pt</PaddingTop>
-              <PaddingBottom>2pt</PaddingBottom>
-            </Style>
-          </Textbox>
-          <Textbox Name="Textbox27">
-            <CanGrow>true</CanGrow>
-            <KeepTogether>true</KeepTogether>
-            <Paragraphs>
-              <Paragraph>
-                <TextRuns>
-                  <TextRun>
-                    <Value>=First(Fields!FechaCertificado.Value, "CertificadoDepositoInformacion")</Value>
-                    <Style>
-                      <FontFamily>Calibri</FontFamily>
-                      <FontWeight>Bold</FontWeight>
-                      <Format>d</Format>
-                      <TextDecoration>None</TextDecoration>
-                    </Style>
-                  </TextRun>
-                </TextRuns>
-                <Style />
-              </Paragraph>
-            </Paragraphs>
-            <rd:DefaultName>Textbox27</rd:DefaultName>
-            <Top>1.33818in</Top>
-            <Left>6.62596in</Left>
-            <Height>0.16944in</Height>
-            <Width>1.33946in</Width>
-            <ZIndex>29</ZIndex>
-            <Style>
-              <Border>
-                <Style>None</Style>
-              </Border>
-              <BottomBorder>
-                <Color>Black</Color>
-                <Style>Solid</Style>
-                <Width>1pt</Width>
+                <Width>0.25pt</Width>
               </BottomBorder>
               <PaddingLeft>2pt</PaddingLeft>
               <PaddingRight>2pt</PaddingRight>
@@ -4146,7 +4750,6 @@ WHERE IdEstado =1</CommandText>
             </Style>
           </Textbox>
           <Textbox Name="Textbox28">
-            <CanGrow>true</CanGrow>
             <KeepTogether>true</KeepTogether>
             <Paragraphs>
               <Paragraph>
@@ -4181,11 +4784,43 @@ WHERE IdEstado =1</CommandText>
               </Paragraph>
             </Paragraphs>
             <rd:DefaultName>Textbox28</rd:DefaultName>
-            <Top>4.28093in</Top>
-            <Left>0.29251in</Left>
-            <Height>0.18398in</Height>
-            <Width>2.16296in</Width>
-            <ZIndex>30</ZIndex>
+            <Top>3.68932in</Top>
+            <Left>0.48622in</Left>
+            <Height>0.18953in</Height>
+            <Width>2.00567in</Width>
+            <ZIndex>25</ZIndex>
+            <Style>
+              <Border>
+                <Style>None</Style>
+              </Border>
+              <PaddingLeft>2pt</PaddingLeft>
+              <PaddingRight>2pt</PaddingRight>
+              <PaddingTop>2pt</PaddingTop>
+              <PaddingBottom>2pt</PaddingBottom>
+            </Style>
+          </Textbox>
+          <Textbox Name="Textbox26">
+            <KeepTogether>true</KeepTogether>
+            <Paragraphs>
+              <Paragraph>
+                <TextRuns>
+                  <TextRun>
+                    <Value>el día:</Value>
+                    <Style>
+                      <FontFamily>Calibri</FontFamily>
+                      <FontSize>9pt</FontSize>
+                    </Style>
+                  </TextRun>
+                </TextRuns>
+                <Style />
+              </Paragraph>
+            </Paragraphs>
+            <rd:DefaultName>Textbox26</rd:DefaultName>
+            <Top>1.12905in</Top>
+            <Left>6.41267in</Left>
+            <Height>0.17969in</Height>
+            <Width>0.37026in</Width>
+            <ZIndex>26</ZIndex>
             <Style>
               <Border>
                 <Style>None</Style>
@@ -4197,30 +4832,30 @@ WHERE IdEstado =1</CommandText>
             </Style>
           </Textbox>
           <Textbox Name="Textbox29">
-            <CanGrow>true</CanGrow>
             <KeepTogether>true</KeepTogether>
             <Paragraphs>
               <Paragraph>
                 <TextRuns>
                   <TextRun>
-                    <Value>=First(Fields!MercaderiaEspecificada.Value, "CertificadoDepositoInformacion")</Value>
+                    <Value>=IIF(First(Fields!ServicioName.Value, "CertificadoDepositoInformacion")="Almacen Fiscal","  Si  ", ";;;;;;;;;;;;;;;;;;;;;;;;;")</Value>
                     <Style>
                       <FontFamily>Calibri</FontFamily>
-                      <FontSize>9pt</FontSize>
-                      <FontWeight>Bold</FontWeight>
+                      <FontSize>8pt</FontSize>
                       <TextDecoration>None</TextDecoration>
                     </Style>
                   </TextRun>
                 </TextRuns>
-                <Style />
+                <Style>
+                  <TextAlign>Center</TextAlign>
+                </Style>
               </Paragraph>
             </Paragraphs>
             <rd:DefaultName>Textbox28</rd:DefaultName>
-            <Top>4.28093in</Top>
-            <Left>2.45547in</Left>
-            <Height>0.17009in</Height>
-            <Width>2.21481in</Width>
-            <ZIndex>31</ZIndex>
+            <Top>3.68932in</Top>
+            <Left>2.49189in</Left>
+            <Height>0.18953in</Height>
+            <Width>2.01116in</Width>
+            <ZIndex>27</ZIndex>
             <Style>
               <Border>
                 <Style>None</Style>
@@ -4228,7 +4863,7 @@ WHERE IdEstado =1</CommandText>
               <BottomBorder>
                 <Color>Black</Color>
                 <Style>Solid</Style>
-                <Width>1pt</Width>
+                <Width>0.5pt</Width>
               </BottomBorder>
               <PaddingLeft>2pt</PaddingLeft>
               <PaddingRight>2pt</PaddingRight>
@@ -4237,13 +4872,12 @@ WHERE IdEstado =1</CommandText>
             </Style>
           </Textbox>
           <Textbox Name="Textbox30">
-            <CanGrow>true</CanGrow>
             <KeepTogether>true</KeepTogether>
             <Paragraphs>
               <Paragraph>
                 <TextRuns>
                   <TextRun>
-                    <Value>están sujetas al pago de Lps</Value>
+                    <Value>están sujetas al pago de Lps.</Value>
                     <Style>
                       <FontFamily>Calibri</FontFamily>
                       <FontSize>9pt</FontSize>
@@ -4255,11 +4889,11 @@ WHERE IdEstado =1</CommandText>
               </Paragraph>
             </Paragraphs>
             <rd:DefaultName>Textbox30</rd:DefaultName>
-            <Top>4.28093in</Top>
-            <Left>4.68417in</Left>
-            <Height>0.18398in</Height>
-            <Width>1.8932in</Width>
-            <ZIndex>32</ZIndex>
+            <Top>3.68932in</Top>
+            <Left>4.57249in</Left>
+            <Height>0.18953in</Height>
+            <Width>1.54096in</Width>
+            <ZIndex>28</ZIndex>
             <Style>
               <Border>
                 <Style>None</Style>
@@ -4271,32 +4905,31 @@ WHERE IdEstado =1</CommandText>
             </Style>
           </Textbox>
           <Textbox Name="Textbox31">
-            <CanGrow>true</CanGrow>
             <KeepTogether>true</KeepTogether>
             <Paragraphs>
               <Paragraph>
                 <TextRuns>
                   <TextRun>
-                    <Value>=First(Fields!SujetasAPago.Value, "CertificadoDepositoInformacion")</Value>
+                    <Value>=IIF(First(Fields!ServicioName.Value, "CertificadoDepositoInformacion")="Almacen Fiscal",(First(Fields!SujetasAPago.Value, "CertificadoDepositoInformacion")), ";;;;;;;;;;;;;;;;;;;;;;;;;")</Value>
                     <Style>
                       <FontFamily>Calibri</FontFamily>
-                      <FontSize>9pt</FontSize>
-                      <FontWeight>Bold</FontWeight>
+                      <FontSize>8pt</FontSize>
+                      <FontWeight>Normal</FontWeight>
                       <TextDecoration>None</TextDecoration>
                     </Style>
                   </TextRun>
                 </TextRuns>
                 <Style>
-                  <TextAlign>Left</TextAlign>
+                  <TextAlign>Center</TextAlign>
                 </Style>
               </Paragraph>
             </Paragraphs>
             <rd:DefaultName>Textbox31</rd:DefaultName>
-            <Top>4.28093in</Top>
-            <Left>6.60515in</Left>
-            <Height>0.18398in</Height>
-            <Width>1.37416in</Width>
-            <ZIndex>33</ZIndex>
+            <Top>3.68932in</Top>
+            <Left>6.12734in</Left>
+            <Height>0.16175in</Height>
+            <Width>1.88323in</Width>
+            <ZIndex>29</ZIndex>
             <Style>
               <Border>
                 <Style>None</Style>
@@ -4304,7 +4937,7 @@ WHERE IdEstado =1</CommandText>
               <BottomBorder>
                 <Color>Black</Color>
                 <Style>Solid</Style>
-                <Width>1pt</Width>
+                <Width>0.5pt</Width>
               </BottomBorder>
               <PaddingLeft>2pt</PaddingLeft>
               <PaddingRight>2pt</PaddingRight>
@@ -4313,13 +4946,12 @@ WHERE IdEstado =1</CommandText>
             </Style>
           </Textbox>
           <Textbox Name="Textbox32">
-            <CanGrow>true</CanGrow>
             <KeepTogether>true</KeepTogether>
             <Paragraphs>
               <Paragraph>
                 <TextRuns>
                   <TextRun>
-                    <Value>En conceptos de derechos de introducción según Solicitud de Traslado No</Value>
+                    <Value>En conceptos de derechos de introducción según Solicitud de Traslado No.</Value>
                     <Style>
                       <FontFamily>Calibri</FontFamily>
                       <FontSize>9pt</FontSize>
@@ -4331,11 +4963,11 @@ WHERE IdEstado =1</CommandText>
               </Paragraph>
             </Paragraphs>
             <rd:DefaultName>Textbox32</rd:DefaultName>
-            <Top>4.47879in</Top>
-            <Left>0.29663in</Left>
-            <Height>0.15741in</Height>
-            <Width>4.37365in</Width>
-            <ZIndex>34</ZIndex>
+            <Top>3.87885in</Top>
+            <Left>0.48622in</Left>
+            <Height>0.18797in</Height>
+            <Width>3.92222in</Width>
+            <ZIndex>30</ZIndex>
             <Style>
               <Border>
                 <Style>None</Style>
@@ -4347,32 +4979,31 @@ WHERE IdEstado =1</CommandText>
             </Style>
           </Textbox>
           <Textbox Name="Textbox33">
-            <CanGrow>true</CanGrow>
             <KeepTogether>true</KeepTogether>
             <Paragraphs>
               <Paragraph>
                 <TextRuns>
                   <TextRun>
-                    <Value>=First(Fields!SolicitudCertificadoId.Value, "CertificadoDepositoInformacion")</Value>
+                    <Value>=IIF(First(Fields!ServicioName.Value, "CertificadoDepositoInformacion")="Almacen Fiscal",(First(Fields!NoTraslado.Value, "CertificadoDepositoInformacion")), ";;;;;;;;;;;;;;;;;;;;;;;;;")</Value>
                     <Style>
                       <FontFamily>Calibri</FontFamily>
-                      <FontSize>9pt</FontSize>
+                      <FontSize>8pt</FontSize>
                       <FontWeight>Normal</FontWeight>
-                      <TextDecoration>Underline</TextDecoration>
+                      <TextDecoration>None</TextDecoration>
                     </Style>
                   </TextRun>
                 </TextRuns>
                 <Style>
-                  <TextAlign>Left</TextAlign>
+                  <TextAlign>Center</TextAlign>
                 </Style>
               </Paragraph>
             </Paragraphs>
             <rd:DefaultName>Textbox33</rd:DefaultName>
-            <Top>4.47879in</Top>
-            <Left>4.68417in</Left>
-            <Height>0.15741in</Height>
-            <Width>1.91401in</Width>
-            <ZIndex>35</ZIndex>
+            <Top>3.87885in</Top>
+            <Left>4.45875in</Left>
+            <Height>0.18797in</Height>
+            <Width>3.51852in</Width>
+            <ZIndex>31</ZIndex>
             <Style>
               <Border>
                 <Style>None</Style>
@@ -4380,7 +5011,7 @@ WHERE IdEstado =1</CommandText>
               <BottomBorder>
                 <Color>Black</Color>
                 <Style>Solid</Style>
-                <Width>1pt</Width>
+                <Width>0.5pt</Width>
               </BottomBorder>
               <PaddingLeft>2pt</PaddingLeft>
               <PaddingRight>2pt</PaddingRight>
@@ -4389,13 +5020,12 @@ WHERE IdEstado =1</CommandText>
             </Style>
           </Textbox>
           <Textbox Name="Textbox34">
-            <CanGrow>true</CanGrow>
             <KeepTogether>true</KeepTogether>
             <Paragraphs>
               <Paragraph>
                 <TextRuns>
                   <TextRun>
-                    <Value>SEGURO </Value>
+                    <Value>SEGURO: </Value>
                     <Style>
                       <FontFamily>Calibri</FontFamily>
                       <FontSize>9pt</FontSize>
@@ -4415,11 +5045,11 @@ WHERE IdEstado =1</CommandText>
               </Paragraph>
             </Paragraphs>
             <rd:DefaultName>Textbox34</rd:DefaultName>
-            <Top>4.66398in</Top>
-            <Left>0.29663in</Left>
-            <Height>0.1537in</Height>
-            <Width>7.66879in</Width>
-            <ZIndex>36</ZIndex>
+            <Top>4.08071in</Top>
+            <Left>0.48622in</Left>
+            <Height>0.18425in</Height>
+            <Width>7.50709in</Width>
+            <ZIndex>32</ZIndex>
             <Style>
               <Border>
                 <Style>None</Style>
@@ -4431,13 +5061,12 @@ WHERE IdEstado =1</CommandText>
             </Style>
           </Textbox>
           <Textbox Name="Textbox35">
-            <CanGrow>true</CanGrow>
             <KeepTogether>true</KeepTogether>
             <Paragraphs>
               <Paragraph>
                 <TextRuns>
                   <TextRun>
-                    <Value>Póliza No</Value>
+                    <Value>POLIZA No</Value>
                     <Style>
                       <FontFamily>Calibri</FontFamily>
                       <FontSize>9pt</FontSize>
@@ -4445,7 +5074,7 @@ WHERE IdEstado =1</CommandText>
                     </Style>
                   </TextRun>
                   <TextRun>
-                    <Value>.</Value>
+                    <Value>. </Value>
                     <Style>
                       <FontFamily>Calibri</FontFamily>
                       <FontSize>9pt</FontSize>
@@ -4457,11 +5086,11 @@ WHERE IdEstado =1</CommandText>
               </Paragraph>
             </Paragraphs>
             <rd:DefaultName>Textbox35</rd:DefaultName>
-            <Top>4.83435in</Top>
-            <Left>0.29251in</Left>
-            <Height>0.13889in</Height>
-            <Width>1in</Width>
-            <ZIndex>37</ZIndex>
+            <Top>4.32052in</Top>
+            <Left>0.48622in</Left>
+            <Height>0.18056in</Height>
+            <Width>0.78272in</Width>
+            <ZIndex>33</ZIndex>
             <Style>
               <Border>
                 <Style>None</Style>
@@ -4473,7 +5102,6 @@ WHERE IdEstado =1</CommandText>
             </Style>
           </Textbox>
           <Textbox Name="Textbox36">
-            <CanGrow>true</CanGrow>
             <KeepTogether>true</KeepTogether>
             <Paragraphs>
               <Paragraph>
@@ -4482,8 +5110,7 @@ WHERE IdEstado =1</CommandText>
                     <Value>=First(Fields!PolicyNumber.Value, "CertificadoDepositoInformacion")</Value>
                     <Style>
                       <FontFamily>Calibri</FontFamily>
-                      <FontSize>9pt</FontSize>
-                      <FontWeight>Bold</FontWeight>
+                      <FontSize>8pt</FontSize>
                       <TextDecoration>None</TextDecoration>
                     </Style>
                   </TextRun>
@@ -4494,11 +5121,11 @@ WHERE IdEstado =1</CommandText>
               </Paragraph>
             </Paragraphs>
             <rd:DefaultName>Textbox36</rd:DefaultName>
-            <Top>4.83157in</Top>
-            <Left>1.3064in</Left>
-            <Height>0.14167in</Height>
-            <Width>1.62025in</Width>
-            <ZIndex>38</ZIndex>
+            <Top>4.31774in</Top>
+            <Left>1.30088in</Left>
+            <Height>0.18334in</Height>
+            <Width>1.59737in</Width>
+            <ZIndex>34</ZIndex>
             <Style>
               <Border>
                 <Style>None</Style>
@@ -4506,7 +5133,7 @@ WHERE IdEstado =1</CommandText>
               <BottomBorder>
                 <Color>Black</Color>
                 <Style>Solid</Style>
-                <Width>1pt</Width>
+                <Width>0.25pt</Width>
               </BottomBorder>
               <PaddingLeft>2pt</PaddingLeft>
               <PaddingRight>2pt</PaddingRight>
@@ -4515,7 +5142,6 @@ WHERE IdEstado =1</CommandText>
             </Style>
           </Textbox>
           <Textbox Name="Textbox37">
-            <CanGrow>true</CanGrow>
             <KeepTogether>true</KeepTogether>
             <Paragraphs>
               <Paragraph>
@@ -4533,11 +5159,11 @@ WHERE IdEstado =1</CommandText>
               </Paragraph>
             </Paragraphs>
             <rd:DefaultName>Textbox37</rd:DefaultName>
-            <Top>4.83435in</Top>
-            <Left>2.92665in</Left>
-            <Height>0.13889in</Height>
-            <Width>0.22222in</Width>
-            <ZIndex>39</ZIndex>
+            <Top>4.32052in</Top>
+            <Left>2.97742in</Left>
+            <Height>0.18056in</Height>
+            <Width>0.29462in</Width>
+            <ZIndex>35</ZIndex>
             <Style>
               <Border>
                 <Style>None</Style>
@@ -4549,7 +5175,6 @@ WHERE IdEstado =1</CommandText>
             </Style>
           </Textbox>
           <Textbox Name="Textbox38">
-            <CanGrow>true</CanGrow>
             <KeepTogether>true</KeepTogether>
             <Paragraphs>
               <Paragraph>
@@ -4558,8 +5183,7 @@ WHERE IdEstado =1</CommandText>
                     <Value>=First(Fields!InsurancesName.Value, "CertificadoDepositoInformacion")</Value>
                     <Style>
                       <FontFamily>Calibri</FontFamily>
-                      <FontSize>9pt</FontSize>
-                      <FontWeight>Bold</FontWeight>
+                      <FontSize>8pt</FontSize>
                       <TextDecoration>None</TextDecoration>
                     </Style>
                   </TextRun>
@@ -4570,11 +5194,11 @@ WHERE IdEstado =1</CommandText>
               </Paragraph>
             </Paragraphs>
             <rd:DefaultName>Textbox38</rd:DefaultName>
-            <Top>4.84546in</Top>
-            <Left>3.16276in</Left>
-            <Height>0.12778in</Height>
-            <Width>4.80678in</Width>
-            <ZIndex>40</ZIndex>
+            <Top>4.33163in</Top>
+            <Left>3.28592in</Left>
+            <Height>0.16945in</Height>
+            <Width>4.71216in</Width>
+            <ZIndex>36</ZIndex>
             <Style>
               <Border>
                 <Style>None</Style>
@@ -4582,7 +5206,7 @@ WHERE IdEstado =1</CommandText>
               <BottomBorder>
                 <Color>Black</Color>
                 <Style>Solid</Style>
-                <Width>1pt</Width>
+                <Width>0.25pt</Width>
               </BottomBorder>
               <PaddingLeft>2pt</PaddingLeft>
               <PaddingRight>2pt</PaddingRight>
@@ -4591,7 +5215,6 @@ WHERE IdEstado =1</CommandText>
             </Style>
           </Textbox>
           <Textbox Name="Textbox39">
-            <CanGrow>true</CanGrow>
             <KeepTogether>true</KeepTogether>
             <Paragraphs>
               <Paragraph>
@@ -4617,11 +5240,11 @@ WHERE IdEstado =1</CommandText>
               </Paragraph>
             </Paragraphs>
             <rd:DefaultName>Textbox39</rd:DefaultName>
-            <Top>5.00102in</Top>
-            <Left>0.29663in</Left>
-            <Height>0.16905in</Height>
-            <Width>7.66879in</Width>
-            <ZIndex>41</ZIndex>
+            <Top>4.54275in</Top>
+            <Left>0.48622in</Left>
+            <Height>0.17738in</Height>
+            <Width>7.51542in</Width>
+            <ZIndex>37</ZIndex>
             <Style>
               <Border>
                 <Style>None</Style>
@@ -4633,7 +5256,6 @@ WHERE IdEstado =1</CommandText>
             </Style>
           </Textbox>
           <Textbox Name="Textbox40">
-            <CanGrow>true</CanGrow>
             <KeepTogether>true</KeepTogether>
             <Paragraphs>
               <Paragraph>
@@ -4659,11 +5281,11 @@ WHERE IdEstado =1</CommandText>
               </Paragraph>
             </Paragraphs>
             <rd:DefaultName>Textbox40</rd:DefaultName>
-            <Top>5.19784in</Top>
-            <Left>0.30433in</Left>
-            <Height>0.14524in</Height>
-            <Width>2.62908in</Width>
-            <ZIndex>42</ZIndex>
+            <Top>4.7479in</Top>
+            <Left>0.48622in</Left>
+            <Height>0.19941in</Height>
+            <Width>2.4446in</Width>
+            <ZIndex>38</ZIndex>
             <Style>
               <Border>
                 <Style>None</Style>
@@ -4675,31 +5297,31 @@ WHERE IdEstado =1</CommandText>
             </Style>
           </Textbox>
           <Textbox Name="Textbox41">
-            <CanGrow>true</CanGrow>
             <KeepTogether>true</KeepTogether>
             <Paragraphs>
               <Paragraph>
                 <TextRuns>
                   <TextRun>
-                    <Value>=First(Fields!FechaVencimientoCertificado.Value, "CertificadoDepositoInformacion")</Value>
+                    <Value>=First(Fields!FechaVencimientoDeposito.Value, "CertificadoDepositoInformacion")</Value>
                     <Style>
                       <FontFamily>Calibri</FontFamily>
-                      <FontSize>9pt</FontSize>
-                      <FontWeight>Bold</FontWeight>
+                      <FontSize>8pt</FontSize>
                       <Format>dd 'de' MMMM 'de' yyyy</Format>
                       <TextDecoration>None</TextDecoration>
                     </Style>
                   </TextRun>
                 </TextRuns>
-                <Style />
+                <Style>
+                  <TextAlign>Center</TextAlign>
+                </Style>
               </Paragraph>
             </Paragraphs>
             <rd:DefaultName>Textbox41</rd:DefaultName>
-            <Top>5.21173in</Top>
-            <Left>2.98897in</Left>
-            <Height>0.14524in</Height>
-            <Width>2.98307in</Width>
-            <ZIndex>43</ZIndex>
+            <Top>4.7354in</Top>
+            <Left>2.97353in</Left>
+            <Height>0.19941in</Height>
+            <Width>3.17609in</Width>
+            <ZIndex>39</ZIndex>
             <Style>
               <Border>
                 <Style>None</Style>
@@ -4707,7 +5329,7 @@ WHERE IdEstado =1</CommandText>
               <BottomBorder>
                 <Color>Black</Color>
                 <Style>Solid</Style>
-                <Width>1pt</Width>
+                <Width>0.5pt</Width>
               </BottomBorder>
               <PaddingLeft>2pt</PaddingLeft>
               <PaddingRight>2pt</PaddingRight>
@@ -4716,7 +5338,6 @@ WHERE IdEstado =1</CommandText>
             </Style>
           </Textbox>
           <Textbox Name="Textbox42">
-            <CanGrow>true</CanGrow>
             <KeepTogether>true</KeepTogether>
             <Paragraphs>
               <Paragraph>
@@ -4742,15 +5363,16 @@ WHERE IdEstado =1</CommandText>
               </Paragraph>
             </Paragraphs>
             <rd:DefaultName>Textbox42</rd:DefaultName>
-            <Top>5.37086in</Top>
-            <Left>0.29663in</Left>
-            <Height>0.14524in</Height>
-            <Width>2.15884in</Width>
-            <ZIndex>44</ZIndex>
+            <Top>4.9487in</Top>
+            <Left>0.48622in</Left>
+            <Height>0.20079in</Height>
+            <Width>1.91371in</Width>
+            <ZIndex>40</ZIndex>
             <Style>
               <Border>
                 <Style>None</Style>
               </Border>
+              <VerticalAlign>Top</VerticalAlign>
               <PaddingLeft>2pt</PaddingLeft>
               <PaddingRight>2pt</PaddingRight>
               <PaddingTop>2pt</PaddingTop>
@@ -4758,7 +5380,6 @@ WHERE IdEstado =1</CommandText>
             </Style>
           </Textbox>
           <Textbox Name="Textbox43">
-            <CanGrow>true</CanGrow>
             <KeepTogether>true</KeepTogether>
             <Paragraphs>
               <Paragraph>
@@ -4767,21 +5388,22 @@ WHERE IdEstado =1</CommandText>
                     <Value>=First(Fields!Almacenaje.Value, "CertificadoDepositoInformacion")</Value>
                     <Style>
                       <FontFamily>Calibri</FontFamily>
-                      <FontSize>9pt</FontSize>
-                      <FontWeight>Bold</FontWeight>
+                      <FontSize>8pt</FontSize>
                       <TextDecoration>None</TextDecoration>
                     </Style>
                   </TextRun>
                 </TextRuns>
-                <Style />
+                <Style>
+                  <TextAlign>Center</TextAlign>
+                </Style>
               </Paragraph>
             </Paragraphs>
             <rd:DefaultName>Textbox43</rd:DefaultName>
-            <Top>5.35697in</Top>
-            <Left>2.48325in</Left>
-            <Height>0.15913in</Height>
-            <Width>1.25179in</Width>
-            <ZIndex>45</ZIndex>
+            <Top>4.9487in</Top>
+            <Left>2.46937in</Left>
+            <Height>0.18689in</Height>
+            <Width>1.13424in</Width>
+            <ZIndex>41</ZIndex>
             <Style>
               <Border>
                 <Style>None</Style>
@@ -4789,7 +5411,7 @@ WHERE IdEstado =1</CommandText>
               <BottomBorder>
                 <Color>Black</Color>
                 <Style>Solid</Style>
-                <Width>1pt</Width>
+                <Width>0.25pt</Width>
               </BottomBorder>
               <PaddingLeft>2pt</PaddingLeft>
               <PaddingRight>2pt</PaddingRight>
@@ -4798,25 +5420,15 @@ WHERE IdEstado =1</CommandText>
             </Style>
           </Textbox>
           <Textbox Name="Textbox46">
-            <CanGrow>true</CanGrow>
             <KeepTogether>true</KeepTogether>
             <Paragraphs>
               <Paragraph>
                 <TextRuns>
                   <TextRun>
-                    <Value>Seguro</Value>
+                    <Value>Seguro:</Value>
                     <Style>
                       <FontFamily>Calibri</FontFamily>
                       <FontSize>9pt</FontSize>
-                      <FontWeight>Bold</FontWeight>
-                    </Style>
-                  </TextRun>
-                  <TextRun>
-                    <Value>:</Value>
-                    <Style>
-                      <FontFamily>Calibri</FontFamily>
-                      <FontSize>9pt</FontSize>
-                      <FontWeight>Normal</FontWeight>
                     </Style>
                   </TextRun>
                 </TextRuns>
@@ -4824,11 +5436,11 @@ WHERE IdEstado =1</CommandText>
               </Paragraph>
             </Paragraphs>
             <rd:DefaultName>Textbox46</rd:DefaultName>
-            <Top>5.35697in</Top>
-            <Left>3.76282in</Left>
-            <Height>0.15913in</Height>
-            <Width>0.56426in</Width>
-            <ZIndex>46</ZIndex>
+            <Top>4.9487in</Top>
+            <Left>3.60361in</Left>
+            <Height>0.20079in</Height>
+            <Width>0.539in</Width>
+            <ZIndex>42</ZIndex>
             <Style>
               <Border>
                 <Style>None</Style>
@@ -4840,7 +5452,6 @@ WHERE IdEstado =1</CommandText>
             </Style>
           </Textbox>
           <Textbox Name="Textbox48">
-            <CanGrow>true</CanGrow>
             <KeepTogether>true</KeepTogether>
             <Paragraphs>
               <Paragraph>
@@ -4849,21 +5460,22 @@ WHERE IdEstado =1</CommandText>
                     <Value>=First(Fields!Seguro.Value, "CertificadoDepositoInformacion")</Value>
                     <Style>
                       <FontFamily>Calibri</FontFamily>
-                      <FontSize>9pt</FontSize>
-                      <FontWeight>Bold</FontWeight>
+                      <FontSize>8pt</FontSize>
                       <TextDecoration>None</TextDecoration>
                     </Style>
                   </TextRun>
                 </TextRuns>
-                <Style />
+                <Style>
+                  <TextAlign>Center</TextAlign>
+                </Style>
               </Paragraph>
             </Paragraphs>
             <rd:DefaultName>Textbox48</rd:DefaultName>
-            <Top>5.35697in</Top>
-            <Left>4.35486in</Left>
-            <Height>0.15913in</Height>
-            <Width>1.61718in</Width>
-            <ZIndex>47</ZIndex>
+            <Top>4.9487in</Top>
+            <Left>4.17039in</Left>
+            <Height>0.18689in</Height>
+            <Width>1.42246in</Width>
+            <ZIndex>43</ZIndex>
             <Style>
               <Border>
                 <Style>None</Style>
@@ -4871,7 +5483,7 @@ WHERE IdEstado =1</CommandText>
               <BottomBorder>
                 <Color>Black</Color>
                 <Style>Solid</Style>
-                <Width>1pt</Width>
+                <Width>0.25pt</Width>
               </BottomBorder>
               <PaddingLeft>2pt</PaddingLeft>
               <PaddingRight>2pt</PaddingRight>
@@ -4880,7 +5492,6 @@ WHERE IdEstado =1</CommandText>
             </Style>
           </Textbox>
           <Textbox Name="Textbox50">
-            <CanGrow>true</CanGrow>
             <KeepTogether>true</KeepTogether>
             <Paragraphs>
               <Paragraph>
@@ -4898,11 +5509,11 @@ WHERE IdEstado =1</CommandText>
               </Paragraph>
             </Paragraphs>
             <rd:DefaultName>Textbox50</rd:DefaultName>
-            <Top>5.35697in</Top>
-            <Left>6.0137in</Left>
-            <Height>0.15913in</Height>
-            <Width>0.89008in</Width>
-            <ZIndex>48</ZIndex>
+            <Top>4.9487in</Top>
+            <Left>5.66229in</Left>
+            <Height>0.20079in</Height>
+            <Width>0.79861in</Width>
+            <ZIndex>44</ZIndex>
             <Style>
               <Border>
                 <Style>None</Style>
@@ -4914,7 +5525,6 @@ WHERE IdEstado =1</CommandText>
             </Style>
           </Textbox>
           <Textbox Name="Textbox51">
-            <CanGrow>true</CanGrow>
             <KeepTogether>true</KeepTogether>
             <Paragraphs>
               <Paragraph>
@@ -4923,21 +5533,22 @@ WHERE IdEstado =1</CommandText>
                     <Value>=First(Fields!OtrosCargos.Value, "CertificadoDepositoInformacion")</Value>
                     <Style>
                       <FontFamily>Calibri</FontFamily>
-                      <FontSize>9pt</FontSize>
-                      <FontWeight>Bold</FontWeight>
+                      <FontSize>8pt</FontSize>
                       <TextDecoration>None</TextDecoration>
                     </Style>
                   </TextRun>
                 </TextRuns>
-                <Style />
+                <Style>
+                  <TextAlign>Center</TextAlign>
+                </Style>
               </Paragraph>
             </Paragraphs>
             <rd:DefaultName>Textbox51</rd:DefaultName>
-            <Top>5.35697in</Top>
-            <Left>6.93156in</Left>
-            <Height>0.15913in</Height>
-            <Width>1.03386in</Width>
-            <ZIndex>49</ZIndex>
+            <Top>4.9487in</Top>
+            <Left>6.50257in</Left>
+            <Height>0.18689in</Height>
+            <Width>1.49074in</Width>
+            <ZIndex>45</ZIndex>
             <Style>
               <Border>
                 <Style>None</Style>
@@ -4945,7 +5556,7 @@ WHERE IdEstado =1</CommandText>
               <BottomBorder>
                 <Color>Black</Color>
                 <Style>Solid</Style>
-                <Width>1pt</Width>
+                <Width>0.25pt</Width>
               </BottomBorder>
               <PaddingLeft>2pt</PaddingLeft>
               <PaddingRight>2pt</PaddingRight>
@@ -4954,13 +5565,12 @@ WHERE IdEstado =1</CommandText>
             </Style>
           </Textbox>
           <Textbox Name="Textbox52">
-            <CanGrow>true</CanGrow>
             <KeepTogether>true</KeepTogether>
             <Paragraphs>
               <Paragraph>
                 <TextRuns>
                   <TextRun>
-                    <Value>Las mercancías a que este Certificado de Depósito se refiere han sido dadas en garantía en esta fecha</Value>
+                    <Value>Las mercancías a que este Certificado de Depósito se refiere han sido dadas en garantía en esta fecha a</Value>
                     <Style>
                       <FontFamily>Calibri</FontFamily>
                       <FontSize>9pt</FontSize>
@@ -4972,44 +5582,11 @@ WHERE IdEstado =1</CommandText>
               </Paragraph>
             </Paragraphs>
             <rd:DefaultName>Textbox52</rd:DefaultName>
-            <Top>6.80688in</Top>
-            <Left>0.32419in</Left>
-            <Height>0.17667in</Height>
-            <Width>6.10667in</Width>
-            <ZIndex>50</ZIndex>
-            <Style>
-              <Border>
-                <Style>None</Style>
-              </Border>
-              <PaddingLeft>2pt</PaddingLeft>
-              <PaddingRight>2pt</PaddingRight>
-              <PaddingTop>2pt</PaddingTop>
-              <PaddingBottom>2pt</PaddingBottom>
-            </Style>
-          </Textbox>
-          <Textbox Name="Textbox54">
-            <CanGrow>true</CanGrow>
-            <KeepTogether>true</KeepTogether>
-            <Paragraphs>
-              <Paragraph>
-                <TextRuns>
-                  <TextRun>
-                    <Value>a</Value>
-                    <Style>
-                      <FontFamily>Calibri</FontFamily>
-                      <FontSize>9pt</FontSize>
-                    </Style>
-                  </TextRun>
-                </TextRuns>
-                <Style />
-              </Paragraph>
-            </Paragraphs>
-            <rd:DefaultName>Textbox54</rd:DefaultName>
-            <Top>6.98355in</Top>
-            <Left>0.32419in</Left>
-            <Height>0.17667in</Height>
-            <Width>0.22667in</Width>
-            <ZIndex>51</ZIndex>
+            <Top>6.63675in</Top>
+            <Left>0.47449in</Left>
+            <Height>0.19056in</Height>
+            <Width>6.11411in</Width>
+            <ZIndex>46</ZIndex>
             <Style>
               <Border>
                 <Style>None</Style>
@@ -5021,7 +5598,6 @@ WHERE IdEstado =1</CommandText>
             </Style>
           </Textbox>
           <Textbox Name="Textbox55">
-            <CanGrow>true</CanGrow>
             <KeepTogether>true</KeepTogether>
             <Paragraphs>
               <Paragraph>
@@ -5031,7 +5607,6 @@ WHERE IdEstado =1</CommandText>
                     <Style>
                       <FontFamily>Calibri</FontFamily>
                       <FontSize>9pt</FontSize>
-                      <FontWeight>Bold</FontWeight>
                       <TextDecoration>None</TextDecoration>
                     </Style>
                   </TextRun>
@@ -5040,11 +5615,11 @@ WHERE IdEstado =1</CommandText>
               </Paragraph>
             </Paragraphs>
             <rd:DefaultName>Textbox55</rd:DefaultName>
-            <Top>6.98355in</Top>
-            <Left>0.56475in</Left>
+            <Top>6.8412in</Top>
+            <Left>0.47449in</Left>
             <Height>0.17667in</Height>
-            <Width>3.31333in</Width>
-            <ZIndex>52</ZIndex>
+            <Width>3.41003in</Width>
+            <ZIndex>47</ZIndex>
             <Style>
               <Border>
                 <Style>None</Style>
@@ -5052,7 +5627,7 @@ WHERE IdEstado =1</CommandText>
               <BottomBorder>
                 <Color>Black</Color>
                 <Style>Solid</Style>
-                <Width>1pt</Width>
+                <Width>0.5pt</Width>
               </BottomBorder>
               <PaddingLeft>2pt</PaddingLeft>
               <PaddingRight>2pt</PaddingRight>
@@ -5061,7 +5636,6 @@ WHERE IdEstado =1</CommandText>
             </Style>
           </Textbox>
           <Textbox Name="Textbox56">
-            <CanGrow>true</CanGrow>
             <KeepTogether>true</KeepTogether>
             <Paragraphs>
               <Paragraph>
@@ -5079,11 +5653,11 @@ WHERE IdEstado =1</CommandText>
               </Paragraph>
             </Paragraphs>
             <rd:DefaultName>Textbox56</rd:DefaultName>
-            <Top>6.98355in</Top>
-            <Left>3.89197in</Left>
+            <Top>6.8412in</Top>
+            <Left>3.92619in</Left>
             <Height>0.17667in</Height>
-            <Width>1.85039in</Width>
-            <ZIndex>53</ZIndex>
+            <Width>1.66636in</Width>
+            <ZIndex>48</ZIndex>
             <Style>
               <Border>
                 <Style>None</Style>
@@ -5095,30 +5669,31 @@ WHERE IdEstado =1</CommandText>
             </Style>
           </Textbox>
           <Textbox Name="Textbox57">
-            <CanGrow>true</CanGrow>
             <KeepTogether>true</KeepTogether>
             <Paragraphs>
               <Paragraph>
                 <TextRuns>
                   <TextRun>
-                    <Value>=First(Fields!ValorEndosar.Value, "CertificadoDepositoInformacion")</Value>
+                    <Value>=IIF(First(Fields!ValorEndosar.Value, "CertificadoDepositoInformacion")&gt;0, (First(Fields!ValorEndosar.Value, "CertificadoDepositoInformacion")), " ")</Value>
                     <Style>
                       <FontFamily>Calibri</FontFamily>
                       <FontSize>9pt</FontSize>
-                      <FontWeight>Bold</FontWeight>
+                      <FontWeight>Normal</FontWeight>
                       <TextDecoration>None</TextDecoration>
                     </Style>
                   </TextRun>
                 </TextRuns>
-                <Style />
+                <Style>
+                  <TextAlign>Center</TextAlign>
+                </Style>
               </Paragraph>
             </Paragraphs>
             <rd:DefaultName>Textbox57</rd:DefaultName>
-            <Top>6.98355in</Top>
-            <Left>5.74236in</Left>
+            <Top>6.8412in</Top>
+            <Left>5.55218in</Left>
             <Height>0.17667in</Height>
-            <Width>2.22306in</Width>
-            <ZIndex>54</ZIndex>
+            <Width>2.44113in</Width>
+            <ZIndex>49</ZIndex>
             <Style>
               <Border>
                 <Style>None</Style>
@@ -5126,7 +5701,7 @@ WHERE IdEstado =1</CommandText>
               <BottomBorder>
                 <Color>Black</Color>
                 <Style>Solid</Style>
-                <Width>1pt</Width>
+                <Width>0.25pt</Width>
               </BottomBorder>
               <PaddingLeft>2pt</PaddingLeft>
               <PaddingRight>2pt</PaddingRight>
@@ -5135,7 +5710,6 @@ WHERE IdEstado =1</CommandText>
             </Style>
           </Textbox>
           <Textbox Name="Textbox58">
-            <CanGrow>true</CanGrow>
             <KeepTogether>true</KeepTogether>
             <Paragraphs>
               <Paragraph>
@@ -5145,7 +5719,6 @@ WHERE IdEstado =1</CommandText>
                     <Style>
                       <FontFamily>Calibri</FontFamily>
                       <FontSize>9pt</FontSize>
-                      <FontWeight>Bold</FontWeight>
                       <TextDecoration>None</TextDecoration>
                     </Style>
                   </TextRun>
@@ -5154,11 +5727,11 @@ WHERE IdEstado =1</CommandText>
               </Paragraph>
             </Paragraphs>
             <rd:DefaultName>Textbox58</rd:DefaultName>
-            <Top>7.18702in</Top>
-            <Left>0.32419in</Left>
-            <Height>0.16278in</Height>
-            <Width>3.00327in</Width>
-            <ZIndex>55</ZIndex>
+            <Top>7.00717in</Top>
+            <Left>0.48081in</Left>
+            <Height>0.19612in</Height>
+            <Width>2.85309in</Width>
+            <ZIndex>50</ZIndex>
             <Style>
               <Border>
                 <Style>None</Style>
@@ -5166,7 +5739,7 @@ WHERE IdEstado =1</CommandText>
               <BottomBorder>
                 <Color>Black</Color>
                 <Style>Solid</Style>
-                <Width>1pt</Width>
+                <Width>0.5pt</Width>
               </BottomBorder>
               <PaddingLeft>2pt</PaddingLeft>
               <PaddingRight>2pt</PaddingRight>
@@ -5175,7 +5748,6 @@ WHERE IdEstado =1</CommandText>
             </Style>
           </Textbox>
           <Textbox Name="Textbox59">
-            <CanGrow>true</CanGrow>
             <KeepTogether>true</KeepTogether>
             <Paragraphs>
               <Paragraph>
@@ -5193,11 +5765,11 @@ WHERE IdEstado =1</CommandText>
               </Paragraph>
             </Paragraphs>
             <rd:DefaultName>Textbox59</rd:DefaultName>
-            <Top>7.18702in</Top>
-            <Left>3.35524in</Left>
-            <Height>0.16278in</Height>
-            <Width>4.61018in</Width>
-            <ZIndex>56</ZIndex>
+            <Top>7.00717in</Top>
+            <Left>3.51186in</Left>
+            <Height>0.19612in</Height>
+            <Width>4.45677in</Width>
+            <ZIndex>51</ZIndex>
             <Style>
               <Border>
                 <Style>None</Style>
@@ -5209,13 +5781,12 @@ WHERE IdEstado =1</CommandText>
             </Style>
           </Textbox>
           <Textbox Name="Textbox60">
-            <CanGrow>true</CanGrow>
             <KeepTogether>true</KeepTogether>
             <Paragraphs>
               <Paragraph>
                 <TextRuns>
                   <TextRun>
-                    <Value>sus oficianas el día:</Value>
+                    <Value>sus oficinas el día:</Value>
                     <Style>
                       <FontFamily>Calibri</FontFamily>
                       <FontSize>9pt</FontSize>
@@ -5227,11 +5798,11 @@ WHERE IdEstado =1</CommandText>
               </Paragraph>
             </Paragraphs>
             <rd:DefaultName>Textbox60</rd:DefaultName>
-            <Top>7.37758in</Top>
-            <Left>0.32419in</Left>
-            <Height>0.1757in</Height>
-            <Width>1.24667in</Width>
-            <ZIndex>57</ZIndex>
+            <Top>7.23106in</Top>
+            <Left>0.4754in</Left>
+            <Height>0.19056in</Height>
+            <Width>1.12in</Width>
+            <ZIndex>52</ZIndex>
             <Style>
               <Border>
                 <Style>None</Style>
@@ -5243,7 +5814,6 @@ WHERE IdEstado =1</CommandText>
             </Style>
           </Textbox>
           <Textbox Name="Textbox61">
-            <CanGrow>true</CanGrow>
             <KeepTogether>true</KeepTogether>
             <Paragraphs>
               <Paragraph>
@@ -5252,8 +5822,8 @@ WHERE IdEstado =1</CommandText>
                     <Value>=First(Fields!ExpirationDate.Value, "CertificadoDepositoInformacion")</Value>
                     <Style>
                       <FontFamily>Calibri</FontFamily>
-                      <FontSize>9pt</FontSize>
-                      <FontWeight>Bold</FontWeight>
+                      <FontSize>8pt</FontSize>
+                      <FontWeight>Normal</FontWeight>
                       <Format>dd 'de' MMMM 'de' yyyy</Format>
                       <TextDecoration>None</TextDecoration>
                     </Style>
@@ -5263,11 +5833,11 @@ WHERE IdEstado =1</CommandText>
               </Paragraph>
             </Paragraphs>
             <rd:DefaultName>Textbox61</rd:DefaultName>
-            <Top>7.37758in</Top>
-            <Left>1.58475in</Left>
-            <Height>0.1757in</Height>
-            <Width>3.18716in</Width>
-            <ZIndex>58</ZIndex>
+            <Top>7.23106in</Top>
+            <Left>1.58814in</Left>
+            <Height>0.19612in</Height>
+            <Width>3.09495in</Width>
+            <ZIndex>53</ZIndex>
             <Style>
               <Border>
                 <Style>None</Style>
@@ -5275,7 +5845,7 @@ WHERE IdEstado =1</CommandText>
               <BottomBorder>
                 <Color>Black</Color>
                 <Style>Solid</Style>
-                <Width>1pt</Width>
+                <Width>0.5pt</Width>
               </BottomBorder>
               <PaddingLeft>2pt</PaddingLeft>
               <PaddingRight>2pt</PaddingRight>
@@ -5284,7 +5854,6 @@ WHERE IdEstado =1</CommandText>
             </Style>
           </Textbox>
           <Textbox Name="Textbox62">
-            <CanGrow>true</CanGrow>
             <KeepTogether>true</KeepTogether>
             <Paragraphs>
               <Paragraph>
@@ -5302,11 +5871,11 @@ WHERE IdEstado =1</CommandText>
               </Paragraph>
             </Paragraphs>
             <rd:DefaultName>Textbox62</rd:DefaultName>
-            <Top>7.37758in</Top>
-            <Left>4.84135in</Left>
-            <Height>0.1757in</Height>
-            <Width>3.12407in</Width>
-            <ZIndex>59</ZIndex>
+            <Top>7.23106in</Top>
+            <Left>4.76521in</Left>
+            <Height>0.19056in</Height>
+            <Width>2.98311in</Width>
+            <ZIndex>54</ZIndex>
             <Style>
               <Border>
                 <Style>None</Style>
@@ -5318,7 +5887,6 @@ WHERE IdEstado =1</CommandText>
             </Style>
           </Textbox>
           <Textbox Name="Textbox63">
-            <CanGrow>true</CanGrow>
             <KeepTogether>true</KeepTogether>
             <Paragraphs>
               <Paragraph>
@@ -5336,11 +5904,11 @@ WHERE IdEstado =1</CommandText>
               </Paragraph>
             </Paragraphs>
             <rd:DefaultName>Textbox63</rd:DefaultName>
-            <Top>7.58077in</Top>
-            <Left>0.32419in</Left>
-            <Height>0.1757in</Height>
-            <Width>2.82468in</Width>
-            <ZIndex>60</ZIndex>
+            <Top>7.45273in</Top>
+            <Left>0.48081in</Left>
+            <Height>0.19056in</Height>
+            <Width>2.6in</Width>
+            <ZIndex>55</ZIndex>
             <Style>
               <Border>
                 <Style>None</Style>
@@ -5352,30 +5920,31 @@ WHERE IdEstado =1</CommandText>
             </Style>
           </Textbox>
           <Textbox Name="Textbox64">
-            <CanGrow>true</CanGrow>
             <KeepTogether>true</KeepTogether>
             <Paragraphs>
               <Paragraph>
                 <TextRuns>
                   <TextRun>
-                    <Value>=First(Fields!TasaDeInteres.Value, "CertificadoDepositoInformacion")</Value>
+                    <Value>=IIF(First(Fields!TasaDeInteres.Value, "CertificadoDepositoInformacion")&gt;0, (First(Fields!TasaDeInteres.Value, "CertificadoDepositoInformacion")), " ")</Value>
                     <Style>
                       <FontFamily>Calibri</FontFamily>
-                      <FontSize>9pt</FontSize>
-                      <FontWeight>Bold</FontWeight>
+                      <FontSize>8pt</FontSize>
+                      <FontWeight>Normal</FontWeight>
                       <TextDecoration>None</TextDecoration>
                     </Style>
                   </TextRun>
                 </TextRuns>
-                <Style />
+                <Style>
+                  <TextAlign>Center</TextAlign>
+                </Style>
               </Paragraph>
             </Paragraphs>
             <rd:DefaultName>Textbox64</rd:DefaultName>
-            <Top>7.58077in</Top>
-            <Left>3.17665in</Left>
+            <Top>7.45273in</Top>
+            <Left>3.10271in</Left>
             <Height>0.1757in</Height>
-            <Width>0.55839in</Width>
-            <ZIndex>61</ZIndex>
+            <Width>0.4239in</Width>
+            <ZIndex>56</ZIndex>
             <Style>
               <Border>
                 <Style>None</Style>
@@ -5383,7 +5952,7 @@ WHERE IdEstado =1</CommandText>
               <BottomBorder>
                 <Color>Black</Color>
                 <Style>Solid</Style>
-                <Width>1pt</Width>
+                <Width>0.5pt</Width>
               </BottomBorder>
               <PaddingLeft>2pt</PaddingLeft>
               <PaddingRight>2pt</PaddingRight>
@@ -5392,13 +5961,12 @@ WHERE IdEstado =1</CommandText>
             </Style>
           </Textbox>
           <Textbox Name="Textbox65">
-            <CanGrow>true</CanGrow>
             <KeepTogether>true</KeepTogether>
             <Paragraphs>
               <Paragraph>
                 <TextRuns>
                   <TextRun>
-                    <Value>% anual computados desde el día:</Value>
+                    <Value>%  anual computados desde el día:</Value>
                     <Style>
                       <FontFamily>Calibri</FontFamily>
                       <FontSize>9pt</FontSize>
@@ -5410,11 +5978,11 @@ WHERE IdEstado =1</CommandText>
               </Paragraph>
             </Paragraphs>
             <rd:DefaultName>Textbox65</rd:DefaultName>
-            <Top>7.58077in</Top>
-            <Left>3.76282in</Left>
+            <Top>7.45273in</Top>
+            <Left>3.5655in</Left>
             <Height>0.1757in</Height>
-            <Width>2.16755in</Width>
-            <ZIndex>62</ZIndex>
+            <Width>2in</Width>
+            <ZIndex>57</ZIndex>
             <Style>
               <Border>
                 <Style>None</Style>
@@ -5426,7 +5994,6 @@ WHERE IdEstado =1</CommandText>
             </Style>
           </Textbox>
           <Textbox Name="Textbox66">
-            <CanGrow>true</CanGrow>
             <KeepTogether>true</KeepTogether>
             <Paragraphs>
               <Paragraph>
@@ -5435,8 +6002,8 @@ WHERE IdEstado =1</CommandText>
                     <Value>=First(Fields!DocumentDate.Value, "CertificadoDepositoInformacion")</Value>
                     <Style>
                       <FontFamily>Calibri</FontFamily>
-                      <FontSize>9pt</FontSize>
-                      <FontWeight>Bold</FontWeight>
+                      <FontSize>8pt</FontSize>
+                      <FontWeight>Normal</FontWeight>
                       <Format>dd 'de' MMMM 'de' yyyy</Format>
                       <TextDecoration>None</TextDecoration>
                     </Style>
@@ -5446,11 +6013,11 @@ WHERE IdEstado =1</CommandText>
               </Paragraph>
             </Paragraphs>
             <rd:DefaultName>Textbox66</rd:DefaultName>
-            <Top>7.58077in</Top>
-            <Left>5.95815in</Left>
-            <Height>0.16181in</Height>
-            <Width>2.00727in</Width>
-            <ZIndex>63</ZIndex>
+            <Top>7.46523in</Top>
+            <Left>5.56191in</Left>
+            <Height>0.1632in</Height>
+            <Width>2.19422in</Width>
+            <ZIndex>58</ZIndex>
             <Style>
               <Border>
                 <Style>None</Style>
@@ -5458,7 +6025,7 @@ WHERE IdEstado =1</CommandText>
               <BottomBorder>
                 <Color>Black</Color>
                 <Style>Solid</Style>
-                <Width>1pt</Width>
+                <Width>0.5pt</Width>
               </BottomBorder>
               <PaddingLeft>2pt</PaddingLeft>
               <PaddingRight>2pt</PaddingRight>
@@ -5467,7 +6034,6 @@ WHERE IdEstado =1</CommandText>
             </Style>
           </Textbox>
           <Textbox Name="Textbox67">
-            <CanGrow>true</CanGrow>
             <KeepTogether>true</KeepTogether>
             <Paragraphs>
               <Paragraph>
@@ -5485,11 +6051,11 @@ WHERE IdEstado =1</CommandText>
               </Paragraph>
             </Paragraphs>
             <rd:DefaultName>Textbox67</rd:DefaultName>
-            <Top>7.79813in</Top>
-            <Left>0.33037in</Left>
-            <Height>0.16153in</Height>
-            <Width>7.63505in</Width>
-            <ZIndex>64</ZIndex>
+            <Top>7.62843in</Top>
+            <Left>0.47898in</Left>
+            <Height>0.17542in</Height>
+            <Width>7.50659in</Width>
+            <ZIndex>59</ZIndex>
             <Style>
               <Border>
                 <Style>None</Style>
@@ -5501,7 +6067,6 @@ WHERE IdEstado =1</CommandText>
             </Style>
           </Textbox>
           <Textbox Name="Textbox68">
-            <CanGrow>true</CanGrow>
             <KeepTogether>true</KeepTogether>
             <Paragraphs>
               <Paragraph>
@@ -5510,8 +6075,8 @@ WHERE IdEstado =1</CommandText>
                     <Value>=First(Fields!FirmadoEn.Value, "CertificadoDepositoInformacion")</Value>
                     <Style>
                       <FontFamily>Calibri</FontFamily>
-                      <FontSize>9pt</FontSize>
-                      <FontWeight>Bold</FontWeight>
+                      <FontSize>8pt</FontSize>
+                      <FontWeight>Normal</FontWeight>
                       <TextDecoration>None</TextDecoration>
                     </Style>
                   </TextRun>
@@ -5520,11 +6085,11 @@ WHERE IdEstado =1</CommandText>
               </Paragraph>
             </Paragraphs>
             <rd:DefaultName>Textbox68</rd:DefaultName>
-            <Top>8.00132in</Top>
-            <Left>1.23211in</Left>
-            <Height>0.17541in</Height>
-            <Width>3.56757in</Width>
-            <ZIndex>65</ZIndex>
+            <Top>7.85801in</Top>
+            <Left>1.22895in</Left>
+            <Height>0.19207in</Height>
+            <Width>3.45704in</Width>
+            <ZIndex>60</ZIndex>
             <Style>
               <Border>
                 <Style>None</Style>
@@ -5532,7 +6097,7 @@ WHERE IdEstado =1</CommandText>
               <BottomBorder>
                 <Color>Black</Color>
                 <Style>Solid</Style>
-                <Width>1pt</Width>
+                <Width>0.5pt</Width>
               </BottomBorder>
               <PaddingLeft>2pt</PaddingLeft>
               <PaddingRight>2pt</PaddingRight>
@@ -5541,7 +6106,6 @@ WHERE IdEstado =1</CommandText>
             </Style>
           </Textbox>
           <Textbox Name="Textbox69">
-            <CanGrow>true</CanGrow>
             <KeepTogether>true</KeepTogether>
             <Paragraphs>
               <Paragraph>
@@ -5558,11 +6122,11 @@ WHERE IdEstado =1</CommandText>
               </Paragraph>
             </Paragraphs>
             <rd:DefaultName>Textbox69</rd:DefaultName>
-            <Top>8.00132in</Top>
-            <Left>4.84135in</Left>
-            <Height>0.17541in</Height>
-            <Width>0.27278in</Width>
-            <ZIndex>66</ZIndex>
+            <Top>7.84412in</Top>
+            <Left>4.68599in</Left>
+            <Height>0.19207in</Height>
+            <Width>0.23466in</Width>
+            <ZIndex>61</ZIndex>
             <Style>
               <Border>
                 <Style>None</Style>
@@ -5574,7 +6138,6 @@ WHERE IdEstado =1</CommandText>
             </Style>
           </Textbox>
           <Textbox Name="Textbox70">
-            <CanGrow>true</CanGrow>
             <KeepTogether>true</KeepTogether>
             <Paragraphs>
               <Paragraph>
@@ -5583,8 +6146,8 @@ WHERE IdEstado =1</CommandText>
                     <Value>=First(Fields!DocumentDate.Value, "CertificadoDepositoInformacion")</Value>
                     <Style>
                       <FontFamily>Calibri</FontFamily>
-                      <FontSize>9pt</FontSize>
-                      <FontWeight>Bold</FontWeight>
+                      <FontSize>8pt</FontSize>
+                      <FontWeight>Normal</FontWeight>
                       <TextDecoration>None</TextDecoration>
                     </Style>
                   </TextRun>
@@ -5593,11 +6156,11 @@ WHERE IdEstado =1</CommandText>
               </Paragraph>
             </Paragraphs>
             <rd:DefaultName>Textbox70</rd:DefaultName>
-            <Top>7.98743in</Top>
-            <Left>5.1419in</Left>
-            <Height>0.1893in</Height>
-            <Width>2.82352in</Width>
-            <ZIndex>67</ZIndex>
+            <Top>7.84412in</Top>
+            <Left>4.93454in</Left>
+            <Height>0.20596in</Height>
+            <Width>3.0671in</Width>
+            <ZIndex>62</ZIndex>
             <Style>
               <Border>
                 <Style>None</Style>
@@ -5613,14 +6176,85 @@ WHERE IdEstado =1</CommandText>
               <PaddingBottom>2pt</PaddingBottom>
             </Style>
           </Textbox>
+          <Textbox Name="Textbox24">
+            <KeepTogether>true</KeepTogether>
+            <Paragraphs>
+              <Paragraph>
+                <TextRuns>
+                  <TextRun>
+                    <Value>Situado en:</Value>
+                    <Style>
+                      <FontFamily>Calibri</FontFamily>
+                      <FontSize>9pt</FontSize>
+                    </Style>
+                  </TextRun>
+                </TextRuns>
+                <Style />
+              </Paragraph>
+            </Paragraphs>
+            <rd:DefaultName>Textbox22</rd:DefaultName>
+            <Top>1.13929in</Top>
+            <Left>2.48187in</Left>
+            <Height>0.16945in</Height>
+            <Width>0.64113in</Width>
+            <ZIndex>63</ZIndex>
+            <Style>
+              <Border>
+                <Style>None</Style>
+              </Border>
+              <PaddingLeft>2pt</PaddingLeft>
+              <PaddingRight>2pt</PaddingRight>
+              <PaddingTop>2pt</PaddingTop>
+              <PaddingBottom>2pt</PaddingBottom>
+            </Style>
+          </Textbox>
+          <Textbox Name="Textbox54">
+            <KeepTogether>true</KeepTogether>
+            <Paragraphs>
+              <Paragraph>
+                <TextRuns>
+                  <TextRun>
+                    <Value>=First(Fields!FechaCertificado.Value, "CertificadoDepositoInformacion")</Value>
+                    <Style>
+                      <FontFamily>Calibri</FontFamily>
+                      <FontSize>8pt</FontSize>
+                      <Format>d</Format>
+                      <TextDecoration>None</TextDecoration>
+                    </Style>
+                  </TextRun>
+                </TextRuns>
+                <Style />
+              </Paragraph>
+            </Paragraphs>
+            <rd:DefaultName>Textbox25</rd:DefaultName>
+            <Top>1.13929in</Top>
+            <Left>6.8246in</Left>
+            <Height>0.18334in</Height>
+            <Width>1.17048in</Width>
+            <ZIndex>64</ZIndex>
+            <Style>
+              <Border>
+                <Style>None</Style>
+              </Border>
+              <BottomBorder>
+                <Color>Black</Color>
+                <Style>Solid</Style>
+                <Width>0.25pt</Width>
+              </BottomBorder>
+              <PaddingLeft>2pt</PaddingLeft>
+              <PaddingRight>2pt</PaddingRight>
+              <PaddingTop>2pt</PaddingTop>
+              <PaddingBottom>2pt</PaddingBottom>
+            </Style>
+          </Textbox>
         </ReportItems>
-        <Height>9.44702in</Height>
+        <Height>10.28618in</Height>
         <Style>
           <Border />
           <BackgroundColor>White</BackgroundColor>
         </Style>
       </Body>
-      <Width>8.30903in</Width>
+      <Width>8.2736in</Width>
       <Page>
         <Style>
           <Border />
@@ -5638,7 +6272,7 @@ WHERE IdEstado =1</CommandText>
   <ReportParametersLayout>
     <GridLayoutDefinition>
       <NumberOfColumns>1</NumberOfColumns>
-      <NumberOfRows>3</NumberOfRows>
+      <NumberOfRows>1</NumberOfRows>
       <CellDefinitions>
         <CellDefinition>
           <ColumnIndex>0</ColumnIndex>
