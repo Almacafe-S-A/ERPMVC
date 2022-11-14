@@ -646,6 +646,40 @@ namespace ERPMVC.Controllers
             
         }
 
+
+
+        public async Task<ActionResult<GoodsDeliveryAuthorization>> Revisar([FromBody] GoodsDeliveryAuthorization autorizacion)
+        {
+            try
+            {
+                if (autorizacion == null)
+                {
+                    return await Task.Run(() => BadRequest("No llego correctamente el modelo!"));
+                }
+
+                GoodsDeliveryAuthorization goodsDeliveryAuthorization = new GoodsDeliveryAuthorization();
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + $"api/GoodsDeliveryAuthorization/Revisar/{ autorizacion.GoodsDeliveryAuthorizationId}");
+                string valorrespuesta = "";
+                if (!result.IsSuccessStatusCode)
+                {
+                    return await Task.Run(() => BadRequest("No se Aprobo el documento!"));
+                }
+
+                return await Task.Run(() => Json(goodsDeliveryAuthorization));
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+
+        }
+
         [HttpGet("[controller]/[action]/{id}")]
         public ActionResult SFGoodsDeliveryAuthorization(Int64 id)
         {

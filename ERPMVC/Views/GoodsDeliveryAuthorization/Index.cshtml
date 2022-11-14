@@ -165,8 +165,15 @@
 
     function dataBound(e) {
         $.each(this.dataSource.data(), function () {
-            if (this.Estado == "Aprobado") {
+            if (this.Estado != "Revisado" ) {
                 $('[data-uid=' + this.uid + ']').find('.k-grid-Aprobar').hide();
+                
+            }
+            if (this.Estado != "Aprobado"){
+                $('[data-uid=' + this.uid + ']').find('.k-grid-Imprimir').hide();
+            }
+            if (this.Estado != "Revisión"){
+                $('[data-uid=' + this.uid + ']').find('.k-grid-Revisar').hide();
             }
         })
     }
@@ -219,6 +226,56 @@
             }
 
 
+
+
+            function Revisar(e) {
+        var notification = $("#notification").data("kendoNotification");
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        if (dataItem.Estado == 6) {
+                    notification.show({
+                    title: "Validación",
+                    message: "la Autorizacion ha sido aprobada"
+                }, "error");
+            }
+        if (!confirm('Esta seguro de marcar como revisada esta Autorizacion?')) {
+            return;
+
+        }
+
+        var dataObject = {
+                GoodsDeliveryAuthorizationId: dataItem.GoodsDeliveryAuthorizationId,
+            };
+
+            $.ajax({
+                url: '@Url.Action("Revisar", "GoodsDeliveryAuthorization")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (result) {
+                    $.toast({
+                        heading: 'Satisfactorio',
+                        text: 'La Autorizacion se ha aprobado correctamente.',
+                        position: 'top-right',
+                        loaderBg: '#ff6849',
+                        icon: 'success',
+                        hideAfter: 7000,
+                        stack: 6
+                    });
+                    RefreshGoodsDelivered();
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    notification.show({
+                        title: "Validación",
+                        message: textStatus + ": " + XMLHttpRequest.responseText
+                    }, "error");
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+                }
+            });
+            }
+
+
 </script>
 
 <div id="AddImage">
@@ -226,7 +283,7 @@
 </div>
 
 
-<h3 class="text-themecolor">Autorización entrega de mercadería</h3>
+<h3 class="text-themecolor">Autorización de Retiro de Mercadería</h3>
 
 @(Html.Kendo().Grid<ERPMVC.Models.GoodsDeliveryAuthorization>()
             .Name("gridGoodsDeliveryAuthorization")
@@ -252,11 +309,17 @@
                                                       command.Custom("Aprobar").Text(" ").IconClass("fa fa-thumbs-up").Click("Aprobar");
                                                   }
 
+                        if (User.HasClaim("Inventarios.Autorizacion.Revisar", "true"))
+                                                  {
+                                                      //command.Custom("Anular").Text(" ").IconClass("fa fa-times-circle").Click("AnularCD");
+                                                      command.Custom("Revisar").Text(" ").IconClass("fa fa-check").Click("Revisar");
+                                                  }
+
                         command.Custom("AddImage").Text(" ").IconClass("fa fa-file").Click("AddImage");
                         // command.Custom("Imprimir").Text(" ").IconClass("fa fa-times-circle").Click("ImprimirGoodsDeliveryAuthorization");
 
                         //  command.Edit(); command.Destroy();
-                    }).Width(120).Title("Acciones");
+                    }).Width(180).Title("Acciones");
                 }
                 columns.Bound(p => p.GoodsDeliveryAuthorizationId).Title("Id").Width(100);
                 columns.Bound(p => p.DocumentDate).Format("{0:dd/MM/yyyy}").ClientTemplate("#=kendo.toString(DocumentDate,'dd/MM/yyyy')#").Title("Fecha").Width(150);
@@ -264,6 +327,9 @@
 
                 columns.Bound(p => p.CustomerName).Title("Cliente").Width(250);
                 columns.Bound(p => p.ProductId).Title("Producto").Width(150).Visible(false);
+                columns.Bound(p => p.ProductoAutorizado).Title("Producto").Width(150);
+                columns.Bound(p => p.TotalCantidad).Title("Cantidad").Width(150);
+                 columns.Bound(p => p.TotalAutorizado).Title("Valor Auto.").Width(150);
                 columns.Bound(p => p.ProductName).Title("Servicio").Width(150);
                 columns.Bound(p => p.BranchName).Title("Sucursal").Width(150);
                  columns.Bound(p => p.Estado).Title("Estado").Width(150);
@@ -402,6 +468,8 @@
     setRowButtonTooltip(".k-grid-Eliminar", "Eliminar");
     setRowButtonTooltip(".k-grid-Imprimir", "Imprimir registro");
     setRowButtonTooltip(".k-grid-Editar", "Ver");
+    setRowButtonTooltip(".k-grid-Aprobar", "Aprobar");
+    setRowButtonTooltip(".k-grid-Revisar", "Revisar");
 
     setRowButtonTooltip(".k-grid-AddImage", "Documentos  Adjuntos");
 
