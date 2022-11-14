@@ -35,6 +35,16 @@ namespace ERPMVC.Models
 
         public string Autorizados { get; set; }
 
+        public string RetiroAutorizadoA { get; set; }
+
+        public decimal TotalAutorizado { get; set; }
+
+        public decimal TotalDerechos { get; set; }
+
+        public decimal TotalCantidad { get; set; }
+
+        public string ProductoAutorizado { get; set; }
+
 
 
         [Display(Name = "Banco")]
@@ -63,12 +73,16 @@ namespace ERPMVC.Models
 
         public string LiberacionEndosoDocName { get; set; }
 
-        public string RetiroAutorizadoA { get; set; }
-
         [Display(Name = "Fecha de Creacion")]
         public DateTime? FechaCreacion { get; set; }
         [Display(Name = "Fecha de Modificación")]
         public DateTime? FechaModificacion { get; set; }
+
+        public string UsuarioAprobacion { get; set; }
+
+        public string UsuarioRevisor { get; set; }
+
+
         [Display(Name = "Usuario de Creacion")]
         public string UsuarioCreacion { get; set; }
 
@@ -78,34 +92,21 @@ namespace ERPMVC.Models
         public string Impreso { get; set; }
 
         [Display(Name = "Póliza No.")]
-        public Int64 NoPoliza { get; set; }
+        public Int64 NoPolizaImportacion { get; set; }
 
         [Display(Name = "Delegado Fiscal")]
         public string DelegadoFiscal { get; set; }
 
-        [Display(Name = "Seguro")]
-        public string EmpresaSeguro { get; set; }
-
-
-        [Display(Name = "Número de traslado")]
-        public string NoTraslado { get; set; }
-
-
-        [Display(Name = "Aduana")]
-        public string Aduana { get; set; }
-
-        [Display(Name = "Carta de porte o manifiesto No.")]
-        public string ManifiestoNo { get; set; }
-
-        [NotMapped]
-        public int[] Firmas { get; set; }
 
         public string Estado { get; set; }
 
         public int EstadoId { get; set; }
 
-        public List<GoodsDeliveryAuthorizationLine> GoodsDeliveryAuthorizationLine { get; set; } = new List<GoodsDeliveryAuthorizationLine>();
 
+        [NotMapped]
+        public Int64[] Firmas { get; set; }
+
+        public List<GoodsDeliveryAuthorizationLine> GoodsDeliveryAuthorizationLine { get; set; } = new List<GoodsDeliveryAuthorizationLine>();
 
         public List<GoodsDeliveryAuthorizedSignatures> goodsDeliveryAuthorizedSignatures { get; set; } = new List<GoodsDeliveryAuthorizedSignatures>();
     }
