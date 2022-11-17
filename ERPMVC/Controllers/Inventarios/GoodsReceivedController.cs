@@ -180,7 +180,7 @@ namespace ERPMVC.Controllers
                     _GoodsReceived = (from recibos in _GoodsReceived
                                       select new GoodsReceived() {
                                           GoodsReceivedId = recibos.GoodsReceivedId,
-                                          Comments = recibos.GoodsReceivedId + " - " + recibos.Comments,
+                                          Comments = recibos.Comments,
                                       }).ToList();
 
                 }
