@@ -33,7 +33,7 @@ namespace ERPMVC.Controllers
             return View();
         }
 
-        public async Task<ActionResult<DataSourceResult>> GetARLine([DataSourceRequest] DataSourceRequest request, [FromQuery(Name = "Recibos")] int[] recibos, [FromQuery(Name = "Id")] int id)
+        public async Task<ActionResult<DataSourceResult>> GetARLine(DataSourceRequest request, int[] recibos, int id, List<GoodsDeliveryAuthorizationLine> detalleautorizacion)
         {
             List<GoodsDeliveryAuthorizationLine> arLines = new List<GoodsDeliveryAuthorizationLine>();
             try
@@ -84,7 +84,17 @@ namespace ERPMVC.Controllers
             }
 
 
-            return arLines.ToDataSourceResult(request);
+            foreach (var item in arLines)
+            {
+                var detalleguardado = detalleautorizacion.Where(q => q.NoCertificadoDeposito == item.NoCertificadoDeposito && q.Pda == item.Pda).FirstOrDefault();
+                if (detalleguardado!= null)
+                {
+                    item.Quantity = detalleguardado.Quantity;
+                    item.valorcertificado = detalleguardado.valorcertificado;
+                }
+            }
+
+            return  arLines.ToDataSourceResult(request);
 
 
 
