@@ -42,6 +42,8 @@ namespace ERPMVC.Models
 
         public double Saldo { get; set; }
 
+        public int Pda { get; set; }
+
         public decimal? DerechosFiscales { get; set; }
 
         public decimal? ValorUnitarioDerechos { get; set; }
