@@ -161,17 +161,7 @@
         @(Html.Kendo().Grid<ERPMVC.Models.EndososCertificadosLine>()
                                                           .Name("gridEndososDetail")
                                                           .Columns(columns =>
-                                                          {
-                                                              if (Model.EndososCertificadosId!=0)
-                                                                  {columns.Command(command =>
-                                                              {
-                                                                  
-                                                                    command.Custom("Liberar").Text(" ").IconClass("fa fa-pencil-alt").Click("ActualizarEndoso");                                                                  
-                                                                   // command.Custom("Eliminar").Text(" ").IconClass("fa fa-trash-alt").Click("Delete");
-
-                                                                  
-
-                                                              }).Width(80);}
+                                                          {                                                             
                                                               columns.Bound(p => p.EndososCertificadosId).Width(150).Visible(false);
                                                               columns.Bound(p => p.Pda).Title("Pda").Width(120);
                                                               columns.Bound(p => p.SubProductName).Width(250);
@@ -179,9 +169,15 @@
                                                               columns.Bound(p => p.UnitOfMeasureId).Visible(false).Title("Unidad de medida").Width(0);
                                                               // columns.Bound(p => p.SubProductId).Hidden().Title("Producto").Width(0);
                                                               columns.Bound(p => p.SubProductId).Title("Producto").Visible(false).Width(150);
-                                                              columns.Bound(p => p.Quantity).Width(150);
-                                                              columns.Bound(p => p.Price).Width(150).Format("{0:C2}");
-                                                              columns.Bound(p => p.ValorEndoso).Width(150).Title("Valor").Format("{0:C2}");
+                                                              columns.Bound(p => p.Quantity).Width(150).Format("{0:N2}")
+                                                              .ClientFooterTemplate("<div style='text-align: right'>#=totalColumnas(11,0)#</div>")
+                                                              .HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" }) ;
+                                                              columns.Bound(p => p.Price).Width(150).Format("{0:C2}")
+                                                              .HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" }) ;
+                                                              columns.Bound(p => p.ValorEndoso).Width(150).Title("Valor").Format("{0:C2}")
+                                                              .HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" })
+                                                                  .ClientFooterTemplate("<div style='text-align: right'>#=totalColumnas(11,0)#</div>");
+
 
                                                           })
                                                               .Filterable(f => f.Operators(o => o.ForString(s => s
@@ -268,6 +264,57 @@
             content: btn_tooltip
         });
     }
+
+    
+
+
+
+
+    function totalColumnas(tiporesultado, moneda) {
+        var data = $("#gridEndososDetail").getKendoGrid().dataSource.data();
+        var total = 0;
+
+        switch (tiporesultado) {
+            case 1: 
+                data.forEach(r => total += r.Quantity);
+                break;
+            case 2: 
+                data.forEach(r => total += r.Price);
+                break;
+            case 3: 
+                data.forEach(r => total += r.ValorEndoso);
+                break;
+            
+            default:
+                break;
+        }
+        var formatter = new Intl.NumberFormat('es-HN', {
+            style: 'currency',
+            currency: 'LPS',
+            minimumFractionDigits: 2
+        });
+        if (moneda == 1) {
+            return formatter.format(total);
+        }
+        if (moneda == 2) {
+            formatter = new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD',
+                minimumFractionDigits: 2
+            });
+            return formatter.format(total);
+        }
+        if (moneda == 0) {
+            formatter = new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'LPS',
+                minimumFractionDigits: 2
+            });
+            return formatter.format(total).replace(/[a-z]{3}/i, "").trim();
+        }
+        return total;
+    }
+
 
     setRowButtonTooltipdet(".k-grid-Liberar", "Liberar Producto");
     setRowButtonTooltipdet(".k-grid-Eliminar", "Eliminar");
