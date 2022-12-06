@@ -1,12 +1,16 @@
 ﻿@model ERPMVC.DTO.EndososDTO
 @using System.Security.Claims
 
-@{ Layout = null;
+@{
+    Layout = null;
     var messages = new Dictionary<string, string>() { { "custom", "Ingrese un valor correcto." },
                                         {"required","Valor requerido" }
                                     };
     var rules = new Dictionary<string, string>() { { "custom", "customFunction" } };
     ClaimsPrincipal permisos = (ClaimsPrincipal)ViewData["permisos"];
+
+    bool editar = Model.EndososCertificadosId == 0;
+    string cascadacliente = editar ? "CustomerId" : "";
 }
 
 
@@ -73,8 +77,33 @@
     return data;
     }
     function changesetearvalues() {
+        var IdCD = $("#IdCD").val();
+        IdCD = IdCD > 0 ? IdCD : 0 ;
+        var dataObject = { 'IdCD': IdCD };
+        $.ajax({
+                            url: '@Url.Action("GetCertificadoDepositoById", "CertificadoDeposito")',
+                            method: 'POST',
+                            datatype: "json",
+                            contentType: 'application/json',
+                            async: false,
+                            data: JSON.stringify(dataObject),
+                            success: function (data) {
+                                $("#BankId").data("kendoDropDownList").value(data.BankId);
+                                $("#ProductId").data("kendoDropDownList").value(data.ServicioId);    
+
+                            },
+                            error: function (XMLHttpRequest, textStatus, errorThrown) {                                
+                                notification.show({
+                                    title: "Validacion",
+                                    message: textStatus + ": " + XMLHttpRequest.responseText
+                                }, "error");
+
+                            }
+                        });
         var grid = $("#gridEndososDetail").getKendoGrid();
         grid.dataSource.read();
+
+        
        
     }
 
@@ -190,10 +219,10 @@
                                                 <label asp-for="CustomerId" class="control-label"></label>
                                                 <kendo-dropdownlist name="CustomerId" for="@Model.CustomerId" filter="Kendo.Mvc.UI.FilterType.Contains"
                                                                     option-label="Seleccione el cliente"
-                                                                    required enable="Model.EndososCertificadosId==0"
+                                                                    required
+                                                                    enable="Model.EndososCertificadosId==0"
                                                                     datatextfield="CustomerName"
                                                                     datavaluefield="CustomerId"
-                                                                    on-select="GetSubProduct"
                                                                     style="width: 100%;">
                                                     <datasource type="DataSourceTagHelperType.WebApi" page-size="100000">
                                                         <transport>
@@ -213,12 +242,11 @@
                                                 <input type="hidden" id="singuardar" value="0" />
                                                 <kendo-dropdownlist name="IdCD" for="@Model.IdCD" filter="Kendo.Mvc.UI.FilterType.Contains"
                                                                     option-label="Seleccione el Certificado"
-                                                                    required enable="Model.EndososCertificadosId==0"
                                                                     datatextfield="Comentario"
                                                                     datavaluefield="IdCD"
-                                                                    on-select="GetSubProduct"
-                                                                    cascade-from="CustomerId"
+                                                                    cascade-from="@cascadacliente"
                                                                     on-change="changesetearvalues"
+                                                                    enable="editar"
                                                                     style="width: 100%;">
                                                     <datasource type="DataSourceTagHelperType.WebApi" page-size="100000">
                                                         <transport>
@@ -370,12 +398,6 @@
                                 <div id="salesorderdetail">
                                     @await Html.PartialAsync("pvwEndososDetail", Model, new ViewDataDictionary(ViewData) { { "permisosEndosos", permisos } })
                                 </div>
-
-                                <div id="EndososLineMant">
-                                    @await Html.PartialAsync("pvwEndososDetailMant", new ERPMVC.Models.EndososCertificadosLine { EndososCertificadosLineId = 0, EndososCertificadosId = Model.EndososCertificadosId })
-                                </div>
-
-                                
 
                                 @if (Model.EndososCertificadosId == 0 || Model.FechaCancelacion != null)
                                 {
