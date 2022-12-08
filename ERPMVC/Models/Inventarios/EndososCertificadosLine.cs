@@ -46,6 +46,9 @@ namespace ERPMVC.Models
 
         public double Saldo { get; set; }
 
+        [NotMapped]
+        public double SaldoPrev { get; set; }
+
         public int Pda { get; set; }
 
         public decimal? DerechosFiscales { get; set; }

@@ -119,7 +119,28 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _EndososCertificadosLine = JsonConvert.DeserializeObject<List<EndososCertificadosLine>>(valorrespuesta);
-                    HttpContext.Session.SetString("listadoproductosEndosos", JsonConvert.SerializeObject(_EndososCertificadosLine).ToString());
+                    _EndososCertificadosLine = (from line in _EndososCertificadosLine
+                                                select new EndososCertificadosLine {
+                                                    CantidadLiberacion = line.CantidadLiberacion,
+                                                    CertificadoLineId = line.CertificadoLineId,
+                                                    DerechosFiscales = line.DerechosFiscales,
+                                                    EndososCertificadosId  = line.EndososCertificadosId,
+                                                    Pda = line.Pda,
+                                                    Price = line.Price,
+                                                    EndososCertificadosLineId = line.EndososCertificadosLineId,
+                                                    Quantity = line.Quantity,
+                                                    Saldo = line.Saldo,
+                                                    SaldoPrev = line.Saldo,
+                                                    SubProductId = line.SubProductId,
+                                                    SubProductName = line.SubProductName,   
+                                                    UnitOfMeasureId = line.UnitOfMeasureId,
+                                                    UnitOfMeasureName = line.UnitOfMeasureName, 
+                                                    ValorEndoso = line.ValorEndoso,
+                                                    ValorLiberado = line.ValorLiberado,
+                                                    ValorUnitarioDerechos = line.ValorUnitarioDerechos,
+                                                    
+                                                
+                                                }).ToList();
                 }
 
 
