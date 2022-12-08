@@ -34,6 +34,10 @@ namespace ERPMVC.Models
         [Display(Name = "Cantidad")]
         public double Quantity { get; set; }
 
+        public double CantidadLiberacion { get; set; }
+
+        public double ValorLiberado { get; set; }
+
         [Display(Name = "Precio")]
         public double Price { get; set; }
 

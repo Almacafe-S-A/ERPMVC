@@ -90,7 +90,7 @@
                             success: function (data) {
                                 $("#BankId").data("kendoDropDownList").value(data.BankId);
                                 $("#ProductId").data("kendoDropDownList").value(data.ServicioId);    
-
+                                $("#FirmadoEn").val(data.SituadoEn);
                             },
                             error: function (XMLHttpRequest, textStatus, errorThrown) {                                
                                 notification.show({
@@ -133,10 +133,11 @@
                                       method="post" class="validation-wizard wizard-circle">
                                     <div class="form-body">
                                         <div class="row">
-                                            <div class="col-md-3">
+                                            <div class="col-md-3" >
                                                 <div class="form-group">
-                                                    <label asp-for="EndososCertificadosId" class="control-label" style="width:100%"></label>
-                                                    <input type="text" asp-for="EndososCertificadosId" name="EndososCertificadosId" class="k-textbox" readonly style="min-width:100%" />
+                                                    <label asp-for="EndososCertificadosId" class="control-label" style="width:100%">No Endoso</label>
+                                                    <input type="text" id="EndososCertificadosId" name="EndososCertificadosId" class="k-textbox" readonly style="min-width:100%" asp-for="EndososCertificadosId" hidden/>
+                                                    <input type="text"  name="NoCD" class="k-textbox" readonly style="min-width:100%" asp-for="NoCD" />
                                                     <span asp-validation-for="EndososCertificadosId" class="text-danger"></span>
                                                 </div>
 
@@ -154,19 +155,21 @@
                                                     <span asp-validation-for="DocumentDate" class="text-danger"></span>
                                                 </div>
                                             </div>
+                                            
                                             <div class="col-md-3">
                                                 <div class="form-group">
-                                                    <label asp-for="ExpirationDate" class=" control-label" style="width: 100%;">Fecha de Pago</label>
-                                                    <kendo-datetimepicker name="ExpirationDate"
+                                                    <label asp-for="FechaOtorgado" class=" control-label" style="width: 100%;"></label>
+                                                    <kendo-datetimepicker name="FechaOtorgado" 
                                                                           style="width: 100%;"
                                                                           format="dd/MM/yyyy hh:mm:ss"
-                                                                          time-format="hh:mm:ss" disabled
+                                                                          time-format="hh:mm:ss"
+                                                                          date-input="false"
                                                                           data-val-required="La fecha es requerida"
-                                                                          value="Model.ExpirationDate" />
-                                                    <span asp-validation-for="ExpirationDate" class="text-danger"></span>
-                                                </div>
-                                            </div>
+                                                                          value="Model.FechaOtorgado" />
 
+                                                    <span asp-validation-for="FechaOtorgado" class="text-danger"></span>
+                                                 </div>
+                                            </div>
 
 
                                             <div class=" col-md-3">
@@ -346,22 +349,20 @@
                                     </div>
 
                                     <div class="row">
-                                        
-
                                         <div class="col-md-3">
-                                            <div class="form-group">
-                                                <label asp-for="FechaOtorgado" class=" control-label" style="width: 100%;"></label>
-                                                <kendo-datetimepicker name="FechaOtorgado" readonly
-                                                                      style="width: 100%;"
-                                                                      format="dd/MM/yyyy hh:mm:ss"
-                                                                      time-format="hh:mm:ss"
-                                                                      date-input="false"
-                                                                      data-val-required="La fecha es requerida"
-                                                                      value="Model.FechaOtorgado" />
-
-                                                <span asp-validation-for="FechaOtorgado" class="text-danger"></span>
+                                                <div class="form-group">
+                                                    <label asp-for="ExpirationDate" class=" control-label" style="width: 100%;">Fecha de Pago</label>
+                                                    <kendo-datetimepicker name="ExpirationDate"
+                                                                          style="width: 100%;"
+                                                                          format="dd/MM/yyyy hh:mm:ss"
+                                                                          time-format="hh:mm:ss" 
+                                                                          data-val-required="La fecha es requerida"
+                                                                          value="Model.ExpirationDate" />
+                                                    <span asp-validation-for="ExpirationDate" class="text-danger"></span>
+                                                </div>
                                             </div>
-                                        </div>
+
+                                        
                                         <div class="col-md-3">
                                             <div class="form-group">
                                                 <label asp-for="FechaCancelacion" class=" control-label" style="width: 100%;">Fecha de Cancelación</label>
@@ -369,7 +370,7 @@
                                                 <kendo-datetimepicker name="FechaCancelacion"
                                                                       style="width: 100%;"
                                                                       date-input="false"
-                                                                      readonly
+                                                                      
                                                                       format="dd/MM/yyyy hh:mm:ss"
                                                                       time-format="hh:mm:ss"
                                                                       value="Model.FechaCancelacion" />
@@ -403,6 +404,11 @@
                                 {
                                     <div class="row">
                                         <button id="btnSaveControlEstiba" type="submit" class="form-control btn-miboton" onclick="SaveEndosos(this);">Guardar</button>
+                                    </div>
+                                }else    {
+                                
+                                    <div class="row">
+                                        <button id="btnSaveControlEstiba" type="submit" class="form-control btn-miboton" onclick="SaveEndosos(this);">Liberar</button>
                                     </div>
                                 }
                             </div>
@@ -449,49 +455,7 @@
                     id = 0;
                 }
             }
-            else {
-                if (displayedData.length > 0) {
-                    for (var i = 0; i < displayedData.length; i++) {
-
-                            var EndososLiberacion = {
-                                'EndososLiberacionId': 0,
-                                'EndososId': displayedData[i].EndososCertificadosId,
-                                'EndososLineId': displayedData[i].EndososCertificadosLineId,
-                                'TipoEndoso': $("#TipoEndoso").data("kendoDropDownList").text(),
-                                'Quantity': displayedData[i].Quantity,
-                                'Saldo': displayedData[i].Saldo,
-                                'SubProductId': displayedData[i].SubProductId,
-                                'SubProductName': displayedData[i].SubProductName,
-                                'UnitOfMeasureId': displayedData[i].UnitOfMeasureId,
-                                'UnitOfMeasureName': displayedData[i].UnitOfMeasureName,
-                            }
-
-                        if (displayedData.length > 0) {
-                            if (validator.validate() ) {
-
-                                $.ajax({
-                                    url: '@Url.Action("SaveEndososLiberacion", "EndososLiberacion")',
-                                    method: 'POST',
-                                    datatype: "json",
-                                    contentType: 'application/json',
-                                    async: false,
-                                    data: JSON.stringify(EndososLiberacion),
-                                    success: function (data) {
-
-                                    },
-                                    error: function (XMLHttpRequest, textStatus, errorThrown) {
-                                        notification.show({
-                                            title: "Validacion",
-                                            message: textStatus + ": " + XMLHttpRequest.responseText
-                                        }, "error");
-
-                                    }
-                                });
-                            }
-                        }
-                    }
-                }
-            }
+            
                 
                 var dataObject = {
                     'EndososCertificadosId': $("#EndososCertificadosId").val(),
