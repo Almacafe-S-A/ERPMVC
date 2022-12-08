@@ -343,12 +343,24 @@ namespace ERPMVC.Controllers
 
             return new ObjectResult(new DataSourceResult { Data = new[] { _EndososCertificados }, Total = 1 });
         }
-        [HttpGet("[controller]/[action]")]
+        [HttpGet]
         public async Task<ActionResult> SFEndosos(Int32 id)
         {
             try
             {
                 EndososCertificados _EndososCertificados = new EndososCertificados { EndososCertificadosId = id, };
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/EndososCertificados/GetEndososCertificadosById/" +id);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _EndososCertificados = JsonConvert.DeserializeObject<EndososDTO>(valorrespuesta);
+
+                }
+               
                 return await Task.Run(() => View(_EndososCertificados));
             }
             catch (Exception)
