@@ -261,6 +261,23 @@ namespace ERPMVC.Controllers
         }
 
 
+        [HttpGet]
+        public async Task<ActionResult> SFServiciosBodega(Int32 id)
+        {
+            try
+            {
+                SubServicesWareHouse subServicesWareHouse = new SubServicesWareHouse { SubServicesWareHouseId = id, };
+                
+                return await Task.Run(() => View(subServicesWareHouse));
+            }
+            catch (Exception)
+            {
+
+                return await Task.Run(() => BadRequest("Ocurrio un error"));
+            }
+        }
+
+
 
 
 

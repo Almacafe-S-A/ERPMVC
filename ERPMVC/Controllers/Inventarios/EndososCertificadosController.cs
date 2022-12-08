@@ -202,49 +202,47 @@ namespace ERPMVC.Controllers
 
             try
             {
-                if (_EndososCertificados != null)
+                if (_EndososCertificados == null)
                 {
-                    EndososCertificados _listEndososCertificados = new EndososCertificados();
-                    string baseadress = config.Value.urlbase;
-                    HttpClient _client = new HttpClient();
-                    _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                    var result = await _client.GetAsync(baseadress + "api/EndososCertificados/GetEndososCertificadosById/" + _EndososCertificados.EndososCertificadosId);
-                    string valorrespuesta = "";
-                    _EndososCertificados.FechaModificacion = DateTime.Now;
-                    _EndososCertificados.UsuarioModificacion = HttpContext.Session.GetString("user");
-                    if (result.IsSuccessStatusCode)
-                    {
-                        valorrespuesta = await (result.Content.ReadAsStringAsync());
-                        _listEndososCertificados = JsonConvert.DeserializeObject<EndososCertificados>(valorrespuesta);
-                    }
+                    return await Task.Run(() => BadRequest("No llego correctamente el modelo!"));
+                }
 
-                    if (_listEndososCertificados == null)
-                    {
-                        _listEndososCertificados = new EndososCertificados();
-                    }
+                EndososCertificados _listEndososCertificados = new EndososCertificados();
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/EndososCertificados/GetEndososCertificadosById/" + _EndososCertificados.EndososCertificadosId);
+                string valorrespuesta = "";
+                _EndososCertificados.FechaModificacion = DateTime.Now;
+                _EndososCertificados.UsuarioModificacion = HttpContext.Session.GetString("user");
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _listEndososCertificados = JsonConvert.DeserializeObject<EndososCertificados>(valorrespuesta);
+                }
 
-                    if (_listEndososCertificados.EndososCertificadosId == 0)
+                if (_listEndososCertificados == null)
+                {
+                    _listEndososCertificados = new EndososCertificados();
+                }
+
+                if (_listEndososCertificados.EndososCertificadosId == 0)
+                {
+                    _EndososCertificados.FechaLiberacion = DateTime.Now;
+                    _EndososCertificados.FechaCancelacion = DateTime.Now;
+                    _EndososCertificados.FechaCreacion = DateTime.Now;
+                    _EndososCertificados.UsuarioCreacion = HttpContext.Session.GetString("user");
+                    var insertresult = await Insert(_EndososCertificados);
+                    var value = (insertresult.Result as ObjectResult).Value;
+                    EndososCertificados _EndososCertificado = ((EndososCertificados)(value));
+                    if (_EndososCertificado.EndososCertificadosId <= 0)
                     {
-                        _EndososCertificados.FechaLiberacion = DateTime.Now;
-                        _EndososCertificados.FechaCancelacion = DateTime.Now;
-                        _EndososCertificados.FechaCreacion = DateTime.Now;
-                        _EndososCertificados.UsuarioCreacion = HttpContext.Session.GetString("user");
-                        var insertresult = await Insert(_EndososCertificados);
-                        var value = (insertresult.Result as ObjectResult).Value;
-                        EndososCertificados _EndososCertificado = ((EndososCertificados)(value));
-                        if (_EndososCertificado.EndososCertificadosId <= 0)
-                        {
-                            return await Task.Run(() => BadRequest("No se genero el documento!"));
-                        }
-                    }
-                    else
-                    {
-                        var updateresult = await Update(_EndososCertificados.EndososCertificadosId, _EndososCertificados);
+                        return await Task.Run(() => BadRequest("No se genero el documento!"));
                     }
                 }
                 else
                 {
-                    return await Task.Run(()=> BadRequest("No llego correctamente el modelo!"));
+                    var updateresult = await Update(_EndososCertificados.EndososCertificadosId, _EndososCertificados);
                 }
 
             }
