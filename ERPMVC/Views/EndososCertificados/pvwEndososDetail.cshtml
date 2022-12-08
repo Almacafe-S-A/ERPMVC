@@ -2,6 +2,8 @@
 @using System.Security.Claims
 @{
     ClaimsPrincipal permisos = (ClaimsPrincipal)ViewData["permisosEndosos"];
+
+    bool editar = Model.EndososCertificadosId != 0;
 }
 
 <script>
@@ -72,15 +74,6 @@
 
                 },
                 error: function (XMLHttpRequest, textStatus, errorThrown) {
-                    //$.toast({
-                    //    heading: 'Validación',
-                    //    text: textStatus + ": " + XMLHttpRequest.responseText,
-                    //    position: 'top-right',
-                    //    loaderBg: '#ff6849',
-                    //    icon: 'error',
-                    //    hideAfter: 30000,
-                    //    stack: 6
-                    //});
                      MostrarMensaje(textStatus + ": " + XMLHttpRequest.responseText, "Error", "Error", 30000);
                 }
             });
@@ -151,7 +144,22 @@
             grid.dataSource.remove(dataItem);
         }
     }
+
+    function formatoMiles(valor) {  
+            debugger;
+                var formatter = new Intl.NumberFormat('es-HN', {
+                    style: 'currency',
+                    currency: 'LPS',
+                    minimumFractionDigits: 2
+                });
+                return formatter.format(valor).replace(/[a-z]{3}/i, "").trim();
+    }
+
+
 </script>
+
+
+
 
 
 
@@ -160,6 +168,7 @@
 
         @(Html.Kendo().Grid<ERPMVC.Models.EndososCertificadosLine>()
                                                           .Name("gridEndososDetail")
+                                                          .Events(e => e.CellClose("calculateField"))
                                                           .Columns(columns =>
                                                           {                                                             
                                                               columns.Bound(p => p.EndososCertificadosId).Width(150).Visible(false);
@@ -170,18 +179,30 @@
                                                               // columns.Bound(p => p.SubProductId).Hidden().Title("Producto").Width(0);
                                                               columns.Bound(p => p.SubProductId).Title("Producto").Visible(false).Width(150);
                                                               columns.Bound(p => p.Quantity).Width(150).Format("{0:N2}")
-                                                              .ClientFooterTemplate("<div style='text-align: right'>#=totalColumnas(11,0)#</div>")
+                                                              .ClientFooterTemplate("<div style='text-align: right'>#=totalColumnas(1,0)#</div>")
                                                               .HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" }) ;
+                                                              columns.Bound(p => p.Saldo).Width(150).Format("{0:N2}")
+                                                              .ClientFooterTemplate("<div style='text-align: right'>#=totalColumnas(6,0)#</div>")
+                                                              .ClientTemplate("<div style='text-align: right'><span class='saldoSpan'>#=formatoMiles(Saldo)#</span></div>")
+                                                              .HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" }).Visible(editar) ;
+                                                              columns.Bound(p => p.CantidadLiberacion).Width(150).Format("{0:N2}")
+                                                              .ClientFooterTemplate("<div style='text-align: right'>#=totalColumnas(4,0)#</div>")
+                                                              .HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" }).Visible(editar) ;
                                                               columns.Bound(p => p.Price).Width(150).Format("{0:C2}")
                                                               .HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" }) ;
+                                                              columns.Bound(p => p.ValorLiberado).Width(150).Format("{0:N2}")
+                                                              .ClientFooterTemplate("<div style='text-align: right'>#=totalColumnas(5,0)#</div>")
+                                                              .ClientTemplate("<div style='text-align: right'><span class='totalliberacion'>#=formatoMiles(ValorLiberado)#</span></div>")
+                                                              .HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" }).Visible(editar) ;
                                                               columns.Bound(p => p.ValorEndoso).Width(150).Title("Valor").Format("{0:C2}")
                                                               .HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" })
-                                                                  .ClientFooterTemplate("<div style='text-align: right'>#=totalColumnas(11,0)#</div>");
+                                                                  .ClientFooterTemplate("<div style='text-align: right'>#=totalColumnas(3,0)#</div>");
 
 
                                                           })
-                                                              .Filterable(f => f.Operators(o => o.ForString(s => s
+                                                       .Filterable(f => f.Operators(o => o.ForString(s => s
                                                        .Clear()
+                                                       
                                                        .Contains("Contiene")
                                                                .DoesNotContain("No contiene")
                                                                .EndsWith("Termina con")
@@ -212,10 +233,10 @@
                                                           )
                                                        ))
 
-                                                           .Editable(e => e.Mode(GridEditMode.PopUp))
+                                                           .Editable(e => e.Mode(GridEditMode.InCell))
                                                             .Sortable()
                                                             .AutoBind(true)
-                                                            //.Pageable()
+                                                            .Navigatable()
                                                             .Filterable()
                                                             .Scrollable()
                                                             // .ClientDetailTemplateId("template")
@@ -238,15 +259,24 @@
                                                                 model.Id(p => p.EndososCertificadosLineId);
                                                                 model.Field(p => p.EndososCertificadosLineId).Editable(false);
                                                                 model.Field(p => p.EndososCertificadosId).Editable(false);
-                                                                //  model.Field(p => p.ControlPalletsId).Editable(true);
+                                                                model.Field(p => p.Quantity).Editable(false);
+                                                                model.Field(p => p.ValorEndoso).Editable(false);
+                                                                model.Field(p => p.ValorUnitarioDerechos).Editable(false);
+                                                                model.Field(p => p.Pda).Editable(false);
+                                                                 model.Field(p => p.Price).Editable(false);
+                                                                  model.Field(p => p.CantidadLiberacion).Editable(true);
+                                                                   model.Field(p => p.ValorLiberado).Editable(false);
+                                                                    model.Field(p => p.Saldo).Editable(false);
+                                                                     model.Field(p => p.SubProductName).Editable(false);
+                                                                      model.Field(p => p.UnitOfMeasureName).Editable(false);
+
 
                                                             })
-                                                            .Sort(s => s.Add(m => m.EndososCertificadosLineId).Ascending())
+                                                            .Sort(s => s.Add(m => m.Pda).Ascending())
                                                             .Events(events =>
                                                             {
                                                                 events.Error("error_handler");
-                                                                //events.upda("EditHandler");
-
+                                                               
                                                             })
                                                             .Read(read => read.Action("GetEndososCertificadosLineByEndososCertificadosId", "EndososCertificadosLine").Data("GetEndososCertificadosId").Type(HttpVerbs.Post))
                                                       )
@@ -265,6 +295,53 @@
         });
     }
 
+
+    formattear = new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'LPS',
+        minimumFractionDigits: 2
+    });
+
+    function calculateField(e) {
+        debugger;
+        if (e.container) {
+            if (e.model.CantidadLiberacion > e.model.Saldo) {
+                 MostrarMensaje('La cantidad a Liberar no puede ser mayor al saldo disponible', "Error", "Error", 30000);
+                e.model.CantidadLiberacion = 0;
+                e.model.Saldo = e.model.Quantity;
+            }
+            e.model.Saldo = e.model.Quantity;
+            e.model.ValorLiberado = e.model.CantidadLiberacion * e.model.Price;
+            e.model.Saldo = e.model.Saldo -  e.model.CantidadLiberacion;
+
+            var totalSpanCantLiberacion = e.container.closest("TR").find(".totalliberacion");            
+            var totalliberacion = formattear.format(e.model.ValorLiberado).replace(/[a-z]{3}/i, "").trim();
+            totalSpanCantLiberacion.html(totalliberacion);
+
+            var saldoSpan = e.container.closest("TR").find(".saldoSpan");
+            var saldo = formattear.format( e.model.Saldo ).replace(/[a-z]{3}/i, "").trim();
+            saldoSpan.html(saldo);
+
+
+            //Actualizar Saldo
+            var footer = $('tr.k-footer-template'),
+                aggregate = $(footer).children('td')[4];
+                
+            $(aggregate).text(totalColumnas(6,0));
+            ///Actualizar ValorLiberacion
+            var footer2 = $('tr.k-footer-template'),
+                aggregate2 = $(footer2).children('td')[7];
+            $(aggregate2).text(totalColumnas(5, 0));
+
+            ///Cantidad Libertacion
+
+            var footer3 = $('tr.k-footer-template'),
+                aggregate3 = $(footer2).children('td')[5];
+            $(aggregate3).text(totalColumnas(4, 0));
+
+        }
+
+    }
     
 
 
@@ -283,6 +360,17 @@
                 break;
             case 3: 
                 data.forEach(r => total += r.ValorEndoso);
+                break;
+
+            case 4: 
+                data.forEach(r => total += r.CantidadLiberacion);
+                break;
+            case 5: 
+                data.forEach(r => total += r.ValorLiberado);
+                break;
+
+             case 6: 
+                data.forEach(r => total += r.Saldo);
                 break;
             
             default:
