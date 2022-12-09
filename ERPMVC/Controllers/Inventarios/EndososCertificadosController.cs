@@ -41,7 +41,7 @@ namespace ERPMVC.Controllers
         }
 
         [HttpPost("[controller]/[action]")]
-        public async Task<ActionResult> pvwEndosos([FromBody]EndososCertificados _EndososCertificadosp)
+        public async Task<ActionResult> pvwEndosos([FromBody] EndososDTO _EndososCertificadosp)
         {
             EndososDTO _EndososCertificados = new EndososDTO();
             try
@@ -76,7 +76,7 @@ namespace ERPMVC.Controllers
                 throw ex;
             }
 
-
+            _EndososCertificados.editar = _EndososCertificadosp.editar;
 
             return PartialView(_EndososCertificados);
 

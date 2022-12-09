@@ -376,14 +376,24 @@
                                         <div class="col-md-3">
                                             <div class="form-group">
                                                 <label asp-for="FechaCancelacion" class=" control-label" style="width: 100%;">Fecha de Cancelación</label>
-
-                                                <kendo-datetimepicker name="FechaCancelacion"
+                                                @if (Model.EndososCertificadosId >0) { 
+                                                    <kendo-datetimepicker name="FechaCancelacion"
                                                                       style="width: 100%;"
                                                                       date-input="false"
                                                                       
                                                                       format="dd/MM/yyyy hh:mm:ss"
                                                                       time-format="hh:mm:ss"
                                                                       value="Model.FechaCancelacion" />
+
+                                                }
+                                                else
+                                                {
+                                                    <input type="text" readonly  class="k-textbox" style="min-width:100%;"  />                         
+
+                                                }
+
+
+                                                                       
 
                                             </div>
                                         </div>
@@ -410,12 +420,13 @@
                                     @await Html.PartialAsync("pvwEndososDetail", Model, new ViewDataDictionary(ViewData) { { "permisosEndosos", permisos } })
                                 </div>
 
-                                @if (Model.EndososCertificadosId == 0 || Model.FechaCancelacion != null)
+                                @if (Model.EndososCertificadosId == 0 )
                                 {
                                     <div class="row">
                                         <button id="btnSaveControlEstiba" type="submit" class="form-control btn-miboton" onclick="SaveEndosos(this);">Guardar</button>
                                     </div>
-                                }else    {
+                                }
+                                @if(Model.editar == 1)    {
                                 
                                     <div class="row">
                                         <button id="btnSaveControlEstiba" type="submit" class="form-control btn-miboton" onclick="SaveEndosos(this);">Liberar</button>
@@ -455,15 +466,10 @@
             var status = $(".status");
             var id = 0;
             var CantidadEndosadaLinea = 0;
-            if ($("#EndososCertificadosId").val() == 0) {
-                if (displayedData.length > 0) {
-                    for (var i = 0; i < displayedData.length; i++) {
-                        if (displayedData[i].EndososCertificadosLineId > id)
-                            displayedData[i].EndososCertificadosLineId = 0;
-                            CantidadEndosadaLinea = CantidadEndosadaLinea + Number(displayedData[i].Quantity);
-                    }
-                    id = 0;
-                }
+            var fechaCancelacion = null;
+            
+            if ($("#EndososCertificadosId").val() > 0) {
+                fechaCancelacion = $("#FechaCancelacion").getKendoDateTimePicker().value() != null? $("#FechaCancelacion").getKendoDateTimePicker().value().toJSON() :null;
             }
             
                 
@@ -488,7 +494,7 @@
                     'NombreEndoso': $("#TipoEndoso").data("kendoDropDownList").text(),
                     'ExpirationDate': $("#ExpirationDate").getKendoDateTimePicker().value().toJSON(),
                     'FechaOtorgado': $("#FechaOtorgado").getKendoDateTimePicker().value().toJSON(),
-                    'FechaCancelacion': $("#FechaCancelacion").getKendoDateTimePicker().value() != null? $("#FechaCancelacion").getKendoDateTimePicker().value().toJSON() :null,
+                    'FechaCancelacion':fechaCancelacion,
                     'TasaDeInteres': $("#TasaDeInteres").val(),
                     'TotalEndoso': $("#TotalEndoso").val(),
                     'EndososCertificadosLine': displayedData
