@@ -29,6 +29,8 @@ namespace ERPMVC.Models
         [Display(Name = "Servicio")]
         public string ProductName { get; set; }
 
+        public string ProductoEndosado { get; set; }
+
         [Display(Name = "Cliente")]
         public Int64 CustomerId { get; set; }
 
@@ -82,11 +84,10 @@ namespace ERPMVC.Models
         [Display(Name = "Total endoso")]
         public double TotalEndoso { get; set; }
 
+
         public DateTime? FechaLiberacion { get; set; }
 
         public DateTime? FechaCancelacion { get; set; }
-
-        public double CantidadEndosada { get; set; }
 
         public double Saldo { get; set; }
 
