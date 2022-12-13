@@ -422,59 +422,72 @@
                                         <span asp-validation-for="Recibos"></span>
                                     </div>
                                 </div>
-                                <div class="col-md-2">
-                                    <div class="form-group">
-                                        <label class="control-label" style="min-width:100%">Póliza Propia</label>
-                                        <kendo-switch name="PolizaPropia" enabled="true" for="PolizaPropia" on-change="RefreshPolicies" checked="@Model.PolizaPropia">
-                                            <messages checked="Si" unchecked="No" />
-                                        </kendo-switch>
+                                
+                                    <div class="col-md-2">
+                                        <div class="form-group">
+                                            <label class="control-label" style="min-width:100%">Póliza Propia</label>
+                                            <kendo-switch name="PolizaPropia" enabled="editar" for="PolizaPropia" on-change="RefreshPolicies"  checked="@Model.PolizaPropia" data-bind="RefreshPolicies">
+                                                <messages checked="Si" unchecked="No" />
+                                            </kendo-switch>
+                                        </div>
                                     </div>
-                                </div>
-                                <div class="col-md-3">
-                                    <div class="form-group">
-                                        <label asp-for="InsurancePolicyId" class="control-label" style="min-width: 100%;">Póliza </label>
-                                        <script>
-                                            function GetInsurance() {
+                                    <div class="col-md-3">
+                                        <div class="form-group">
+                                            <label asp-for="InsurancePolicyId" class="control-label" style="min-width: 100%;">Póliza </label>
+                                            <script>
+                                                function GetInsurance() {
                                                 console.log($('#PolizaPropia').val());
                                                 var propia = $("#PolizaPropia").data("kendoSwitch");
                                                 return {
 
-                                                    'PolizaPropia': propia.check(),
-                                                    'CustomerId': $('#CustomerId').val()
+                                                'PolizaPropia': propia.check(),
+                                                'CustomerId': $('#CustomerId').val()
                                                 }
-                                            }
+                                                }
 
-                                            function RefreshPolicies() {
+                                                function RefreshPolicies() {
                                                 //debugger;
 
                                                 $("#InsurancePolicyId").data("kendoDropDownList").dataSource.read();
                                                 var propia = $("#PolizaPropia").data("kendoSwitch");
                                                 var valor = propia.check();
                                                 if (!valor) {
-                                                    $("#Seguro").val("S/Endoso");
+                                                $("#Seguro").val("S/Endoso");
                                                 } else {
-                                                    $("#Seguro").val("S/Tarifa");
+                                                $("#Seguro").val("S/Tarifa");
                                                 }
 
-                                            }
-                                        </script>
-                                        <kendo-dropdownlist name="InsurancePolicyId" for="InsurancePolicyId" filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                }
+                                            </script>
+
+
+                                            
+                                             @if (@Model.IdCD == 0)
+                                                    {
+                                                        <kendo-dropdownlist name="InsurancePolicyId" for="InsurancePolicyId" filter="Kendo.Mvc.UI.FilterType.Contains"
                                                             option-label="Seleccione la Póliza"
                                                             datatextfield="PolicyNumber"
                                                             datavaluefield="InsurancePolicyId"
-                                                            enable="editar"
+
                                                             value="@Model.InsurancePolicyId"
                                                             auto-bind="true"
                                                             data-val-required="La Póliza es requerida"
                                                             style="min-width: 100%;">
-                                            <datasource type="DataSourceTagHelperType.WebApi" server-operation="true" page-size="9999999">
-                                                <transport>
-                                                    <read url="@Url.Action("GetInsuracesPoliciesByPropertyActivos", "InsurancePolicy")" data="GetInsurance" />
-                                                </transport>
-                                            </datasource>
-                                        </kendo-dropdownlist>
+                                                <datasource type="DataSourceTagHelperType.WebApi" server-operation="true" page-size="9999999">
+                                                    <transport>
+                                                        <read url="@Url.Action("GetInsuracesPoliciesByPropertyActivos", "InsurancePolicy")" data="GetInsurance" />
+                                                    </transport>
+                                                </datasource>
+                                            </kendo-dropdownlist>
+                                                    }else{
+                                                     <input class="k-textbox" type="text" asp-for="Seguro" value="@Model.NoPoliza" style="min-width: 100%" readonly />
+                                                    }
+                                        </div>
                                     </div>
-                                </div>
+
+                                   
+
+
                                 <div class="col-md-2">
                                     <div class="form-group">
                                         <label class="control-label">Seguro</label>
@@ -500,14 +513,14 @@
                                 <div class="col-md-3">
                                     <div class="form-group">
                                         <label asp-for="PorcentajeDeudas" class="control-label" style="width:100%">Porcentaje morosidad</label>
-                                        <input type="text" asp-for="PorcentajeDeudas" class="k-textbox " style="min-width: 100%" />
+                                        <input type="number" asp-for="PorcentajeDeudas" class="k-textbox " style="min-width: 100%" />
                                         <span asp-validation-for="PorcentajeDeudas" class="text-danger"></span>
                                     </div>
                                 </div>
                                 <div class="col-sm-4 col-md-3">
                                     <div class="form-group">
                                         <label asp-for="OtrosCargos" class="control-label" style="width:100%"></label>
-                                        <input type="text" asp-for="OtrosCargos" class="k-textbox " style="min-width: 100%" value="Si" />
+                                        <input type="number" asp-for="OtrosCargos" class="k-textbox " style="min-width: 100%" value="Si" />
                                         <span asp-validation-for="OtrosCargos" class="text-danger"></span>
                                     </div>
                                 </div>
@@ -886,51 +899,27 @@
                          async: false,
                          data: JSON.stringify(dataObject),
                          success: function (data) {
-
-                             //$.toast({
-                             //    heading: 'Satisfactorio',
-                             //    text: 'Datos guardados correctamente.',
-                             //    position: 'top-right',
-                             //    loaderBg: '#ff6849',
-                             //    icon: 'success',
-                             //    hideAfter: 3000,
-                             //    stack: 6
-                             //});
                              MostrarMensaje( 'Datos guardados correctamente.', "success", "Satisfactorio", 3000);
                              RefreshCertificadoDeposito();
                              $('#myModalCertificadoDeposito').modal('hide');
 
                          },
                          error: function (XMLHttpRequest, textStatus, errorThrown) {
+                             var error = XMLHttpRequest.responseText;
+
+                             if(error.length > 300){
+                                error = "Error de Servidor" ;                            
+                             }
 
                              $("#btnSaveCertificadoDeposito").show();
                              $("#btnSaveCertificadoDeposito").prop("disabled", false);
-                             //$.toast({
-                             //    heading: 'Validación',
-                             //    text: textStatus + ": " + XMLHttpRequest.responseText,
-                             //    position: 'top-right',
-                             //    loaderBg: '#ff6849',
-                             //    icon: 'error',
-                             //    hideAfter: 3000,
-                             //    stack: 6
-                             //});
-                             MostrarMensaje(textStatus + ": " + XMLHttpRequest.responseText, "Error", "Error", 6000);
+                             MostrarMensaje(textStatus + ": " + , "Error", "Error", 6000);
 
                          }
                      });
 
                  }
                  else {
-
-                     //$.toast({
-                     //    heading: 'Validación',
-                     //    text: 'Hay campos no validos en el formulario!',
-                     //    position: 'top-right',
-                     //    loaderBg: '#ff6849',
-                     //    icon: 'error',
-                     //    hideAfter: 3000,
-                     //    stack: 6
-                     //});
                      MostrarMensaje('Hay campos no validos en el formulario!', "Error", "Error", 3000);
                      $("#btnSaveCertificadoDeposito").show();
                      $("#btnSaveCertificadoDeposito").prop("disabled", false);
@@ -938,15 +927,7 @@
              }
              else {
 
-                 //$.toast({
-                 //    heading: 'Validación',
-                 //    text: 'Debe agregar los productos!',
-                 //    position: 'top-right',
-                 //    loaderBg: '#ff6849',
-                 //    icon: 'error',
-                 //    hideAfter: 3000,
-                 //    stack: 6
-                 //});
+                
                  MostrarMensaje('Debe agregar los productos!', "Error", "Validación", 30000);
              }
 
