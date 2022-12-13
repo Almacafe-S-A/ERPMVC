@@ -80,6 +80,17 @@ namespace ERPMVC.Controllers
         }
 
 
+
+        [HttpPost("[controller]/[action]")]
+        public async Task<ActionResult> pvwSignature()
+        {
+
+            return PartialView();
+
+        }
+
+
+
         [HttpGet("[controller]/[action]")]
         public async Task<DataSourceResult> Get([DataSourceRequest]DataSourceRequest request)
         {
