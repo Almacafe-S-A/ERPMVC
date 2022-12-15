@@ -81,6 +81,11 @@ namespace ERPMVC.Models
         public string DireccionDestion { get; set; }
 
         public string Transportista { get; set; }
+        
+        public string RTNTransportista { get; set; }
+
+        public string DNIMotorista { get; set; }
+
 
         public string Barco { get; set; }
 
