@@ -68,6 +68,7 @@ namespace ERPMVC.Controllers
                         FechaLiberacion = null,
                     };
                 }
+                
                 ViewData["permisos"] = _principal;
             }
             catch (Exception ex)
@@ -242,6 +243,10 @@ namespace ERPMVC.Controllers
                 }
                 else
                 {
+                    if (_EndososCertificados.EndososCertificadosLine.Sum(s => s.CantidadLiberacion) == 0)
+                    {
+                        return await Task.Run(() => BadRequest("Debe ingresar los vavlores de la liberacion"));
+                    }
                     var updateresult = await Update(_EndososCertificados.EndososCertificadosId, _EndososCertificados);
                 }
 
