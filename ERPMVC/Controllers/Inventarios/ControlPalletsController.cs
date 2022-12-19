@@ -12,6 +12,7 @@ using Kendo.Mvc.UI;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
@@ -452,7 +453,7 @@ namespace ERPMVC.Controllers
                         EsIngreso = _ControlPalletsId.EsIngreso,
                         EsSalida = _ControlPalletsId.EsSalida,
                         ProductoPesado = true,
-                   
+                        FechaCreacion = DateTime.Now,
                         BranchId = Convert.ToInt64(HttpContext.Session.GetString("BranchId"))
                     };
                 }
@@ -517,7 +518,10 @@ namespace ERPMVC.Controllers
                 WarehouseName = dto.WarehouseName,
                 Observaciones = dto.Observaciones,
                 ProductoPesado = dto.ProductoPesado,
-                _Boleto_Ent = dto._Boleto_Ent
+                _Boleto_Ent = dto._Boleto_Ent,
+                FechaCreacion = dto.FechaCreacion,
+                UsuarioCreacion= dto.UsuarioCreacion,
+                
             };
             controlPallets._ControlPalletsLine = new List<ControlPalletsLine>();
             foreach (var item in dto._ControlPalletsLine)
