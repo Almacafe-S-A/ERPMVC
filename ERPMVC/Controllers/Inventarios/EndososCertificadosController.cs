@@ -243,9 +243,9 @@ namespace ERPMVC.Controllers
                 }
                 else
                 {
-                    if (_EndososCertificados.EndososCertificadosLine.Sum(s => s.CantidadLiberacion) == 0)
+                    if (_EndososCertificados.EndososCertificadosLine.Sum(s => s.CantidadLiberacion) == 0 || _EndososCertificados.FechaCancelacion == null)
                     {
-                        return await Task.Run(() => BadRequest("Debe ingresar los vavlores de la liberacion"));
+                        return await Task.Run(() => BadRequest("Debe ingresar los valores de la liberacion"));
                     }
                     var updateresult = await Update(_EndososCertificados.EndososCertificadosId, _EndososCertificados);
                 }
@@ -364,6 +364,61 @@ namespace ERPMVC.Controllers
 
                 }
                
+                return await Task.Run(() => View(_EndososCertificados));
+            }
+            catch (Exception)
+            {
+
+                return await Task.Run(() => BadRequest("Ocurrio un error"));
+            }
+        }
+
+
+        [HttpGet]
+        public async Task<ActionResult> SFImprimirEndososPartePosterior(Int32 id)
+        {
+            try
+            {
+                EndososCertificados _EndososCertificados = new EndososCertificados { EndososCertificadosId = id, };
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/EndososCertificados/GetEndososCertificadosById/" + id);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _EndososCertificados = JsonConvert.DeserializeObject<EndososDTO>(valorrespuesta);
+
+                }
+
+                return await Task.Run(() => View(_EndososCertificados));
+            }
+            catch (Exception)
+            {
+
+                return await Task.Run(() => BadRequest("Ocurrio un error"));
+            }
+        }
+
+        [HttpGet]
+        public async Task<ActionResult> SFImprimirEndososPartePosteriorTalon(Int32 id)
+        {
+            try
+            {
+                EndososCertificados _EndososCertificados = new EndososCertificados { EndososCertificadosId = id, };
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/EndososCertificados/GetEndososCertificadosById/" + id);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _EndososCertificados = JsonConvert.DeserializeObject<EndososDTO>(valorrespuesta);
+
+                }
+
                 return await Task.Run(() => View(_EndososCertificados));
             }
             catch (Exception)
