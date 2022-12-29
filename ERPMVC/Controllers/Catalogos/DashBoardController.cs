@@ -97,6 +97,35 @@ namespace ERPMVC.Controllers
 
         }
 
+        
+
+
+         [HttpGet("[controller]/[action]")]
+        public async Task<JsonResult> GetEndososporVencer()
+        {
+            List<EndososCertificados> endosos = new List<EndososCertificados>() ;
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/EndososCertificados/GetEndososporVencer");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    endosos = JsonConvert.DeserializeObject<List<EndososCertificados>>(valorrespuesta);
+
+                }
+
+            }
+            catch (System.Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: {ex.ToString()}");
+                throw (new Exception(ex.Message));
+            }
+            return Json(endosos.Count);
+        }
 
         [HttpGet("[controller]/[action]")]
         public async Task<JsonResult> GetQuantitySalesOrders()
