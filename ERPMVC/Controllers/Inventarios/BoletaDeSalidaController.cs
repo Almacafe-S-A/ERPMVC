@@ -63,6 +63,11 @@ namespace ERPMVC.Controllers
                     _BoletaDeSalida = new BoletaDeSalida();
                     _BoletaDeSalida.DocumentDate = DateTime.Now;
                     _BoletaDeSalida.DocumentoId = 0;
+                    _BoletaDeSalida.TonPuerto= 0;
+                    _BoletaDeSalida.Tara = 0;
+                    _BoletaDeSalida.PesoBruto= 0;
+                    _BoletaDeSalida.QQInglesas= 0;
+                    _BoletaDeSalida.PNInglesas= 0;
                 }
             }
             catch (Exception ex)
