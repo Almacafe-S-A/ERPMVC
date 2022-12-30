@@ -123,7 +123,6 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _clientes = JsonConvert.DeserializeObject<List<SubProduct>>(valorrespuesta).Where(w => w.IdEstado ==1 ).ToList();
-                    _clientes.Add(new SubProduct { SubproductId = 0, ProductName = "Impuesto sobre ventas" });
                 }
 
             }
