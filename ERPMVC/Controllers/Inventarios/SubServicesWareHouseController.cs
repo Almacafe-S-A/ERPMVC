@@ -60,7 +60,12 @@ namespace ERPMVC.Controllers
 
                 if (_SubServicesWareHouse == null || _SubServicesWareHousep.SubServicesWareHouseId==0)
                 {
-                    _SubServicesWareHouse = new SubServicesWareHouseDTO { SubServicesWareHouseId = 0, StartTime = DateTime.Now, EndTime = DateTime.Now , BranchId = _SubServicesWareHousep.BranchId , DocumentDate = DateTime.Now };
+                    _SubServicesWareHouse = new SubServicesWareHouseDTO { 
+                        SubServicesWareHouseId = 0, 
+                        StartTime = DateTime.Now, 
+                        EndTime = new DateTime() , 
+                        BranchId = _SubServicesWareHousep.BranchId , 
+                        DocumentDate = DateTime.Now };
                 }
             }
             catch (Exception ex)
