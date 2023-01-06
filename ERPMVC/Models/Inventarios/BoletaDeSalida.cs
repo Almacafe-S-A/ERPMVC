@@ -87,6 +87,8 @@ namespace ERPMVC.Models
         
         public string RTNTransportista { get; set; }
 
+        public string Observaciones { get; set; }
+
 
 
         public string Barco { get; set; }

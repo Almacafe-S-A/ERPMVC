@@ -84,6 +84,7 @@ namespace ERPMVC.Controllers
                         BranchId = Convert.ToInt32(HttpContext.Session.GetString("BranchId")),
                         PolizaPropia = true,
                         Seguro = "S/Tarifa",
+                        OtrosCargos = "Si",
                         
                         SujetasAPago = 0,
                     };
