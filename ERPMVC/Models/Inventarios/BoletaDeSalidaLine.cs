@@ -27,8 +27,8 @@ namespace ERPMVC.Models
         [Display(Name = "Unidad de medida")]
         public string UnitOfMeasureName { get; set; }
         [ForeignKey("SubProductId")]
-        [UIHint("Producto")]
-        public SubProduct SubProduct { get; set; }
+        [UIHint("ProductoCliente")]
+        public CustomerProduct SubProduct { get; set; }
 
         
         [ForeignKey("UnitOfMeasureId")]

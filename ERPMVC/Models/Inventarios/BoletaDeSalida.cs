@@ -45,6 +45,9 @@ namespace ERPMVC.Models
         public string Marca { get; set; }
 
         public string Motorista { get; set; }
+        public string DNIMotorista { get; set; }
+
+        public string PlacaContenedor { get; set; }
 
         [Display(Name = "Cargado/Vacio")]
         public Int64 CargadoId { get; set; }
@@ -84,7 +87,8 @@ namespace ERPMVC.Models
         
         public string RTNTransportista { get; set; }
 
-        public string DNIMotorista { get; set; }
+        public string Observaciones { get; set; }
+
 
 
         public string Barco { get; set; }

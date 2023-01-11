@@ -98,6 +98,10 @@ namespace ERPMVC.Models
 
         public string Impreso { get; set; }
 
+        public string Estado { get; set; }
+
+        public int EstadoId { get; set; }
+
         public List<EndososCertificadosLine> EndososCertificadosLine { get; set; } = new List<EndososCertificadosLine>();
 
     }
