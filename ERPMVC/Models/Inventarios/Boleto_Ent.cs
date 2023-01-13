@@ -161,6 +161,46 @@ namespace ERPMVC.Models
 
         }
 
+
+        public string UnidadPreferidaName(int UOM)
+        {
+
+            switch (UOM)
+            {
+                case 1:
+                    return "Libras E";
+
+                case 2:
+                    return "Kilogramos E";
+
+                case 3:
+                    return "Quintales E";
+
+                case 4:
+                    return "Toneladas E";
+
+                case 5:
+                    return "Libras I";
+
+                case 6:
+
+                    return "Kilogramos I";
+
+                case 7:
+                    return "Quintales I";
+
+                case 8:
+                    return "Toneladas I";
+
+            }
+
+            return "No se encuentra la unidad preferida del cliente";
+
+
+
+
+        }
+
         public virtual Boleto_Sal Boleto_Sal { get; set; }
     }
 }
