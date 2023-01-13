@@ -195,6 +195,68 @@ namespace ERPMVC.Controllers
         }
 
 
+        [HttpGet("[controller]/[action]")]
+        public async Task<ActionResult> GetBoleto_EntByWithPreferedUOMId([DataSourceRequest] DataSourceRequest request, Boleto_EntDTO _Boleto_Entp)
+        {
+            Boleto_EntDTO _Boleto_Ent = new Boleto_EntDTO();
+            try
+            {
+
+                string baseadress = config.Value.urlbase;
+                
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/Boleto_Ent/GetBoleto_EntById/" + _Boleto_Entp.clave_e);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _Boleto_Ent = JsonConvert.DeserializeObject<Boleto_EntDTO>(valorrespuesta);
+
+                    if (_Boleto_Ent == null)
+                    {
+                        _Boleto_Ent = new Boleto_EntDTO();
+                        return Json(_Boleto_Ent);
+                    }
+
+                    _client = new HttpClient();
+                    _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                    result = await _client.GetAsync(baseadress + "api/Customer/GetCustomerById/" + _Boleto_Ent.CustomerId);
+                    if (result.IsSuccessStatusCode)
+                    {
+                        valorrespuesta = await (result.Content.ReadAsStringAsync());
+                        Customer customer = new Customer();
+                        customer = JsonConvert.DeserializeObject<Customer>(valorrespuesta);
+
+                        if (customer != null)
+                        {
+                            _Boleto_Ent.UnidadPreferidaId = customer.UnitOfMeasurePreference  == null ? 0 : (int)customer.UnitOfMeasurePreference;
+                            _Boleto_Ent.PesoUnidadPreferidaNeto = _Boleto_Ent.Convercion(_Boleto_Ent.Boleto_Sal.peso_n, _Boleto_Ent.UnidadPreferidaId);
+                            _Boleto_Ent.UnidadPreferida = _Boleto_Ent.UnidadPreferidaName(_Boleto_Ent.UnidadPreferidaId);
+
+
+                        }
+
+                    }
+
+
+                }
+
+                if (_Boleto_Ent == null) { _Boleto_Ent = new Boleto_EntDTO(); }
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: {ex.ToString()}");
+                throw ex;
+            }
+
+
+            return Json(_Boleto_Ent); //_Pesaje.ToDataSourceResult(request);
+
+        }
+
+
         public async Task<ActionResult> Virtualization_Read([DataSourceRequest] DataSourceRequest request, Customer _customerp, bool esIngreso,bool completo = true)
         {
             //var res = await GetBoletaEntrada(_customerp);
