@@ -11,6 +11,8 @@ namespace ERPMVC.DTO
         public Int64? ProductId { get; set; }
 
         public Int64? UnitOfMeasureId { get; set; }
-        
+
+        public string UnitOfMeasureName { get; set; }
+
     }
 }

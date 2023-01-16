@@ -61,6 +61,8 @@ namespace ERPMVC.Controllers
                 if (_Grupo == null)
                 {
                     _Grupo = new FixedAssetGroupDTO();
+                    _Grupo.IdEstado = 1;
+                    _Grupo.Estado = "Name";
                 }
             }
             catch (Exception ex)

@@ -68,61 +68,6 @@
 </script>
 
 
-<script>
-                                                         function valueMapper(options) {
-                                                            $.ajax({
-                                                                url: "@Url.Action("Orders_ValueMapper", "GoodsDelivered")",
-                                                                data: convertValues(options.value),
-                                                                success: function (data) {
-                                                                    options.success(data);
-                                                                }
-                                                            });
-                                                        }
-
-                                                        function convertValues(value) {
-                                                            var data = {};
-                                                            value = $.isArray(value) ? value : [value];
-
-                                                            for (var idx = 0; idx < value.length; idx++) {
-                                                                data["values[" + idx + "]"] = value[idx];
-                                                            }
-
-                                                            return data;
-                                                        }
-
-                                                        function changesetearvalues() {
-                                                            var dataObject = { 'GoodsDeliveredId' : $("#GoodsDeliveredId").val() };
-                                                            var notification = $("#notification").data("kendoNotification");
-                                                            var subproductid = 0;
-                                                            kendo.ui.progress($("#myModalBoletaDeSalida"), true);
-                                                            $.ajax({
-                                                                url: '@Url.Action("GetGoodsDeliveredById", "GoodsDelivered")',
-                                                                method: 'POST',
-                                                                datatype: "json",
-                                                                contentType: 'application/json',
-                                                                async: false,
-                                                                data: JSON.stringify(dataObject),
-                                                                success: function (data) {
-                                                                    debugger;
-                                                                    $("#Placa").val(data.Placa);
-                                                                    $("#Motorista").val(data.Name);
-                                                                    $("#Marca").val(data.Marca);
-                                                                    $("#Quantity").data("kendoNumericTextBox").value(data._GoodsDeliveredLine[0].QuantitySacos);
-                                                                    $("#CustomerId").data("kendoDropDownList").value(data.CustomerId);
-                                                                    $("#SubProductId").data("kendoDropDownList").dataSource.read();
-                                                                    $("#UnitOfMeasureId").data("kendoDropDownList").value(data._GoodsDeliveredLine[0].UnitOfMeasureId);
-                                                                    $("#BranchId").data("kendoDropDownList").value(data.BranchId);
-                                                                    subproductid = data._GoodsDeliveredLine[0].SubProductId;
-                                                                },
-                                                                error: function (XMLHttpRequest, textStatus, errorThrown) {
-                                                                     MostrarMensaje(textStatus + ": " + XMLHttpRequest.responseText, "Error", "Validación", 30000);
-                                                                }
-                                                            });
-
-                                                            $("#SubProductId").data("kendoDropDownList").value(subproductid);
-                                                        }
-                                                    </script>
-
 
 <div id="myModalBoletaDeSalida" class="modal fade" style="min-width:100%" role="dialog">
     <div class="modal-dialog modal-lg" role="document">
@@ -342,7 +287,8 @@
                                                              for (i = datasource._data.length - 1; i >= 0; i--) {
                                                                item = raw[i];
                                                                datasource.remove(item);
-                                                            }     
+                                                            }
+                                                    $(".k-grid-add", "#gridBoletaDeSalidaLines").show();
                                                                             
 
                                                             $("#Motorista").val(null);
@@ -413,7 +359,6 @@
                                                         <div hidden>
                                                             <kendo-numerictextbox name="WeightBallot"
                                                                           format="N"
-                                                                          data-val-required="El campo Boleta de peso es requerido"
                                                                           min="0"
                                                                           spinners="false"
                                                                           max="99999999"
@@ -624,7 +569,7 @@
 
                                                         if (Number($("#WeightBallot").val()) > 0) {
                                                             $.ajax({
-                                                                url: '@Url.Action("GetBoleto_EntById", "Boleto_Ent")',
+                                                                url: '@Url.Action("GetBoleto_EntByWithPreferedUOMId", "Boleto_Ent")',
                                                                 method: 'GET',
                                                                 datatype: "json",
                                                                 contentType: 'application/json',
@@ -633,10 +578,7 @@
                                                                 success: function (result) {
                                                                    
 
-                                                                    var resultados = result;
-
-
-                                                                    
+                                                                    var resultados = result;                                                                    
                                                                     $("#pesado").show();
                                                                     $("#Motorista").val(resultados.conductor);
                                                                     $("#Placa").val(resultados.placas);
@@ -682,12 +624,20 @@
                                                                             console.log(resultados);
                                                                             datasource.insert({
                                                                                 BoletaDeSalidaId: 0
-                                                                                , UnitOfMeasure:{UnitOfMeasureId:resultados.UnitOfMeasureId,UnitOfMeasureName: $("#UnitOfMeasureId").data("kendoDropDownList").text()}
-                                                                                , SubProduct: { SubProductId: resultados.SubProductId, SubProductName:resultados.SubProductName  }
-                                                                                , Quantity: resultados.Boleto_Sal.peso_n
+                                                                                //, UnitOfMeasure: { UnitOfMeasureId: resultados.UnidadPreferidaId, UnitOfMeasureName: resultados.UnidadPreferida }
+                                                                                , UnitOfMeasureName: resultados.UnidadPreferida
+                                                                                , UnitOfMeasureId: resultados.UnidadPreferidaId
+                                                                                //, SubProduct: { SubProductId: resultados.SubProductId, SubProductName:resultados.SubProductName  }
+                                                                                , SubProductName: resultados.SubProductName
+                                                                                , SubProductId: resultados.SubProductId
+                                                                                , Quantity: resultados.PesoUnidadPreferidaNeto
                                                                                 , WarehouseName : ''
                                                                                 , Warehouseid: null
                                                                             });
+
+
+
+                                                            $(".k-grid-add", "#gridBoletaDeSalidaLines").hide();
 
 
                                                                     $("#SubProductId").data("kendoDropDownList").enable(false);
@@ -778,14 +728,14 @@
                               }).Title("Acciones").Width(120).Visible(Model.BoletaDeSalidaId == 0);
 
                               columns.Bound(p => p.SubProduct).Title("Producto")
-                                                .ClientTemplate("#=typeof SubProduct === 'undefined'||SubProduct===null?SubProductName:SubProduct.SubProductName#").Width(150);
+                                                .ClientTemplate("#=typeof SubProduct === 'undefined'  || SubProduct === null ?SubProductName:SubProduct.SubProductName#").Width(150);
                                                 columns.Bound(p => p.UnitOfMeasure).Title("Unidad de Medida")
-                                .ClientTemplate("#=typeof UnitOfMeasure === 'undefined'||UnitOfMeasure===null?UnitOfMeasureName:UnitOfMeasure.UnitOfMeasureName#").Width(150);
+                                .ClientTemplate("#=typeof UnitOfMeasure === 'undefined' ||UnitOfMeasure ===null?UnitOfMeasureName:UnitOfMeasure.UnitOfMeasureName#").Width(150);
 
                                                 columns.Bound(p => p.Quantity).Width(150).Format("{0:N2}")
                                                 .HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" });
                               columns.Bound(p => p.Warehouse).Title("Bodega")
-                                .ClientTemplate("#=typeof Warehouse === 'undefined'||Warehouse===null?WarehouseName:Warehouse.WarehouseName#").Width(150);
+                                                .ClientTemplate("#=typeof Warehouse === 'undefined'|| Warehouse ===null?WarehouseName:Warehouse.WarehouseName#").Width(150);
 
 
                           })
