@@ -16,8 +16,8 @@ namespace ERPMVC.Models
         [Display(Name = "Nombre de activo fijo")]
         public string FixedAssetName { get; set; }
 
-        [Display(Name = "Descripción de activos fijo")]
-        public string FixedAssetDescription { get; set; }
+        [Display(Name = "Ubicacion")]
+        public string Ubicacion { get; set; }
 
         [Display(Name = "Fecha del activo")]
         public DateTime AssetDate { get; set; }

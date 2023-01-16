@@ -5,7 +5,7 @@
     <DataSource Name="ERP">
       <ConnectionProperties>
         <DataProvider>SQL</DataProvider>
-        <ConnectString>Data Source=(local);Initial Catalog=ERP</ConnectString>
+        <ConnectString>Data Source=(local);Initial Catalog=ERP-PRODUCCION</ConnectString>
         <IntegratedSecurity>true</IntegratedSecurity>
       </ConnectionProperties>
       <rd:SecurityType>Integrated</rd:SecurityType>
@@ -44,19 +44,26 @@ WHERE IdEstado = 1
           <QueryParameter Name="@CENTROCOSTO">
             <Value>=Parameters!CENTROCOSTO.Value</Value>
           </QueryParameter>
+          <QueryParameter Name="@SUCURSAL">
+            <Value>=Parameters!SUCURSAL.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@ESTADO">
+            <Value>=Parameters!ESTADO.Value</Value>
+          </QueryParameter>
         </QueryParameters>
-        <CommandText>SELECT T1.FixedAssetGroupDescription
+        <CommandText>
+SELECT T1.FixedAssetGroupDescription
 , T0.FixedAssetId
 , T0.FixedAssetCode
 , T0.AssetDate
 , T0.FixedAssetName
-, T0.FixedAssetDescription
 , T0.BranchName
 , T0.Amount
 , T0.Cost
 , T0.ResidualValue
 , T0.ToDepreciate
 , T0.FixedActiveLife
+, T0.Ubicacion
 , T2.Year
 , isnull((Select t3.TotalDepreciated from DepreciationFixedAsset t3 where FixedAssetId = T0.FixedAssetId and t3.Year = @ANIO - 1),0 )  depreciaAnioAnterior
 , T2.January
@@ -72,22 +79,15 @@ WHERE IdEstado = 1
 , T2.November
 , T2.December
 , T2.TotalDepreciated + isnull((Select t3.TotalDepreciated from DepreciationFixedAsset t3 where FixedAssetId = T0.FixedAssetId and t3.Year = @ANIO - 1),0)  DepreciacionAnual 
---, COALESCE(T2.TotalDepreciated, T0.TotalDepreciated, 0)
 ,T0.ToDepreciate - ( T2.TotalDepreciated + isnull((Select t3.TotalDepreciated from DepreciationFixedAsset t3 where FixedAssetId = T0.FixedAssetId and t3.Year = @ANIO - 1),0))
 AS 'PorDepreciar'
---, 
---CASE
---WHEN T0.FixedActiveLife IS NULL THEN NULL
---WHEN T0.FixedActiveLife = 0 THEN NULL
---WHEN COALESCE(T2.TotalDepreciated, T0.TotalDepreciated, 0) = T0.ToDepreciate THEN NULL
---WHEN COALESCE(T2.TotalDepreciated, T0.TotalDepreciated, 0) = T0.ToDepreciate THEN NULL
---ELSE T0.ToDepreciate - COALESCE(T2.TotalDepreciated, T0.TotalDepreciated, 0)
---END AS 'PorDepreciar'
 FROM FixedAsset T0
 INNER JOIN FixedAssetGroup T1 ON T0.FixedAssetGroupId = T1.FixedAssetGroupId
 LEFT JOIN DepreciationFixedAsset T2 ON T2.FixedAssetId = T0.FixedAssetId
 WHERE T2.Year = @ANIO 
 AND (T0.CenterCostId = @CENTROCOSTO OR @CENTROCOSTO = 0)
+AND (T0.BranchId = @SUCURSAL OR @SUCURSAL = 0)
+AND (T0.Estado = @ESTADO OR @ESTADO = 'TODOS')
 order by t0.FixedAssetId</CommandText>
       </Query>
       <Fields>
@@ -109,10 +109,6 @@ order by t0.FixedAssetId</CommandText>
         </Field>
         <Field Name="FixedAssetName">
           <DataField>FixedAssetName</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
-        </Field>
-        <Field Name="FixedAssetDescription">
-          <DataField>FixedAssetDescription</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
         <Field Name="BranchName">
@@ -138,6 +134,10 @@ order by t0.FixedAssetId</CommandText>
         <Field Name="FixedActiveLife">
           <DataField>FixedActiveLife</DataField>
           <rd:TypeName>System.Decimal</rd:TypeName>
+        </Field>
+        <Field Name="Ubicacion">
+          <DataField>Ubicacion</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
         </Field>
         <Field Name="Year">
           <DataField>Year</DataField>
@@ -253,6 +253,23 @@ order by t0.FixedAssetId</CommandText>
         </Field>
         <Field Name="UsuarioModificacion">
           <DataField>UsuarioModificacion</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+      </Fields>
+    </DataSet>
+    <DataSet Name="Branch">
+      <Query>
+        <DataSourceName>ERP</DataSourceName>
+        <CommandText>Select BranchId,Branchname from branch
+union select 0, 'TODOS' </CommandText>
+      </Query>
+      <Fields>
+        <Field Name="BranchId">
+          <DataField>BranchId</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="BranchName">
+          <DataField>Branchname</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
       </Fields>
@@ -3956,11 +3973,50 @@ order by t0.FixedAssetId</CommandText>
         </DataSetReference>
       </ValidValues>
     </ReportParameter>
+    <ReportParameter Name="SUCURSAL">
+      <DataType>Integer</DataType>
+      <Prompt>Sucursal</Prompt>
+      <ValidValues>
+        <DataSetReference>
+          <DataSetName>Branch</DataSetName>
+          <ValueField>BranchId</ValueField>
+          <LabelField>BranchName</LabelField>
+        </DataSetReference>
+      </ValidValues>
+    </ReportParameter>
+    <ReportParameter Name="ESTADO">
+      <DataType>String</DataType>
+      <Prompt>Estado</Prompt>
+      <ValidValues>
+        <ParameterValues>
+          <ParameterValue>
+            <Value>TODOS</Value>
+            <Label>TODOS</Label>
+          </ParameterValue>
+          <ParameterValue>
+            <Value>Importe Original</Value>
+            <Label>Importe Original</Label>
+          </ParameterValue>
+          <ParameterValue>
+            <Value>Depreciandose</Value>
+            <Label>Depreciandose</Label>
+          </ParameterValue>
+          <ParameterValue>
+            <Value>Depreciado</Value>
+            <Label>Depreciado</Label>
+          </ParameterValue>
+          <ParameterValue>
+            <Value>Dado de Baja</Value>
+            <Label>Dado de Baja</Label>
+          </ParameterValue>
+        </ParameterValues>
+      </ValidValues>
+    </ReportParameter>
   </ReportParameters>
   <ReportParametersLayout>
     <GridLayoutDefinition>
       <NumberOfColumns>2</NumberOfColumns>
-      <NumberOfRows>1</NumberOfRows>
+      <NumberOfRows>2</NumberOfRows>
       <CellDefinitions>
         <CellDefinition>
           <ColumnIndex>0</ColumnIndex>
@@ -3971,6 +4027,16 @@ order by t0.FixedAssetId</CommandText>
           <ColumnIndex>1</ColumnIndex>
           <RowIndex>0</RowIndex>
           <ParameterName>CENTROCOSTO</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>0</ColumnIndex>
+          <RowIndex>1</RowIndex>
+          <ParameterName>SUCURSAL</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>1</ColumnIndex>
+          <RowIndex>1</RowIndex>
+          <ParameterName>ESTADO</ParameterName>
         </CellDefinition>
       </CellDefinitions>
     </GridLayoutDefinition>
