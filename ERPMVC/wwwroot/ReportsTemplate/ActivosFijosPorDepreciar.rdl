@@ -16,12 +16,11 @@
     <DataSet Name="CentroCosto">
       <Query>
         <DataSourceName>ERP</DataSourceName>
-        <CommandText>SELECT 0 CostCenterId, 'TODOS LOS CENTROS DE COSTO' CostCenterName
+        <CommandText>SELECT 0 CostCenterId, 'TODOS' CostCenterName
 UNION ALL
 SELECT CostCenterId, CostCenterName
 FROM CostCenter
-WHERE IdEstado = 1
-</CommandText>
+WHERE IdEstado = 1</CommandText>
       </Query>
       <Fields>
         <Field Name="CostCenterId">
@@ -70,28 +69,28 @@ SELECT T1.FixedAssetGroupName
 , T0.Ubicacion
 , T2.Year
 , isnull((Select t3.TotalDepreciated from DepreciationFixedAsset t3 where FixedAssetId = T0.FixedAssetId and t3.Year = @ANIO - 1),0 )  depreciaAnioAnterior
-, CASE WHEN @MES  &lt;= 1 OR @MES = 0 THEN T2.January END January
-,  CASE WHEN @MES  &lt;= 2 OR @MES = 0 THEN T2.February END February
-,  CASE WHEN @MES  &lt;= 3 OR @MES = 0 THEN T2.March END March
-,  CASE WHEN @MES  &lt;= 4 OR @MES = 0 THEN T2.April END April
-,  CASE WHEN @MES  &lt;= 1 OR @MES = 0 THEN T2.May END May
-,  CASE WHEN @MES  &lt;= 1 OR @MES = 0 THEN T2.June END June
-,  CASE WHEN @MES  &lt;= 1 OR @MES = 0 THEN T2.July END July
-,  CASE WHEN @MES  &lt;= 1 OR @MES = 0 THEN T2.August END August
-,  CASE WHEN @MES  &lt;= 1 OR @MES = 0 THEN T2.September END September
-,  CASE WHEN @MES  &lt;= 1 OR @MES = 0 THEN T2.October END October
-,  CASE WHEN @MES  &lt;= 1 OR @MES = 0 THEN T2.November END November
-,  CASE WHEN @MES  &lt;= 1 OR @MES = 0 THEN T2.December END December
+, CASE WHEN @MES  &gt;= 1 OR @MES = 0 THEN T2.January ELSE 0 END January
+,  CASE WHEN @MES  &gt;= 2 OR @MES = 0 THEN T2.February ELSE 0 END February
+,  CASE WHEN @MES  &gt;= 3 OR @MES = 0 THEN T2.March ELSE 0 END March
+,  CASE WHEN @MES  &gt;= 4 OR @MES = 0 THEN T2.April ELSE 0 END April
+,  CASE WHEN @MES  &gt;= 5 OR @MES = 0 THEN T2.May ELSE 0 END May
+,  CASE WHEN @MES  &gt;= 6 OR @MES = 0 THEN T2.June ELSE 0 END June
+,  CASE WHEN @MES  &gt;= 7 OR @MES = 0 THEN T2.July ELSE 0 END July
+,  CASE WHEN @MES  &gt;= 8 OR @MES = 0 THEN T2.August ELSE 0 END August
+,  CASE WHEN @MES  &gt;= 9 OR @MES = 0 THEN T2.September ELSE 0 END September
+,  CASE WHEN @MES  &gt;= 10 OR @MES = 0 THEN T2.October ELSE 0 END October
+,  CASE WHEN @MES  &gt;= 11 OR @MES = 0 THEN T2.November ELSE 0 END November
+,  CASE WHEN @MES  &gt;= 12 OR @MES = 0 THEN T2.December ELSE 0 END December
 , T2.TotalDepreciated + isnull((Select t3.TotalDepreciated from DepreciationFixedAsset t3 where FixedAssetId = T0.FixedAssetId and t3.Year = @ANIO - 1),0)  DepreciacionAnual 
 ,T0.ToDepreciate - ( T2.TotalDepreciated + isnull((Select t3.TotalDepreciated from DepreciationFixedAsset t3 where FixedAssetId = T0.FixedAssetId and t3.Year = @ANIO - 1),0))
 AS 'PorDepreciar'
 FROM FixedAsset T0
-INNER JOIN FixedAssetGroup T1 ON T0.FixedAssetGroupId = T1.FixedAssetGroupId
+Left JOIN FixedAssetGroup T1 ON T0.FixedAssetGroupId = T1.FixedAssetGroupId
 LEFT JOIN DepreciationFixedAsset T2 ON T2.FixedAssetId = T0.FixedAssetId
 WHERE T2.Year = @ANIO 
 AND (T0.CenterCostId = @CENTROCOSTO OR @CENTROCOSTO = 0)
 AND (T0.BranchId = @SUCURSAL OR @SUCURSAL = 0)
-AND (T0.Estado = @ESTADO OR @ESTADO = 'TODOS' OR (@ESTADO = 0 AND  (T0.Estado = 'Deprecioandose' OR T0.Estado  = 'Depreciado')))
+AND (T0.Estado = @ESTADO OR @ESTADO = 'TODOS' OR (@ESTADO = 'N' AND  (T0.Estado = 'Depreciandose' OR T0.Estado  = 'Depreciado')))
 order by t0.FixedAssetId</CommandText>
       </Query>
       <Fields>
@@ -4021,6 +4020,17 @@ union select 0, 'TODOS' </CommandText>
         </ParameterValues>
       </ValidValues>
     </ReportParameter>
+    <ReportParameter Name="CENTROCOSTO">
+      <DataType>String</DataType>
+      <Prompt>Centro de Costo</Prompt>
+      <ValidValues>
+        <DataSetReference>
+          <DataSetName>CentroCosto</DataSetName>
+          <ValueField>CostCenterId</ValueField>
+          <LabelField>CostCenterName</LabelField>
+        </DataSetReference>
+      </ValidValues>
+    </ReportParameter>
     <ReportParameter Name="SUCURSAL">
       <DataType>Integer</DataType>
       <Prompt>Sucursal</Prompt>
@@ -4046,7 +4056,7 @@ union select 0, 'TODOS' </CommandText>
             <Label>Importe Original</Label>
           </ParameterValue>
           <ParameterValue>
-            <Value>0</Value>
+            <Value>N</Value>
             <Label>Depreciandose</Label>
           </ParameterValue>
           <ParameterValue>
@@ -4056,22 +4066,11 @@ union select 0, 'TODOS' </CommandText>
         </ParameterValues>
       </ValidValues>
     </ReportParameter>
-    <ReportParameter Name="CENTROCOSTO">
-      <DataType>String</DataType>
-      <Prompt>Seleccione Centro de Costo</Prompt>
-      <ValidValues>
-        <DataSetReference>
-          <DataSetName>CentroCosto</DataSetName>
-          <ValueField>CostCenterId</ValueField>
-          <LabelField>CostCenterName</LabelField>
-        </DataSetReference>
-      </ValidValues>
-    </ReportParameter>
   </ReportParameters>
   <ReportParametersLayout>
     <GridLayoutDefinition>
-      <NumberOfColumns>2</NumberOfColumns>
-      <NumberOfRows>3</NumberOfRows>
+      <NumberOfColumns>3</NumberOfColumns>
+      <NumberOfRows>2</NumberOfRows>
       <CellDefinitions>
         <CellDefinition>
           <ColumnIndex>0</ColumnIndex>
@@ -4079,8 +4078,8 @@ union select 0, 'TODOS' </CommandText>
           <ParameterName>ANIO</ParameterName>
         </CellDefinition>
         <CellDefinition>
-          <ColumnIndex>0</ColumnIndex>
-          <RowIndex>2</RowIndex>
+          <ColumnIndex>2</ColumnIndex>
+          <RowIndex>0</RowIndex>
           <ParameterName>CENTROCOSTO</ParameterName>
         </CellDefinition>
         <CellDefinition>
