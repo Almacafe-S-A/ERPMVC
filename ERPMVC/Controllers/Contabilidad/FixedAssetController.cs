@@ -228,8 +228,8 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-
-                var result = await _client.GetAsync(baseadress + $"api/FixedAsset/BajaActivo/{_data.FixedAssetId}/{_data.MotivoId}");
+                var result = await _client.PostAsJsonAsync(baseadress + "api/FixedAsset/BajaActivo", _data);
+                //var result = await _client.GetAsync(baseadress + $"api/FixedAsset/BajaActivo/{_data.FixedAssetId}/{_data.MotivoId}");
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
