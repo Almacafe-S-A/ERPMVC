@@ -160,6 +160,37 @@ namespace ERPMVC.Controllers
 
         }
 
+        [HttpGet("[action]")]
+        public async Task<ActionResult<List<CustomerContract>>> GetCustomerActiveContractByCustomerId(int CustomerId)
+        {
+            List<CustomerContract> _CustomerContract = new List<CustomerContract>();
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/CustomerContract/GetCustomerActiveContractByCustomerId/" + CustomerId);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _CustomerContract = JsonConvert.DeserializeObject<List<CustomerContract>>(valorrespuesta);
+
+                }
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: {ex.ToString()}");
+
+            }
+
+
+
+            return Json(_CustomerContract);
+
+        }
+
         [HttpGet]
         public async Task<DataSourceResult> Get([DataSourceRequest]DataSourceRequest request)
         {

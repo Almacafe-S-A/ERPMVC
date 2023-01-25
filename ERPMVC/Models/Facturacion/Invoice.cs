@@ -1,6 +1,8 @@
-﻿using System;
+﻿using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -9,14 +11,17 @@ namespace ERPMVC.Models
     public class Invoice
     {
         [Display(Name = "Id")]
+        [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int InvoiceId { get; set; }
-        [Display(Name = "Nombre")]
         public string InvoiceName { get; set; }
         [Display(Name = "Envio")]
         public int ShipmentId { get; set; }
 
         [Display(Name = "Cotizacion")]
         public int OrderId { get; set; }
+
+        [Display(Name = "Punto de emisión")]
+        public Int64 IdPuntoEmision { get; set; }
 
         [Display(Name = "Fecha de Factura")]
         public DateTime InvoiceDate { get; set; }
@@ -25,26 +30,13 @@ namespace ERPMVC.Models
 
         [Display(Name = "Fecha de vencimiento")]
         public DateTime ExpirationDate { get; set; }
-
         [Display(Name = "Tipo de Factura")]
         public int InvoiceTypeId { get; set; }
-
-        [Display(Name = "Cotización Asociada")]
-        public Int64 SalesOrderId { get; set; }
-
-        [Display(Name = "Proforma Asociada")]
-        public Int64 ProformaInvoiceId { get; set; }        
-
-        [Display(Name = "Punto de emisión")]
-        public Int64 IdPuntoEmision { get; set; }
-
-        [Display(Name = "Certificado depósito")]
-        public Int64 CertificadoDepositoId { get; set; }
 
         [Display(Name = "Sucursal")]
         public string Sucursal { get; set; }
 
-        [Display(Name = "Punto de emisión")]
+        [Display(Name = "Caja")]
         public string Caja { get; set; }
 
         [Display(Name = "Numero de Factura")]
@@ -81,7 +73,6 @@ namespace ERPMVC.Models
         public string Tefono { get; set; }
 
         [Display(Name = "Correo")]
-        [EmailAddress]
         public string Correo { get; set; }
 
         [Display(Name = "Direccion")]
@@ -90,29 +81,30 @@ namespace ERPMVC.Models
         [Display(Name = "Sucursal")]
         public int BranchId { get; set; }
 
-        [Display(Name = "Sucursal")]
+        [Display(Name = "Nombre Sucursal")]
         public string BranchName { get; set; }
 
-        [Display(Name = "Cliente")]
-        public Int64 CustomerId { get; set; }
+        [Display(Name = "Customer")]
+        public int CustomerId { get; set; }
 
-        [Display(Name = "Cliente")]
+        public long? CustomerContractId { get; set; }
+        [ForeignKey("CustomerContractId")]
+        public CustomerContract CustomerContract { get; set; }
+
+        [Display(Name = "Nombre Cliente")]
         public string CustomerName { get; set; }
 
-        [Display(Name = "Producto")]
+        [Display(Name = "Id")]
         public Int64 ProductId { get; set; }
 
         [Display(Name = "Nombre Producto")]
         public string ProductName { get; set; }
 
-
-        [Display(Name = "Fecha factura")]
         public DateTime OrderDate { get; set; }
-        [Display(Name = "Fecha de entrega")]
         public DateTime DeliveryDate { get; set; }
 
         [Display(Name = "Moneda")]
-        public int CurrencyId { get; set; }
+        public int? CurrencyId { get; set; }
 
         [Display(Name = "Moneda")]
         public string CurrencyName { get; set; }
@@ -142,28 +134,41 @@ namespace ERPMVC.Models
         [Display(Name = "Impuesto 18%")]
         public double Tax18 { get; set; }
 
+
         [Display(Name = "Flete")]
+        [Column(TypeName = "Money")]
         public double Freight { get; set; }
 
         [Display(Name = "Total exento")]
+        [Column(TypeName = "Money")]
         public double TotalExento { get; set; }
 
         [Display(Name = "Total exonerado")]
+        [Column(TypeName = "Money")]
         public double TotalExonerado { get; set; }
+
         [Display(Name = "Total Gravado")]
+        [Column(TypeName = "Money")]
         public double TotalGravado { get; set; }
+
         [Display(Name = "Total Gravado 18%")]
+        [Column(TypeName = "Money")]
         public double TotalGravado18 { get; set; }
+        [Column(TypeName = "Money")]
         public double Total { get; set; }
-        public Int64 IdEstado { get; set; }
+
+        public string TotalLetras { get; set; }
+
+        public Int64? IdEstado { get; set; }
+
         public string Estado { get; set; }
+
         public DateTime FechaCreacion { get; set; }
         public DateTime FechaModificacion { get; set; }
         public string UsuarioCreacion { get; set; }
         public string UsuarioModificacion { get; set; }
 
         public string Impreso { get; set; }
-
         public List<InvoiceLine> InvoiceLine { get; set; } = new List<InvoiceLine>();
 
     }
