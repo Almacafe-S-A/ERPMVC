@@ -154,14 +154,8 @@ namespace ERPMVC.Controllers
                
                 if(_PresupuestoS.AccountigId == 0)
                 {
-
-
-
-                    //return await Task.Run(() => BadRequest("Seleccione una cuenta"));
                     return await Task.Run(() => BadRequest($"Por favor seleccione una cuenta."));
-
                 }
-
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
@@ -169,9 +163,6 @@ namespace ERPMVC.Controllers
                 _PresupuestoS.UsuarioCreacion = HttpContext.Session.GetString("user");
                 _PresupuestoS.FechaModificacion = DateTime.Now;
                 _PresupuestoS.UsuarioModificacion = HttpContext.Session.GetString("user");
-                //_PresupuestoS.AccountigId = _PresupuestoS.Accounting.AccountId;
-                //_PresupuestoS.AccountName = _PresupuestoS.Accounting.AccountName;
-                //_PresupuestoS.Accounting = null;
                 var result = await _client.PostAsJsonAsync(baseadress + "api/Presupuesto/Insert", _PresupuestoS);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
@@ -179,6 +170,11 @@ namespace ERPMVC.Controllers
 
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _PresupuestoS = JsonConvert.DeserializeObject<PresupuestoDTO>(valorrespuesta);
+                }
+                else
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    return BadRequest(valorrespuesta);
                 }
 
             }
@@ -252,6 +248,11 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _PresupuestoS = JsonConvert.DeserializeObject<PresupuestoDTO>(valorrespuesta);
+                }
+                else
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    return BadRequest("Esta cuenta ya ha sido presupuestada para el periodo seleccionado");
                 }
 
             }

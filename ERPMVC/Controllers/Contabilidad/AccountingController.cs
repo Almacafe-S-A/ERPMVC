@@ -1149,7 +1149,7 @@ namespace ERPMVC.Controllers
                                select new Accounting
                                {
                                    AccountId = c.AccountId,
-                                   AccountName = c.AccountCode + "--" + c.AccountName,
+                                   AccountName =  c.AccountName,
                                    AccountCode = c.AccountCode,
                                    Description = c.Description,
                                    Estado = c.Estado,
