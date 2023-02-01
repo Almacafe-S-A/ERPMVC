@@ -351,7 +351,7 @@ namespace ERPMVC.Controllers
         [HttpPost("[controller]/[action]")]
         public async Task<ActionResult> GetCertificadoDepositoByIdKardex([DataSourceRequest]DataSourceRequest request, [FromBody] CertificadoDepositoDTO _listado)
         {
-            ProformaInvoiceDTO _ProformaInvoiceDTO = new ProformaInvoiceDTO();
+            
             CertificadoDeposito _CertificadoDeposito = new CertificadoDeposito();
             try
             {
@@ -394,7 +394,7 @@ namespace ERPMVC.Controllers
                         if (result.IsSuccessStatusCode)
                         {
                             valorrespuesta = await (result.Content.ReadAsStringAsync());
-                            _ProformaInvoiceDTO = JsonConvert.DeserializeObject<ProformaInvoiceDTO>(valorrespuesta);
+                            
                         }
 
 
@@ -413,7 +413,7 @@ namespace ERPMVC.Controllers
                 throw ex;
             }
 
-            return Json(_ProformaInvoiceDTO);
+            return Json(_CertificadoDeposito);
         }
 
 

@@ -137,8 +137,8 @@ namespace ERPMVC.Controllers
         }
 
 
-        [HttpGet("[action]")]
-        public async Task<DataSourceResult> GetByProductType([DataSourceRequest]DataSourceRequest request)
+        
+        public async Task<DataSourceResult> GetByProductType([DataSourceRequest]DataSourceRequest request,int  ProductType = 11)
         {
             List<SubProduct> _SubProduct = new List<SubProduct>();
             try
@@ -147,13 +147,13 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/SubProduct/GetSubProduct");
+                var result = await _client.GetAsync(baseadress + $"api/SubProduct/GetSubProductbByProductTypeId/{ProductType}");
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _SubProduct = JsonConvert.DeserializeObject<List<SubProduct>>(valorrespuesta);
-                    _SubProduct = _SubProduct.OrderByDescending(q => q.SubproductId).Where(q => q.ProductTypeId == 11).ToList();
+                    _SubProduct = _SubProduct.OrderByDescending(q => q.SubproductId).ToList();
                 }
 
 
@@ -599,7 +599,6 @@ namespace ERPMVC.Controllers
         {
             SubProduct _SubProduct = new SubProduct();
             List<InvoiceLine> _InvoiceLine = new List<InvoiceLine>();
-            List<ProformaInvoiceLine> _ProformaInvoiceLine = new List<ProformaInvoiceLine>();
             try
             {
                 string baseadress = config.Value.urlbase;
@@ -643,30 +642,6 @@ namespace ERPMVC.Controllers
             }
 
             return new ObjectResult(new DataSourceResult { Data = new[] { _SubProduct }, Total = 1 });
-            //try
-            //{
-            //    string baseadress = config.Value.urlbase;
-            //    HttpClient _client = new HttpClient();
-            //    _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-
-            //    var result = await _client.PostAsJsonAsync(baseadress + "api/SubProduct/Delete", _SubProduct);
-            //    string valorrespuesta = "";
-            //    if (result.IsSuccessStatusCode)
-            //    {
-            //        valorrespuesta = await (result.Content.ReadAsStringAsync());
-            //        _SubProduct = JsonConvert.DeserializeObject<SubProduct>(valorrespuesta);
-            //    }
-
-            //}
-            //catch (Exception ex)
-            //{
-            //    _logger.LogError($"Ocurrio un error: { ex.ToString() }");
-            //    return BadRequest($"Ocurrio un error: {ex.Message}");
-            //}
-
-
-
-            //return new ObjectResult(new DataSourceResult { Data = new[] { _SubProduct }, Total = 1 });
         }
 
 

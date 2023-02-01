@@ -102,20 +102,7 @@ namespace ERPMVC.Controllers
 
                     _client = new HttpClient();
                     _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                    result = await _client.GetAsync(baseadress + "api/ProformaInvoice/GetLastProformaInvoice/" + CustomerId);
-                    if(result.IsSuccessStatusCode)
-                    {
-                        valorrespuesta = "";
-                        valorrespuesta = await (result.Content.ReadAsStringAsync());
-                        ProformaInvoice _proforma = JsonConvert.DeserializeObject<ProformaInvoice>(valorrespuesta);
-                        if (_proforma !=null)
-                        {
-                            _customers.EndDate = DateTime.Now;
-                            _customers.StartDate = _proforma.OrderDate;
-                        }
-                        
-                        
-                    }
+                    
                 }
             }
             catch (Exception ex)
