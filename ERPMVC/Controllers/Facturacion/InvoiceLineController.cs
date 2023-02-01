@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
+using AutoMapper.Configuration.Conventions;
 using ERPMVC.Helpers;
 using ERPMVC.Models;
 using Kendo.Mvc.Extensions;
@@ -97,109 +98,48 @@ namespace ERPMVC.Controllers
 
 
         [HttpGet("[action]")]
-        public async Task<DataSourceResult> GetInvoiceLineByInvoiceId([DataSourceRequest]DataSourceRequest request, InvoiceLine _InvoiceLinep)
+        public async Task<ActionResult<DataSourceResult>> GetInvoiceLineByInvoiceId([DataSourceRequest]DataSourceRequest request, int InvoiceId, int ProductId, int CustomerId, int ContractId )
         {
-            List<InvoiceLine> __InvoiceLineList = new List<InvoiceLine>();
-            try
+
+            List<InvoiceLine> _invoiceLinelist = new List<InvoiceLine>();
+            string baseadress = config.Value.urlbase;
+            HttpClient _client = new HttpClient();
+            string valorrespuesta = "";
+
+            if (InvoiceId>0)
             {
-                if (HttpContext.Session.Get("listadoproductosinvoice") == null
-                   || HttpContext.Session.GetString("listadoproductosinvoice") == "")
+                
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var resultlines = await _client.GetAsync(baseadress + $"api/InvoiceLine/GetByInvoiceId/{InvoiceId}");
+                
+                if (resultlines.IsSuccessStatusCode)
                 {
-                    if (_InvoiceLinep.InvoiceId > 0)
-                    {
-                        string serialzado = JsonConvert.SerializeObject(_InvoiceLinep).ToString();
-                        HttpContext.Session.SetString("listadoproductosinvoice", serialzado);
-                    }
+                    valorrespuesta = await (resultlines.Content.ReadAsStringAsync());
+                    _invoiceLinelist = JsonConvert.DeserializeObject<List<InvoiceLine>>(valorrespuesta);
+
                 }
                 else
                 {
-                    var result = HttpContext.Session.GetString("listadoproductosinvoice");
-                    try
-                    {
-                        __InvoiceLineList = JsonConvert.DeserializeObject<List<InvoiceLine>>(HttpContext.Session.GetString("listadoproductosinvoice"));
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError($"Ocurrio un error: { ex.ToString() }");
-                    }
-
+                    return BadRequest("Error al recuperar datos del detalle de la factura");
                 }
-
-
-                if (_InvoiceLinep.InvoiceId > 0)
-                {
-
-                    string baseadress = config.Value.urlbase;
-                    HttpClient _client = new HttpClient();
-
-                    _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                    var result = await _client.GetAsync(baseadress + "api/InvoiceLine/GetInvoiceLineByInvoiceId/" + _InvoiceLinep.InvoiceId);
-                    string valorrespuesta = "";
-                    if (result.IsSuccessStatusCode)
-                    {
-                        valorrespuesta = await (result.Content.ReadAsStringAsync());
-                        __InvoiceLineList = JsonConvert.DeserializeObject<List<InvoiceLine>>(valorrespuesta);
-                        HttpContext.Session.SetString("listadoproductosinvoice", JsonConvert.SerializeObject(__InvoiceLineList).ToString());
-                    }
-                }
-                else
-                {
-
-                    List<InvoiceLine> _existelinea = new List<InvoiceLine>();
-                    if (HttpContext.Session.GetString("listadoproductosinvoice") != "" && HttpContext.Session.GetString("listadoproductosinvoice") != null)
-                    {
-                        __InvoiceLineList = JsonConvert.DeserializeObject<List<InvoiceLine>>(HttpContext.Session.GetString("listadoproductosinvoice"));
-                        _existelinea = __InvoiceLineList.Where(q => q.InvoiceLineId == _InvoiceLinep.InvoiceLineId).ToList();
-                    }
-
-                    if (_InvoiceLinep.InvoiceLineId > 0 && _existelinea.Count == 0)
-                    {
-                        __InvoiceLineList.Add(_InvoiceLinep);
-                        HttpContext.Session.SetString("listadoproductosinvoice", JsonConvert.SerializeObject(__InvoiceLineList).ToString());
-                    }
-                    else
-                    {
-
-                        var obj = __InvoiceLineList.FirstOrDefault(x => x.InvoiceLineId == _InvoiceLinep.InvoiceLineId);
-                        if (obj != null)
-                        {
-                            obj.Description = _InvoiceLinep.Description;
-                            obj.Price = _InvoiceLinep.Price;
-                            obj.Quantity = _InvoiceLinep.Quantity;
-                            obj.Amount = _InvoiceLinep.Amount;
-                            obj.SubProductId = _InvoiceLinep.SubProductId;
-                            obj.SubProductName = _InvoiceLinep.SubProductName;
-                            obj.SubTotal = _InvoiceLinep.SubTotal;
-                            obj.TaxAmount = _InvoiceLinep.TaxAmount;
-                            obj.TaxId = _InvoiceLinep.TaxId;
-                            obj.TaxCode = _InvoiceLinep.TaxCode;
-                            obj.TaxPercentage = _InvoiceLinep.TaxPercentage;
-                            obj.UnitOfMeasureId = _InvoiceLinep.UnitOfMeasureId;
-                            obj.UnitOfMeasureName = _InvoiceLinep.UnitOfMeasureName;
-                            obj.WareHouseId = _InvoiceLinep.WareHouseId;
-                            obj.CostCenterId = _InvoiceLinep.CostCenterId;
-                            obj.DiscountAmount = _InvoiceLinep.DiscountAmount;
-                            obj.DiscountPercentage = _InvoiceLinep.DiscountPercentage;
-                            obj.Total = _InvoiceLinep.Total;
-
-                        }
-
-                        HttpContext.Session.SetString("listadoproductosinvoice", JsonConvert.SerializeObject(__InvoiceLineList).ToString());
-
-                    }
-                }
-
-
-
+                return _invoiceLinelist.ToDataSourceResult(request);
             }
-            catch (Exception ex)
+
+            _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+            var result = await _client.GetAsync(baseadress + $"api/InvoiceLine/GetByServiciosUtilizados/{CustomerId}/{ContractId}/{ProductId}");
+            valorrespuesta = "";
+            if (result.IsSuccessStatusCode)
             {
-                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
-                throw ex;
+                valorrespuesta = await (result.Content.ReadAsStringAsync());
+                _invoiceLinelist = JsonConvert.DeserializeObject<List<InvoiceLine>>(valorrespuesta);
+
             }
+            else
+            {
+                return BadRequest("Error al recuperar datos del detalle de servicios utilizados");
+            }
+            return _invoiceLinelist.ToDataSourceResult(request);
 
-
-            return __InvoiceLineList.ToDataSourceResult(request);
 
         }
 

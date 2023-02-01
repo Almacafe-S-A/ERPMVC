@@ -10,8 +10,6 @@ namespace ERPMVC.DTO
     public class InvoiceDTO : Invoice
     {
 
-        [Display(Name = "Número SAR")]
-        public string NumeroDEIString { get; set; }
         public int editar { get; set; } = 1;
     }
 }

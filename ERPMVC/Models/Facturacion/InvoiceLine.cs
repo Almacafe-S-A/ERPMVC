@@ -28,11 +28,18 @@ namespace ERPMVC.Models
         [Display(Name = "Nombre SubProducto")]
         public string SubProductName { get; set; }
 
+        [UIHint("ServicioBodega")]
+        [ForeignKey("SubProductId")]
+        public SubProduct SubProduct { get; set; }
+
         [Display(Name = "Unidad de Medida")]
         public Int64 UnitOfMeasureId { get; set; }
 
         [Display(Name = "Unidad de Medida")]
         public string UnitOfMeasureName { get; set; }
+        [UIHint("UOM")]
+        [ForeignKey("UnitOfMeasureId")]
+        public UnitOfMeasure UnitOfMeasure { get; set; }
 
         public Int64 WareHouseId { get; set; }
         [Display(Name = "Centro de costos")]

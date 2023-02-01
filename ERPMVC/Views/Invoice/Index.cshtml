@@ -1,5 +1,7 @@
 ﻿@using System.Security.Claims
-@{ 
+
+@{
+    ViewBag.Title = "Facturacion";
     ClaimsPrincipal permisos = (ClaimsPrincipal)ViewData["permisos"];
 }
 <script>
@@ -23,12 +25,7 @@
     }
 
     function AddCotizacion() {
-       //debugger;
-       // $('#myModalSalesOrder').find(':input').not(':submit').val('');
-       // $('#myModalSalesOrder').modal('show');
-
         ClearSession();
-        //$("#BranchName").data("kendoDropDownList").val(0);
          var dataObject = {
              InvoiceId: 0,
             editar : 1
@@ -67,7 +64,6 @@
             editar : 0
         };
 
-        var IdPuntoEmision = 0;
         $.ajax({
             url: '@Url.Action("pvwInvoice", "Invoice")',
             method: 'POST',
@@ -79,30 +75,30 @@
                 $("#divInvoice").html('');
                 $("#divInvoice").html(result);
 
-                $("#cbxBuscarCotizaciones").data("kendoDropDownList").value(dataItem.SalesOrderId);
-                $("#cbxBuscarFacturaProforma").data("kendoDropDownList").value(dataItem.ProformaInvoiceId);
-
-                var txt = $(result);
-                var found = $("#IdPuntoEmision", txt);
-                IdPuntoEmision = $(found).val();
-
-                $("#IdPuntoEmision").data("kendoDropDownList").value(IdPuntoEmision);
-                 //RefreshInvoiceDetail();
+                RefreshInvoiceDetail();
                  $("#btnSaveInvoice").show();
                  $('#myModalSalesOrder').modal('show');
             },
              error: function (XMLHttpRequest, textStatus, errorThrown) {
-                // alert(textStatus + ": " + XMLHttpRequest.responseText);
                   MostrarMensaje(textStatus + ": " + XMLHttpRequest.responseText, "Error", "Error", 6000);
               }
         });
     }
 
-    function ImprimirCotizacion(e) {
+    function ImprimirFactura(e) {
         e.preventDefault();
         var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
 
         window.location.href = '@Url.Action("SFInvoice", "Invoice")/' + dataItem.InvoiceId;
+
+
+    }
+
+    function ImprimirProforma(e) {
+        e.preventDefault();
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+
+        window.location.href = '@Url.Action("SFInvoice", "InvoiceProforma")/' + dataItem.InvoiceId;
 
 
     }
@@ -113,12 +109,12 @@
     }
 
     function GenerarFactura(e) {
-        if (confirm('Esta seguro de generar una?')) {
+        if (confirm('Esta seguro de generar una Factura?')) {
             e.preventDefault();
+            debugger;
             var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
             var dataObject = {
                 InvoiceId: dataItem.InvoiceId,
-                editar: 0
             };
 
             $.ajax({
@@ -129,13 +125,9 @@
                 async: false,
                 data: JSON.stringify(dataObject),
                 success: function (result) {
-
-                    $("#divInvoice").html('');
-                    $("#divInvoice").html(result);
-
-                    //  RefreshInvoiceDetail();
-                    $("#btnSaveInvoice").hide();
-                    $('#myModalSalesOrder').modal('show');
+                    MostrarMensaje('Factura Generada!', "success", "Satisfactorio", 6000);
+                    RefreshInvoiceDetail();
+                    return;
                 },
                 error: function (XMLHttpRequest, textStatus, errorThrown) {
                    // alert(textStatus + ": " + XMLHttpRequest.responseText);
@@ -152,31 +144,27 @@
 
 </script>
 
-<h3 class="text-themecolor">Facturas</h3>
+<h3 class="text-themecolor">Facturación</h3>
 
 @(Html.Kendo().Grid<ERPMVC.Models.Invoice>()
                               .Name("gridInvoices")
                               .Columns(columns =>
                               {
-                                  if (permisos.HasClaim("Ventas.Factura.Ver", "true")
-                                      || permisos.HasClaim("Ventas.Factura.Imprimir", "true"))
+                                  if (User.HasClaim("Ventas.Factura.Ver", "true")
+                                      || User.HasClaim("Ventas.Factura.Imprimir", "true"))
                                   {
-                                      columns.Command(command =>
-                                      {
-                                          if (permisos.HasClaim("Ventas.Factura.Ver", "true"))
-                                          {
-                                              command.Custom("Detalles").Text(" ").IconClass("far fa-list-alt").Click("EditCotizacion");
-                                          }
-                                          if (permisos.HasClaim("Ventas.Factura.Imprimir", "true"))
-                                          {
-                                              command.Custom("Imprimir").Text(" ").IconClass("fa fa-print").Click("ImprimirCotizacion");
-                                          }
-                                          //command.Custom("GenerarFactura").Text(" ").IconClass("fa fa-file-import").Click("GenerarFactura");
-
-                                          //  command.Edit(); command.Destroy();
-                                      }).Title("Acciones").Width(250);
+                                      
                                   }
-                                  columns.Bound(p => p.InvoiceId).Title("No. Ref.").Width(150);
+                                  columns.Command(command =>
+                                      {
+
+                                          command.Custom("Detalles").Text(" ").IconClass("far fa-list-alt").Click("EditCotizacion");
+                                          command.Custom("GenerarFactura").Text(" ").IconClass("fa fa-file-invoice").Click("GenerarFactura");
+                                          command.Custom("Imprimir").Text(" ").IconClass("fa fa-print").Click("ImprimirFactura");
+                                          command.Custom("ImprimirProforma").Text(" ").IconClass("fa fa-print").Click("ImprimirProforma");
+                                      }).Title("Acciones").Width(250);
+
+                                  columns.Bound(p => p.InvoiceId).Title("No. Proforma").Width(150);
                                   columns.Bound(p => p.OrderDate).Format("{0:dd/MM/yyyy}").Title("Fecha").Width(170);
                                   columns.Bound(p => p.InvoiceDueDate).Format("{0:dd/MM/yyyy}").Title("Vencimiento").Width(170);
                                   columns.Bound(p => p.CustomerName).Title("Cliente").Width(250);
@@ -217,14 +205,12 @@
                               .ToolBar(tools =>
                               {
                                   // tools.Create();
-                                  if (permisos.HasClaim("Ventas.Factura.Agregar", "true"))
+                                  if (User.HasClaim("Ventas.Factura.Agregar", "true"))
                                   {
                                       tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
                                                  .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddCotizacion();" });
-                                      tools.Custom().Text("Generar Facturas").IconClass("")
-                                            .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "" });
                                   }
-                                  if (permisos.HasClaim("Ventas.Factura.Reporte Libro de Ventas", "true"))
+                                  if (User.HasClaim("Ventas.Factura.Reporte Libro de Ventas", "true"))
                                   {
                                       tools.Custom().Text("Reporte").IconClass("")
                                      .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "ImprimirLibroVentas();" });
@@ -297,10 +283,11 @@
 
     setToolbarTooltip(".k-button k-button-icontext k-grid-Agregar k-i-plus-sm", "Agregar un nuevo registro");
     //setRowButtonTooltip(".k-grid-edit", "Tooltip for Edit button");
-    setRowButtonTooltip(".k-grid-GenerarFactura", "Generar una fiscal!");
-    setRowButtonTooltip(".k-grid-Imprimir", "Imprimir");
+    setRowButtonTooltip(".k-grid-GenerarFactura", "Generar Factura");
+    setRowButtonTooltip(".k-grid-Imprimir", "Imprimir Factura"); 
+    setRowButtonTooltip(".k-grid-ImprimirProforma", "Imprimir Proforma");
     setRowButtonTooltip(".k-grid-Detalles", "Ver Detalle");
-    setRowButtonTooltip(".k-grid-Agregar", "Agregar nuevo registro");
+    setRowButtonTooltip(".k-grid-Agregar", "Nueva Factura Proforma");
 </script>
 
 
