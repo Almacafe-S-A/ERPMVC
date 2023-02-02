@@ -1,4 +1,5 @@
 ﻿using ERPMVC.Models;
+using System;
 using System.Collections.Generic;
 
 namespace ERPMVC.DTO
@@ -10,5 +11,7 @@ namespace ERPMVC.DTO
         public string token { get; set; }
 
         public int MotivoId { get; set; }
+
+        public DateTime FechaBaja { get; set; }
     }
 }

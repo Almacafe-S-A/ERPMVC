@@ -5,7 +5,7 @@
     <DataSource Name="ERP">
       <ConnectionProperties>
         <DataProvider>SQL</DataProvider>
-        <ConnectString>Data Source=(local);Initial Catalog=ERP</ConnectString>
+        <ConnectString>Data Source=(local);Initial Catalog=ERP-PRODUCCION</ConnectString>
         <IntegratedSecurity>true</IntegratedSecurity>
       </ConnectionProperties>
       <rd:SecurityType>Integrated</rd:SecurityType>
@@ -16,12 +16,11 @@
     <DataSet Name="CentroCosto">
       <Query>
         <DataSourceName>ERP</DataSourceName>
-        <CommandText>SELECT 0 CostCenterId, 'TODOS LOS CENTROS DE COSTO' CostCenterName
+        <CommandText>SELECT 0 CostCenterId, 'TODOS' CostCenterName
 UNION ALL
 SELECT CostCenterId, CostCenterName
 FROM CostCenter
-WHERE IdEstado = 1
-</CommandText>
+WHERE IdEstado = 1</CommandText>
       </Query>
       <Fields>
         <Field Name="CostCenterId">
@@ -41,58 +40,62 @@ WHERE IdEstado = 1
           <QueryParameter Name="@ANIO">
             <Value>=Parameters!ANIO.Value</Value>
           </QueryParameter>
+          <QueryParameter Name="@MES">
+            <Value>=Parameters!MES.Value</Value>
+          </QueryParameter>
           <QueryParameter Name="@CENTROCOSTO">
             <Value>=Parameters!CENTROCOSTO.Value</Value>
           </QueryParameter>
+          <QueryParameter Name="@SUCURSAL">
+            <Value>=Parameters!SUCURSAL.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@ESTADO">
+            <Value>=Parameters!ESTADO.Value</Value>
+          </QueryParameter>
         </QueryParameters>
-        <CommandText>SELECT T1.FixedAssetGroupDescription
+        <CommandText>
+SELECT T1.FixedAssetGroupName
 , T0.FixedAssetId
 , T0.FixedAssetCode
 , T0.AssetDate
 , T0.FixedAssetName
-, T0.FixedAssetDescription
 , T0.BranchName
 , T0.Amount
 , T0.Cost
+, T0.ActiveTotalCost
 , T0.ResidualValue
 , T0.ToDepreciate
 , T0.FixedActiveLife
+, T0.Ubicacion
 , T2.Year
 , isnull((Select t3.TotalDepreciated from DepreciationFixedAsset t3 where FixedAssetId = T0.FixedAssetId and t3.Year = @ANIO - 1),0 )  depreciaAnioAnterior
-, T2.January
-, T2.February
-, T2.March
-, T2.April
-, T2.May
-, T2.June
-, T2.July
-, T2.August
-, T2.September
-, T2.October
-, T2.November
-, T2.December
+, CASE WHEN @MES  &gt;= 1 OR @MES = 0 THEN T2.January ELSE 0 END January
+,  CASE WHEN @MES  &gt;= 2 OR @MES = 0 THEN T2.February ELSE 0 END February
+,  CASE WHEN @MES  &gt;= 3 OR @MES = 0 THEN T2.March ELSE 0 END March
+,  CASE WHEN @MES  &gt;= 4 OR @MES = 0 THEN T2.April ELSE 0 END April
+,  CASE WHEN @MES  &gt;= 5 OR @MES = 0 THEN T2.May ELSE 0 END May
+,  CASE WHEN @MES  &gt;= 6 OR @MES = 0 THEN T2.June ELSE 0 END June
+,  CASE WHEN @MES  &gt;= 7 OR @MES = 0 THEN T2.July ELSE 0 END July
+,  CASE WHEN @MES  &gt;= 8 OR @MES = 0 THEN T2.August ELSE 0 END August
+,  CASE WHEN @MES  &gt;= 9 OR @MES = 0 THEN T2.September ELSE 0 END September
+,  CASE WHEN @MES  &gt;= 10 OR @MES = 0 THEN T2.October ELSE 0 END October
+,  CASE WHEN @MES  &gt;= 11 OR @MES = 0 THEN T2.November ELSE 0 END November
+,  CASE WHEN @MES  &gt;= 12 OR @MES = 0 THEN T2.December ELSE 0 END December
 , T2.TotalDepreciated + isnull((Select t3.TotalDepreciated from DepreciationFixedAsset t3 where FixedAssetId = T0.FixedAssetId and t3.Year = @ANIO - 1),0)  DepreciacionAnual 
---, COALESCE(T2.TotalDepreciated, T0.TotalDepreciated, 0)
 ,T0.ToDepreciate - ( T2.TotalDepreciated + isnull((Select t3.TotalDepreciated from DepreciationFixedAsset t3 where FixedAssetId = T0.FixedAssetId and t3.Year = @ANIO - 1),0))
 AS 'PorDepreciar'
---, 
---CASE
---WHEN T0.FixedActiveLife IS NULL THEN NULL
---WHEN T0.FixedActiveLife = 0 THEN NULL
---WHEN COALESCE(T2.TotalDepreciated, T0.TotalDepreciated, 0) = T0.ToDepreciate THEN NULL
---WHEN COALESCE(T2.TotalDepreciated, T0.TotalDepreciated, 0) = T0.ToDepreciate THEN NULL
---ELSE T0.ToDepreciate - COALESCE(T2.TotalDepreciated, T0.TotalDepreciated, 0)
---END AS 'PorDepreciar'
 FROM FixedAsset T0
-INNER JOIN FixedAssetGroup T1 ON T0.FixedAssetGroupId = T1.FixedAssetGroupId
+Left JOIN FixedAssetGroup T1 ON T0.FixedAssetGroupId = T1.FixedAssetGroupId
 LEFT JOIN DepreciationFixedAsset T2 ON T2.FixedAssetId = T0.FixedAssetId
 WHERE T2.Year = @ANIO 
 AND (T0.CenterCostId = @CENTROCOSTO OR @CENTROCOSTO = 0)
+AND (T0.BranchId = @SUCURSAL OR @SUCURSAL = 0)
+AND (T0.Estado = @ESTADO OR @ESTADO = 'TODOS' OR (@ESTADO = 'N' AND  (T0.Estado = 'Depreciandose' OR T0.Estado  = 'Depreciado')))
 order by t0.FixedAssetId</CommandText>
       </Query>
       <Fields>
-        <Field Name="FixedAssetGroupDescription">
-          <DataField>FixedAssetGroupDescription</DataField>
+        <Field Name="FixedAssetGroupName">
+          <DataField>FixedAssetGroupName</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
         <Field Name="FixedAssetId">
@@ -111,10 +114,6 @@ order by t0.FixedAssetId</CommandText>
           <DataField>FixedAssetName</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
-        <Field Name="FixedAssetDescription">
-          <DataField>FixedAssetDescription</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
-        </Field>
         <Field Name="BranchName">
           <DataField>BranchName</DataField>
           <rd:TypeName>System.String</rd:TypeName>
@@ -125,6 +124,10 @@ order by t0.FixedAssetId</CommandText>
         </Field>
         <Field Name="Cost">
           <DataField>Cost</DataField>
+          <rd:TypeName>System.Decimal</rd:TypeName>
+        </Field>
+        <Field Name="ActiveTotalCost">
+          <DataField>ActiveTotalCost</DataField>
           <rd:TypeName>System.Decimal</rd:TypeName>
         </Field>
         <Field Name="ResidualValue">
@@ -138,6 +141,10 @@ order by t0.FixedAssetId</CommandText>
         <Field Name="FixedActiveLife">
           <DataField>FixedActiveLife</DataField>
           <rd:TypeName>System.Decimal</rd:TypeName>
+        </Field>
+        <Field Name="Ubicacion">
+          <DataField>Ubicacion</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
         </Field>
         <Field Name="Year">
           <DataField>Year</DataField>
@@ -253,6 +260,23 @@ order by t0.FixedAssetId</CommandText>
         </Field>
         <Field Name="UsuarioModificacion">
           <DataField>UsuarioModificacion</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+      </Fields>
+    </DataSet>
+    <DataSet Name="Branch">
+      <Query>
+        <DataSourceName>ERP</DataSourceName>
+        <CommandText>Select BranchId,Branchname from branch
+union select 0, 'TODOS' </CommandText>
+      </Query>
+      <Fields>
+        <Field Name="BranchId">
+          <DataField>BranchId</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="BranchName">
+          <DataField>Branchname</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
       </Fields>
@@ -489,14 +513,14 @@ order by t0.FixedAssetId</CommandText>
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="TextBox107">
+                        <Textbox Name="Textbox3">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>Ubicación</Value>
+                                  <Value>Sucursal</Value>
                                   <Style>
                                     <FontWeight>Bold</FontWeight>
                                   </Style>
@@ -504,10 +528,10 @@ order by t0.FixedAssetId</CommandText>
                               </TextRuns>
                               <Style>
                                 <TextAlign>Center</TextAlign>
-                                <LineHeight>10pt</LineHeight>
                               </Style>
                             </Paragraph>
                           </Paragraphs>
+                          <rd:DefaultName>Textbox3</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>Gray</Color>
@@ -523,14 +547,14 @@ order by t0.FixedAssetId</CommandText>
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="TextBox108">
+                        <Textbox Name="TextBox107">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>Monto</Value>
+                                  <Value>Ubicación</Value>
                                   <Style>
                                     <FontWeight>Bold</FontWeight>
                                   </Style>
@@ -700,7 +724,7 @@ order by t0.FixedAssetId</CommandText>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>Acc Ant.</Value>
+                                  <Value>Acumulado año anteriores</Value>
                                   <Style>
                                     <FontWeight>Bold</FontWeight>
                                   </Style>
@@ -1303,7 +1327,7 @@ order by t0.FixedAssetId</CommandText>
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="TextBox130">
+                        <Textbox Name="BranchName">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
@@ -1314,11 +1338,10 @@ order by t0.FixedAssetId</CommandText>
                                   <Style />
                                 </TextRun>
                               </TextRuns>
-                              <Style>
-                                <LineHeight>10pt</LineHeight>
-                              </Style>
+                              <Style />
                             </Paragraph>
                           </Paragraphs>
+                          <rd:DefaultName>BranchName</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>Gray</Color>
@@ -1334,17 +1357,15 @@ order by t0.FixedAssetId</CommandText>
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="TextBox131">
+                        <Textbox Name="TextBox130">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Sum(Fields!Amount.Value)</Value>
-                                  <Style>
-                                    <Format>n2</Format>
-                                  </Style>
+                                  <Value>=Fields!Ubicacion.Value</Value>
+                                  <Style />
                                 </TextRun>
                               </TextRuns>
                               <Style>
@@ -1374,7 +1395,7 @@ order by t0.FixedAssetId</CommandText>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Sum(Fields!Cost.Value)</Value>
+                                  <Value>=Fields!ActiveTotalCost.Value</Value>
                                   <Style>
                                     <Format>n2</Format>
                                   </Style>
@@ -2095,6 +2116,38 @@ order by t0.FixedAssetId</CommandText>
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
+                        <Textbox Name="Textbox7">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value />
+                                  <Style>
+                                    <FontWeight>Bold</FontWeight>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox7</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>Gray</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
                         <Textbox Name="TextBox153">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
@@ -2128,40 +2181,6 @@ order by t0.FixedAssetId</CommandText>
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="TextBox154">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value>=Sum(Fields!Amount.Value)</Value>
-                                  <Style>
-                                    <FontWeight>Bold</FontWeight>
-                                    <Format>n2</Format>
-                                  </Style>
-                                </TextRun>
-                              </TextRuns>
-                              <Style>
-                                <LineHeight>10pt</LineHeight>
-                              </Style>
-                            </Paragraph>
-                          </Paragraphs>
-                          <Style>
-                            <Border>
-                              <Color>Gray</Color>
-                              <Style>Solid</Style>
-                            </Border>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
-                    <TablixCell>
-                      <CellContents>
                         <Textbox Name="TextBox155">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
@@ -2169,7 +2188,7 @@ order by t0.FixedAssetId</CommandText>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Sum(Fields!Cost.Value)</Value>
+                                  <Value>=Sum(Fields!ActiveTotalCost.Value)</Value>
                                   <Style>
                                     <FontWeight>Bold</FontWeight>
                                     <Format>n2</Format>
@@ -2904,6 +2923,36 @@ order by t0.FixedAssetId</CommandText>
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
+                        <Textbox Name="Textbox8">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value />
+                                  <Style />
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox8</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>Gray</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
                         <Textbox Name="TextBox176">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
@@ -2935,40 +2984,6 @@ order by t0.FixedAssetId</CommandText>
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="TextBox177">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value>=Sum(Fields!Amount.Value)</Value>
-                                  <Style>
-                                    <FontWeight>Bold</FontWeight>
-                                    <Format>n2</Format>
-                                  </Style>
-                                </TextRun>
-                              </TextRuns>
-                              <Style>
-                                <LineHeight>10pt</LineHeight>
-                              </Style>
-                            </Paragraph>
-                          </Paragraphs>
-                          <Style>
-                            <Border>
-                              <Color>Gray</Color>
-                              <Style>Solid</Style>
-                            </Border>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
-                    <TablixCell>
-                      <CellContents>
                         <Textbox Name="TextBox178">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
@@ -2976,7 +2991,7 @@ order by t0.FixedAssetId</CommandText>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Sum(Fields!Cost.Value)</Value>
+                                  <Value>=Sum(Fields!ActiveTotalCost.Value)</Value>
                                   <Style>
                                     <FontWeight>Bold</FontWeight>
                                     <Format>n2</Format>
@@ -3684,14 +3699,14 @@ order by t0.FixedAssetId</CommandText>
                   <KeepWithGroup>After</KeepWithGroup>
                 </TablixMember>
                 <TablixMember>
-                  <Group Name="FixedAssetGroupDescription0">
+                  <Group Name="FixedAssetGroupName0">
                     <GroupExpressions>
-                      <GroupExpression>=Fields!FixedAssetGroupDescription.Value</GroupExpression>
+                      <GroupExpression>=Fields!FixedAssetGroupName.Value</GroupExpression>
                     </GroupExpressions>
                   </Group>
                   <SortExpressions>
                     <SortExpression>
-                      <Value>=Fields!FixedAssetGroupDescription.Value</Value>
+                      <Value>=Fields!FixedAssetGroupName.Value</Value>
                     </SortExpression>
                   </SortExpressions>
                   <TablixHeader>
@@ -3704,7 +3719,7 @@ order by t0.FixedAssetId</CommandText>
                           <Paragraph>
                             <TextRuns>
                               <TextRun>
-                                <Value>=Fields!FixedAssetGroupDescription.Value</Value>
+                                <Value>=Fields!FixedAssetGroupName.Value</Value>
                                 <Style />
                               </TextRun>
                             </TextRuns>
@@ -3945,9 +3960,69 @@ order by t0.FixedAssetId</CommandText>
         </DataSetReference>
       </ValidValues>
     </ReportParameter>
+    <ReportParameter Name="MES">
+      <DataType>Integer</DataType>
+      <Prompt>Mes</Prompt>
+      <ValidValues>
+        <ParameterValues>
+          <ParameterValue>
+            <Value>0</Value>
+            <Label>TODOS</Label>
+          </ParameterValue>
+          <ParameterValue>
+            <Value>1</Value>
+            <Label>ENERO</Label>
+          </ParameterValue>
+          <ParameterValue>
+            <Value>2</Value>
+            <Label>FEBRERO</Label>
+          </ParameterValue>
+          <ParameterValue>
+            <Value>3</Value>
+            <Label>MARZO</Label>
+          </ParameterValue>
+          <ParameterValue>
+            <Value>4</Value>
+            <Label>ABRIL</Label>
+          </ParameterValue>
+          <ParameterValue>
+            <Value>5</Value>
+            <Label>MAYO</Label>
+          </ParameterValue>
+          <ParameterValue>
+            <Value>6</Value>
+            <Label>JUNIO</Label>
+          </ParameterValue>
+          <ParameterValue>
+            <Value>7</Value>
+            <Label>JULIO</Label>
+          </ParameterValue>
+          <ParameterValue>
+            <Value>8</Value>
+            <Label>AGOSTO</Label>
+          </ParameterValue>
+          <ParameterValue>
+            <Value>9</Value>
+            <Label>SEPTIEMBRE</Label>
+          </ParameterValue>
+          <ParameterValue>
+            <Value>10</Value>
+            <Label>OCTUBRE</Label>
+          </ParameterValue>
+          <ParameterValue>
+            <Value>11</Value>
+            <Label>NOVIEMBRE</Label>
+          </ParameterValue>
+          <ParameterValue>
+            <Value>12</Value>
+            <Label>DICIEMBRE</Label>
+          </ParameterValue>
+        </ParameterValues>
+      </ValidValues>
+    </ReportParameter>
     <ReportParameter Name="CENTROCOSTO">
       <DataType>String</DataType>
-      <Prompt>Seleccione Centro de Costo</Prompt>
+      <Prompt>Centro de Costo</Prompt>
       <ValidValues>
         <DataSetReference>
           <DataSetName>CentroCosto</DataSetName>
@@ -3956,11 +4031,46 @@ order by t0.FixedAssetId</CommandText>
         </DataSetReference>
       </ValidValues>
     </ReportParameter>
+    <ReportParameter Name="SUCURSAL">
+      <DataType>Integer</DataType>
+      <Prompt>Sucursal</Prompt>
+      <ValidValues>
+        <DataSetReference>
+          <DataSetName>Branch</DataSetName>
+          <ValueField>BranchId</ValueField>
+          <LabelField>BranchName</LabelField>
+        </DataSetReference>
+      </ValidValues>
+    </ReportParameter>
+    <ReportParameter Name="ESTADO">
+      <DataType>String</DataType>
+      <Prompt>Estado</Prompt>
+      <ValidValues>
+        <ParameterValues>
+          <ParameterValue>
+            <Value>TODOS</Value>
+            <Label>TODOS</Label>
+          </ParameterValue>
+          <ParameterValue>
+            <Value>Importe Original</Value>
+            <Label>Importe Original</Label>
+          </ParameterValue>
+          <ParameterValue>
+            <Value>N</Value>
+            <Label>Depreciandose</Label>
+          </ParameterValue>
+          <ParameterValue>
+            <Value>Dado de Baja</Value>
+            <Label>Dado de Baja</Label>
+          </ParameterValue>
+        </ParameterValues>
+      </ValidValues>
+    </ReportParameter>
   </ReportParameters>
   <ReportParametersLayout>
     <GridLayoutDefinition>
-      <NumberOfColumns>2</NumberOfColumns>
-      <NumberOfRows>1</NumberOfRows>
+      <NumberOfColumns>3</NumberOfColumns>
+      <NumberOfRows>2</NumberOfRows>
       <CellDefinitions>
         <CellDefinition>
           <ColumnIndex>0</ColumnIndex>
@@ -3968,9 +4078,24 @@ order by t0.FixedAssetId</CommandText>
           <ParameterName>ANIO</ParameterName>
         </CellDefinition>
         <CellDefinition>
-          <ColumnIndex>1</ColumnIndex>
+          <ColumnIndex>2</ColumnIndex>
           <RowIndex>0</RowIndex>
           <ParameterName>CENTROCOSTO</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>0</ColumnIndex>
+          <RowIndex>1</RowIndex>
+          <ParameterName>SUCURSAL</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>1</ColumnIndex>
+          <RowIndex>1</RowIndex>
+          <ParameterName>ESTADO</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>1</ColumnIndex>
+          <RowIndex>0</RowIndex>
+          <ParameterName>MES</ParameterName>
         </CellDefinition>
       </CellDefinitions>
     </GridLayoutDefinition>

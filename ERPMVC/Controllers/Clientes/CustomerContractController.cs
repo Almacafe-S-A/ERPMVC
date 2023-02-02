@@ -160,6 +160,80 @@ namespace ERPMVC.Controllers
 
         }
 
+        [HttpGet("[action]")]
+        public async Task<DataSourceResult> GetByCustomerId([DataSourceRequest] DataSourceRequest request,int CustomerId)
+        {
+            List<CustomerContract> _CustomerContract = new List<CustomerContract>();
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/CustomerContract/GetByCustomerId/" + CustomerId);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _CustomerContract = JsonConvert.DeserializeObject<List<CustomerContract>>(valorrespuesta);
+                    //_CustomerContract = (from c in _CustomerContract
+                    //                     select new CustomerContract { 
+                    //                         ProductName = $"{c.CustomerContractId} - {c.ProductName}", 
+                    //                         CustomerContractId = c.CustomerContractId,
+                    //                     }).ToList();
+
+                }
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: {ex.ToString()}");
+
+            }
+
+
+
+            return _CustomerContract.ToDataSourceResult(request);
+
+        }
+
+
+
+        
+        public async Task<DataSourceResult> GetByCustomerService([DataSourceRequest] DataSourceRequest request, int CustomerId, int Service)
+        {
+            List<CustomerContract> _CustomerContract = new List<CustomerContract>();
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + $"api/CustomerContract/GetByCustomerService/{CustomerId}/{Service}");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _CustomerContract = JsonConvert.DeserializeObject<List<CustomerContract>>(valorrespuesta);
+                    //_CustomerContract = (from c in _CustomerContract
+                    //                     select new CustomerContract { 
+                    //                         ProductName = $"{c.CustomerContractId} - {c.ProductName}", 
+                    //                         CustomerContractId = c.CustomerContractId,
+                    //                     }).ToList();
+
+                }
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: {ex.ToString()}");
+
+            }
+
+
+
+            return _CustomerContract.ToDataSourceResult(request);
+
+        }
+
         [HttpGet]
         public async Task<DataSourceResult> Get([DataSourceRequest]DataSourceRequest request)
         {

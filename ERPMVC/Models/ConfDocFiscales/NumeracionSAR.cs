@@ -21,10 +21,10 @@ namespace ERPMVC.Models
         public string _cai { get; set; }
 
         [Display(Name = "Número de inicio")]
-        public string NoInicio { get; set; }
+        public Int64 NoInicio { get; set; }
 
         [Display(Name = "Número de fin")]
-        public string NoFin { get; set; }
+        public Int64 NoFin { get; set; }
 
         [Display(Name = "Fecha Limite")]
 
@@ -51,9 +51,6 @@ namespace ERPMVC.Models
         public Int64 DocTypeId { get; set; }
         [Display(Name = "Tipo de documento")]
         public string DocType { get; set; }
-        [Display(Name = "Tipo de documento")]
-        public Int64 DocSubTypeId { get; set; }
-        public string DocSubType { get; set; }
 
         [Display(Name = "Estado")]
         public Int64 IdEstado { get; set; }

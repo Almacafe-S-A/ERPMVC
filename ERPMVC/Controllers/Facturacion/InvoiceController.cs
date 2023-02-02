@@ -64,13 +64,11 @@ namespace ERPMVC.Controllers
                         DeliveryDate = DateTime.Now,
                         ExpirationDate = DateTime.Now.AddDays(30),
                         BranchId = Convert.ToInt32(HttpContext.Session.GetString("BranchId")),
-                        editar = 1
+                        editar = 1,
+                        DiasVencimiento =30
+                        
                     };
 
-                }
-                else
-                {
-                    _Invoice.NumeroDEIString = $"{_Invoice.Sucursal}-{_Invoice.Caja}-01-{_Invoice.NumeroDEI.ToString().PadLeft(8, '0')} ";
                 }
                 ViewData["permisos"] = _principal;
 
@@ -160,85 +158,82 @@ namespace ERPMVC.Controllers
         }
 
 
+        public async Task<ActionResult> GenerarFactura([FromBody] Invoice invoice)
+        //public async Task<ActionResult> GetGoodsDeliveredById([FromBody]dynamic dto)
+        {
+            Invoice _Invoice = new Invoice();
+            try
+            {
+
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + $"api/Invoice/GenerarFactura/{invoice.InvoiceId}");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _Invoice = JsonConvert.DeserializeObject<Invoice>(valorrespuesta);
+
+                }
+                else
+                {
+                    throw new Exception( result.Content.ReadAsStringAsync().ToString());
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: {ex.ToString()}");
+            }
+
+            return Json(_Invoice);
+        }
+
+
         [HttpPost("[action]")]
         public async Task<ActionResult<InvoiceDTO>> SaveInvoice([FromBody]InvoiceDTO _Invoice)
         {
 
             try
             {
-                if (_Invoice != null)
+                if (_Invoice == null)
                 {
-                    Invoice _listInvoice = new Invoice();
-                    string baseadress = config.Value.urlbase;
+                    return BadRequest("No llego correctamente el modelo");
+                }
 
+                Invoice _listInvoice = new Invoice();
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/Invoice/GetInvoiceById/" + _Invoice.InvoiceId);
+                string valorrespuesta = "";
+                _Invoice.FechaModificacion = DateTime.Now;
+                _Invoice.UsuarioModificacion = HttpContext.Session.GetString("user");
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _listInvoice = JsonConvert.DeserializeObject<Invoice>(valorrespuesta);
+                }
 
-                    if (_Invoice.Total <= 0 || _Invoice.SubTotal <= 0)
+                if (_listInvoice == null) { _listInvoice = new Invoice(); }
+
+                if (_listInvoice.InvoiceId == 0)
+                {
+                    _Invoice.FechaCreacion = DateTime.Now;
+                    _Invoice.UsuarioCreacion = HttpContext.Session.GetString("user");
+                    var insertresult = await Insert(_Invoice);
+                    if ((insertresult.Result is BadRequestObjectResult))
                     {
-                        return await Task.Run(() => BadRequest($"No se esta calculando correctamente los totales!"));
+                        return await Task.Run(() => BadRequest(insertresult.Result));
                     }
 
-
-                    foreach (var item in _Invoice.InvoiceLine)
+                }
+                else
+                {
+                    var updateresult = await Update(_Invoice.InvoiceId, _Invoice);
+                    if ((updateresult.Result is BadRequestObjectResult))
                     {
-                        if (item.UnitOfMeasureId == 0)
-                        {
-                            return await Task.Run(() => BadRequest($"Ingrese una unidad de medida valido!"));
-                        }
-
-                        if (item.Total == 0)
-                        {
-                            return await Task.Run(() => BadRequest($"El documento no se ha calculado correctamente!"));
-                        }
-
-                        if (item.TaxCode == "")
-                        {
-                            return await Task.Run(() => BadRequest($"Debe llevar un código de impuesto!, el producto :{item.SubProductName}"));
-                        }
-
-                    }
-
-                    HttpClient _client = new HttpClient();
-                    _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                    var result = await _client.GetAsync(baseadress + "api/Invoice/GetInvoiceById/" + _Invoice.InvoiceId);
-                    string valorrespuesta = "";
-                    _Invoice.FechaModificacion = DateTime.Now;
-                    _Invoice.UsuarioModificacion = HttpContext.Session.GetString("user");
-                    if (result.IsSuccessStatusCode)
-                    {
-                        valorrespuesta = await (result.Content.ReadAsStringAsync());
-                        _listInvoice = JsonConvert.DeserializeObject<Invoice>(valorrespuesta);
-                    }
-
-                    if (_listInvoice == null) { _listInvoice = new Invoice(); }
-
-                    if (_listInvoice.InvoiceId == 0)
-                    {
-                        _Invoice.FechaCreacion = DateTime.Now;
-                        _Invoice.UsuarioCreacion = HttpContext.Session.GetString("user");
-                        var insertresult = await Insert(_Invoice);
-                        if ((insertresult.Result as ObjectResult).Value.ToString() == "Ocurrio un error: Error en la Configuración de Asiento Contable Automatico.")
-                        {
-                            return await Task.Run(() => BadRequest("Ocurrio un error: Error en la Configuración de Asiento Contable Automatico."));
-                        }
-
-                        var value = (insertresult.Result as ObjectResult).Value;
-
-                        InvoiceDTO resultado = ((InvoiceDTO)(value));
-                        if (resultado.InvoiceId <= 0)
-                        {
-                            return await Task.Run(() => BadRequest("No se genero la factura!"));
-                        }
-                        else
-                        {
-                            _Invoice.NumeroDEIString = $"{resultado.Sucursal}-{resultado.Caja}-01-{resultado.NumeroDEI.ToString().PadLeft(8, '0')} ";
-                        }
-
-                        _Invoice.InvoiceId = resultado.InvoiceId;
-
-                    }
-                    else
-                    {
-                        var updateresult = await Update(_Invoice.InvoiceId, _Invoice);
+                        return await Task.Run(() => BadRequest(updateresult.Result));
                     }
                 }
 
@@ -247,8 +242,6 @@ namespace ERPMVC.Controllers
             {
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 return await Task.Run(() => BadRequest($"No se genero la factura : {ex.ToString()}"));
-            
-                throw ex;
             }
 
             return Json(_Invoice);
