@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
+using ERPMVC.Models;
 using Microsoft.AspNetCore.Http;
 using NPOI.SS.UserModel;
 
@@ -14,6 +15,12 @@ namespace ERPMVC.Helpers
         public static string ConexionReportes { get; set; }
 
         public static bool Cerrado { get; set; }
+
+        public static int PeriodoActualId { get; set; }
+
+        public static string PeriodoActual { get; set; }
+
+        public  static Periodo Periodo { get; set; }
 
         public static bool InicioPagodeCuotasISR { get; set; }
 
