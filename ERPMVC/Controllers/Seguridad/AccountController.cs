@@ -88,19 +88,7 @@ namespace ERPMVC.Controllers
                             HttpContext.Session.SetString("user", model.Email);
                             HttpContext.Session.SetString("Expiration", _userToken.Expiration.ToString());
                             HttpClient cliente = new HttpClient();
-                            var resultadoCierre = await cliente.GetAsync(baseadress + "api/CierreContable/UltimoCierre");
-                            string ultimoCierre = await resultadoCierre.Content.ReadAsStringAsync();
-                            BitacoraCierreContable cierre = JsonConvert.DeserializeObject<BitacoraCierreContable>(ultimoCierre);
-                            if (cierre != null)
-                            {
-                                DateTime fechaactual = DateTime.Now;
-                                fechaactual = fechaactual.AddDays(-1);
-                                //Utils.Cerrado = cierre.FechaCierre.Date >= fechaactual.Date;
-                            }
-                            else
-                            {
-                                Utils.Cerrado = true;
-                            }
+                            
                             return RedirectToAction("ChangePassword", "Account");
                         }
                     }
@@ -111,7 +99,10 @@ namespace ERPMVC.Controllers
                         HttpContext.Session.SetString("Expiration", _userToken.Expiration.ToString());
                         HttpContext.Session.SetString("user", model.Email);
                         // HttpContext.Session.SetString("BranchId", _userToken.BranchId.ToString());
-                        HttpContext.Session.SetString("BranchId", "1"); // se coloco la sucursal en duro hasta que se defina como se va utilizar las sucursale de los usuarios 
+                        HttpContext.Session.SetString("BranchId", "1"); // se coloco la sucursal en duro hasta que se defina como se va utilizar las sucursale de los usuarios
+                                                                        // 
+
+                        
 
 
                         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["JWT:key"]));
@@ -125,6 +116,9 @@ namespace ERPMVC.Controllers
                         
 
                         HttpClient cliente = new HttpClient();
+
+                        
+
                         cliente.DefaultRequestHeaders.Add("Authorization", "Bearer " + _userToken.Token);                        
                         var permisos = await cliente.GetAsync(baseadress + "api/Permisos/GetPermissionByUser");
                         string userclaims = await permisos.Content.ReadAsStringAsync();
@@ -142,7 +136,23 @@ namespace ERPMVC.Controllers
                         }
 
 
-                        Utils.Cerrado = true;
+                        var resultadoPeriodo = await cliente.GetAsync(baseadress + "api/Periodo/GetPeriodoActivo");
+                        string periodoactivo = await resultadoPeriodo.Content.ReadAsStringAsync();
+                        Periodo periodo = JsonConvert.DeserializeObject<Periodo>(periodoactivo);
+                        if (periodo != null)
+                        {
+                            DateTime fechaactual = DateTime.Now;
+                            fechaactual = fechaactual.AddDays(-1);
+                            Utils.Periodo = periodo;
+                            Utils.PeriodoActual = periodo.Anio.ToString();
+                            Utils.PeriodoActualId = periodo.Id;
+                            Utils.Cerrado = false;
+                        }
+                        else
+                        {
+                            Utils.Cerrado = true;
+                        }
+
 
                         return RedirectToAction("Index", "Home");
 
