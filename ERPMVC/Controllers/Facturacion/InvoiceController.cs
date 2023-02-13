@@ -122,6 +122,43 @@ namespace ERPMVC.Controllers
         }
 
 
+        //[HttpGet]
+        public async Task<DataSourceResult> GetFacturasByCustomer([DataSourceRequest] DataSourceRequest request, int CustomerId)
+        {
+            List<Invoice> _Invoice = new List<Invoice>();
+            try
+            {
+
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/Invoice/GetFacturasByCustomer/"+CustomerId);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _Invoice = JsonConvert.DeserializeObject<List<Invoice>>(valorrespuesta);
+                    _Invoice = _Invoice.OrderByDescending(q => q.InvoiceId).ToList();
+                }
+                else
+                {
+                    return null;
+                }
+
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: {ex.ToString()}");
+                throw ex;
+            }
+
+
+            return _Invoice.ToDataSourceResult(request);
+
+        }
+
+
         [HttpPost]
         public async Task<ActionResult> GetInvoiceById([FromBody]Invoice _Invoicep)
         //public async Task<ActionResult> GetGoodsDeliveredById([FromBody]dynamic dto)
