@@ -45,6 +45,14 @@ namespace ERPMVC.Models
         [Display(Name = "Sucursal")]
         public string Sucursal { get; set; }
 
+        
+
+
+
+        public string NumeroSAR { get; set; }
+
+        public string RangoAutorizado { get; set; }
+
         [Display(Name = "Caja")]
         public string Caja { get; set; }
 
