@@ -302,6 +302,13 @@ namespace ERPMVC.Controllers
 
 
         [HttpGet]
+        public ActionResult SFEmitidasDetallado()
+        {
+
+            return View();
+        }
+
+        [HttpGet]
         public ActionResult SFGuiaRemision(int id)
         {
 
