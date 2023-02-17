@@ -293,7 +293,7 @@ namespace ERPMVC.Controllers
 
 
 
-    [HttpGet]
+        [HttpGet]
         public ActionResult SFSolicitudCertificadoDepositoVista(Int64 id)
         {
 
@@ -303,6 +303,18 @@ namespace ERPMVC.Controllers
 
            
         }
+
+
+
+        [HttpGet]
+        public ActionResult SFSolicitudesEmitidasDetallado()
+        {
+
+            return View();
+
+
+        }
+
 
 
 
