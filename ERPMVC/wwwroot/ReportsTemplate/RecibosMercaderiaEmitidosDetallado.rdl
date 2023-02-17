@@ -12,7 +12,7 @@
     </DataSource>
   </DataSources>
   <DataSets>
-    <DataSet Name="CDDetalle">
+    <DataSet Name="RMDetalle">
       <Query>
         <DataSourceName>ERP</DataSourceName>
         <QueryParameters>
@@ -22,58 +22,60 @@
           <QueryParameter Name="@FechaFin">
             <Value>=Parameters!FechaFin.Value</Value>
           </QueryParameter>
-          <QueryParameter Name="@CustomerId">
-            <Value>=Parameters!CustomerId.Value</Value>
-          </QueryParameter>
           <QueryParameter Name="@Sucursal">
             <Value>=Parameters!Sucursal.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@Bodega">
+            <Value>=Parameters!Bodega.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@CustomerId">
+            <Value>=Parameters!CustomerId.Value</Value>
           </QueryParameter>
           <QueryParameter Name="@Producto">
             <Value>=Parameters!Producto.Value</Value>
           </QueryParameter>
-          <QueryParameter Name="@Poliza">
-            <Value>=Parameters!Poliza.Value</Value>
-          </QueryParameter>
         </QueryParameters>
         <CommandText>SELECT 
-cd.CustomerId,
-cd.CustomerName as Cliente,
-cd.IdCD,
-cd.FechaCertificado,
-cd.InsurancePolicyId,
-cd.NoPoliza,
-cd.ServicioName as Servicio,
-cd.ServicioId,
-cd.BranchId,
-cd.BranchName as Sucursal,
-cd.IdEstado,
-cl.PdaNo
-,cl.SubProductName as Producto
-,cl.UnitMeasurName as UOM
-,cl.Price Precio
-,SUM(cl.Amount) as Valor
-,Sum(cl.Quantity) as Cantidad
-,sum(cl.DerechosFiscales) as Derechos
-FROM CertificadoLine cl 
-INNER JOIN CertificadoDeposito cd on cd.IdCD = cl.IdCD
-Where cd.FechaCertificado Between @FechaInicio and @FechaFin
-and (cd.CustomerId = @CustomerId or  @CustomerId = 0) and cd.branchId = @Sucursal and (cl.SubProductId = @Producto or  @Producto = 0) and (cd.InsurancePolicyId = @Poliza or  @Poliza = 0) and IdEstado=6
-group by cl.PdaNo, 
-		cd.CustomerId,
-                                cd.IdEstado,
-                                cl.SubProductName, 
-		cl.UnitMeasurName,
-		cl.Price,
-		cd.CustomerName,
-		cd.IdCD,
-		cd.FechaCertificado,
-                                cd.InsurancePolicyId,
-		cd.NoPoliza,
-		cd.ServicioName,
-		cd.ServicioId,
-		cd.BranchId,
-		cd.BranchName                     
-		</CommandText>
+rm.CustomerId,
+rm.CustomerName as Cliente,
+rm.GoodsReceivedId,
+rm.DocumentDate,
+rm.ProductName as Servicio,
+rm.ProductId,
+rm.Motorista,
+rm.BranchId,
+rm.BranchName as Sucursal,
+rml.SubProductName as Producto,
+rml.UnitofMeasureName as UOM,
+rml.QuantitySacos as sacos,
+rml.WareHouseId as IdBodega,
+rml.WareHouseName as Bodega,
+rml.SaldoporCertificar,
+Sum(rml.Quantity) as Cantidad,
+Sum(rml.QuantitySacos) as Sacos
+FROM GoodsReceivedLine rml 
+INNER JOIN GoodsReceived rm on rm.GoodsReceivedId = rml.GoodsReceivedId
+INNER JOIN SubProduct pr on pr.SubproductId = rml.SubproductId
+INNER JOIN Customer cu on cu.CustomerId = rm.CustomerId
+INNER JOIN CustomerProduct cp on cp.CustomerId = rm.CustomerId and cp.SubProductId = rml.SubProductId
+LEFT JOIN PrecioCafe pc on pc.CustomerId = rm.CustomerId and pc.fecha=rm.DocumentDate
+Where rm.DocumentDate Between @FechaInicio and dateadd(Day,1, @FechaFin) and rm.branchId = @Sucursal and (rml.WareHouseId = @Bodega or @Bodega=0) and (rm.CustomerId = @CustomerId or  @CustomerId = 0)
+and (rml.SubProductId = @Producto or  @Producto = 0) and rml.SaldoporCertificar&gt;0  
+group by rm.CustomerId,
+rm.CustomerName,
+rm.GoodsReceivedId,
+rm.DocumentDate,
+rm.ProductName,
+rm.ProductId,
+rm.Motorista,
+rm.BranchId,
+rm.BranchName,
+rml.SubProductName,
+rml.UnitofMeasureName,
+rml.QuantitySacos,
+rml.WareHouseId,
+rml.WareHouseName,
+rml.SaldoporCertificar</CommandText>
       </Query>
       <Fields>
         <Field Name="CustomerId">
@@ -84,45 +86,33 @@ group by cl.PdaNo,
           <DataField>Cliente</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
-        <Field Name="IdCD">
-          <DataField>IdCD</DataField>
+        <Field Name="GoodsReceivedId">
+          <DataField>GoodsReceivedId</DataField>
           <rd:TypeName>System.Int64</rd:TypeName>
         </Field>
-        <Field Name="FechaCertificado">
-          <DataField>FechaCertificado</DataField>
+        <Field Name="DocumentDate">
+          <DataField>DocumentDate</DataField>
           <rd:TypeName>System.DateTime</rd:TypeName>
-        </Field>
-        <Field Name="InsurancePolicyId">
-          <DataField>InsurancePolicyId</DataField>
-          <rd:TypeName>System.Int64</rd:TypeName>
-        </Field>
-        <Field Name="NoPoliza">
-          <DataField>NoPoliza</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
         </Field>
         <Field Name="Servicio">
           <DataField>Servicio</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
-        <Field Name="ServicioId">
-          <DataField>ServicioId</DataField>
+        <Field Name="ProductId">
+          <DataField>ProductId</DataField>
           <rd:TypeName>System.Int64</rd:TypeName>
+        </Field>
+        <Field Name="Motorista">
+          <DataField>Motorista</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
         </Field>
         <Field Name="BranchId">
           <DataField>BranchId</DataField>
-          <rd:TypeName>System.Int32</rd:TypeName>
+          <rd:TypeName>System.Int64</rd:TypeName>
         </Field>
         <Field Name="Sucursal">
           <DataField>Sucursal</DataField>
           <rd:TypeName>System.String</rd:TypeName>
-        </Field>
-        <Field Name="IdEstado">
-          <DataField>IdEstado</DataField>
-          <rd:TypeName>System.Int64</rd:TypeName>
-        </Field>
-        <Field Name="PdaNo">
-          <DataField>PdaNo</DataField>
-          <rd:TypeName>System.Int32</rd:TypeName>
         </Field>
         <Field Name="Producto">
           <DataField>Producto</DataField>
@@ -132,20 +122,28 @@ group by cl.PdaNo,
           <DataField>UOM</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
-        <Field Name="Precio">
-          <DataField>Precio</DataField>
+        <Field Name="sacos">
+          <DataField>sacos</DataField>
           <rd:TypeName>System.Decimal</rd:TypeName>
         </Field>
-        <Field Name="Valor">
-          <DataField>Valor</DataField>
+        <Field Name="IdBodega">
+          <DataField>IdBodega</DataField>
+          <rd:TypeName>System.Int64</rd:TypeName>
+        </Field>
+        <Field Name="Bodega">
+          <DataField>Bodega</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="SaldoporCertificar">
+          <DataField>SaldoporCertificar</DataField>
           <rd:TypeName>System.Decimal</rd:TypeName>
         </Field>
         <Field Name="Cantidad">
           <DataField>Cantidad</DataField>
           <rd:TypeName>System.Decimal</rd:TypeName>
         </Field>
-        <Field Name="Derechos">
-          <DataField>Derechos</DataField>
+        <Field Name="Sacos">
+          <DataField>Sacos</DataField>
           <rd:TypeName>System.Decimal</rd:TypeName>
         </Field>
       </Fields>
@@ -216,20 +214,22 @@ UNION SELECT 0 , 'TODOS'</CommandText>
         </Field>
       </Fields>
     </DataSet>
-    <DataSet Name="Poliza">
+    <DataSet Name="Bodegas">
       <Query>
         <DataSourceName>ERP</DataSourceName>
-        <CommandText>select InsurancePolicyId, PolicyNumber from InsurancePolicy 
-where EstadoId = 101
-UNION SELECT 0 , 'TODOS'</CommandText>
+        <CommandText>Select 0 as WarehouseId, 'TODAS' as WarehouseName
+UNION ALL
+Select WarehouseId, WarehouseName
+From Warehouse 
+Where idestado = 1</CommandText>
       </Query>
       <Fields>
-        <Field Name="InsurancePolicyId">
-          <DataField>InsurancePolicyId</DataField>
-          <rd:TypeName>System.Int64</rd:TypeName>
+        <Field Name="WarehouseId">
+          <DataField>WarehouseId</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
         </Field>
-        <Field Name="PolicyNumber">
-          <DataField>PolicyNumber</DataField>
+        <Field Name="WarehouseName">
+          <DataField>WarehouseName</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
       </Fields>
@@ -255,10 +255,7 @@ UNION SELECT 0 , 'TODOS'</CommandText>
                   <Width>0.88542in</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>1.67708in</Width>
-                </TablixColumn>
-                <TablixColumn>
-                  <Width>1in</Width>
+                  <Width>2.62708in</Width>
                 </TablixColumn>
                 <TablixColumn>
                   <Width>1in</Width>
@@ -280,7 +277,7 @@ UNION SELECT 0 , 'TODOS'</CommandText>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>No. CD</Value>
+                                  <Value>No. RM</Value>
                                   <Style>
                                     <FontSize>9pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
@@ -360,7 +357,7 @@ UNION SELECT 0 , 'TODOS'</CommandText>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>No. Poliza</Value>
+                                  <Value>Entregado por</Value>
                                   <Style>
                                     <FontSize>9pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
@@ -431,10 +428,9 @@ UNION SELECT 0 , 'TODOS'</CommandText>
                             <PaddingBottom>2pt</PaddingBottom>
                           </Style>
                         </Textbox>
-                        <ColSpan>3</ColSpan>
+                        <ColSpan>2</ColSpan>
                       </CellContents>
                     </TablixCell>
-                    <TablixCell />
                     <TablixCell />
                     <TablixCell>
                       <CellContents>
@@ -483,7 +479,7 @@ UNION SELECT 0 , 'TODOS'</CommandText>
                   <TablixCells>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="Textbox116">
+                        <Textbox Name="Textbox5">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
@@ -502,7 +498,7 @@ UNION SELECT 0 , 'TODOS'</CommandText>
                               </Style>
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>Textbox116</rd:DefaultName>
+                          <rd:DefaultName>Textbox5</rd:DefaultName>
                           <Style>
                             <Border>
                               <Style>None</Style>
@@ -523,14 +519,14 @@ UNION SELECT 0 , 'TODOS'</CommandText>
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="Textbox117">
+                        <Textbox Name="Textbox3">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>Pda No.</Value>
+                                  <Value />
                                   <Style>
                                     <FontSize>9pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
@@ -542,7 +538,7 @@ UNION SELECT 0 , 'TODOS'</CommandText>
                               </Style>
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>Textbox117</rd:DefaultName>
+                          <rd:DefaultName>Textbox3</rd:DefaultName>
                           <Style>
                             <Border>
                               <Style>None</Style>
@@ -695,46 +691,6 @@ UNION SELECT 0 , 'TODOS'</CommandText>
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="Textbox121">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value>Precio</Value>
-                                  <Style>
-                                    <FontSize>9pt</FontSize>
-                                    <FontWeight>Bold</FontWeight>
-                                  </Style>
-                                </TextRun>
-                              </TextRuns>
-                              <Style>
-                                <TextAlign>Center</TextAlign>
-                              </Style>
-                            </Paragraph>
-                          </Paragraphs>
-                          <rd:DefaultName>Textbox121</rd:DefaultName>
-                          <Style>
-                            <Border>
-                              <Style>None</Style>
-                            </Border>
-                            <BottomBorder>
-                              <Color>Black</Color>
-                              <Style>Solid</Style>
-                              <Width>1pt</Width>
-                            </BottomBorder>
-                            <VerticalAlign>Middle</VerticalAlign>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
-                    <TablixCell>
-                      <CellContents>
                         <Textbox Name="Textbox122">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
@@ -742,7 +698,7 @@ UNION SELECT 0 , 'TODOS'</CommandText>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>Valor</Value>
+                                  <Value>Sacos</Value>
                                   <Style>
                                     <FontSize>9pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
@@ -782,7 +738,7 @@ UNION SELECT 0 , 'TODOS'</CommandText>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>Derechos</Value>
+                                  <Value>Bodega</Value>
                                   <Style>
                                     <FontSize>9pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
@@ -820,14 +776,14 @@ UNION SELECT 0 , 'TODOS'</CommandText>
                   <TablixCells>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="IdCD">
+                        <Textbox Name="GoodsReceivedId">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Fields!IdCD.Value</Value>
+                                  <Value>=Fields!GoodsReceivedId.Value</Value>
                                   <Style>
                                     <FontSize>8pt</FontSize>
                                   </Style>
@@ -838,7 +794,7 @@ UNION SELECT 0 , 'TODOS'</CommandText>
                               </Style>
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>IdCD</rd:DefaultName>
+                          <rd:DefaultName>GoodsReceivedId</rd:DefaultName>
                           <Style>
                             <Border>
                               <Style>None</Style>
@@ -854,14 +810,14 @@ UNION SELECT 0 , 'TODOS'</CommandText>
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="FechaCertificado">
+                        <Textbox Name="DocumentDate">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Fields!FechaCertificado.Value</Value>
+                                  <Value>=Fields!DocumentDate.Value</Value>
                                   <Style>
                                     <FontSize>8pt</FontSize>
                                     <Format>d/M/yyyy</Format>
@@ -871,7 +827,7 @@ UNION SELECT 0 , 'TODOS'</CommandText>
                               <Style />
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>FechaCertificado</rd:DefaultName>
+                          <rd:DefaultName>DocumentDate</rd:DefaultName>
                           <Style>
                             <Border>
                               <Style>None</Style>
@@ -887,14 +843,14 @@ UNION SELECT 0 , 'TODOS'</CommandText>
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="NoPoliza">
+                        <Textbox Name="Motorista">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Fields!NoPoliza.Value</Value>
+                                  <Value>=Fields!Motorista.Value</Value>
                                   <Style>
                                     <FontSize>8pt</FontSize>
                                   </Style>
@@ -903,7 +859,7 @@ UNION SELECT 0 , 'TODOS'</CommandText>
                               <Style />
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>NoPoliza</rd:DefaultName>
+                          <rd:DefaultName>Motorista</rd:DefaultName>
                           <Style>
                             <Border>
                               <Style>None</Style>
@@ -949,10 +905,9 @@ UNION SELECT 0 , 'TODOS'</CommandText>
                             <PaddingBottom>2pt</PaddingBottom>
                           </Style>
                         </Textbox>
-                        <ColSpan>3</ColSpan>
+                        <ColSpan>2</ColSpan>
                       </CellContents>
                     </TablixCell>
-                    <TablixCell />
                     <TablixCell />
                     <TablixCell>
                       <CellContents>
@@ -1025,14 +980,14 @@ UNION SELECT 0 , 'TODOS'</CommandText>
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="PdaNo">
+                        <Textbox Name="Textbox2">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Fields!PdaNo.Value</Value>
+                                  <Value />
                                   <Style>
                                     <FontSize>8pt</FontSize>
                                   </Style>
@@ -1043,7 +998,7 @@ UNION SELECT 0 , 'TODOS'</CommandText>
                               </Style>
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>PdaNo</rd:DefaultName>
+                          <rd:DefaultName>Textbox2</rd:DefaultName>
                           <Style>
                             <Border>
                               <Style>None</Style>
@@ -1160,17 +1115,17 @@ UNION SELECT 0 , 'TODOS'</CommandText>
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="Precio">
+                        <Textbox Name="Sacos">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Fields!Precio.Value</Value>
+                                  <Value>=Fields!Sacos.Value</Value>
                                   <Style>
                                     <FontSize>8pt</FontSize>
-                                    <Format>#,0.00;(#,0.00)</Format>
+                                    <Format>#,0;(#,0)</Format>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -1179,7 +1134,7 @@ UNION SELECT 0 , 'TODOS'</CommandText>
                               </Style>
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>Precio</rd:DefaultName>
+                          <rd:DefaultName>Sacos</rd:DefaultName>
                           <Style>
                             <Border>
                               <Style>None</Style>
@@ -1195,14 +1150,14 @@ UNION SELECT 0 , 'TODOS'</CommandText>
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="Valor">
+                        <Textbox Name="Bodega">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Fields!Valor.Value</Value>
+                                  <Value>=Fields!Bodega.Value</Value>
                                   <Style>
                                     <FontSize>8pt</FontSize>
                                     <Format>#,0.00;(#,0.00)</Format>
@@ -1214,42 +1169,7 @@ UNION SELECT 0 , 'TODOS'</CommandText>
                               </Style>
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>Valor</rd:DefaultName>
-                          <Style>
-                            <Border>
-                              <Style>None</Style>
-                            </Border>
-                            <VerticalAlign>Middle</VerticalAlign>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
-                    <TablixCell>
-                      <CellContents>
-                        <Textbox Name="Derechos1">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value>=Fields!Derechos.Value</Value>
-                                  <Style>
-                                    <FontSize>8pt</FontSize>
-                                    <Format>#,0.00;(#,0.00)</Format>
-                                  </Style>
-                                </TextRun>
-                              </TextRuns>
-                              <Style>
-                                <TextAlign>Right</TextAlign>
-                              </Style>
-                            </Paragraph>
-                          </Paragraphs>
-                          <rd:DefaultName>Derechos1</rd:DefaultName>
+                          <rd:DefaultName>Bodega</rd:DefaultName>
                           <Style>
                             <Border>
                               <Style>None</Style>
@@ -1277,7 +1197,7 @@ UNION SELECT 0 , 'TODOS'</CommandText>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>Total CD</Value>
+                                  <Value>Total RM</Value>
                                   <Style>
                                     <FontSize>8pt</FontSize>
                                   </Style>
@@ -1407,7 +1327,42 @@ UNION SELECT 0 , 'TODOS'</CommandText>
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="Textbox158">
+                        <Textbox Name="Sacos1">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Fields!Sacos.Value</Value>
+                                  <Style>
+                                    <FontSize>8pt</FontSize>
+                                    <Format>#,0;(#,0)</Format>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Right</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Sacos1</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Style>None</Style>
+                            </Border>
+                            <VerticalAlign>Middle</VerticalAlign>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox4">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
@@ -1425,77 +1380,7 @@ UNION SELECT 0 , 'TODOS'</CommandText>
                               </Style>
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>Textbox158</rd:DefaultName>
-                          <Style>
-                            <Border>
-                              <Style>None</Style>
-                            </Border>
-                            <VerticalAlign>Middle</VerticalAlign>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
-                    <TablixCell>
-                      <CellContents>
-                        <Textbox Name="Valor2">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value>=Fields!Valor.Value</Value>
-                                  <Style>
-                                    <FontSize>8pt</FontSize>
-                                    <Format>#,0.00;(#,0.00)</Format>
-                                  </Style>
-                                </TextRun>
-                              </TextRuns>
-                              <Style>
-                                <TextAlign>Right</TextAlign>
-                              </Style>
-                            </Paragraph>
-                          </Paragraphs>
-                          <rd:DefaultName>Valor2</rd:DefaultName>
-                          <Style>
-                            <Border>
-                              <Style>None</Style>
-                            </Border>
-                            <VerticalAlign>Middle</VerticalAlign>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
-                    <TablixCell>
-                      <CellContents>
-                        <Textbox Name="Derechos3">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value>=Fields!Derechos.Value</Value>
-                                  <Style>
-                                    <FontSize>8pt</FontSize>
-                                    <Format>#,0.00;(#,0.00)</Format>
-                                  </Style>
-                                </TextRun>
-                              </TextRuns>
-                              <Style>
-                                <TextAlign>Right</TextAlign>
-                              </Style>
-                            </Paragraph>
-                          </Paragraphs>
-                          <rd:DefaultName>Derechos3</rd:DefaultName>
+                          <rd:DefaultName>Textbox4</rd:DefaultName>
                           <Style>
                             <Border>
                               <Style>None</Style>
@@ -1544,7 +1429,7 @@ UNION SELECT 0 , 'TODOS'</CommandText>
                                   </Style>
                                 </TextRun>
                                 <TextRun>
-                                  <Value>="("&amp; Count(Fields!PdaNo.Value) &amp;" CD)"</Value>
+                                  <Value>="("&amp; Count(Fields!GoodsReceivedId.Value) &amp;" RM)"</Value>
                                   <Style>
                                     <FontSize>8pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
@@ -1698,47 +1583,6 @@ UNION SELECT 0 , 'TODOS'</CommandText>
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="Precio1">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value>=Sum(Fields!Precio.Value)</Value>
-                                  <Style>
-                                    <FontSize>8pt</FontSize>
-                                    <FontWeight>Bold</FontWeight>
-                                    <Format>#,0.00;(#,0.00)</Format>
-                                  </Style>
-                                </TextRun>
-                              </TextRuns>
-                              <Style>
-                                <TextAlign>Right</TextAlign>
-                              </Style>
-                            </Paragraph>
-                          </Paragraphs>
-                          <rd:DefaultName>Precio1</rd:DefaultName>
-                          <Style>
-                            <Border>
-                              <Style>None</Style>
-                            </Border>
-                            <TopBorder>
-                              <Color>Black</Color>
-                              <Style>Solid</Style>
-                              <Width>1pt</Width>
-                            </TopBorder>
-                            <VerticalAlign>Middle</VerticalAlign>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
-                    <TablixCell>
-                      <CellContents>
                         <Textbox Name="Valor1">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
@@ -1746,11 +1590,11 @@ UNION SELECT 0 , 'TODOS'</CommandText>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Sum(Fields!Valor.Value)</Value>
+                                  <Value>=Sum(Fields!Sacos.Value)</Value>
                                   <Style>
                                     <FontSize>8pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
-                                    <Format>#,0.00;(#,0.00)</Format>
+                                    <Format>#,0;(#,0)</Format>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -1787,7 +1631,7 @@ UNION SELECT 0 , 'TODOS'</CommandText>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Sum(Fields!Derechos.Value)</Value>
+                                  <Value />
                                   <Style>
                                     <FontSize>8pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
@@ -1840,7 +1684,7 @@ UNION SELECT 0 , 'TODOS'</CommandText>
                                   </Style>
                                 </TextRun>
                                 <TextRun>
-                                  <Value>=" ("&amp; Count(Fields!PdaNo.Value) &amp;" CD)"</Value>
+                                  <Value>=" ("&amp; Count(Fields!GoodsReceivedId.Value) &amp;" RM)"</Value>
                                   <Style>
                                     <FontSize>8pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
@@ -1974,42 +1818,6 @@ UNION SELECT 0 , 'TODOS'</CommandText>
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="Textbox76">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value>=Sum(Fields!Precio.Value)</Value>
-                                  <Style>
-                                    <FontSize>8pt</FontSize>
-                                    <FontWeight>Bold</FontWeight>
-                                    <Format>#,0.00;(#,0.00)</Format>
-                                  </Style>
-                                </TextRun>
-                              </TextRuns>
-                              <Style>
-                                <TextAlign>Right</TextAlign>
-                              </Style>
-                            </Paragraph>
-                          </Paragraphs>
-                          <rd:DefaultName>Textbox76</rd:DefaultName>
-                          <Style>
-                            <Border>
-                              <Style>None</Style>
-                            </Border>
-                            <VerticalAlign>Middle</VerticalAlign>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
-                    <TablixCell>
-                      <CellContents>
                         <Textbox Name="Textbox77">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
@@ -2017,11 +1825,11 @@ UNION SELECT 0 , 'TODOS'</CommandText>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Sum(Fields!Valor.Value)</Value>
+                                  <Value>=Sum(Fields!Sacos.Value)</Value>
                                   <Style>
                                     <FontSize>8pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
-                                    <Format>#,0.00;(#,0.00)</Format>
+                                    <Format>#,0;(#,0)</Format>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -2053,7 +1861,7 @@ UNION SELECT 0 , 'TODOS'</CommandText>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Sum(Fields!Derechos.Value)</Value>
+                                  <Value />
                                   <Style>
                                     <FontSize>8pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
@@ -2086,7 +1894,6 @@ UNION SELECT 0 , 'TODOS'</CommandText>
             </TablixBody>
             <TablixColumnHierarchy>
               <TablixMembers>
-                <TablixMember />
                 <TablixMember />
                 <TablixMember />
                 <TablixMember />
@@ -2152,11 +1959,11 @@ UNION SELECT 0 , 'TODOS'</CommandText>
             <RepeatRowHeaders>true</RepeatRowHeaders>
             <FixedColumnHeaders>true</FixedColumnHeaders>
             <FixedRowHeaders>true</FixedRowHeaders>
-            <DataSetName>CDDetalle</DataSetName>
+            <DataSetName>RMDetalle</DataSetName>
             <Top>0.06125in</Top>
             <Left>0.11333in</Left>
             <Height>1.6in</Height>
-            <Width>8.26041in</Width>
+            <Width>8.21041in</Width>
             <Style>
               <Border>
                 <Style>None</Style>
@@ -2407,7 +2214,7 @@ UNION SELECT 0 , 'TODOS'</CommandText>
                 <Paragraph>
                   <TextRuns>
                     <TextRun>
-                      <Value>Listado de Certificados de Deposito Emitidos</Value>
+                      <Value>Listado de Recibos de Mercaderia Emitidos</Value>
                       <Style>
                         <FontFamily>Segoe UI Light</FontFamily>
                         <FontSize>11pt</FontSize>
@@ -2483,7 +2290,7 @@ UNION SELECT 0 , 'TODOS'</CommandText>
                 <Paragraph>
                   <TextRuns>
                     <TextRun>
-                      <Value>=First(Fields!Servicio.Value, "CDDetalle") &amp;" - "&amp; First(Fields!Sucursal.Value, "CDDetalle")</Value>
+                      <Value>=First(Fields!Servicio.Value, "RMDetalle") &amp;" - "&amp; First(Fields!Sucursal.Value, "RMDetalle")</Value>
                       <Style>
                         <FontFamily>Segoe UI Light</FontFamily>
                         <FontSize>11pt</FontSize>
@@ -2557,17 +2364,6 @@ UNION SELECT 0 , 'TODOS'</CommandText>
         </DataSetReference>
       </ValidValues>
     </ReportParameter>
-    <ReportParameter Name="Sucursal">
-      <DataType>Integer</DataType>
-      <Prompt>Sucursal</Prompt>
-      <ValidValues>
-        <DataSetReference>
-          <DataSetName>Sucursal</DataSetName>
-          <ValueField>BranchId</ValueField>
-          <LabelField>BranchName</LabelField>
-        </DataSetReference>
-      </ValidValues>
-    </ReportParameter>
     <ReportParameter Name="Producto">
       <DataType>Integer</DataType>
       <DefaultValue>
@@ -2584,19 +2380,30 @@ UNION SELECT 0 , 'TODOS'</CommandText>
         </DataSetReference>
       </ValidValues>
     </ReportParameter>
-    <ReportParameter Name="Poliza">
+    <ReportParameter Name="Sucursal">
+      <DataType>Integer</DataType>
+      <Prompt>Sucursal</Prompt>
+      <ValidValues>
+        <DataSetReference>
+          <DataSetName>Sucursal</DataSetName>
+          <ValueField>BranchId</ValueField>
+          <LabelField>BranchName</LabelField>
+        </DataSetReference>
+      </ValidValues>
+    </ReportParameter>
+    <ReportParameter Name="Bodega">
       <DataType>Integer</DataType>
       <DefaultValue>
         <Values>
           <Value>0</Value>
         </Values>
       </DefaultValue>
-      <Prompt>Poliza</Prompt>
+      <Prompt>Bodega</Prompt>
       <ValidValues>
         <DataSetReference>
-          <DataSetName>Poliza</DataSetName>
-          <ValueField>InsurancePolicyId</ValueField>
-          <LabelField>PolicyNumber</LabelField>
+          <DataSetName>Bodegas</DataSetName>
+          <ValueField>WarehouseId</ValueField>
+          <LabelField>WarehouseName</LabelField>
         </DataSetReference>
       </ValidValues>
     </ReportParameter>
@@ -2624,17 +2431,17 @@ UNION SELECT 0 , 'TODOS'</CommandText>
         <CellDefinition>
           <ColumnIndex>0</ColumnIndex>
           <RowIndex>2</RowIndex>
-          <ParameterName>Producto</ParameterName>
-        </CellDefinition>
-        <CellDefinition>
-          <ColumnIndex>1</ColumnIndex>
-          <RowIndex>1</RowIndex>
           <ParameterName>Sucursal</ParameterName>
         </CellDefinition>
         <CellDefinition>
           <ColumnIndex>1</ColumnIndex>
+          <RowIndex>1</RowIndex>
+          <ParameterName>Producto</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>1</ColumnIndex>
           <RowIndex>2</RowIndex>
-          <ParameterName>Poliza</ParameterName>
+          <ParameterName>Bodega</ParameterName>
         </CellDefinition>
       </CellDefinitions>
     </GridLayoutDefinition>
