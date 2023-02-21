@@ -1037,6 +1037,15 @@ namespace ERPMVC.Controllers
             return await Task.Run(() => View(_CertificadoDeposito));
         }
 
+        [HttpGet]
+        public ActionResult SFCertificadosEmitidosDetallado()
+        {
+
+            return View();
+
+
+        }
+
 
 
 
