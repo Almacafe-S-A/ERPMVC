@@ -16,6 +16,10 @@ namespace ERPMVC.Models
         public Int64 ProductId { get; set; }
         [Display(Name = "Subservicio")]
         public Int64 SubProductId { get; set; }
+        public string AccountName { get; set; }
+        public Int64? AccountId { get; set; }
+        [ForeignKey("AccountId")]
+        public Accounting Accounting { get; set; }
 
         [Display(Name = "Estado")]
         public Int64 IdEstado { get; set; }
