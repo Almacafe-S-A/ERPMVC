@@ -195,6 +195,72 @@ namespace ERPMVC.Controllers
         }
 
 
+        public async Task<ActionResult<GoodsDeliveryAuthorization>> Aprobar([FromBody] Invoice invoice)
+        {
+            try
+            {
+                if (invoice == null)
+                {
+                    return await Task.Run(() => BadRequest("No llego correctamente el modelo!"));
+                }
+
+                GoodsDeliveryAuthorization goodsDeliveryAuthorization = new GoodsDeliveryAuthorization();
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + $"api/Invoice/ChangeInvoiceStatus/{invoice.InvoiceId}/{2}");
+                string valorrespuesta = "";
+                if (!result.IsSuccessStatusCode)
+                {
+                    return await Task.Run(() => BadRequest("No se Aprobo el documento!"));
+                }
+
+                return await Task.Run(() => Json(goodsDeliveryAuthorization));
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: {ex.ToString()}");
+                throw ex;
+            }
+
+
+        }
+
+        public async Task<ActionResult<GoodsDeliveryAuthorization>> Revisar([FromBody] Invoice invoice)
+        {
+            try
+            {
+                if (invoice == null)
+                {
+                    return await Task.Run(() => BadRequest("No llego correctamente el modelo!"));
+                }
+
+                GoodsDeliveryAuthorization goodsDeliveryAuthorization = new GoodsDeliveryAuthorization();
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + $"api/Invoice/ChangeInvoiceStatus/{invoice.InvoiceId}/{1}");
+                string valorrespuesta = "";
+                if (!result.IsSuccessStatusCode)
+                {
+                    return await Task.Run(() => BadRequest("No se Aprobo el documento!"));
+                }
+
+                return await Task.Run(() => Json(goodsDeliveryAuthorization));
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: {ex.ToString()}");
+                throw ex;
+            }
+
+
+        }
+
+
+
         public async Task<ActionResult> GenerarFactura([FromBody] Invoice invoice)
         //public async Task<ActionResult> GetGoodsDeliveredById([FromBody]dynamic dto)
         {
@@ -215,12 +281,13 @@ namespace ERPMVC.Controllers
                 }
                 else
                 {
-                    throw new Exception( result.Content.ReadAsStringAsync().ToString());
+                    throw new Exception(await (result.Content.ReadAsStringAsync()));
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogError($"Ocurrio un error: {ex.ToString()}");
+                return BadRequest(ex.Message);
             }
 
             return Json(_Invoice);
@@ -395,6 +462,22 @@ namespace ERPMVC.Controllers
                 return await Task.Run(() => BadRequest("Ocurrio un error"));
             }      
            
+        }
+
+        [HttpGet]
+        public async Task<ActionResult> SFInvoiceProforma(Int32 id)
+        {
+            try
+            {
+                InvoiceDTO _invoicedto = new InvoiceDTO { InvoiceId = id, };
+                return await Task.Run(() => View(_invoicedto));
+            }
+            catch (Exception)
+            {
+
+                return await Task.Run(() => BadRequest("Ocurrio un error"));
+            }
+
         }
 
         public async Task<IActionResult> SFLibroVentas()
