@@ -37,7 +37,139 @@
         grid.dataSource.read();
     }
 
+    function Calcular(e) {
+        //debugger;
+        
+            
+            if (e.model.Quantity <= 0) {
+                $.toast({
+                    heading: 'Error',
+                    text: 'La cantidad a Facturar no puede ser cero para no facturar este producto elimine la fila',
+                    position: 'top-right',
+                    loaderBg: '#ff6849',
+                    icon: 'error',
+                    hideAfter: 3000,
+                    stack: 6
+                });
+            }
+            var totalSpan = e.container.closest("TR").find(".TotalSpan");
+            var totalimpuestosspan = e.container.closest("TR").find(".TaxSpan");
+            var totalamountspan = e.container.closest("TR").find(".AmountSpan");
+            var totaldicountspan = e.container.closest("TR").find(".discountSpan");    
+            var subtotalspan = e.container.closest("TR").find(".SubTotalSpan");
+        
+            e.model.Amount = e.model.Price * e.model.Quantity;
+            e.model.SubTotal = e.model.Amount - e.model.DiscountAmount;
+            e.model.TaxAmount = e.model.SubTotal * 0.15;
+            e.model.Total = e.model.SubTotal + e.model.TaxAmount;
 
+
+            var total = formattear.format(e.model.Total).replace(/[a-z]{3}/i, "").trim();
+            totalSpan.html(total);
+            var totalimp = formattear.format(e.model.TaxAmount).replace(/[a-z]{3}/i, "").trim();
+            totalimpuestosspan.html(totalimp);
+            var totalamount = formattear.format(e.model.Amount).replace(/[a-z]{3}/i, "").trim();
+            totalamountspan.html(totalamount);
+            var totaldiscount = formattear.format(e.model.DiscountAmount).replace(/[a-z]{3}/i, "").trim();
+            totaldicountspan.html(totaldiscount);
+            var subtotal = formattear.format(e.model.SubTotal).replace(/[a-z]{3}/i, "").trim();
+            subtotalspan.html(subtotal);
+
+
+
+
+
+            //Actualizar Total
+            var footer = $('tr.k-footer-template'),
+                idx = 11, // replace 3 with the column index you want to aggregate
+                aggregate = $(footer).children('td')[idx];
+            $(aggregate).text(totalColumnas(1, 0));
+
+            //Actualizar Total
+            var footer = $('tr.k-footer-template'),
+                idx = 12, // replace 3 with the column index you want to aggregate
+                aggregate = $(footer).children('td')[idx];
+            $(aggregate).text(totalColumnas(2, 1));
+
+            //Actualizar TotalDerechos
+            var footer = $('tr.k-footer-template'),
+                idx = 13, // replace 3 with the column index you want to aggregate
+                aggregate = $(footer).children('td')[idx];
+            $(aggregate).text(totalColumnas(3, 1));
+
+            var footer = $('tr.k-footer-template'),
+                idx = 14, // replace 3 with the column index you want to aggregate
+                aggregate = $(footer).children('td')[idx];
+            $(aggregate).text(totalColumnas(4, 1));
+
+            var footer = $('tr.k-footer-template'),
+                idx = 15, // replace 3 with the column index you want to aggregate
+                aggregate = $(footer).children('td')[idx];
+            $(aggregate).text(totalColumnas(5, 1));
+
+
+    }
+
+    const formatter = new Intl.NumberFormat("en-US");
+    formattear = new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'LPS',
+        minimumFractionDigits: 2
+    });
+
+    
+    
+
+    function totalColumnas(tiporesultado, moneda) {
+        var data = $("#gridInvoiceDetail").getKendoGrid().dataSource.data();
+        var total = 0;
+
+        switch (tiporesultado) {
+            case 1: 
+                data.forEach(r => total += r.Amount);
+                break;
+            case 2: /// Calcular el total CIB
+                data.forEach(r => total += r.DiscountAmount);
+                break;
+            case 3: ////Calcular el total CIF LPS
+                data.forEach(r => total += r.SubTotal);
+                break;
+            case 4://///Calcular el total de Valor de derechos importacion
+                data.forEach(r => total += r.TaxAmount);
+                break;
+            case 5:
+                data.forEach(r => total += r.Total);
+                break;
+
+            default:
+                break;
+        }
+        var formatter = new Intl.NumberFormat('es-HN', {
+            style: 'currency',
+            currency: 'LPS',
+            minimumFractionDigits: 2
+        });
+        if (moneda == 1) {
+            return formatter.format(total);
+        }
+        if (moneda == 2) {
+            formatter = new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD',
+                minimumFractionDigits: 2
+            });
+            return formatter.format(total);
+        }
+        if (moneda == 0) {
+            formatter = new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'LPS',
+                minimumFractionDigits: 2
+            });
+            return formatter.format(total).replace(/[a-z]{3}/i, "").trim();
+        }
+        return total;
+    }
     
 
 </script>
@@ -47,6 +179,9 @@
 @(
 Html.Kendo().Grid<ERPMVC.Models.InvoiceLine>()
                                                                   .Name("gridInvoiceDetail")
+                                                                  .Events(e =>
+                                                                    e.CellClose("Calcular")
+                                                                    )
                                                                   .Columns(columns =>
                                                                   {
 
@@ -72,12 +207,32 @@ Html.Kendo().Grid<ERPMVC.Models.InvoiceLine>()
                                                                       columns.Bound(p => p.Quantity).Format("{0:n2}").Title("Cantidad").Width(150);
                                                                       columns.Bound(p => p.Price).Format("{0:n2}").Title("Precio").Format("{0:n2}").Width(150);
                                                                       columns.Bound(p => p.UnitOfMeasureId).Title("Unidad de medida").Visible(false);
-                                                                      columns.Bound(p => p.Amount).Title("SubTotal").Format("{0:n2}").Width(180);
-                                                                      columns.Bound(p => p.DiscountAmount).Format("{0:n2}").Title("Descuentos").Width(200);
-                                                                      columns.Bound(p => p.SubTotal).Format("{0:n2}").Title("Sub Total").Width(200).Visible(false);
+                                                                      columns.Bound(p => p.Amount).Title("SubTotal").Format("{0:n2}").Width(180)
+                                                                      .ClientTemplate("<div style='text-align: right'><span class='AmountSpan'>#= formattear.format(Price * Quantity).replace(/[a-z]{3}/i, '').trim() #</span></div>")
+                                                                        .Width(200)
+                                                                        .ClientFooterTemplate("<div style='text-align: right'><span class='Amountsp'>#= totalColumnas(1,1)#</span></div>")
+                                                                        .HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" }); ;
+                                                                      columns.Bound(p => p.DiscountAmount).Format("{0:n2}").Title("Descuentos").Width(200)
+                                                                      .ClientTemplate("<div style='text-align: right'><span class='discountSpan'>#= formattear.format(DiscountAmount).replace(/[a-z]{3}/i, '').trim() #</span></div>")
+                                                                        .Width(200)
+                                                                        .ClientFooterTemplate("<div style='text-align: right'><span class='totalDiscount'>#= totalColumnas(2,1)#</span></div>")
+                                                                        .HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" });;
+                                                                      columns.Bound(p => p.SubTotal).Format("{0:n2}").Title("Sub Total").Width(200).Visible(false)
+                                                                      .ClientTemplate("<div style='text-align: right'><span class='SubTotalSpan'>#= formattear.format(Amount - DiscountAmount).replace(/[a-z]{3}/i, '').trim() #</span></div>")
+                                                                        .Width(200)
+                                                                        .ClientFooterTemplate("<div style='text-align: right'><span class='totalsubtotal'>#= totalColumnas(2,1)#</span></div>")
+                                                                        .HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" });;
                                                                       columns.Bound(p => p.TaxCode).Title("Tipo Impuesto").Width(250).Visible(false);
-                                                                      columns.Bound(p => p.TaxAmount).Format("{0:n2}").Title("Impuestos").Width(150);
-                                                                      columns.Bound(p => p.Total).Format("{0:n2}").Title("Total").Width(180);
+                                                                      columns.Bound(p => p.TaxAmount).Format("{0:n2}").Title("Impuestos").Width(150)
+                                                                      .ClientTemplate("<div style='text-align: right'><span class='TaxSpan'>#= formattear.format(SubTotal* 0.15).replace(/[a-z]{3}/i, '').trim() #</span></div>")
+                                                                        .Width(200)
+                                                                        .ClientFooterTemplate("<div style='text-align: right'><span class='totalTax'>#= totalColumnas(3,1)#</span></div>")
+                                                                        .HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" }); 
+                                                                      columns.Bound(p => p.Total).Format("{0:n2}").Title("Total").Width(180)
+                                                                        .ClientTemplate("<div style='text-align: right'><span class='TotalSpan'>#= formattear.format(SubTotal * 1.15).replace(/[a-z]{3}/i, '').trim() #</span></div>")
+                                                                        .Width(200)
+                                                                        .ClientFooterTemplate("<div style='text-align: right'><span class='total'>#= totalColumnas(3,1)#</span></div>")
+                                                                        .HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" }); 
 
                                                                   })
                                                                       .Filterable(f => f.Operators(o => o.ForString(s => s
@@ -124,6 +279,7 @@ Html.Kendo().Grid<ERPMVC.Models.InvoiceLine>()
                                                                    .Editable(e => e.Mode(GridEditMode.InCell))
                                                                     .Sortable()
                                                                     .AutoBind(true)
+                                                                    .Navigatable()
                                                                     .Filterable()
                                                                     .Scrollable()
                                                                     .Events(e => e.DataBound("CalcularTotalDocumento"))

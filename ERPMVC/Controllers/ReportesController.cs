@@ -66,6 +66,24 @@ namespace ERPMVC.Controllers
         }
 
 
+        [Authorize(Policy = "Inventarios.Reportes.Guias Emision Emitidas")]
+        public async Task<IActionResult> SFGuiasRemisionEmitidas()
+        {
+
+            return await Task.Run(() => View());
+
+        }
+
+
+        [Authorize(Policy = "Inventarios.Reportes.Movimientos Diarios")]
+        public async Task<IActionResult> SFMovimientosDiarios()
+        {
+
+            return await Task.Run(() => View());
+
+        }
+
+
 
 
 

@@ -65,6 +65,14 @@ namespace ERPMVC.Controllers
             return View();
         }
 
+        [Authorize(Policy = "Contabilidad.Movimientos.Ajustes Contables")]
+        public ActionResult Cierres()
+        {
+            ViewData["permisos"] = _principal;
+            return View();
+        }
+
+
         [Authorize(Policy = "Contabilidad.Movimientos.Asiento Contable")]
         public ActionResult JournalEntryLine()
         {
@@ -336,7 +344,7 @@ namespace ERPMVC.Controllers
 
 
         [HttpGet("[action]")]
-        public async Task<JsonResult> GetJournalEntryAjustes([DataSourceRequest]DataSourceRequest request)
+        public async Task<JsonResult> GetJournalEntryPorTipo([DataSourceRequest]DataSourceRequest request, int tipo)
         {
             List<JournalEntry> _JournalEntry = new List<JournalEntry>();
             try
@@ -344,7 +352,7 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/JournalEntry/GetJournalEntryAjustes");
+                var result = await _client.GetAsync(baseadress + $"api/JournalEntry/GetJournalEntryPorTipo/{tipo}");
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
