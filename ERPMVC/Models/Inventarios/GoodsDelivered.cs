@@ -36,6 +36,15 @@ namespace ERPMVC.Models
         [Display(Name = "Sucursal")]
         public string BranchName { get; set; }
 
+        public int BoletaPesoId { get; set; }
+
+        [Display(Name = "Vigilante")]
+        public Int64 VigilanteId { get; set; }
+
+        [Display(Name = "Vigilante")]
+        public string VigilanteName { get; set; }
+
+
         public Int64 IdEstado { get; set; }
         public string Estado { get; set; }
 
