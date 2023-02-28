@@ -28,6 +28,16 @@ namespace ERPMVC.Models
         public Int64 IdEstado { get; set; }
         [Display(Name = "Porcentaje impuesto")]
         public double TaxPercentage { get; set; }
+
+        public Int64? CuentaImpuestoporCobrarId { get; set; }
+        public string CuentaImpuestoporCobrarNombre { get; set; }
+        [ForeignKey("CuentaImpuestoporCobrarId")]
+        public Accounting CuentaImpuestoporCobrarNav { get; set; }
+        public Int64? CuentaImpuestoporPagarId { get; set; }
+        public string CuentaImpuestoporPagarNombre { get; set; }
+        [ForeignKey("CuentaImpuestoporPagarId")]
+        public Accounting CuentaImpuestoporPagarNav { get; set; }
+
         [Display(Name = "Fecha de creación")]
         public DateTime FechaCreacion { get; set; }
         [Display(Name = "Fecha de modificación")]

@@ -204,11 +204,17 @@ namespace ERPMVC.Controllers
                     _ControlPallets = JsonConvert.DeserializeObject<ControlPalletsDTO>(valorrespuesta);
                 }
 
-
                 if (_ControlPallets == null)
                 {
-                    _ControlPallets = new ControlPalletsDTO();
+                    throw new Exception("No se encontro control de Ingrsos/Salidas");
                 }
+
+
+                if (!_ControlPallets.ProductoPesado )
+                {
+                    return Json(_ControlPallets);
+                }
+
 
                 _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
@@ -220,12 +226,16 @@ namespace ERPMVC.Controllers
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _Boleto_Ent = JsonConvert.DeserializeObject<Boleto_Ent>(valorrespuesta);
                 }
-
-                if (_Boleto_Ent != null)
+                else
                 {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    throw new Exception(valorrespuesta);
+                }
+
+                
                     if (_Boleto_Ent.Boleto_Sal == null)
                     {
-                        return await Task.Run(() => BadRequest("No se ha completado esta boleta!, cierre el proceso"));
+                        throw new Exception("No se ha completado esta boleta!, cierre el proceso");
                     }
                     if (_Boleto_Ent.peso_e > _Boleto_Ent.Boleto_Sal.peso_n)
                     {
@@ -253,11 +263,7 @@ namespace ERPMVC.Controllers
                     _ControlPallets.pesoneto = Convert.ToDouble(_Boleto_Ent.Convercion(_ControlPallets.pesoneto, _Boleto_Ent.UnidadPreferidaId));
                     _ControlPallets.taracamion = Convert.ToDouble(_Boleto_Ent.Convercion(_ControlPallets.taracamion, _Boleto_Ent.UnidadPreferidaId));
                     _ControlPallets.UnitOfMeasureId = _Boleto_Ent.UnidadPreferidaId;
-                }
-                else
-                {
-                    return Json(_ControlPallets);
-                }
+               
 
 
 
@@ -265,7 +271,7 @@ namespace ERPMVC.Controllers
             catch (Exception ex)
             {
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
-                throw ex;
+                return await Task.Run(() => BadRequest(ex.Message));
             }
 
             return Json(_ControlPallets);
