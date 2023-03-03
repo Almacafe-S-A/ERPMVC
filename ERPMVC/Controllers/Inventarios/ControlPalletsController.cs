@@ -81,6 +81,8 @@ namespace ERPMVC.Controllers
 
         public async Task<ActionResult> GetControlPalletsByCustomer([DataSourceRequest] DataSourceRequest request,int CustomerId,int esIngreso) {
             var res = await GetControlPallets(esIngreso);
+            
+
             return Json(res.Where(q => q.CustomerId == CustomerId).ToDataSourceResult(request));
 
 
@@ -140,7 +142,7 @@ namespace ERPMVC.Controllers
                                            ControlPalletsId = c.ControlPalletsId,
                                            CustomerName ="Control Ingreso No.:"+c.ControlPalletsId 
                                            //+" || Control de ingresos:"+c.PalletId 
-                                              + " || Cliente:" + c.CustomerName +" || Placa:"+c.Placa + " || Motorista:"+c.Motorista + " || Fecha: " + c.DocumentDate.ToString("dd/MM/yyyy") + " || Total Sacos:" + c.TotalSacos,
+                                              + " || Cliente:" + c.CustomerName + " || Producto:" + c.SubProductName + " || Placa:"+c.Placa + " || Motorista:"+c.Motorista + " || Fecha: " + c.DocumentDate.ToString("dd/MM/yyyy") + " || Total Sacos:" + c.TotalSacos,
                                            DocumentDate = c.DocumentDate,
 
                                        }
