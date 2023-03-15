@@ -215,6 +215,53 @@
             //grid.dataSource.sync();
         }
     }
+
+
+    function totalColumnas(tiporesultado, moneda) {
+        var data = $("#gridGoodsDeliveredDetail").getKendoGrid().dataSource.data();
+        var total = 0;
+
+        switch (tiporesultado) {
+            case 1: ///////Autorizada
+                data.forEach(r => total += r.QuantityAuthorized);
+                break;
+            case 2: /// Entregar
+                data.forEach(r => total += r.Quantity);
+                break;
+            
+
+
+
+            default:
+                break;
+        }
+        var formatter = new Intl.NumberFormat('es-HN', {
+            style: 'currency',
+            currency: 'LPS',
+            minimumFractionDigits: 2
+        });
+        if (moneda == 1) {
+            return formatter.format(total);
+        }
+        if (moneda == 2) {
+            formatter = new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD',
+                minimumFractionDigits: 2
+            });
+            return formatter.format(total);
+        }
+        if (moneda == 0) {
+            formatter = new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'LPS',
+                minimumFractionDigits: 2
+            });
+            return formatter.format(total).replace(/[a-z]{3}/i, "").trim();
+        }
+        return total;
+    }
+
 </script>
 
 <div class="box">
@@ -225,7 +272,7 @@
                                                                   .Columns(columns =>
                                                                   {
                                                                       
-                                                                          columns.Command(command =>
+                                                                         /* columns.Command(command =>
                                                                           {
                                                                               
                                                                                   command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditGoodsDeliveredDetalle");
@@ -238,7 +285,7 @@
                                                                               }
                                                                               // command.Custom("Imprimir").Click("ImprimirCotizacion");
                                                                             //    command.Edit(); command.Destroy();
-                                                                          }).Title("Acciones").Width(120);
+                                                                          }).Title("Acciones").Width(120);*/
 
                                                                         columns.Bound(p => p.NoCD).Width(120).Title("No CD").Width(120); 
                                                                         columns.Bound(p => p.Pda).Width(120).Title("No Pda").Width(120);
@@ -246,9 +293,15 @@
                                                                         columns.Bound(p => p.NoAR).Width(120).Title("No AR").Width(120);
                                                                       columns.Bound(p => p.GoodsDeliveredLinedId).Title("Linea").Width(120).Visible(false);
                                                                       columns.Bound(p => p.GoodsDeliveredId).Title("Entrega de Mercadería").Width(250).Visible(false);
-                                                                      columns.Bound(p => p.Quantity).Title("Cant a Entregar").Width(200);
-                                                                      columns.Bound(p => p.QuantityAuthorized).Title("Cant Entregada").Width(200);
-                                                                      
+                                                                    columns.Bound(p => p.QuantityAuthorized).Title("Cant a Entregar").Width(200).Format("{0:N2}")
+                                                                                .ClientFooterTemplate("<div style='text-align: right'>#=totalColumnas(1,0)#</div>")
+                                                                                .HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" })
+                                                                                 ;
+                                                                        columns.Bound(p => p.Quantity).Title("Cant Entregada").Width(200).Format("{0:N2}")
+                                                                        .ClientFooterTemplate("<div style='text-align: right'>#=totalColumnas(2,0)#</div>")
+                                                                        .HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" })
+                                                                        ; 
+                                                                                                                                        
                                                                       columns.Bound(p => p.ControlPalletsId).Width(120).Title("Control").Visible(false);
                                                                       columns.Bound(p => p.UnitOfMeasureName).Title("Unidad de medida").Width(180);
                                                                       columns.Bound(p => p.UnitOfMeasureId).Visible(false).Title("Unidad de medida").Width(0);

@@ -43,6 +43,10 @@ namespace ERPMVC.Models
 
         [Display(Name = "Vigilante")]
         public string VigilanteName { get; set; }
+        public string Certificados { get; set; }
+
+        public string Autorizaciones { get; set; }
+
 
 
         public Int64 IdEstado { get; set; }
