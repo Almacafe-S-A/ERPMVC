@@ -212,7 +212,7 @@ namespace ERPMVC.Controllers
                                                    select new GoodsDeliveryAuthorization()
                                       {
                                           GoodsDeliveryAuthorizationId = ar.GoodsDeliveryAuthorizationId,
-                                          Comments = $"{ar.GoodsDeliveryAuthorizationId} || Fecha:{ ar.AuthorizationDate}"
+                                          Comments = $"AR No:{ar.GoodsDeliveryAuthorizationId} || Fecha:{ ar.AuthorizationDate.ToString("dd/MM/yyyy")}"
                                       }).ToList();
 
                 }

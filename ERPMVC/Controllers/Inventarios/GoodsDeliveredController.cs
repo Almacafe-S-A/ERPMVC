@@ -407,12 +407,6 @@ namespace ERPMVC.Controllers
 
                 reportWriter.Save(ms, format);
                 ms.Position = 0;
-
-                ///using (FileStream file = new FileStream(completepath, FileMode.Create, System.IO.FileAccess.Write))
-                    //ms.WriteTo(file);
-
-                //ViewBag.pathcontrato = completepath;
-                //v//ar stream = new FileStream(completepath, FileMode.Open);
                 return new FileStreamResult(ms, "application/pdf");
             }
             catch (Exception ex)
