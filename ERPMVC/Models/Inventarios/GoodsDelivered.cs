@@ -81,7 +81,9 @@ namespace ERPMVC.Models
         public string ProductName { get; set; }
 
         [Display(Name = "Entregamos a")]
-        public string Name { get; set; }
+        public string EntregadoA { get; set; }
+
+        public string Motorista { get; set; }
         [Display(Name = "Transportado")]
         public string Reference { get; set; }
 
