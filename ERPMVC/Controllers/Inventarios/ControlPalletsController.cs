@@ -395,7 +395,7 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/ControlPallets/GetControlPalletsNoSelected");
+                var result = await _client.GetAsync(baseadress + "api/ControlPallets/GetControlPalletsNoSelectedSalida");
                 string valorrespuesta = "";
                 string IngresoSalida = esIngreso == 1 ? "Ingreso" : "Salida";
                 if (result.IsSuccessStatusCode)
