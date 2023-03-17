@@ -187,6 +187,45 @@ namespace ERPMVC.Controllers
             return View(autho);
         }
 
+        [HttpPost("[controller]/[action]")]
+        public async Task<ActionResult<String>> GetPersonasAutorizadas([FromBody] GoodsDeliveredDTO goodsDeliveredDTO)
+        {
+            List<GoodsDeliveryAuthorization> goodsDeliveryAuthorizations = new List<GoodsDeliveryAuthorization>();
+            if (goodsDeliveredDTO ==null)
+            {
+                return Ok();
+            }
+            string respuesta = "";
+            try
+            {
+
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + $"api/GoodsDeliveryAuthorization/AutorizacionesPendientes/{goodsDeliveredDTO.CustomerId}/{goodsDeliveredDTO.ProductId}/{goodsDeliveredDTO.BranchId}");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    goodsDeliveryAuthorizations = JsonConvert.DeserializeObject<List<GoodsDeliveryAuthorization>>(valorrespuesta);
+                    goodsDeliveryAuthorizations = goodsDeliveryAuthorizations.Where(q => goodsDeliveredDTO.ars.Any(a => a == q.GoodsDeliveryAuthorizationId)).ToList();
+                    respuesta= String.Join(", ", goodsDeliveryAuthorizations.Select(s=>s.RetiroAutorizadoA));
+                }
+
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: {ex.ToString()}");
+                throw ex;
+            }
+
+            return Ok(respuesta);
+
+
+
+        }
+
 
         [HttpGet("[controller]/[action]")]
         public async Task<DataSourceResult> AutorizacionesPendientes([DataSourceRequest] DataSourceRequest request,
@@ -212,7 +251,7 @@ namespace ERPMVC.Controllers
                                                    select new GoodsDeliveryAuthorization()
                                       {
                                           GoodsDeliveryAuthorizationId = ar.GoodsDeliveryAuthorizationId,
-                                          Comments = $"AR No:{ar.GoodsDeliveryAuthorizationId} || Fecha:{ ar.AuthorizationDate.ToString("dd/MM/yyyy")}"
+                                          Comments = $"AR No:{ar.GoodsDeliveryAuthorizationId} || CDs: {ar.Certificados} || Fecha:{ ar.AuthorizationDate.ToString("dd/MM/yyyy")}"
                                       }).ToList();
 
                 }
