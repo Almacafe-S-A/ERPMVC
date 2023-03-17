@@ -10,6 +10,8 @@ namespace ERPMVC.DTO
     {
         public int editar { get; set; } = 1;
         public Kardex Kardex { get; set; } = new Kardex();
+
+        public int[] ars { get; set; }
     }
 
 
