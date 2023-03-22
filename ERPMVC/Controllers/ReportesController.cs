@@ -83,6 +83,37 @@ namespace ERPMVC.Controllers
 
         }
 
+        [Authorize(Policy = "Monitoreo.Reportes")]
+        public async Task<IActionResult> SFClientes()
+        {
+
+            return await Task.Run(() => View());
+
+        }
+
+        [Authorize(Policy = "Monitoreo.Reportes")]
+        public async Task<IActionResult> SFClientesTransacciones()
+        {
+
+            return await Task.Run(() => View());
+
+        }
+
+        [Authorize(Policy = "Monitoreo.Reportes")]
+        public async Task<IActionResult> SFClientesRelacion()
+        {
+
+            return await Task.Run(() => View());
+
+        }
+
+        [Authorize(Policy = "Monitoreo.Reportes")]
+        public async Task<IActionResult> SFClientesAltasyBajas()
+        {
+
+            return await Task.Run(() => View());
+
+        }
 
 
 
