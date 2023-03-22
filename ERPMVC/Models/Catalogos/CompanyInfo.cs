@@ -32,6 +32,10 @@ namespace ERPMVC.Models
         [Display(Name = "Fax")]
         public string Fax { get; set; }
 
+        public string TipoInstitucion { get; set; }
+
+        public string CodigoInstitucion { get; set; }
+
         //[EmailAddress(ErrorMessage ="Agregue una direccion de correo valida")]
         [EmailAddress]
         [RegularExpression(@"\w+([-+.']\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*", ErrorMessage = "Correo invalido")]
