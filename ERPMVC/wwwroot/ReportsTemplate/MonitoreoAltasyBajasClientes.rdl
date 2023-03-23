@@ -28,20 +28,19 @@
             <Value>=Parameters!Todos.Value</Value>
           </QueryParameter>
         </QueryParameters>
-        <CommandText>
-SELECT (Select top (1)  tipoinstitucion from CompanyInfo) as TipoInstitucion,
+        <CommandText>SELECT (Select top (1)  tipoinstitucion from CompanyInfo) as TipoInstitucion,
 		(Select top (1)  CodigoInstitucion from CompanyInfo) as CodigoInstitucion,
 	   FORMAT( SYSDATETIME(),'ddMMyyyy') FechaReporte, 
 	   c.CustomerId CIF,
 	   c.CustomerName NombreCliente,
-	   c.CustomerTypeId TipoPersona,
+	   CASE WHEN c.CustomerTypeId=1 THEN 2  ELSE 1  END TipoPersona,
 	   c.RTN,
 	   2 as TipoIdentificacion,
 	   FORMAT( c.FechaCreacion,'ddMMyyyy') FechaInicioRelacion,
 	   c.IdEstado Estado,
 	   null FechaCambioEstado,
-	   1 PEP,
-	   3 APNFD,
+	   CASE WHEN c.CustomerTypeId=1 THEN 0 WHEN c.PEP=1 AND                                 c.CustomerTypeId=2  THEN 1 ELSE 2  END  PEP,
+	   CASE WHEN c.AFND=1 THEN 1 ELSE 2 END APNFD,
 	   c.FechaModificacion 
   FROM [dbo].[Customer] c where (FORMAT(c.FechaCreacion,'yyyy') = @Anio and FORMAT(c.FechaCreacion,'MM') = @Mes or FORMAT(c.FechaBaja,'yyyy') = @Anio and FORMAT(c.FechaBaja,'MM') = @Mes) or @Todos = 1</CommandText>
       </Query>
@@ -68,7 +67,7 @@ SELECT (Select top (1)  tipoinstitucion from CompanyInfo) as TipoInstitucion,
         </Field>
         <Field Name="TipoPersona">
           <DataField>TipoPersona</DataField>
-          <rd:TypeName>System.Int64</rd:TypeName>
+          <rd:TypeName>System.Int32</rd:TypeName>
         </Field>
         <Field Name="RTN">
           <DataField>RTN</DataField>
