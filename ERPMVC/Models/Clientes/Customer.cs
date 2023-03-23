@@ -79,6 +79,11 @@ namespace ERPMVC.Models
 
         public string DireccionEmpresaPN { get; set; }
 
+        public bool PEP { get; set; }
+
+        public bool AFND { get; set; }
+
+
         [Display(Name = "Activo/Inactivo ")]
         public Int64? IdEstado { get; set; }
 
