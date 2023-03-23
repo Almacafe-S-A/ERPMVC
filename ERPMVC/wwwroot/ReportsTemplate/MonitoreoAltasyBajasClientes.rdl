@@ -18,31 +18,26 @@
       <Query>
         <DataSourceName>ERP</DataSourceName>
         <QueryParameters>
-          <QueryParameter Name="@Anio">
-            <Value>=Parameters!Anio.Value</Value>
-          </QueryParameter>
-          <QueryParameter Name="@Mes">
-            <Value>=Parameters!Mes.Value</Value>
-          </QueryParameter>
-          <QueryParameter Name="@Todos">
-            <Value>=Parameters!Todos.Value</Value>
+          <QueryParameter Name="@fecha">
+            <Value>=Parameters!fecha.Value</Value>
           </QueryParameter>
         </QueryParameters>
         <CommandText>SELECT (Select top (1)  tipoinstitucion from CompanyInfo) as TipoInstitucion,
 		(Select top (1)  CodigoInstitucion from CompanyInfo) as CodigoInstitucion,
-	   FORMAT( SYSDATETIME(),'ddMMyyyy') FechaReporte, 
+	   FORMAT( @fecha,'yyyyMMdd') FechaReporte, 
 	   c.CustomerId CIF,
 	   c.CustomerName NombreCliente,
 	   CASE WHEN c.CustomerTypeId=1 THEN 2  ELSE 1  END TipoPersona,
 	   c.RTN,
 	   2 as TipoIdentificacion,
-	   FORMAT( c.FechaCreacion,'ddMMyyyy') FechaInicioRelacion,
+	   FORMAT( c.FechaCreacion,'yyyyMMdd') FechaInicioRelacion,
 	   c.IdEstado Estado,
-	   null FechaCambioEstado,
-	   CASE WHEN c.CustomerTypeId=1 THEN 0 WHEN c.PEP=1 AND                                 c.CustomerTypeId=2  THEN 1 ELSE 2  END  PEP,
-	   CASE WHEN c.AFND=1 THEN 1 ELSE 2 END APNFD,
-	   c.FechaModificacion 
-  FROM [dbo].[Customer] c where (FORMAT(c.FechaCreacion,'yyyy') = @Anio and FORMAT(c.FechaCreacion,'MM') = @Mes or FORMAT(c.FechaBaja,'yyyy') = @Anio and FORMAT(c.FechaBaja,'MM') = @Mes) or @Todos = 1</CommandText>
+	   case when c.FechaBaja is not null then FORMAT( c.FechaBaja,'yyyyMMdd')  else FORMAT( c.FechaCreacion,'yyyyMMdd') end FechaCambioEstado,
+	   CASE WHEN c.CustomerTypeId=1 THEN 0 WHEN c.PEP=1 AND c.CustomerTypeId=2  THEN 1 ELSE null  END  PEP,
+	   CASE WHEN c.AFND=1 THEN 1 ELSE 2 END APNFD
+  FROM [dbo].[Customer] c 
+where case when c.FechaBaja is not null then c.FechaBaja  else  c.FechaCreacion end &gt;= dateadd(month, -6 , @fecha ) and 
+case when c.FechaBaja is not null then c.FechaBaja  else  c.FechaCreacion end &lt;= @fecha </CommandText>
       </Query>
       <Fields>
         <Field Name="TipoInstitucion">
@@ -87,7 +82,7 @@
         </Field>
         <Field Name="FechaCambioEstado">
           <DataField>FechaCambioEstado</DataField>
-          <rd:TypeName>System.Int32</rd:TypeName>
+          <rd:TypeName>System.String</rd:TypeName>
         </Field>
         <Field Name="PEP">
           <DataField>PEP</DataField>
@@ -96,10 +91,6 @@
         <Field Name="APNFD">
           <DataField>APNFD</DataField>
           <rd:TypeName>System.Int32</rd:TypeName>
-        </Field>
-        <Field Name="FechaModificacion">
-          <DataField>FechaModificacion</DataField>
-          <rd:TypeName>System.DateTime</rd:TypeName>
         </Field>
       </Fields>
     </DataSet>
@@ -1154,7 +1145,7 @@
               </TablixMembers>
             </TablixRowHierarchy>
             <DataSetName>ClientesAltasBjas</DataSetName>
-            <Top>10.51278mm</Top>
+            <Top>0.98778mm</Top>
             <Left>6.25667mm</Left>
             <Height>12mm</Height>
             <Width>325mm</Width>
@@ -1164,42 +1155,6 @@
               </Border>
             </Style>
           </Tablix>
-          <Textbox Name="ReportTitle">
-            <CanGrow>true</CanGrow>
-            <KeepTogether>true</KeepTogether>
-            <Paragraphs>
-              <Paragraph>
-                <TextRuns>
-                  <TextRun>
-                    <Value>Altas y Bajas Clientes</Value>
-                    <Style>
-                      <FontFamily>Segoe UI Light</FontFamily>
-                      <FontSize>18pt</FontSize>
-                    </Style>
-                  </TextRun>
-                </TextRuns>
-                <Style>
-                  <TextAlign>Center</TextAlign>
-                </Style>
-              </Paragraph>
-            </Paragraphs>
-            <rd:WatermarkTextbox>Title</rd:WatermarkTextbox>
-            <rd:DefaultName>ReportTitle</rd:DefaultName>
-            <Top>0mm</Top>
-            <Left>3.12567cm</Left>
-            <Height>10.16mm</Height>
-            <Width>75mm</Width>
-            <ZIndex>1</ZIndex>
-            <Style>
-              <Border>
-                <Style>None</Style>
-              </Border>
-              <PaddingLeft>2pt</PaddingLeft>
-              <PaddingRight>2pt</PaddingRight>
-              <PaddingTop>2pt</PaddingTop>
-              <PaddingBottom>2pt</PaddingBottom>
-            </Style>
-          </Textbox>
         </ReportItems>
         <Height>57.15mm</Height>
         <Style>
@@ -1210,6 +1165,53 @@
       </Body>
       <Width>334.525mm</Width>
       <Page>
+        <PageHeader>
+          <Height>15.02833mm</Height>
+          <PrintOnFirstPage>true</PrintOnFirstPage>
+          <PrintOnLastPage>true</PrintOnLastPage>
+          <ReportItems>
+            <Textbox Name="ReportTitle">
+              <CanGrow>true</CanGrow>
+              <KeepTogether>true</KeepTogether>
+              <Paragraphs>
+                <Paragraph>
+                  <TextRuns>
+                    <TextRun>
+                      <Value>Altas y Bajas Clientes</Value>
+                      <Style>
+                        <FontFamily>Segoe UI Light</FontFamily>
+                        <FontSize>18pt</FontSize>
+                      </Style>
+                    </TextRun>
+                  </TextRuns>
+                  <Style>
+                    <TextAlign>Center</TextAlign>
+                  </Style>
+                </Paragraph>
+              </Paragraphs>
+              <rd:WatermarkTextbox>Title</rd:WatermarkTextbox>
+              <rd:DefaultName>ReportTitle</rd:DefaultName>
+              <Top>3.175mm</Top>
+              <Left>0.91125cm</Left>
+              <Height>10.16mm</Height>
+              <Width>75mm</Width>
+              <Style>
+                <Border>
+                  <Style>None</Style>
+                </Border>
+                <PaddingLeft>2pt</PaddingLeft>
+                <PaddingRight>2pt</PaddingRight>
+                <PaddingTop>2pt</PaddingTop>
+                <PaddingBottom>2pt</PaddingBottom>
+              </Style>
+            </Textbox>
+          </ReportItems>
+          <Style>
+            <Border>
+              <Style>None</Style>
+            </Border>
+          </Style>
+        </PageHeader>
         <PageFooter>
           <Height>11.43mm</Height>
           <PrintOnFirstPage>true</PrintOnFirstPage>
@@ -1265,38 +1267,25 @@
     </ReportSection>
   </ReportSections>
   <ReportParameters>
-    <ReportParameter Name="Anio">
-      <DataType>String</DataType>
-      <Prompt>Anio</Prompt>
-    </ReportParameter>
-    <ReportParameter Name="Mes">
-      <DataType>String</DataType>
-      <Prompt>Mes</Prompt>
-    </ReportParameter>
-    <ReportParameter Name="Todos">
-      <DataType>Boolean</DataType>
-      <Prompt>Todos</Prompt>
+    <ReportParameter Name="fecha">
+      <DataType>DateTime</DataType>
+      <DefaultValue>
+        <Values>
+          <Value>=Globals!ExecutionTime</Value>
+        </Values>
+      </DefaultValue>
+      <Prompt>Fecha</Prompt>
     </ReportParameter>
   </ReportParameters>
   <ReportParametersLayout>
     <GridLayoutDefinition>
-      <NumberOfColumns>4</NumberOfColumns>
-      <NumberOfRows>2</NumberOfRows>
+      <NumberOfColumns>1</NumberOfColumns>
+      <NumberOfRows>1</NumberOfRows>
       <CellDefinitions>
         <CellDefinition>
           <ColumnIndex>0</ColumnIndex>
           <RowIndex>0</RowIndex>
-          <ParameterName>Anio</ParameterName>
-        </CellDefinition>
-        <CellDefinition>
-          <ColumnIndex>1</ColumnIndex>
-          <RowIndex>0</RowIndex>
-          <ParameterName>Mes</ParameterName>
-        </CellDefinition>
-        <CellDefinition>
-          <ColumnIndex>2</ColumnIndex>
-          <RowIndex>0</RowIndex>
-          <ParameterName>Todos</ParameterName>
+          <ParameterName>fecha</ParameterName>
         </CellDefinition>
       </CellDefinitions>
     </GridLayoutDefinition>
