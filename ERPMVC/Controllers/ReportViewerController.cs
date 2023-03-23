@@ -20,7 +20,7 @@ using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Syncfusion.EJ.ReportViewer;
 using Syncfusion.JavaScript.Models.ReportViewer;
-
+using Syncfusion.ReportWriter;
 
 namespace ERPMVC.Controllers
 {
@@ -107,15 +107,25 @@ namespace ERPMVC.Controllers
             FileStream inputStream = new FileStream(basePath + reportOption.ReportModel.ReportPath, FileMode.Open, FileAccess.Read);
             reportOption.ReportModel.Stream = inputStream;
             reportOption.ReportModel.DataSourceCredentials.Add(dsc);
-            reportOption.ReportModel.EmbedImageData = true;
+            reportOption.ReportModel.EmbedImageData = true;            
+            reportOption.ReportModel.CsvOptions = new Syncfusion.ReportWriter.CsvOptions
+            {
+                Encoding = System.Text.Encoding.Default,
+                FieldDelimiter = "|",
+                UseFormattedValues = false,
+                Qualifier = "#",
+                RecordDelimiter = "\n",
+                SuppressLineBreaks = false,                
+                FileExtension = ".ASC"
+            };
             //var reportviewermodel = new ReportViewerModel();
             //reportviewermodel.ReportDefinition = new Syncfusion.RDL.DOM.ReportDefinition();
             //reportviewermodel.ReportDefinition.Description = reportOption.ReportModel.ReportPath.Substring(0, reportOption.ReportModel.ReportPath.LastIndexOf('.'));
             //reportOption.ReportModel.ReportDefinition = reportviewermodel.ReportDefinition;
-           // reportOption.ReportModel.ReportDefinition.Description = reportOption.ReportModel.ReportPath.Substring(0, reportOption.ReportModel.ReportPath.LastIndexOf('.'));
-           // IEnumerable<ReportParameter> reportParameters = 
+            // reportOption.ReportModel.ReportDefinition.Description = reportOption.ReportModel.ReportPath.Substring(0, reportOption.ReportModel.ReportPath.LastIndexOf('.'));
+            // IEnumerable<ReportParameter> reportParameters = 
             //reportOption.ReportModel.Parameters.Append(new ReportParameter()
-           // {Name="NombreReporte",Values = new List<string>() { reportOption.ReportModel.ReportPath } });
+            // {Name="NombreReporte",Values = new List<string>() { reportOption.ReportModel.ReportPath } });
             var defaultDateCulture = "es-HN";
             var ci = new CultureInfo(defaultDateCulture);
             reportOption.Culture = ci;
