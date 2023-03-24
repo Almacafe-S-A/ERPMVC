@@ -18,33 +18,29 @@
       <Query>
         <DataSourceName>ERP</DataSourceName>
         <QueryParameters>
-          <QueryParameter Name="@Anio">
-            <Value>=Parameters!Anio.Value</Value>
-          </QueryParameter>
-          <QueryParameter Name="@Mes">
-            <Value>=Parameters!Mes.Value</Value>
+          <QueryParameter Name="@fecha">
+            <Value>=Parameters!fecha.Value</Value>
+            <rd:UserDefined>true</rd:UserDefined>
           </QueryParameter>
         </QueryParameters>
         <CommandText>
 SELECT (Select top (1)  tipoinstitucion from CompanyInfo) as TipoInstitucion,
 	   (Select top (1)  CodigoInstitucion from CompanyInfo) as CodigoInstitucion,
-	   i.BranchId CodigoSucursal,
-	   '01' CodigoAgencia,
-	   FORMAT( SYSDATETIME(),'ddMMyyyy') FechaReporte, 	   
-	   FORMAT( i.InvoiceDate,'ddMMyyyy') FechaTransaccion,
-	   113001 CodigoTipoTransaccion,
-	   113002 CodigoTipoProducto,
+	   b.BranchCode CodigoSucursal,
+	   b.ZipCode CodigoAgencia,
+	   
+	   i.JournalEntryId Transaccion,
+	   FORMAT( i.FechaModificacion,'yyyyMMdd') as FechaTransaccion,
+	   N'115003' CodigoTipoTransaccion,
+	   N'105005' CodigoTipoProducto,
 	   0 NumeroProductoAfectado,
-	   'Honduras' OrigenDestinoFinancieras,
+	   CONCAT(N'Pago de facturacion por parte del cliente por servicio de ', i.ProductName) as Descripcion,
 	   1 CodigoMoneda,
-	   null TasaCambio,
-	   i.Total Monto,
-	   c.RTN,
-	   i.InvoiceId,
-	   3 CodigoParticipacion,
-	   c.FechaModificacion 
-  FROM [dbo].[Customer] c right join Invoice i on i.CustomerId = c.CustomerId 
-  where FORMAT(i.FechaModificacion,'yyyy') = @Anio and FORMAT(c.FechaModificacion,'MM') = @Mes</CommandText>
+	   1 TasaCambio,
+	   i.Total Monto
+  FROM Customer c right join Invoice i on i.CustomerId = c.CustomerId 
+  left join Branch b on b.BranchId = i.BranchId
+  where year(i.FechaModificacion) = year(@fecha)  and month(i.FechaModificacion) = month(@fecha)</CommandText>
       </Query>
       <Fields>
         <Field Name="TipoInstitucion">
@@ -57,55 +53,39 @@ SELECT (Select top (1)  tipoinstitucion from CompanyInfo) as TipoInstitucion,
         </Field>
         <Field Name="CodigoSucursal">
           <DataField>CodigoSucursal</DataField>
-          <rd:TypeName>System.Int32</rd:TypeName>
-        </Field>
-        <Field Name="FechaReporte">
-          <DataField>FechaReporte</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
         <Field Name="CodigoAgencia">
           <DataField>CodigoAgencia</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
-        <Field Name="InvoiceId">
-          <DataField>InvoiceId</DataField>
-          <rd:TypeName>System.Int32</rd:TypeName>
-        </Field>
-        <Field Name="CodigoParticipacion">
-          <DataField>CodigoParticipacion</DataField>
-          <rd:TypeName>System.Int32</rd:TypeName>
+        <Field Name="Transaccion">
+          <DataField>Transaccion</DataField>
+          <rd:TypeName>System.Int64</rd:TypeName>
         </Field>
         <Field Name="FechaTransaccion">
           <DataField>FechaTransaccion</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
-        <Field Name="RTN">
-          <DataField>RTN</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
-        </Field>
-        <Field Name="FechaModificacion">
-          <DataField>FechaModificacion</DataField>
-          <rd:TypeName>System.DateTime</rd:TypeName>
-        </Field>
         <Field Name="CodigoTipoTransaccion">
           <DataField>CodigoTipoTransaccion</DataField>
-          <rd:TypeName>System.Int32</rd:TypeName>
+          <rd:TypeName>System.String</rd:TypeName>
         </Field>
         <Field Name="CodigoTipoProducto">
           <DataField>CodigoTipoProducto</DataField>
-          <rd:TypeName>System.Int32</rd:TypeName>
+          <rd:TypeName>System.String</rd:TypeName>
         </Field>
         <Field Name="NumeroProductoAfectado">
           <DataField>NumeroProductoAfectado</DataField>
           <rd:TypeName>System.Int32</rd:TypeName>
         </Field>
-        <Field Name="OrigenDestinoFinancieras">
-          <DataField>OrigenDestinoFinancieras</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
-        </Field>
         <Field Name="CodigoMoneda">
           <DataField>CodigoMoneda</DataField>
           <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="Descripcion">
+          <DataField>Descripcion</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
         </Field>
         <Field Name="TasaCambio">
           <DataField>TasaCambio</DataField>
@@ -167,61 +147,11 @@ SELECT (Select top (1)  tipoinstitucion from CompanyInfo) as TipoInstitucion,
                 <TablixColumn>
                   <Width>25mm</Width>
                 </TablixColumn>
-                <TablixColumn>
-                  <Width>25mm</Width>
-                </TablixColumn>
-                <TablixColumn>
-                  <Width>25mm</Width>
-                </TablixColumn>
-                <TablixColumn>
-                  <Width>25mm</Width>
-                </TablixColumn>
               </TablixColumns>
               <TablixRows>
                 <TablixRow>
                   <Height>6mm</Height>
                   <TablixCells>
-                    <TablixCell>
-                      <CellContents>
-                        <Textbox Name="Textbox2">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value>Tipo Institucion</Value>
-                                  <Style>
-                                    <FontSize>11pt</FontSize>
-                                    <FontWeight>Bold</FontWeight>
-                                    <Color>#666666</Color>
-                                  </Style>
-                                </TextRun>
-                              </TextRuns>
-                              <Style>
-                                <TextAlign>Right</TextAlign>
-                              </Style>
-                            </Paragraph>
-                          </Paragraphs>
-                          <rd:DefaultName>Textbox2</rd:DefaultName>
-                          <Style>
-                            <Border>
-                              <Style>None</Style>
-                            </Border>
-                            <BottomBorder>
-                              <Color>LightGrey</Color>
-                              <Style>Solid</Style>
-                              <Width>1pt</Width>
-                            </BottomBorder>
-                            <BackgroundColor>White</BackgroundColor>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
                     <TablixCell>
                       <CellContents>
                         <Textbox Name="Textbox3">
@@ -231,7 +161,7 @@ SELECT (Select top (1)  tipoinstitucion from CompanyInfo) as TipoInstitucion,
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>Codigo Institucion</Value>
+                                  <Value>Tipo Institucion</Value>
                                   <Style>
                                     <FontSize>11pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
@@ -265,7 +195,48 @@ SELECT (Select top (1)  tipoinstitucion from CompanyInfo) as TipoInstitucion,
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="Textbox5">
+                        <Textbox Name="Textbox4">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>Codigo Institucion</Value>
+                                  <Style>
+                                    <FontSize>11pt</FontSize>
+                                    <FontWeight>Bold</FontWeight>
+                                    <Color>#666666</Color>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Right</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox4</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Style>None</Style>
+                            </Border>
+                            <BottomBorder>
+                              <Color>LightGrey</Color>
+                              <Style>Solid</Style>
+                              <Width>1pt</Width>
+                            </BottomBorder>
+                            <BackgroundColor>White</BackgroundColor>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox6">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
@@ -285,7 +256,7 @@ SELECT (Select top (1)  tipoinstitucion from CompanyInfo) as TipoInstitucion,
                               </Style>
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>Textbox5</rd:DefaultName>
+                          <rd:DefaultName>Textbox6</rd:DefaultName>
                           <Style>
                             <Border>
                               <Style>None</Style>
@@ -306,48 +277,7 @@ SELECT (Select top (1)  tipoinstitucion from CompanyInfo) as TipoInstitucion,
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="Textbox7">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value>Fecha Reporte</Value>
-                                  <Style>
-                                    <FontSize>11pt</FontSize>
-                                    <FontWeight>Bold</FontWeight>
-                                    <Color>#666666</Color>
-                                  </Style>
-                                </TextRun>
-                              </TextRuns>
-                              <Style>
-                                <TextAlign>Right</TextAlign>
-                              </Style>
-                            </Paragraph>
-                          </Paragraphs>
-                          <rd:DefaultName>Textbox7</rd:DefaultName>
-                          <Style>
-                            <Border>
-                              <Style>None</Style>
-                            </Border>
-                            <BottomBorder>
-                              <Color>LightGrey</Color>
-                              <Style>Solid</Style>
-                              <Width>1pt</Width>
-                            </BottomBorder>
-                            <BackgroundColor>White</BackgroundColor>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
-                    <TablixCell>
-                      <CellContents>
-                        <Textbox Name="Textbox9">
+                        <Textbox Name="Textbox8">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
@@ -367,7 +297,7 @@ SELECT (Select top (1)  tipoinstitucion from CompanyInfo) as TipoInstitucion,
                               </Style>
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>Textbox9</rd:DefaultName>
+                          <rd:DefaultName>Textbox8</rd:DefaultName>
                           <Style>
                             <Border>
                               <Style>None</Style>
@@ -388,14 +318,14 @@ SELECT (Select top (1)  tipoinstitucion from CompanyInfo) as TipoInstitucion,
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="Textbox11">
+                        <Textbox Name="Textbox28">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>Invoice Id</Value>
+                                  <Value>Fecha Reporte</Value>
                                   <Style>
                                     <FontSize>11pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
@@ -408,7 +338,7 @@ SELECT (Select top (1)  tipoinstitucion from CompanyInfo) as TipoInstitucion,
                               </Style>
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>Textbox11</rd:DefaultName>
+                          <rd:DefaultName>Textbox28</rd:DefaultName>
                           <Style>
                             <Border>
                               <Style>None</Style>
@@ -429,14 +359,14 @@ SELECT (Select top (1)  tipoinstitucion from CompanyInfo) as TipoInstitucion,
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="Textbox13">
+                        <Textbox Name="Textbox10">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>Codigo Participacion</Value>
+                                  <Value>Transaccion</Value>
                                   <Style>
                                     <FontSize>11pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
@@ -449,7 +379,7 @@ SELECT (Select top (1)  tipoinstitucion from CompanyInfo) as TipoInstitucion,
                               </Style>
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>Textbox13</rd:DefaultName>
+                          <rd:DefaultName>Textbox10</rd:DefaultName>
                           <Style>
                             <Border>
                               <Style>None</Style>
@@ -470,7 +400,7 @@ SELECT (Select top (1)  tipoinstitucion from CompanyInfo) as TipoInstitucion,
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="Textbox15">
+                        <Textbox Name="Textbox12">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
@@ -490,7 +420,7 @@ SELECT (Select top (1)  tipoinstitucion from CompanyInfo) as TipoInstitucion,
                               </Style>
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>Textbox15</rd:DefaultName>
+                          <rd:DefaultName>Textbox12</rd:DefaultName>
                           <Style>
                             <Border>
                               <Style>None</Style>
@@ -511,89 +441,7 @@ SELECT (Select top (1)  tipoinstitucion from CompanyInfo) as TipoInstitucion,
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="Textbox17">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value>RTN</Value>
-                                  <Style>
-                                    <FontSize>11pt</FontSize>
-                                    <FontWeight>Bold</FontWeight>
-                                    <Color>#666666</Color>
-                                  </Style>
-                                </TextRun>
-                              </TextRuns>
-                              <Style>
-                                <TextAlign>Right</TextAlign>
-                              </Style>
-                            </Paragraph>
-                          </Paragraphs>
-                          <rd:DefaultName>Textbox17</rd:DefaultName>
-                          <Style>
-                            <Border>
-                              <Style>None</Style>
-                            </Border>
-                            <BottomBorder>
-                              <Color>LightGrey</Color>
-                              <Style>Solid</Style>
-                              <Width>1pt</Width>
-                            </BottomBorder>
-                            <BackgroundColor>White</BackgroundColor>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
-                    <TablixCell>
-                      <CellContents>
-                        <Textbox Name="Textbox19">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value>Fecha Modificacion</Value>
-                                  <Style>
-                                    <FontSize>11pt</FontSize>
-                                    <FontWeight>Bold</FontWeight>
-                                    <Color>#666666</Color>
-                                  </Style>
-                                </TextRun>
-                              </TextRuns>
-                              <Style>
-                                <TextAlign>Right</TextAlign>
-                              </Style>
-                            </Paragraph>
-                          </Paragraphs>
-                          <rd:DefaultName>Textbox19</rd:DefaultName>
-                          <Style>
-                            <Border>
-                              <Style>None</Style>
-                            </Border>
-                            <BottomBorder>
-                              <Color>LightGrey</Color>
-                              <Style>Solid</Style>
-                              <Width>1pt</Width>
-                            </BottomBorder>
-                            <BackgroundColor>White</BackgroundColor>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
-                    <TablixCell>
-                      <CellContents>
-                        <Textbox Name="Textbox21">
+                        <Textbox Name="Textbox14">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
@@ -613,7 +461,7 @@ SELECT (Select top (1)  tipoinstitucion from CompanyInfo) as TipoInstitucion,
                               </Style>
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>Textbox21</rd:DefaultName>
+                          <rd:DefaultName>Textbox14</rd:DefaultName>
                           <Style>
                             <Border>
                               <Style>None</Style>
@@ -634,7 +482,7 @@ SELECT (Select top (1)  tipoinstitucion from CompanyInfo) as TipoInstitucion,
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="Textbox23">
+                        <Textbox Name="Textbox16">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
@@ -654,7 +502,7 @@ SELECT (Select top (1)  tipoinstitucion from CompanyInfo) as TipoInstitucion,
                               </Style>
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>Textbox23</rd:DefaultName>
+                          <rd:DefaultName>Textbox16</rd:DefaultName>
                           <Style>
                             <Border>
                               <Style>None</Style>
@@ -675,7 +523,7 @@ SELECT (Select top (1)  tipoinstitucion from CompanyInfo) as TipoInstitucion,
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="Textbox25">
+                        <Textbox Name="Textbox18">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
@@ -695,7 +543,7 @@ SELECT (Select top (1)  tipoinstitucion from CompanyInfo) as TipoInstitucion,
                               </Style>
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>Textbox25</rd:DefaultName>
+                          <rd:DefaultName>Textbox18</rd:DefaultName>
                           <Style>
                             <Border>
                               <Style>None</Style>
@@ -716,48 +564,7 @@ SELECT (Select top (1)  tipoinstitucion from CompanyInfo) as TipoInstitucion,
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="Textbox27">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value>Origen Destino Financieras</Value>
-                                  <Style>
-                                    <FontSize>11pt</FontSize>
-                                    <FontWeight>Bold</FontWeight>
-                                    <Color>#666666</Color>
-                                  </Style>
-                                </TextRun>
-                              </TextRuns>
-                              <Style>
-                                <TextAlign>Right</TextAlign>
-                              </Style>
-                            </Paragraph>
-                          </Paragraphs>
-                          <rd:DefaultName>Textbox27</rd:DefaultName>
-                          <Style>
-                            <Border>
-                              <Style>None</Style>
-                            </Border>
-                            <BottomBorder>
-                              <Color>LightGrey</Color>
-                              <Style>Solid</Style>
-                              <Width>1pt</Width>
-                            </BottomBorder>
-                            <BackgroundColor>White</BackgroundColor>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
-                    <TablixCell>
-                      <CellContents>
-                        <Textbox Name="Textbox29">
+                        <Textbox Name="Textbox20">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
@@ -777,7 +584,7 @@ SELECT (Select top (1)  tipoinstitucion from CompanyInfo) as TipoInstitucion,
                               </Style>
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>Textbox29</rd:DefaultName>
+                          <rd:DefaultName>Textbox20</rd:DefaultName>
                           <Style>
                             <Border>
                               <Style>None</Style>
@@ -798,7 +605,48 @@ SELECT (Select top (1)  tipoinstitucion from CompanyInfo) as TipoInstitucion,
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="Textbox31">
+                        <Textbox Name="Textbox22">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>Descripcion</Value>
+                                  <Style>
+                                    <FontSize>11pt</FontSize>
+                                    <FontWeight>Bold</FontWeight>
+                                    <Color>#666666</Color>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Right</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox22</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Style>None</Style>
+                            </Border>
+                            <BottomBorder>
+                              <Color>LightGrey</Color>
+                              <Style>Solid</Style>
+                              <Width>1pt</Width>
+                            </BottomBorder>
+                            <BackgroundColor>White</BackgroundColor>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox24">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
@@ -818,7 +666,7 @@ SELECT (Select top (1)  tipoinstitucion from CompanyInfo) as TipoInstitucion,
                               </Style>
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>Textbox31</rd:DefaultName>
+                          <rd:DefaultName>Textbox24</rd:DefaultName>
                           <Style>
                             <Border>
                               <Style>None</Style>
@@ -839,7 +687,7 @@ SELECT (Select top (1)  tipoinstitucion from CompanyInfo) as TipoInstitucion,
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="Textbox33">
+                        <Textbox Name="Textbox26">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
@@ -859,7 +707,7 @@ SELECT (Select top (1)  tipoinstitucion from CompanyInfo) as TipoInstitucion,
                               </Style>
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>Textbox33</rd:DefaultName>
+                          <rd:DefaultName>Textbox26</rd:DefaultName>
                           <Style>
                             <Border>
                               <Style>None</Style>
@@ -958,7 +806,7 @@ SELECT (Select top (1)  tipoinstitucion from CompanyInfo) as TipoInstitucion,
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Sum(Fields!CodigoSucursal.Value)</Value>
+                                  <Value>=Fields!CodigoSucursal.Value</Value>
                                   <Style>
                                     <FontWeight>Normal</FontWeight>
                                     <Color>#333333</Color>
@@ -969,39 +817,6 @@ SELECT (Select top (1)  tipoinstitucion from CompanyInfo) as TipoInstitucion,
                             </Paragraph>
                           </Paragraphs>
                           <rd:DefaultName>CodigoSucursal</rd:DefaultName>
-                          <Style>
-                            <Border>
-                              <Style>None</Style>
-                            </Border>
-                            <BackgroundColor>White</BackgroundColor>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
-                    <TablixCell>
-                      <CellContents>
-                        <Textbox Name="FechaReporte">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value>=Fields!FechaReporte.Value</Value>
-                                  <Style>
-                                    <FontWeight>Normal</FontWeight>
-                                    <Color>#333333</Color>
-                                  </Style>
-                                </TextRun>
-                              </TextRuns>
-                              <Style />
-                            </Paragraph>
-                          </Paragraphs>
-                          <rd:DefaultName>FechaReporte</rd:DefaultName>
                           <Style>
                             <Border>
                               <Style>None</Style>
@@ -1050,16 +865,17 @@ SELECT (Select top (1)  tipoinstitucion from CompanyInfo) as TipoInstitucion,
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="InvoiceId">
+                        <Textbox Name="Textbox29">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Sum(Fields!InvoiceId.Value)</Value>
+                                  <Value>=Parameters!fecha.Value</Value>
                                   <Style>
                                     <FontWeight>Normal</FontWeight>
+                                    <Format>yyyyMMdd</Format>
                                     <Color>#333333</Color>
                                   </Style>
                                 </TextRun>
@@ -1067,7 +883,7 @@ SELECT (Select top (1)  tipoinstitucion from CompanyInfo) as TipoInstitucion,
                               <Style />
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>InvoiceId</rd:DefaultName>
+                          <rd:DefaultName>Textbox29</rd:DefaultName>
                           <Style>
                             <Border>
                               <Style>None</Style>
@@ -1083,14 +899,14 @@ SELECT (Select top (1)  tipoinstitucion from CompanyInfo) as TipoInstitucion,
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="CodigoParticipacion">
+                        <Textbox Name="Transaccion">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Sum(Fields!CodigoParticipacion.Value)</Value>
+                                  <Value>=Sum(Fields!Transaccion.Value)</Value>
                                   <Style>
                                     <FontWeight>Normal</FontWeight>
                                     <Color>#333333</Color>
@@ -1100,7 +916,7 @@ SELECT (Select top (1)  tipoinstitucion from CompanyInfo) as TipoInstitucion,
                               <Style />
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>CodigoParticipacion</rd:DefaultName>
+                          <rd:DefaultName>Transaccion</rd:DefaultName>
                           <Style>
                             <Border>
                               <Style>None</Style>
@@ -1149,72 +965,6 @@ SELECT (Select top (1)  tipoinstitucion from CompanyInfo) as TipoInstitucion,
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="RTN">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value>=Fields!RTN.Value</Value>
-                                  <Style>
-                                    <FontWeight>Normal</FontWeight>
-                                    <Color>#333333</Color>
-                                  </Style>
-                                </TextRun>
-                              </TextRuns>
-                              <Style />
-                            </Paragraph>
-                          </Paragraphs>
-                          <rd:DefaultName>RTN</rd:DefaultName>
-                          <Style>
-                            <Border>
-                              <Style>None</Style>
-                            </Border>
-                            <BackgroundColor>White</BackgroundColor>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
-                    <TablixCell>
-                      <CellContents>
-                        <Textbox Name="FechaModificacion">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value>=Fields!FechaModificacion.Value</Value>
-                                  <Style>
-                                    <FontWeight>Normal</FontWeight>
-                                    <Color>#333333</Color>
-                                  </Style>
-                                </TextRun>
-                              </TextRuns>
-                              <Style />
-                            </Paragraph>
-                          </Paragraphs>
-                          <rd:DefaultName>FechaModificacion</rd:DefaultName>
-                          <Style>
-                            <Border>
-                              <Style>None</Style>
-                            </Border>
-                            <BackgroundColor>White</BackgroundColor>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
-                    <TablixCell>
-                      <CellContents>
                         <Textbox Name="CodigoTipoTransaccion">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
@@ -1222,7 +972,7 @@ SELECT (Select top (1)  tipoinstitucion from CompanyInfo) as TipoInstitucion,
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Sum(Fields!CodigoTipoTransaccion.Value)</Value>
+                                  <Value>=Fields!CodigoTipoTransaccion.Value</Value>
                                   <Style>
                                     <FontWeight>Normal</FontWeight>
                                     <Color>#333333</Color>
@@ -1255,7 +1005,7 @@ SELECT (Select top (1)  tipoinstitucion from CompanyInfo) as TipoInstitucion,
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Sum(Fields!CodigoTipoProducto.Value)</Value>
+                                  <Value>=Fields!CodigoTipoProducto.Value</Value>
                                   <Style>
                                     <FontWeight>Normal</FontWeight>
                                     <Color>#333333</Color>
@@ -1314,39 +1064,6 @@ SELECT (Select top (1)  tipoinstitucion from CompanyInfo) as TipoInstitucion,
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="OrigenDestinoFinancieras">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value>=Fields!OrigenDestinoFinancieras.Value</Value>
-                                  <Style>
-                                    <FontWeight>Normal</FontWeight>
-                                    <Color>#333333</Color>
-                                  </Style>
-                                </TextRun>
-                              </TextRuns>
-                              <Style />
-                            </Paragraph>
-                          </Paragraphs>
-                          <rd:DefaultName>OrigenDestinoFinancieras</rd:DefaultName>
-                          <Style>
-                            <Border>
-                              <Style>None</Style>
-                            </Border>
-                            <BackgroundColor>White</BackgroundColor>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
-                    <TablixCell>
-                      <CellContents>
                         <Textbox Name="CodigoMoneda">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
@@ -1365,6 +1082,39 @@ SELECT (Select top (1)  tipoinstitucion from CompanyInfo) as TipoInstitucion,
                             </Paragraph>
                           </Paragraphs>
                           <rd:DefaultName>CodigoMoneda</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Style>None</Style>
+                            </Border>
+                            <BackgroundColor>White</BackgroundColor>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Descripcion">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Fields!Descripcion.Value</Value>
+                                  <Style>
+                                    <FontWeight>Normal</FontWeight>
+                                    <Color>#333333</Color>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Descripcion</rd:DefaultName>
                           <Style>
                             <Border>
                               <Style>None</Style>
@@ -1464,9 +1214,6 @@ SELECT (Select top (1)  tipoinstitucion from CompanyInfo) as TipoInstitucion,
                 <TablixMember />
                 <TablixMember />
                 <TablixMember />
-                <TablixMember />
-                <TablixMember />
-                <TablixMember />
               </TablixMembers>
             </TablixColumnHierarchy>
             <TablixRowHierarchy>
@@ -1480,52 +1227,16 @@ SELECT (Select top (1)  tipoinstitucion from CompanyInfo) as TipoInstitucion,
               </TablixMembers>
             </TablixRowHierarchy>
             <DataSetName>ClientesAltasBjas</DataSetName>
-            <Top>10.16mm</Top>
+            <Top>0mm</Top>
             <Left>0mm</Left>
             <Height>12mm</Height>
-            <Width>425mm</Width>
+            <Width>350mm</Width>
             <Style>
               <Border>
                 <Style>None</Style>
               </Border>
             </Style>
           </Tablix>
-          <Textbox Name="ReportTitle">
-            <CanGrow>true</CanGrow>
-            <KeepTogether>true</KeepTogether>
-            <Paragraphs>
-              <Paragraph>
-                <TextRuns>
-                  <TextRun>
-                    <Value>Transacciones de Clientes</Value>
-                    <Style>
-                      <FontFamily>Segoe UI Light</FontFamily>
-                      <FontSize>18pt</FontSize>
-                    </Style>
-                  </TextRun>
-                </TextRuns>
-                <Style>
-                  <TextAlign>Center</TextAlign>
-                </Style>
-              </Paragraph>
-            </Paragraphs>
-            <rd:WatermarkTextbox>Title</rd:WatermarkTextbox>
-            <rd:DefaultName>ReportTitle</rd:DefaultName>
-            <Top>0mm</Top>
-            <Left>3.12567cm</Left>
-            <Height>10.16mm</Height>
-            <Width>75mm</Width>
-            <ZIndex>1</ZIndex>
-            <Style>
-              <Border>
-                <Style>None</Style>
-              </Border>
-              <PaddingLeft>2pt</PaddingLeft>
-              <PaddingRight>2pt</PaddingRight>
-              <PaddingTop>2pt</PaddingTop>
-              <PaddingBottom>2pt</PaddingBottom>
-            </Style>
-          </Textbox>
         </ReportItems>
         <Height>57.15mm</Height>
         <Style>
@@ -1536,6 +1247,53 @@ SELECT (Select top (1)  tipoinstitucion from CompanyInfo) as TipoInstitucion,
       </Body>
       <Width>425mm</Width>
       <Page>
+        <PageHeader>
+          <Height>15.66333mm</Height>
+          <PrintOnFirstPage>true</PrintOnFirstPage>
+          <PrintOnLastPage>true</PrintOnLastPage>
+          <ReportItems>
+            <Textbox Name="ReportTitle">
+              <CanGrow>true</CanGrow>
+              <KeepTogether>true</KeepTogether>
+              <Paragraphs>
+                <Paragraph>
+                  <TextRuns>
+                    <TextRun>
+                      <Value>Transacciones de Clientes</Value>
+                      <Style>
+                        <FontFamily>Segoe UI Light</FontFamily>
+                        <FontSize>18pt</FontSize>
+                      </Style>
+                    </TextRun>
+                  </TextRuns>
+                  <Style>
+                    <TextAlign>Center</TextAlign>
+                  </Style>
+                </Paragraph>
+              </Paragraphs>
+              <rd:WatermarkTextbox>Title</rd:WatermarkTextbox>
+              <rd:DefaultName>ReportTitle</rd:DefaultName>
+              <Top>2.75167mm</Top>
+              <Left>1.498cm</Left>
+              <Height>10.16mm</Height>
+              <Width>75mm</Width>
+              <Style>
+                <Border>
+                  <Style>None</Style>
+                </Border>
+                <PaddingLeft>2pt</PaddingLeft>
+                <PaddingRight>2pt</PaddingRight>
+                <PaddingTop>2pt</PaddingTop>
+                <PaddingBottom>2pt</PaddingBottom>
+              </Style>
+            </Textbox>
+          </ReportItems>
+          <Style>
+            <Border>
+              <Style>None</Style>
+            </Border>
+          </Style>
+        </PageHeader>
         <PageFooter>
           <Height>11.43mm</Height>
           <PrintOnFirstPage>true</PrintOnFirstPage>
@@ -1548,7 +1306,7 @@ SELECT (Select top (1)  tipoinstitucion from CompanyInfo) as TipoInstitucion,
                 <Paragraph>
                   <TextRuns>
                     <TextRun>
-                      <Value>=Globals!ExecutionTime</Value>
+                      <Value>=Parameters!fecha.Value</Value>
                       <Style />
                     </TextRun>
                   </TextRuns>
@@ -1591,29 +1349,25 @@ SELECT (Select top (1)  tipoinstitucion from CompanyInfo) as TipoInstitucion,
     </ReportSection>
   </ReportSections>
   <ReportParameters>
-    <ReportParameter Name="Anio">
-      <DataType>String</DataType>
-      <Prompt>Anio</Prompt>
-    </ReportParameter>
-    <ReportParameter Name="Mes">
-      <DataType>String</DataType>
-      <Prompt>Mes</Prompt>
+    <ReportParameter Name="fecha">
+      <DataType>DateTime</DataType>
+      <DefaultValue>
+        <Values>
+          <Value>=Globals!ExecutionTime</Value>
+        </Values>
+      </DefaultValue>
+      <Prompt>Fecha</Prompt>
     </ReportParameter>
   </ReportParameters>
   <ReportParametersLayout>
     <GridLayoutDefinition>
-      <NumberOfColumns>4</NumberOfColumns>
-      <NumberOfRows>2</NumberOfRows>
+      <NumberOfColumns>1</NumberOfColumns>
+      <NumberOfRows>1</NumberOfRows>
       <CellDefinitions>
         <CellDefinition>
           <ColumnIndex>0</ColumnIndex>
           <RowIndex>0</RowIndex>
-          <ParameterName>Anio</ParameterName>
-        </CellDefinition>
-        <CellDefinition>
-          <ColumnIndex>1</ColumnIndex>
-          <RowIndex>0</RowIndex>
-          <ParameterName>Mes</ParameterName>
+          <ParameterName>fecha</ParameterName>
         </CellDefinition>
       </CellDefinitions>
     </GridLayoutDefinition>
