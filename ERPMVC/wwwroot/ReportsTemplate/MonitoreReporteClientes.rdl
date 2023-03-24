@@ -18,38 +18,36 @@
       <Query>
         <DataSourceName>ERP</DataSourceName>
         <QueryParameters>
-          <QueryParameter Name="@Anio">
-            <Value>=Parameters!Anio.Value</Value>
-          </QueryParameter>
-          <QueryParameter Name="@Mes">
-            <Value>=Parameters!Mes.Value</Value>
-          </QueryParameter>
-          <QueryParameter Name="@MayorValorTotal">
-            <Value>=Parameters!MayorValorTotal.Value</Value>
+          <QueryParameter Name="fecha">
+            <Value>=Parameters!fecha.Value</Value>
+            <rd:UserDefined>true</rd:UserDefined>
           </QueryParameter>
         </QueryParameters>
         <CommandText>SELECT (Select top (1)  tipoinstitucion from CompanyInfo) as TipoInstitucion,
 	   (Select top (1)  CodigoInstitucion from CompanyInfo) as CodigoInstitucion,
-	   FORMAT( SYSDATETIME(),'ddMMyyyy') FechaReporte, 	   
+	   FORMAT( @fecha ,'yyyyMMdd') FechaReporte, 	   
 	   c.RTN,
 	   c.CustomerName,
 	   2 CodigoIdentificacion,
-	   p.SortName CodigoPais,
+	   p.Code CodigoPais,
 	   0 CodigoProfesion,
 	   0 CodigoActividadEconomica,
 	   0 Genero,
 	   c.Address Direccion,
-	   p.SortName ResidenciaPais,
-	   i.InvoiceId,
+	   p.Code ResidenciaPais,
+	   i.JournalEntryId,
 	   3 CodigoParticipacion,
-	   c.StateId CodigoDepto,
-	   c.CityId,
+	   s.Code CodigoDepto,
+	   cy.Code,
 	   null EmpresaLabora,
 	   c.CustomerTypeId TipoPersona,
 	   c.CustomerId CIF,
 	    FORMAT( i.FechaModificacion ,'ddMMyyyy') FechaModificacion 
   FROM [dbo].[Customer] c right join Invoice i on i.CustomerId = c.CustomerId 
-  inner join Country p on p.Id = c.CountryId   where FORMAT(i.FechaModificacion,'yyyy') = @Anio and FORMAT(i.FechaModificacion,'MM') = @Mes and i.Estado = 'Emitido' and i.Total &gt; @MayorValorTotal</CommandText>
+  left join Country p on p.Id = c.CountryId 
+  left join State s on s.Id = c.StateId
+  left join City cy on cy.Id = c.CityId where  FORMAT(i.FechaModificacion,'yyyy') = FORMAT(@fecha,'yyyy') and 
+  FORMAT(i.FechaModificacion,'MM') = FORMAT(@fecha,'MM') and i.Estado = 'Emitido' </CommandText>
       </Query>
       <Fields>
         <Field Name="TipoInstitucion">
@@ -872,7 +870,7 @@
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>City Id</Value>
+                                  <Value>Codigo Municipio</Value>
                                   <Style>
                                     <FontSize>11pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
@@ -1799,7 +1797,7 @@
                 <Paragraph>
                   <TextRuns>
                     <TextRun>
-                      <Value>=Globals!ExecutionTime</Value>
+                      <Value>=Parameters!fecha.Value</Value>
                       <Style />
                     </TextRun>
                   </TextRuns>
@@ -1842,17 +1840,14 @@
     </ReportSection>
   </ReportSections>
   <ReportParameters>
-    <ReportParameter Name="Anio">
-      <DataType>String</DataType>
-      <Prompt>Anio</Prompt>
-    </ReportParameter>
-    <ReportParameter Name="Mes">
-      <DataType>String</DataType>
-      <Prompt>Mes</Prompt>
-    </ReportParameter>
-    <ReportParameter Name="MayorValorTotal">
-      <DataType>String</DataType>
-      <Prompt>Mayor Valor Total</Prompt>
+    <ReportParameter Name="fecha">
+      <DataType>DateTime</DataType>
+      <DefaultValue>
+        <Values>
+          <Value>=Globals!ExecutionTime</Value>
+        </Values>
+      </DefaultValue>
+      <Prompt>Fecha</Prompt>
     </ReportParameter>
   </ReportParameters>
   <ReportParametersLayout>
@@ -1863,17 +1858,7 @@
         <CellDefinition>
           <ColumnIndex>0</ColumnIndex>
           <RowIndex>0</RowIndex>
-          <ParameterName>Anio</ParameterName>
-        </CellDefinition>
-        <CellDefinition>
-          <ColumnIndex>1</ColumnIndex>
-          <RowIndex>0</RowIndex>
-          <ParameterName>Mes</ParameterName>
-        </CellDefinition>
-        <CellDefinition>
-          <ColumnIndex>2</ColumnIndex>
-          <RowIndex>0</RowIndex>
-          <ParameterName>MayorValorTotal</ParameterName>
+          <ParameterName>fecha</ParameterName>
         </CellDefinition>
       </CellDefinitions>
     </GridLayoutDefinition>
