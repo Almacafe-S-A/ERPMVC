@@ -1,0 +1,415 @@
+﻿@using System.Security.Claims
+
+@{
+    ViewBag.Title = "Recibos de Pago";
+    ClaimsPrincipal permisos = (ClaimsPrincipal)ViewData["permisos"];
+}
+<script>
+
+    function ClearSession() {
+        var dataObject = ["listadoproductosinvoice"];
+         $.ajax({
+            url: '@Url.Action("ClearSession","Common")',
+            method: 'POST',
+            datatype: "json",
+            contentType: 'application/json',
+            async: false,
+            data: JSON.stringify(dataObject),
+            success: function (result) {
+                  //  $('#myModalSalesOrder').modal('show');
+            },
+             error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+              }
+         });
+    }
+
+    function AddCotizacion() {
+        ClearSession();
+         var dataObject = {
+             Id: 0,
+            editar : 1
+        };
+
+        $.ajax({
+            url: '@Url.Action("pvwInvoicePayments","InvoicePayments")',
+            method: 'POST',
+            datatype: "json",
+            contentType: 'application/json',
+            async: false,
+            data: JSON.stringify(dataObject),
+            success: function (result) {
+              //  console.log(result);
+                $("#divInvoice").html('');
+                $("#divInvoice").html(result);
+
+                 $("#btnSaveInvoice").show();
+                 $('#myModalSalesOrder').modal('show');
+            },
+             error: function (XMLHttpRequest, textStatus, errorThrown) {
+                 //alert(textStatus + ": " + XMLHttpRequest.responseText);
+                  MostrarMensaje(textStatus + ": " + XMLHttpRequest.responseText, "Error", "Error", 6000);
+              }
+        });
+    }
+
+    function EditCotizacion(e) {
+        e.preventDefault();
+
+        ClearSession();
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        var dataObject = {
+            Id: dataItem.Id,
+        };
+
+        $.ajax({
+            url: '@Url.Action("pvwInvoicePayments", "InvoicePayments")',
+            method: 'POST',
+            datatype: "json",
+            contentType: 'application/json',
+            async: false,
+            data: JSON.stringify(dataObject),
+            success: function (result) {
+                $("#divInvoice").html('');
+                $("#divInvoice").html(result);
+
+                 $("#btnSaveInvoice").show();
+                 $('#myModalSalesOrder').modal('show');
+            },
+             error: function (XMLHttpRequest, textStatus, errorThrown) {
+                  MostrarMensaje(textStatus + ": " + XMLHttpRequest.responseText, "Error", "Error", 6000);
+              }
+        });
+    }
+
+    function ImprimirFactura(e) {
+        e.preventDefault();
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+
+        window.location.href = '@Url.Action("SFInvoicePayments", "InvoicePayments")/' + dataItem.Id;
+
+
+    }
+
+    function ImprimirProforma(e) {
+        e.preventDefault();
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+
+        window.location.href = '@Url.Action("SFInvoiceProforma", "Invoice")/' + dataItem.InvoiceId;
+
+
+    }
+    function ImprimirLibroVentas() {
+        var url = '@Url.Action("SFLibroVentas", "Invoice")';
+        var win = window.open(url, '_blank');
+        win.focus();
+    }
+
+    function GenerarFactura(e) {
+        if (confirm('Esta seguro de generar una Factura?')) {
+            e.preventDefault();
+            debugger;
+            var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+            var dataObject = {
+                InvoiceId: dataItem.InvoiceId,
+            };
+
+            $.ajax({
+                url: '@Url.Action("GenerarFactura", "Invoice")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (result) {
+                    MostrarMensaje('Factura Generada!', "success", "Satisfactorio", 6000);
+                    RefreshCotizaciones();
+                    return;
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                     MostrarMensaje(textStatus + ": " + XMLHttpRequest.responseText, "Error", "Error", 6000);
+                }
+            });
+        }
+    }
+
+    function closecondition() {
+        $('#myModalConditions').modal('hide');
+    }
+
+    function dataBound(e) {
+        $.each(this.dataSource.data(), function () {
+            if (this.Estado != "Revisado" ) {
+                $('[data-uid=' + this.uid + ']').find('.k-grid-Aprobar').hide();
+                
+            }
+            if (this.Estado != "Aprobado"){
+                $('[data-uid=' + this.uid + ']').find('.k-grid-GenerarFactura').hide();
+            }
+            if (this.Estado != "Revisión"){
+                $('[data-uid=' + this.uid + ']').find('.k-grid-Revisar').hide();
+            }
+            if (this.Estado != "Emitido") {
+                //$('[data-uid=' + this.uid + ']').find('.k-grid-Imprimir').hide();
+            }
+
+
+        })
+    }
+
+    function Aprobar(e) {
+        var notification = $("#notification").data("kendoNotification");
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        if (dataItem.Estado == 6) {
+                    notification.show({
+                    title: "Validación",
+                    message: "la Autorizacion ha sido aprobada"
+                }, "error");
+            }
+        if (!confirm('Esta seguro de aprobar la Factura?')) {
+            return;
+
+        }
+
+        var dataObject = {
+                InvoiceId: dataItem.InvoiceId,
+            };
+
+            $.ajax({
+                url: '@Url.Action("Aprobar", "Invoice")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (result) {
+                    $.toast({
+                        heading: 'Satisfactorio',
+                        text: 'La Factura Proforma se ha aprobado correctamente.',
+                        position: 'top-right',
+                        loaderBg: '#ff6849',
+                        icon: 'success',
+                        hideAfter: 7000,
+                        stack: 6
+                    });
+                RefreshCotizaciones();
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    notification.show({
+                        title: "Validación",
+                        message: textStatus + ": " + XMLHttpRequest.responseText
+                    }, "error");
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+                }
+            });
+            }
+
+
+
+
+    function Revisar(e) {
+        var notification = $("#notification").data("kendoNotification");
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        if (dataItem.Estado == 6) {
+                    notification.show({
+                    title: "Validación",
+                    message: "la Autorizacion ha sido aprobada"
+                }, "error");
+            }
+        if (!confirm('Esta seguro de marcar como revisada esta Factura Proforma?')) {
+            return;
+
+        }
+
+        var dataObject = {
+                InvoiceId: dataItem.InvoiceId,
+            };
+
+            $.ajax({
+                url: '@Url.Action("Revisar", "Invoice")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (result) {
+                    $.toast({
+                        heading: 'Satisfactorio',
+                        text: 'La Factura Proforma se ha revisado correctamente.',
+                        position: 'top-right',
+                        loaderBg: '#ff6849',
+                        icon: 'success',
+                        hideAfter: 7000,
+                        stack: 6
+                    });
+                RefreshCotizaciones();
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    notification.show({
+                        title: "Validación",
+                        message: textStatus + ": " + XMLHttpRequest.responseText
+                    }, "error");
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+                }
+            });
+            }
+
+
+
+</script>
+
+<h3 class="text-themecolor">Recibos de Pago</h3>
+
+@(Html.Kendo().Grid<ERPMVC.Models.InvoicePayments>()
+                              .Name("gridInvoices")
+                              .Columns(columns =>
+                              {
+                                  if (User.HasClaim("Ventas.Factura.Ver", "true")
+                                      || User.HasClaim("Ventas.Factura.Imprimir", "true"))
+                                  {
+                                      
+                                  }
+                                  columns.Command(command =>
+                                      {
+
+                                          command.Custom("Detalles").Text(" ").IconClass("far fa-list-alt").Click("EditCotizacion");
+                                          command.Custom("GenerarFactura").Text(" ").IconClass("fa fa-file-invoice").Click("GenerarFactura");
+                                          command.Custom("Imprimir").Text(" ").IconClass("fa fa-print").Click("ImprimirFactura");
+                                          if (User.HasClaim("Ventas.Factura", "true"))
+                                                  {
+                                                      command.Custom("Aprobar").Text(" ").IconClass("fa fa-thumbs-up").Click("Aprobar");
+                                                  }
+
+                                          if (User.HasClaim("Ventas.Factura", "true"))
+                                                  {
+                                                      command.Custom("Revisar").Text(" ").IconClass("fa fa-check").Click("Revisar");
+                                                  }
+                                      
+                                      }).Title("Acciones").Width(150);
+
+                                  columns.Bound(p => p.Id).Title("No. Recibo de Pago").Width(150);
+                                  columns.Bound(p => p.FechaPago).Format("{0:dd/MM/yyyy}").Title("Fecha").Width(120);
+                                  columns.Bound(p => p.NoDocumentos).Title("No Documentos").Width(120);
+                                  columns.Bound(p => p.CustomerName).Title("Cliente").Width(170);
+                                  columns.Bound(p => p.MontoPagado).Format("{0:n2}").Title("Monto Pagado").Width(120);
+                                  columns.Bound(p => p.Estado).Title("Estado").Width(200);
+                              })
+                                  .Filterable(f => f.Operators(o => o.ForString(s => s
+                                           .Clear()
+                                           .Contains("Contiene")
+                                           .DoesNotContain("No contiene")
+                                           .EndsWith("Termina con")
+                                           .IsEqualTo("Es igual a")
+                                           .IsNotEqualTo("No es igual a")
+                                           .IsNull("Es nulo")
+                                           .StartsWith("Inicia con")
+
+                                     )
+                                     .ForNumber(n => n
+                                       .Clear()
+                                       .IsEqualTo("Es igual a")
+                                       .IsGreaterThan("Es mayor que")
+                                       .IsLessThan("Es menor que")
+                                       .IsNull("Es nulo")
+                                       .IsLessThanOrEqualTo("Es menor o igual que")
+                                       .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                     )
+                                     .ForDate(d => d
+                                     .Clear()
+                                     .IsEqualTo("Es igual que")
+                                     .IsGreaterThan("Es mayor que")
+                                     .IsLessThan("Es menor que")
+                                     .IsLessThanOrEqualTo("Es menor o igual que")
+                                     .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                     .IsNotEqualTo("No es igual que")
+                                      )
+                                   ))
+                              .ToolBar(tools =>
+                              {
+                                  // tools.Create();
+                                  if (User.HasClaim("Ventas.Factura.Agregar", "true"))
+                                  {
+                                      tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+                                                 .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddCotizacion();" });
+                                  }
+                                  if (User.HasClaim("Ventas.Factura.Reporte Libro de Ventas", "true"))
+                                  {
+                                      tools.Custom().Text("Reporte").IconClass("")
+                                     .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "ImprimirLibroVentas();" });
+                                  }
+                                    
+                                      tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
+                                      tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
+
+
+                              })
+                               .Editable(e => e.Mode(GridEditMode.PopUp))
+                                .Sortable()
+                                .AutoBind(true)
+                                .Pageable()
+                                .Filterable()
+                                .Scrollable()
+                                // .ClientDetailTemplateId("template")
+                                .Pdf(pdf => pdf.FileName("FacturaReporte_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+                                .ProxyURL(Url.Action("Export", "Home")).AllPages())
+                                  .Excel(excel => excel.FileName("FacturaReporte_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+                                .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+                                //.Events(e=>e.Save("onsave"))
+                                .DataSource(dataSource =>
+
+                               dataSource
+                               //.Ajax()
+                               .WebApi()
+                                .ServerOperation(true)
+                                .Model(model =>
+                                {
+                                    model.Id(p => p.Id);
+                                    model.Field(p => p.CustomerName);
+                                    model.Field(p => p.FechaPago);
+                                })
+                                .Events(events =>
+                                {
+                                    events.Error("error_handler");
+                                    //events.upda("EditHandler");
+
+                                })
+                                .Read(read => read.Action("Get", "InvoicePayments"))
+                                .Create(create => create.Action("Insert", "Invoice"))
+                                .Update(update => update.Action("Update", "Invoice", new { id = "{0}" }))
+                                .Destroy(destroy => destroy.Action("Delete", "Invoice", new { id = "{0}" }))
+                          ).Events(e => e.DataBound("dataBound"))
+)
+
+<div id="divInvoice">
+    @await Html.PartialAsync("pvwInvoicePayments", new ERPMVC.Models.InvoicePayments { Id = 0, FechaPago = DateTime.Now })
+</div>
+
+
+<script>
+
+    function setToolbarTooltip(btn_cl, btn_tooltip) {
+        $("#gridInvoices").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+
+    function setRowButtonTooltip(btn_cl, btn_tooltip) {
+        $("#gridInvoices").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+
+    setToolbarTooltip(".k-button k-button-icontext k-grid-Agregar k-i-plus-sm", "Agregar un nuevo registro");
+    //setRowButtonTooltip(".k-grid-edit", "Tooltip for Edit button");
+    setRowButtonTooltip(".k-grid-GenerarFactura", "Generar Factura");
+    setRowButtonTooltip(".k-grid-Imprimir", "Imprimir Factura"); 
+    setRowButtonTooltip(".k-grid-ImprimirProforma", "Imprimir Proforma");
+    setRowButtonTooltip(".k-grid-Detalles", "Ver Detalle");
+    setRowButtonTooltip(".k-grid-Agregar", "Nueva Factura Proforma");
+</script>
+
+

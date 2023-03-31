@@ -58,5 +58,7 @@ namespace ERPMVC.Models
         public Accounting Accounting { get; set; }
 
         public string CodigoNombre => $"{AccountNumber} - {Description}";
+
+        public string BancoNumero => $"{BankName}  - {Description} No {AccountNumber}";
     }
 }

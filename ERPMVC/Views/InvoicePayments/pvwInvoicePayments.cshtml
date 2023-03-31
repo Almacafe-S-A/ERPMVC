@@ -1,0 +1,418 @@
+﻿@model ERPMVC.Models.InvoicePayments
+@using System.Security.Claims
+@{ Layout = null;
+    var messages = new Dictionary<string, string>() { { "custom", "Ingrese un valor correcto." },
+                                {"required","Valor requerido" }
+                            };
+    var rules = new Dictionary<string, string>() { { "custom", "customFunction" } };
+    ClaimsPrincipal permisos = (ClaimsPrincipal)ViewData["permisos"];
+}
+
+<style>
+    hr.solid {
+        border-top: 1px solid #bbb;
+        width: 100%;
+    }
+</style>
+
+
+
+<script>
+    function customFunction(input) {
+
+        if (input.attr('name') === "BranchId" && input.val() === "0") {
+            return false;
+        }
+
+        //if (input.attr('name') === "SubProductId" && input.val() === "0") {
+        //    return false;
+        //}
+
+        if (input.attr('name') === "CurrencyId" && input.val() === "0") {
+            return false;
+        }
+
+        if (input.attr('name') === "Quantity" && input.val() == 0) {
+            return false;
+        }
+
+        if (input.attr('name') === "Price" && input.val() == 0) {
+            return false;
+        }
+
+        if (input.attr('name') === "TotalLine" && input.val() == 0) {
+            return false;
+        }
+        return true;
+    }
+
+    function GetCliente() {
+        return{
+            CustomerId: $("#CustomerId").val()
+        }
+    }
+
+
+    function RefreshContracts() {
+        $("#CustomerContractId").data("kendoDropDownList").dataSource.read();
+        RefreshInvoiceDetail();
+    }
+
+    function GetClienteService() {
+        return {
+            CustomerId: $("#CustomerId").val(),
+            Service: $("#ProductId").val(),
+        };
+    }
+    function QuitarModal() {
+        $('#myModalSalesOrder').modal('hide');
+    }
+</script>
+
+
+<div id="myModalSalesOrder" class="modal fade" style="min-width:100%" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
+
+        <!-- Modal content-->
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Facturación</h4>
+                
+                <button type="button" name="btnprueba" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">             
+
+                <div class="container-fluid">
+                    <div class="card">
+                                <div class="card-body">
+                                    <form id="frmSalesOrder" kendo-validator="true" kendo-messages="messages" kendo-rules="rules"
+                                          data-ajax="true"
+                                          data-ajax-method="post"
+                                          method="post" class="validation-wizard wizard-circle">
+                                        <div class="row">
+                                            <div class="col-md-3">
+                                                <div class="form-group">
+                                                    <label asp-for="Id" class=" control-label" style="width:100%">No Proforma</label>
+                                                    <input type="text" asp-for="Id" name="InvoiceId" disabled="disabled" class="k-textbox" style="min-width:100%" />
+                                                    <span asp-validation-for="Id" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                             <div class="col-md-3">
+                                                <div class="form-group">
+                                                    <label asp-for="FechaPago" class="control-label" style="width: 100%;">Fecha</label>
+
+                                            <kendo-datetimepicker name="FechaPago"
+                                                                              style="width: 100%;"
+                                                                              format="dd/MM/yyyy hh:mm:ss"
+                                                                              time-format="hh:mm:ss"
+                                                                              data-val-required="Fecha Pago es requerido"
+                                                                              value="Model.FechaPago"></kendo-datetimepicker>
+
+                                                    <span asp-validation-for="FechaPago" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="form-group">
+                                                    <label asp-for="BranchId" class="control-label">Sucursal</label>
+                                                    <kendo-dropdownlist name="BranchId" for="BranchId" filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                                        option-label="Seleccione la sucursal"
+                                                                        datatextfield="BranchName"
+                                                                        datavaluefield="BranchId"
+                                                                        required data-required-msg="La Sucursal es requerida" 
+                                                                        style="width: 100%;">
+                                                        <datasource type="DataSourceTagHelperType.WebApi" page-size="9999999">
+                                                            <transport>
+                                                                <read url="@Url.Action("GetBranchActivos", "Branch")" />
+                                                            </transport>
+                                                        </datasource>
+                                                    </kendo-dropdownlist>
+                                                    <span asp-validation-for="BranchId" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="form-group">
+
+                                                    <label asp-for="CustomerId" class="control-label">Cliente</label>
+                                                    <kendo-dropdownlist name="CustomerId" for="@Model.CustomerId" filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                                        option-label="Seleccione el cliente"
+                                                                        datatextfield="CustomerName"
+                                                                        datavaluefield="CustomerId"
+                                                                on-change="RefrescarFacturas"
+                                                                        class="form-control-line"
+                                                                        required data-required-msg="El Cliente es requerido"
+                                                                        style="width: 100%;">
+                                                        <datasource type="DataSourceTagHelperType.WebApi" server-operation="true" page-size="9999999">
+                                                            <transport>
+                                                                <read url="@Url.Action("GetCustomerActivos", "Common")" />
+                                                            </transport>
+                                                        </datasource>
+                                                    </kendo-dropdownlist>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        
+
+                                        <div class="row"> 
+                                            @if (Model.Id == 0)
+                                            {
+                                                <div class="col-md-6">
+                                                        <div class="form-group">
+                                                            <label class="control-label" style="min-width:100%">Documentos</label>
+                                                    <kendo-multiselect name="Facturas" id="Facturas" style="min-width:100%" auto-close=false on-change="RefreshDetail" 
+                                                                                no-data-template="No se encontraron facturas en el cliente" 
+                                                                                   required data-required-msg="Seleccione una Factura" 
+                                                                       datatextfield="NumeroSaldo" datavaluefield="InvoiceId" option-label="Seleccione las Facturas con saldo Pendientes de Pago">
+                                                                    <datasource page-size="999" type="DataSourceTagHelperType.WebApi" server-operation="true">
+                                                                        <transport>
+                                                                <read url="@Url.Action("GetFacturasPendientesPagoByCustomer","Invoice")" data="GetCliente" />
+                                                                        </transport>
+                                                                    </datasource>
+                                                                </kendo-multiselect>                                                    
+                                                        </div>
+                                        </div>
+
+
+                                    }
+                                    else
+                                    {
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label asp-for="NoDocumentos" class=" control-label" style="width:100%">Documentos</label>
+                                                <input type="text" asp-for="NoDocumentos" name="NoDocumentos" class="k-textbox" style="min-width:100%" />
+                                                <span asp-validation-for="NoDocumentos" class="text-danger"></span>
+                                            </div>
+                                        </div>
+                                    }
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                                    <label asp-for="CuentaBancariaId" class="control-label" style="width:100%">Cuenta Bancaria a Acreditar</label>
+
+                                            <kendo-dropdownlist name="CuentaBancariaId" filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                                        for="CuentaBancariaId"
+                                                                        option-label="Cuenta Bancaria"
+                                                                        datatextfield="BancoNumero"
+                                                                        datavaluefield="AccountManagementId"  
+                                                                        style="width: 100%;">
+                                                        <datasource type="DataSourceTagHelperType.WebApi" page-size="9999999" >
+                                                            <transport>
+                                                        <read url="@Url.Action("GetAccountManagement", "AccountManagement")" data="GetClienteService" />
+                                                            </transport>
+                                                        </datasource>
+                                                    </kendo-dropdownlist>
+
+                                                </div>
+                                            </div>
+
+
+
+                                    
+                                            
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-3">
+                                                <div class="form-group">
+                                                    <label asp-for="Referrencia" class=" control-label" style="width:100%">Referencia Bancaria No</label>
+                                                    <input type="text" asp-for="Referrencia" name="Depositante" class="k-textbox" style="min-width:100%" />
+                                                    <span asp-validation-for="Referrencia" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="form-group">
+                                                    <label asp-for="Depositante" class=" control-label" style="width:100%">Depositante</label>
+                                                    <input type="text" asp-for="Depositante" name="Depositante" class="k-textbox" style="min-width:100%" />
+                                                    <span asp-validation-for="Depositante" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="col-md-3">
+                                                <label asp-for="MontoPagado" class="control-label">Monto Depositado</label>
+                                                <kendo-numerictextbox name="MontoPagado"
+                                                                      format="n2" spinners="false"
+                                                                      min="0"
+                                                                      required class="control-label right bold"
+                                                                      max="999999999"
+                                                                      step="1"
+                                                                      value="@Model.MontoPagado"></kendo-numerictextbox>
+                                                <span asp-validation-for="MontoPagado" class="text-danger"></span>
+                                            </div>
+                                        </div>
+
+                                       
+                                    </form>
+                                
+
+                                    <div id="salesorderdetail">
+                                        @await Html.PartialAsync("pvwInvoicePaymentsDetail", Model, new ViewDataDictionary(ViewData) { { "permisosInvoice", permisos } })
+                                    </div>
+                                    
+
+
+
+                                <div class="row">
+                                    @if (Model.Id == 0)
+                                    {
+                                        <button id="btnSaveInvoice" type="submit" class="form-control btn-miboton " onclick="SaveCotizacion(this);">Guardar</button>
+                                    }
+                                </div>
+                        </div>
+                            </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+
+    function RefrescarFacturas(){
+        var multiselect = $("#Facturas").data("kendoMultiSelect");
+                                                if (multiselect) {
+                                                    multiselect.dataSource.read();
+                                                }
+    
+    }
+    function validar() {
+        var cadena = $("#Tefono").val();
+        if (cadena.indexOf("_") > -1 == true) {
+            $("#telefono").show();
+        }
+        else {
+            $("#telefono").hide();
+        }
+    }
+
+
+        function RefreshDetail() {
+            var grid = $("#gridInvoiceDetail").getKendoGrid();
+            grid.dataSource.read();
+        }
+</script>
+
+<script>
+    function Numeros(e) {
+        var key = window.Event ? e.which : e.keyCode
+        return (key >= 48 && key <= 57)
+    }
+
+    function GetProductType(){
+        return { ProductType:1}
+    }
+
+    $(document).ready(function () {
+        $("#Tefono").kendoMaskedTextBox({
+            mask: "(999) 0000-0000"
+        });
+
+        $("#telefono").hide();
+
+        var cai = $("#CAI").val();
+        if (cai === null || cai === ''){
+            $("#datosfiscales").hide();
+            $("#datosExonerado").hide();
+            
+        }else{
+            $("#datosExonerado").show();
+            $("#datosfiscales").show();
+        }
+    });
+    function SoloNumeros(e) {
+        key = e.keyCode || e.which;
+        tecla = String.fromCharCode(key).toLowerCase();
+        letras = "1234567890.";
+        especiales = "8-37-39-46";
+        tecla_especial = false
+        for (var i in especiales) {
+            if (key == especiales[i]) {
+                tecla_especial = true;
+                break;
+            }
+        }
+        if (letras.indexOf(tecla) == -1 && !tecla_especial) {
+            return false;
+        }
+    }
+
+
+    function GetProductIdS() {
+        return { 'ProductId': $("#ProductId").val() }
+    }
+
+
+    function RefreshCotizaciones() {
+        var grid = $("#gridInvoices").getKendoGrid();
+        grid.dataSource.read();
+    }
+
+    function SaveCotizacion(e) {
+        try {
+            debugger
+            $("#btnSaveInvoice").prop("disabled", true);            
+            var id = 0;
+            var validator = $("#frmSalesOrder").data("kendoValidator");
+            var status = $(".status");
+
+
+            var displayedData = $("#gridInvoiceDetail").data().kendoGrid.dataSource.view();
+
+            if (!validator.validate()) {
+                MostrarMensaje('Datos incorrectos en el formulario!', "Error", "Validación", 6000);
+                $("#btnSaveInvoice").show();
+                $("#btnSaveInvoice").prop("disabled", false);
+            }
+
+            var dataObject = {
+                'Id': $("#Id").val() === "" ? "0" : $("#Id").val(),
+                'FechaPago': $("#FechaPago").getKendoDateTimePicker().value().toJSON(),
+                'BranchId': $("#BranchId").val(),
+                'BranchName': $("#BranchId").data("kendoDropDownList").text(),
+                'CustomerId': $("#CustomerId").val(),
+                'CustomerName': $("#CustomerId").data("kendoDropDownList").text(),
+                'CuentaBancariaId': $("#CuentaBancariaId").val(),
+                'InvoivceId': $("#InvoivceId").val(),                
+                //'MontoAdeudado': $('#MontoAdeudado').val(),
+                'MontoPagado': $('#MontoPagado').val(),
+                'Referrencia': $('#Referrencia').val(),
+                'Depositante': $('#Depositante').val(),
+
+                'InvoicePaymentsLines': displayedData,
+
+
+            };
+
+            $.ajax({
+                url: '@Url.Action("SaveInvoicePayments", "InvoicePayments")',
+                method: 'POST',
+                datatype: "json",
+                //  contentType: "application/x-www-form-urlencoded; charset=UTF-8",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (data) {
+
+                    MostrarMensaje('Datos guardados correctamente.', "success", "Satisfactorio", 6000);
+                    $('#myModalSalesOrder').modal('hide');
+
+                    RefreshCotizaciones();
+
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    MostrarMensaje(textStatus + ": " + XMLHttpRequest.responseText, "Error", "Error", 6000);
+                    $("#btnSaveInvoice").show();
+                    $("#btnSaveInvoice").prop("disabled", false);
+                }
+            });
+        } catch (ex) {
+            console.log(ex);
+        } finally {
+            $("#btnSaveInvoice").show();
+            $("#btnSaveInvoice").prop("disabled", false);
+        }
+            
+
+        
+
+    }
+
+
+</script>

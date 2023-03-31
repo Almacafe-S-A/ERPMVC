@@ -1,0 +1,305 @@
+﻿@model ERPMVC.Models.InvoicePayments
+@using System.Security.Claims
+@{
+    ClaimsPrincipal permisos = (ClaimsPrincipal)ViewData["permisosInvoice"];
+}
+
+<script>
+
+    function CalcularTotalDocumento() {
+        
+    }
+
+    function setearvalor(nombrenumerico, valor) {
+        var numeric = $("#" + nombrenumerico).data("kendoNumericTextBox");
+        numeric.value(valor);
+        numeric.trigger('change');
+        numeric = null;
+    }
+
+
+    function GetInvoiceId() {
+            var InvoivceId = $("#InvoivceId").val();
+            var Id = $("#Id").val();
+            var FacturasSelect = $("#Facturas").data("kendoMultiSelect");
+            var Facturas = FacturasSelect == undefined ? [] : FacturasSelect.value();
+            return {
+                Facturas: Facturas,
+                Id : Id,
+            };
+    }
+
+    function RefreshInvoiceDetail() {
+        var grid = $("#gridInvoiceDetail").getKendoGrid();
+        grid.dataSource.read();
+    }
+
+    function Calcular(e) {
+        //debugger;
+        
+            
+            if (e.model.Quantity <= 0) {
+                $.toast({
+                    heading: 'Error',
+                    text: 'La cantidad a Facturar no puede ser cero para no facturar este producto elimine la fila',
+                    position: 'top-right',
+                    loaderBg: '#ff6849',
+                    icon: 'error',
+                    hideAfter: 3000,
+                    stack: 6
+                });
+            }
+            var totalSpan = e.container.closest("TR").find(".TotalSpan");
+            var totalimpuestosspan = e.container.closest("TR").find(".TaxSpan");
+            var totalamountspan = e.container.closest("TR").find(".AmountSpan");
+            var totaldicountspan = e.container.closest("TR").find(".discountSpan");    
+            var subtotalspan = e.container.closest("TR").find(".SubTotalSpan");
+        
+            e.model.Amount = e.model.Price * e.model.Quantity;
+            e.model.SubTotal = e.model.Amount - e.model.DiscountAmount;
+            e.model.TaxAmount = e.model.SubTotal * 0.15;
+            e.model.Total = e.model.SubTotal + e.model.TaxAmount;
+
+
+            var total = formattear.format(e.model.Total).replace(/[a-z]{3}/i, "").trim();
+            totalSpan.html(total);
+            var totalimp = formattear.format(e.model.TaxAmount).replace(/[a-z]{3}/i, "").trim();
+            totalimpuestosspan.html(totalimp);
+            var totalamount = formattear.format(e.model.Amount).replace(/[a-z]{3}/i, "").trim();
+            totalamountspan.html(totalamount);
+            var totaldiscount = formattear.format(e.model.DiscountAmount).replace(/[a-z]{3}/i, "").trim();
+            totaldicountspan.html(totaldiscount);
+            var subtotal = formattear.format(e.model.SubTotal).replace(/[a-z]{3}/i, "").trim();
+            subtotalspan.html(subtotal);
+
+
+
+
+
+            //Actualizar Total
+            var footer = $('tr.k-footer-template'),
+                idx = 11, // replace 3 with the column index you want to aggregate
+                aggregate = $(footer).children('td')[idx];
+            $(aggregate).text(totalColumnas(1, 0));
+
+            //Actualizar Total
+            var footer = $('tr.k-footer-template'),
+                idx = 12, // replace 3 with the column index you want to aggregate
+                aggregate = $(footer).children('td')[idx];
+            $(aggregate).text(totalColumnas(2, 1));
+
+            //Actualizar TotalDerechos
+            var footer = $('tr.k-footer-template'),
+                idx = 13, // replace 3 with the column index you want to aggregate
+                aggregate = $(footer).children('td')[idx];
+            $(aggregate).text(totalColumnas(3, 1));
+
+            var footer = $('tr.k-footer-template'),
+                idx = 14, // replace 3 with the column index you want to aggregate
+                aggregate = $(footer).children('td')[idx];
+            $(aggregate).text(totalColumnas(4, 1));
+
+            var footer = $('tr.k-footer-template'),
+                idx = 15, // replace 3 with the column index you want to aggregate
+                aggregate = $(footer).children('td')[idx];
+            $(aggregate).text(totalColumnas(5, 1));
+
+
+    }
+
+    const formatter = new Intl.NumberFormat("en-US");
+    formattear = new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'LPS',
+        minimumFractionDigits: 2
+    });
+
+    
+    
+
+    function totalColumnas(tiporesultado, moneda) {
+        var data = $("#gridInvoiceDetail").getKendoGrid().dataSource.data();
+        var total = 0;
+
+
+        
+        
+        
+
+        switch (tiporesultado) {
+            case 1: 
+                data.forEach(r => total += r.MontoAdeudaPrevio);
+                break;
+            case 2: 
+                data.forEach(r => total += r.MontoPagado);
+                break;
+            case 3: 
+                data.forEach(r => total += r.MontoRestante);
+                break;
+            default:
+                break;
+        }
+        var formatter = new Intl.NumberFormat('es-HN', {
+            style: 'currency',
+            currency: 'LPS',
+            minimumFractionDigits: 2
+        });
+        if (moneda == 1) {
+            return formatter.format(total);
+        }
+        if (moneda == 2) {
+            formatter = new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD',
+                minimumFractionDigits: 2
+            });
+            return formatter.format(total);
+        }
+        if (moneda == 0) {
+            formatter = new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'LPS',
+                minimumFractionDigits: 2
+            });
+            return formatter.format(total).replace(/[a-z]{3}/i, "").trim();
+        }
+        return total;
+    }
+    
+
+</script>
+
+
+
+@(
+Html.Kendo().Grid<ERPMVC.Models.InvoicePaymentsLine>()
+                                                                  .Name("gridInvoiceDetail")
+                                                                  
+                                                                  .Columns(columns =>
+                                                                  {
+
+                                                                  columns.Command(command =>
+                                                      {
+
+                                                                          if ( Model.Id == 0)
+                                                                          {
+                                                                              command.Destroy().Text(" ").IconClass("far fa-trash-alt");
+                                                                          }
+                                                                      }).Title("").Width(80);
+
+                                                                      columns.Bound(p => p.Id).Title("No").Width(80).Visible(false);
+                                                                      columns.Bound(p => p.NoDocumento).Title("No Docto").Width(150);
+                                                                      columns.Bound(p => p.InvoicePaymentId).Title("Factura Id").Width(200).Visible(false);
+                                                                      columns.Bound(p => p.SubProductId).Title("IdProducto").Visible(false);
+                                                                      columns.Bound(p => p.SubProductName).Title("Producto").Width(250).Visible(false);
+                                                                      columns.Bound(p => p.SubProduct).Title("Servicio")
+                                                                      .ClientTemplate("#=typeof SubProduct === 'undefined'||SubProduct===null?SubProductName:SubProduct.ProductName#").Width(250);
+                                                                     
+                                                                      columns.Bound(p => p.MontoAdeudaPrevio).Title("Monto Adeudado").Format("{0:n2}").Width(180)
+                                                                      .ClientTemplate("<div style='text-align: right'><span class='AmountSpan'>#= formattear.format(MontoAdeudaPrevio).replace(/[a-z]{3}/i, '').trim() #</span></div>")
+                                                                        .Width(200)
+                                                                        .ClientFooterTemplate("<div style='text-align: right'><span class='Amountsp'>#= totalColumnas(1,1)#</span></div>")
+                                                                        .HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" }); ;
+                                                                      columns.Bound(p => p.MontoPagado).Format("{0:n2}").Title("Abono").Width(200)
+                                                                      .ClientTemplate("<div style='text-align: right'><span class='discountSpan'>#= formattear.format(MontoPagado).replace(/[a-z]{3}/i, '').trim() #</span></div>")
+                                                                        .Width(200)
+                                                                        .ClientFooterTemplate("<div style='text-align: right'><span class='totalDiscount'>#= totalColumnas(2,1)#</span></div>")
+                                                                        .HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" });;
+                                                                      columns.Bound(p => p.MontoRestante).Format("{0:n2}").Title("Resta").Width(200)
+                                                                      .ClientTemplate("<div style='text-align: right'><span class='SubTotalSpan'>#= formattear.format(MontoAdeudaPrevio - MontoPagado).replace(/[a-z]{3}/i, '').trim() #</span></div>")
+                                                                        .Width(200)
+                                                                        .ClientFooterTemplate("<div style='text-align: right'><span class='totalsubtotal'>#= totalColumnas(3,1)#</span></div>")
+                                                                        .HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" });;
+                                                                      
+
+                                                                  })
+                                                                      .Filterable(f => f.Operators(o => o.ForString(s => s
+                                                               .Clear()
+                                                               .Contains("Contiene")
+                                                               .DoesNotContain("No contiene")
+                                                               .EndsWith("Termina con")
+                                                               .IsEqualTo("Es igual a")
+                                                               .IsNotEqualTo("No es igual a")
+                                                               .IsNull("Es nulo")
+                                                               .StartsWith("Inicia con")
+
+
+                                                         )
+                                                         .ForNumber(n => n
+                                                           .Clear()
+                                                           .IsEqualTo("Es igual a")
+                                                           .IsGreaterThan("Es mayor que")
+                                                           .IsLessThan("Es menor que")
+                                                           .IsNull("Es nulo")
+                                                           .IsLessThanOrEqualTo("Es menor o igual que")
+                                                           .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                                         )
+                                                         .ForDate(d => d
+                                                         .Clear()
+                                                         .IsEqualTo("Es igual que")
+                                                         .IsGreaterThan("Es mayor que")
+                                                         .IsLessThan("Es menor que")
+                                                         .IsLessThanOrEqualTo("Es menor o igual que")
+                                                         .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                                         .IsNotEqualTo("No es igual que")
+                                                          )
+                                                       ))
+                                                                  
+                                                                   .Editable(e => e.Mode(GridEditMode.InCell))
+                                                                    .Sortable()
+                                                                    .AutoBind(true)
+                                                                    .Navigatable()
+                                                                    .Filterable()
+                                                                    .Scrollable()
+                                                                    //.Events(e => e.DataBound("CalcularTotalDocumento"))
+                                                                    .DataSource(dataSource =>
+
+                                                                   dataSource
+                                                                   //.Ajax()
+                                                                   .WebApi()
+
+                                                                    .ServerOperation(true)
+                                                                    .Model(model =>
+                                                                    {
+                                                                        model.Id(p => p.Id);
+                                                                        model.Field(p => p.MontoPagado).Editable(true);
+                                                                        model.Field(p => p.MontoAdeudaPrevio).Editable(false);
+                                                                        model.Field(p => p.MontoRestante).Editable(false);
+                                                                    })
+                                                                    .Events(events =>
+                                                                    {
+                                                                        events.Error("error_handler");
+
+                                                                    })
+                                                                    .Sort(s => s.Add(m => m.Id).Descending())
+                                                                    .Read(read => read.Action("GetInvoicePaymentsLineByInvoiceId", "InvoicePayments").Data("GetInvoiceId"))
+                                                              )
+        )
+
+
+<script>
+
+    function setToolbarTooltip(btn_cl, btn_tooltip) {
+        $("#gridInvoiceDetail").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+
+    function setRowButtonTooltip(btn_cl, btn_tooltip) {
+        $("#gridInvoiceDetail").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+
+    //setRowButtonTooltip(".k-grid-GenerarFactura", "Generar una factura fiscal!");
+    setRowButtonTooltip(".k-grid-Eliminar", "Eliminar registro");
+     if (@Model.Id> 0) {
+        setRowButtonTooltip(".k-grid-Editar", "Ver Detalle");
+    }
+    else {
+        setRowButtonTooltip(".k-grid-Editar", "Editar registro");
+    }
+    setRowButtonTooltip(".k-grid-Agregar", "Agregar nuevo registro");
+</script>
