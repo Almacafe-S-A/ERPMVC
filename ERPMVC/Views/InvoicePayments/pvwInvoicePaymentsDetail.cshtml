@@ -35,13 +35,12 @@
     }
 
     function Calcular(e) {
-        //debugger;
         
-            
-            if (e.model.Quantity <= 0) {
+
+            if (e.model.MontoPagado <= 0) {
                 $.toast({
                     heading: 'Error',
-                    text: 'La cantidad a Facturar no puede ser cero para no facturar este producto elimine la fila',
+                    text: 'La cantidad a pagar no puede ser cero para no pagar este producto elimine la fila',
                     position: 'top-right',
                     loaderBg: '#ff6849',
                     icon: 'error',
@@ -49,28 +48,20 @@
                     stack: 6
                 });
             }
-            var totalSpan = e.container.closest("TR").find(".TotalSpan");
-            var totalimpuestosspan = e.container.closest("TR").find(".TaxSpan");
-            var totalamountspan = e.container.closest("TR").find(".AmountSpan");
-            var totaldicountspan = e.container.closest("TR").find(".discountSpan");    
-            var subtotalspan = e.container.closest("TR").find(".SubTotalSpan");
-        
-            e.model.Amount = e.model.Price * e.model.Quantity;
-            e.model.SubTotal = e.model.Amount - e.model.DiscountAmount;
-            e.model.TaxAmount = e.model.SubTotal * 0.15;
-            e.model.Total = e.model.SubTotal + e.model.TaxAmount;
+            var MontoAdeudaPrevioSpan = e.container.closest("TR").find(".MontoAdeudaPrevioSpan");
+            var MontoPagadoSpan = e.container.closest("TR").find(".MontoPagadoSpan");
+            var MontoRestanteSpan = e.container.closest("TR").find(".MontoRestanteSpan");
+
+            e.model.MontoRestante = e.model.MontoAdeudaPrevio - e.model.MontoPagado;
 
 
-            var total = formattear.format(e.model.Total).replace(/[a-z]{3}/i, "").trim();
-            totalSpan.html(total);
-            var totalimp = formattear.format(e.model.TaxAmount).replace(/[a-z]{3}/i, "").trim();
-            totalimpuestosspan.html(totalimp);
-            var totalamount = formattear.format(e.model.Amount).replace(/[a-z]{3}/i, "").trim();
-            totalamountspan.html(totalamount);
-            var totaldiscount = formattear.format(e.model.DiscountAmount).replace(/[a-z]{3}/i, "").trim();
-            totaldicountspan.html(totaldiscount);
-            var subtotal = formattear.format(e.model.SubTotal).replace(/[a-z]{3}/i, "").trim();
-            subtotalspan.html(subtotal);
+
+            var MontoAdeudaPrevio = formattear.format(e.model.MontoAdeudaPrevio).replace(/[a-z]{3}/i, "").trim();
+            MontoAdeudaPrevioSpan.html(MontoAdeudaPrevio);
+            var MontoPagado = formattear.format(e.model.MontoPagado).replace(/[a-z]{3}/i, "").trim();
+            MontoPagadoSpan.html(MontoPagado);
+            var MontoRestante = formattear.format(e.model.MontoRestante).replace(/[a-z]{3}/i, "").trim();
+            MontoRestanteSpan.html(MontoRestante);
 
 
 
@@ -78,31 +69,23 @@
 
             //Actualizar Total
             var footer = $('tr.k-footer-template'),
-                idx = 11, // replace 3 with the column index you want to aggregate
+                idx = 3, // replace 3 with the column index you want to aggregate
                 aggregate = $(footer).children('td')[idx];
             $(aggregate).text(totalColumnas(1, 0));
 
             //Actualizar Total
             var footer = $('tr.k-footer-template'),
-                idx = 12, // replace 3 with the column index you want to aggregate
+                idx = 4, // replace 3 with the column index you want to aggregate
                 aggregate = $(footer).children('td')[idx];
             $(aggregate).text(totalColumnas(2, 1));
 
             //Actualizar TotalDerechos
             var footer = $('tr.k-footer-template'),
-                idx = 13, // replace 3 with the column index you want to aggregate
+                idx = 5, // replace 3 with the column index you want to aggregate
                 aggregate = $(footer).children('td')[idx];
             $(aggregate).text(totalColumnas(3, 1));
 
-            var footer = $('tr.k-footer-template'),
-                idx = 14, // replace 3 with the column index you want to aggregate
-                aggregate = $(footer).children('td')[idx];
-            $(aggregate).text(totalColumnas(4, 1));
-
-            var footer = $('tr.k-footer-template'),
-                idx = 15, // replace 3 with the column index you want to aggregate
-                aggregate = $(footer).children('td')[idx];
-            $(aggregate).text(totalColumnas(5, 1));
+            
 
 
     }
@@ -174,19 +157,17 @@
 @(
 Html.Kendo().Grid<ERPMVC.Models.InvoicePaymentsLine>()
                                                                   .Name("gridInvoiceDetail")
-                                                                  
+                                                                  .Events(e => e.CellClose("Calcular"))
                                                                   .Columns(columns =>
                                                                   {
-
-                                                                  columns.Command(command =>
-                                                      {
-
-                                                                          if ( Model.Id == 0)
+                                                                      if (Model.Id == 0)
+                                                                      {
+                                                                        columns.Command(command =>
                                                                           {
-                                                                              command.Destroy().Text(" ").IconClass("far fa-trash-alt");
-                                                                          }
-                                                                      }).Title("").Width(80);
-
+                                                                                  command.Destroy().Text(" ").IconClass("far fa-trash-alt");
+                                                                          
+                                                                          }).Title("").Width(80);
+                                                                      }
                                                                       columns.Bound(p => p.Id).Title("No").Width(80).Visible(false);
                                                                       columns.Bound(p => p.NoDocumento).Title("No Docto").Width(150);
                                                                       columns.Bound(p => p.InvoicePaymentId).Title("Factura Id").Width(200).Visible(false);
@@ -196,19 +177,19 @@ Html.Kendo().Grid<ERPMVC.Models.InvoicePaymentsLine>()
                                                                       .ClientTemplate("#=typeof SubProduct === 'undefined'||SubProduct===null?SubProductName:SubProduct.ProductName#").Width(250);
                                                                      
                                                                       columns.Bound(p => p.MontoAdeudaPrevio).Title("Monto Adeudado").Format("{0:n2}").Width(180)
-                                                                      .ClientTemplate("<div style='text-align: right'><span class='AmountSpan'>#= formattear.format(MontoAdeudaPrevio).replace(/[a-z]{3}/i, '').trim() #</span></div>")
+                                                                      .ClientTemplate("<div style='text-align: right'><span class='MontoAdeudaPrevioSpan'>#= formattear.format(MontoAdeudaPrevio).replace(/[a-z]{3}/i, '').trim() #</span></div>")
                                                                         .Width(200)
-                                                                        .ClientFooterTemplate("<div style='text-align: right'><span class='Amountsp'>#= totalColumnas(1,1)#</span></div>")
+                                                                        .ClientFooterTemplate("<div style='text-align: right'><span class='MontoAdeudaPrevio'>#= totalColumnas(1,1)#</span></div>")
                                                                         .HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" }); ;
-                                                                      columns.Bound(p => p.MontoPagado).Format("{0:n2}").Title("Abono").Width(200)
-                                                                      .ClientTemplate("<div style='text-align: right'><span class='discountSpan'>#= formattear.format(MontoPagado).replace(/[a-z]{3}/i, '').trim() #</span></div>")
+                                                                      columns.Bound(p => p.MontoPagado).Format("{0:n2}").Title("Pago").Width(200)
+                                                                      .ClientTemplate("<div style='text-align: right'><span class='MontoPagadoSpan'>#= formattear.format(MontoPagado).replace(/[a-z]{3}/i, '').trim() #</span></div>")
                                                                         .Width(200)
-                                                                        .ClientFooterTemplate("<div style='text-align: right'><span class='totalDiscount'>#= totalColumnas(2,1)#</span></div>")
+                                                                        .ClientFooterTemplate("<div style='text-align: right'><span class='MontoPagado'>#= totalColumnas(2,1)#</span></div>")
                                                                         .HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" });;
                                                                       columns.Bound(p => p.MontoRestante).Format("{0:n2}").Title("Resta").Width(200)
-                                                                      .ClientTemplate("<div style='text-align: right'><span class='SubTotalSpan'>#= formattear.format(MontoAdeudaPrevio - MontoPagado).replace(/[a-z]{3}/i, '').trim() #</span></div>")
+                                                                      .ClientTemplate("<div style='text-align: right'><span class='MontoRestanteSpan'>#= formattear.format(MontoAdeudaPrevio - MontoPagado).replace(/[a-z]{3}/i, '').trim() #</span></div>")
                                                                         .Width(200)
-                                                                        .ClientFooterTemplate("<div style='text-align: right'><span class='totalsubtotal'>#= totalColumnas(3,1)#</span></div>")
+                                                                        .ClientFooterTemplate("<div style='text-align: right'><span class='MontoRestante'>#= totalColumnas(3,1)#</span></div>")
                                                                         .HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" });;
                                                                       
 
@@ -265,6 +246,8 @@ Html.Kendo().Grid<ERPMVC.Models.InvoicePaymentsLine>()
                                                                         model.Field(p => p.MontoPagado).Editable(true);
                                                                         model.Field(p => p.MontoAdeudaPrevio).Editable(false);
                                                                         model.Field(p => p.MontoRestante).Editable(false);
+                                                                        model.Field(p => p.SubProduct).Editable(false);
+                                                                        model.Field(p => p.NoDocumento).Editable(false);
                                                                     })
                                                                     .Events(events =>
                                                                     {
