@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Security.Claims;
+using System.Security.Policy;
 using System.Threading.Tasks;
 using ERPMVC.DTO;
 using ERPMVC.Helpers;
@@ -20,12 +21,12 @@ namespace ERPMVC.Controllers
 {
     [Authorize]
     [CustomAuthorization]
-    public class InvoiceController : Controller
+    public class InvoicePaymentsController : Controller
     {
         private readonly IOptions<MyConfig> config;
         private readonly ILogger _logger;
         private readonly ClaimsPrincipal _principal;
-        public InvoiceController(ILogger<InvoiceController> logger, IOptions<MyConfig> config, IHttpContextAccessor httpContextAccessor)
+        public InvoicePaymentsController(ILogger<InvoicePaymentsController> logger, IOptions<MyConfig> config, IHttpContextAccessor httpContextAccessor)
         {
             this.config = config;
             this._logger = logger;
@@ -40,32 +41,31 @@ namespace ERPMVC.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult> pvwInvoice([FromBody]Invoice _Invoicep)
+        public async Task<ActionResult> pvwInvoicePayments([FromBody]InvoicePayments _InvoicePaymentsp)
         {
-            InvoiceDTO _Invoice = new InvoiceDTO();
+            InvoicePayments _InvoicePayments = new InvoicePayments();
             try
             {
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/Invoice/GetInvoiceById/" + _Invoicep.InvoiceId);
+                var result = await _client.GetAsync(baseadress + "api/InvoicePayments/GetInvoicePaymentsById/" + _InvoicePaymentsp.Id);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _Invoice = JsonConvert.DeserializeObject<InvoiceDTO>(valorrespuesta);
+                    _InvoicePayments = JsonConvert.DeserializeObject<InvoicePayments>(valorrespuesta);
                    
                 }
 
-                if (_Invoice == null)
+                if (_InvoicePayments == null)
                 {
-                    _Invoice = new InvoiceDTO
-                    { OrderDate = DateTime.Now,
-                        DeliveryDate = DateTime.Now,
-                        ExpirationDate = DateTime.Now.AddDays(30),
-                        BranchId = Convert.ToInt32(HttpContext.Session.GetString("BranchId")),
-                        editar = 1,
-                        DiasVencimiento =30
+                    _InvoicePayments = new InvoicePayments
+                    {   FechaPago = DateTime.Now,
+                        MontoAdeudado = 0,
+                        MontoAdeudaPrevio = 0,
+                        MontoPagado = 0,
+                        InvoicePaymentsLines = new List<InvoicePaymentsLine>()
                         
                     };
 
@@ -81,7 +81,7 @@ namespace ERPMVC.Controllers
 
 
 
-            return PartialView(_Invoice);
+            return PartialView(_InvoicePayments);
 
         }
 
@@ -92,20 +92,20 @@ namespace ERPMVC.Controllers
         [HttpGet]
         public async Task<DataSourceResult> Get([DataSourceRequest]DataSourceRequest request)
         {
-            List<Invoice> _Invoice = new List<Invoice>();
+            List<InvoicePayments> _InvoicePayments = new List<InvoicePayments>();
             try
             {
 
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/Invoice/GetInvoice");
+                var result = await _client.GetAsync(baseadress + "api/InvoicePayments/GetInvoicePayments");
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _Invoice = JsonConvert.DeserializeObject<List<Invoice>>(valorrespuesta);
-                    _Invoice = _Invoice.OrderByDescending(q => q.InvoiceId).ToList();
+                    _InvoicePayments = JsonConvert.DeserializeObject<List<InvoicePayments>>(valorrespuesta);
+                    _InvoicePayments = _InvoicePayments.OrderByDescending(q => q.Id).ToList();
                 }
 
 
@@ -117,28 +117,28 @@ namespace ERPMVC.Controllers
             }
 
 
-            return _Invoice.ToDataSourceResult(request);
+            return _InvoicePayments.ToDataSourceResult(request);
 
         }
 
 
         //[HttpGet]
-        public async Task<DataSourceResult> GetFacturasByCustomer([DataSourceRequest] DataSourceRequest request, int CustomerId)
+        public async Task<DataSourceResult> GetPagosByCustomer([DataSourceRequest] DataSourceRequest request, int CustomerId)
         {
-            List<Invoice> _Invoice = new List<Invoice>();
+            List<InvoicePayments> _InvoicePayments = new List<InvoicePayments>();
             try
             {
 
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/Invoice/GetFacturasByCustomer/"+CustomerId);
+                var result = await _client.GetAsync(baseadress + "api/InvoicePayments/GetPagosByCustomer/"+CustomerId);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _Invoice = JsonConvert.DeserializeObject<List<Invoice>>(valorrespuesta);
-                    _Invoice = _Invoice.OrderByDescending(q => q.InvoiceId).ToList();
+                    _InvoicePayments = JsonConvert.DeserializeObject<List<InvoicePayments>>(valorrespuesta);
+                    _InvoicePayments = _InvoicePayments.OrderByDescending(q => q.Id).ToList();
                 }
                 else
                 {
@@ -154,54 +154,68 @@ namespace ERPMVC.Controllers
             }
 
 
-            return _Invoice.ToDataSourceResult(request);
+            return _InvoicePayments.ToDataSourceResult(request);
+
+        }
+
+
+
+
+        public async Task<DataSourceResult> GetInvoicePaymentsLineByInvoiceId([DataSourceRequest] DataSourceRequest request, InvoicePaymentsDTO invoicePayments)
+        {
+            List<InvoicePaymentsLine> _InvoicePayments = new List<InvoicePaymentsLine>();
+            try
+            {
+                if (invoicePayments  == null)
+                {
+                    return null ;
+                }
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+
+                HttpResponseMessage result;
+                if (invoicePayments.Id == 0)
+                {
+                     result = await _client.PostAsJsonAsync(baseadress + $"api/InvoicePayments/GetDetalletInvoiceById/",invoicePayments.Facturas);
+                }
+                else
+                {
+                    result = await _client.GetAsync(baseadress + $"api/InvoicePayments/GetDetalletInvoicePaymentById/{invoicePayments.Id}");
+                }
+                
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _InvoicePayments = JsonConvert.DeserializeObject<List<InvoicePaymentsLine>>(valorrespuesta);
+                    _InvoicePayments = _InvoicePayments.OrderByDescending(q => q.Id).ToList();
+                }
+                else
+                {
+                    return _InvoicePayments.ToDataSourceResult(request);
+                }
+
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: {ex.ToString()}");
+                throw ex;
+            }
+
+
+            return _InvoicePayments.ToDataSourceResult(request);
 
         }
         
 
 
-
-        public async Task<DataSourceResult> GetFacturasPendientesPagoByCustomer([DataSourceRequest] DataSourceRequest request, int CustomerId)
-        {
-            List<Invoice> _Invoice = new List<Invoice>();
-            try
-            {
-
-                string baseadress = config.Value.urlbase;
-                HttpClient _client = new HttpClient();
-                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/Invoice/GetFacturasPendientesPagoByCustomer/" + CustomerId);
-                string valorrespuesta = "";
-                if (result.IsSuccessStatusCode)
-                {
-                    valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _Invoice = JsonConvert.DeserializeObject<List<Invoice>>(valorrespuesta);
-                    _Invoice = _Invoice.OrderByDescending(q => q.InvoiceId).ToList();
-                }
-                else
-                {
-                    return null;
-                }
-
-
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError($"Ocurrio un error: {ex.ToString()}");
-                throw ex;
-            }
-
-
-            return _Invoice.ToDataSourceResult(request);
-
-        }
-
-
         [HttpPost]
-        public async Task<ActionResult> GetInvoiceById([FromBody]Invoice _Invoicep)
+        public async Task<ActionResult> GetInvoicePaymentsById([FromBody]InvoicePayments _InvoicePaymentsp)
         //public async Task<ActionResult> GetGoodsDeliveredById([FromBody]dynamic dto)
         {
-            Invoice _Invoice = new Invoice();
+            InvoicePayments _InvoicePayments = new InvoicePayments();
             try
             {
 
@@ -209,18 +223,18 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.PostAsJsonAsync(baseadress + "api/Invoice/GetInvoiceLineById", _Invoicep);
+                var result = await _client.PostAsJsonAsync(baseadress + "api/InvoicePayments/GetInvoicePaymentsLineById", _InvoicePaymentsp);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _Invoice = JsonConvert.DeserializeObject<Invoice>(valorrespuesta);
+                    _InvoicePayments = JsonConvert.DeserializeObject<InvoicePayments>(valorrespuesta);
 
                 }
 
-                if (_Invoice == null)
+                if (_InvoicePayments == null)
                 {
-                    _Invoice = new Invoice();
+                    _InvoicePayments = new InvoicePayments();
                 }
             }
             catch (Exception ex)
@@ -229,15 +243,16 @@ namespace ERPMVC.Controllers
                 throw ex;
             }
 
-            return Json(_Invoice);
+            return Json(_InvoicePayments);
         }
+        
 
 
-        public async Task<ActionResult<GoodsDeliveryAuthorization>> Aprobar([FromBody] Invoice invoice)
+        public async Task<ActionResult<GoodsDeliveryAuthorization>> Aprobar([FromBody] InvoicePayments InvoicePayments)
         {
             try
             {
-                if (invoice == null)
+                if (InvoicePayments == null)
                 {
                     return await Task.Run(() => BadRequest("No llego correctamente el modelo!"));
                 }
@@ -246,7 +261,7 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + $"api/Invoice/ChangeInvoiceStatus/{invoice.InvoiceId}/{2}");
+                var result = await _client.GetAsync(baseadress + $"api/InvoicePayments/ChangeInvoicePaymentsStatus/{InvoicePayments.Id}/{2}");
                 string valorrespuesta = "";
                 if (!result.IsSuccessStatusCode)
                 {
@@ -265,11 +280,11 @@ namespace ERPMVC.Controllers
 
         }
 
-        public async Task<ActionResult<GoodsDeliveryAuthorization>> Revisar([FromBody] Invoice invoice)
+        public async Task<ActionResult<GoodsDeliveryAuthorization>> Revisar([FromBody] InvoicePayments InvoicePayments)
         {
             try
             {
-                if (invoice == null)
+                if (InvoicePayments == null)
                 {
                     return await Task.Run(() => BadRequest("No llego correctamente el modelo!"));
                 }
@@ -278,7 +293,7 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + $"api/Invoice/ChangeInvoiceStatus/{invoice.InvoiceId}/{1}");
+                var result = await _client.GetAsync(baseadress + $"api/InvoicePayments/ChangeInvoicePaymentsStatus/{InvoicePayments.Id}/{1}");
                 string valorrespuesta = "";
                 if (!result.IsSuccessStatusCode)
                 {
@@ -299,22 +314,22 @@ namespace ERPMVC.Controllers
 
 
 
-        public async Task<ActionResult> GenerarFactura([FromBody] Invoice invoice)
+        public async Task<ActionResult> GenerarFactura([FromBody] InvoicePayments InvoicePayments)
         //public async Task<ActionResult> GetGoodsDeliveredById([FromBody]dynamic dto)
         {
-            Invoice _Invoice = new Invoice();
+            InvoicePayments _InvoicePayments = new InvoicePayments();
             try
             {
 
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + $"api/Invoice/GenerarFactura/{invoice.InvoiceId}");
+                var result = await _client.GetAsync(baseadress + $"api/InvoicePayments/GenerarFactura/{InvoicePayments.Id}");
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _Invoice = JsonConvert.DeserializeObject<Invoice>(valorrespuesta);
+                    _InvoicePayments = JsonConvert.DeserializeObject<InvoicePayments>(valorrespuesta);
 
                 }
                 else
@@ -328,42 +343,42 @@ namespace ERPMVC.Controllers
                 return BadRequest(ex.Message);
             }
 
-            return Json(_Invoice);
+            return Json(_InvoicePayments);
         }
 
 
         [HttpPost("[action]")]
-        public async Task<ActionResult<InvoiceDTO>> SaveInvoice([FromBody]InvoiceDTO _Invoice)
+        public async Task<ActionResult<InvoicePayments>> SaveInvoicePayments([FromBody]InvoicePayments _InvoicePayments)
         {
 
             try
             {
-                if (_Invoice == null)
+                if (_InvoicePayments == null)
                 {
                     return BadRequest("No llego correctamente el modelo");
                 }
 
-                Invoice _listInvoice = new Invoice();
+                InvoicePayments _listInvoicePayments = new InvoicePayments();
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/Invoice/GetInvoiceById/" + _Invoice.InvoiceId);
+                var result = await _client.GetAsync(baseadress + "api/InvoicePayments/GetInvoicePaymentsById/" + _InvoicePayments.Id);
                 string valorrespuesta = "";
-                _Invoice.FechaModificacion = DateTime.Now;
-                _Invoice.UsuarioModificacion = HttpContext.Session.GetString("user");
+                _InvoicePayments.FechaModificacion = DateTime.Now;
+                _InvoicePayments.UsuarioModificacion = HttpContext.Session.GetString("user");
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _listInvoice = JsonConvert.DeserializeObject<Invoice>(valorrespuesta);
+                    _listInvoicePayments = JsonConvert.DeserializeObject<InvoicePayments>(valorrespuesta);
                 }
 
-                if (_listInvoice == null) { _listInvoice = new Invoice(); }
+                if (_listInvoicePayments == null) { _listInvoicePayments = new InvoicePayments(); }
 
-                if (_listInvoice.InvoiceId == 0)
+                if (_listInvoicePayments.Id == 0)
                 {
-                    _Invoice.FechaCreacion = DateTime.Now;
-                    _Invoice.UsuarioCreacion = HttpContext.Session.GetString("user");
-                    var insertresult = await Insert(_Invoice);
+                    _InvoicePayments.FechaCreacion = DateTime.Now;
+                    _InvoicePayments.UsuarioCreacion = HttpContext.Session.GetString("user");
+                    var insertresult = await Insert(_InvoicePayments);
                     if ((insertresult.Result is BadRequestObjectResult))
                     {
                         return await Task.Run(() => BadRequest(insertresult.Result));
@@ -372,7 +387,7 @@ namespace ERPMVC.Controllers
                 }
                 else
                 {
-                    var updateresult = await Update(_Invoice.InvoiceId, _Invoice);
+                    var updateresult = await Update(_InvoicePayments.Id, _InvoicePayments);
                     if ((updateresult.Result is BadRequestObjectResult))
                     {
                         return await Task.Run(() => BadRequest(updateresult.Result));
@@ -386,13 +401,13 @@ namespace ERPMVC.Controllers
                 return await Task.Run(() => BadRequest($"No se genero la factura : {ex.ToString()}"));
             }
 
-            return Json(_Invoice);
+            return Json(_InvoicePayments);
         }
 
-        // POST: Invoice/Insert
+        // POST: InvoicePayments/Insert
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult<Invoice>> Insert(InvoiceDTO _Invoice)
+        public async Task<ActionResult<InvoicePayments>> Insert(InvoicePayments _InvoicePayments)
         {
             try
             {
@@ -400,14 +415,14 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                _Invoice.UsuarioCreacion = HttpContext.Session.GetString("user");
-                _Invoice.UsuarioModificacion = HttpContext.Session.GetString("user");
-                var result = await _client.PostAsJsonAsync(baseadress + "api/Invoice/Insert", _Invoice);
+                _InvoicePayments.UsuarioCreacion = HttpContext.Session.GetString("user");
+                _InvoicePayments.UsuarioModificacion = HttpContext.Session.GetString("user");
+                var result = await _client.PostAsJsonAsync(baseadress + "api/InvoicePayments/Insert", _InvoicePayments);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _Invoice = JsonConvert.DeserializeObject<InvoiceDTO>(valorrespuesta);
+                    _InvoicePayments = JsonConvert.DeserializeObject<InvoicePayments>(valorrespuesta);
                 }
                 else
                 {
@@ -423,12 +438,12 @@ namespace ERPMVC.Controllers
                 throw (ex);
                 // return await Task.Run(()=> BadRequest($"Ocurrio un error{ex.Message}"));
             }
-            return Ok(_Invoice);
-            // return new ObjectResult(new DataSourceResult { Data = new[] { _Invoice }, Total = 1 });
+            return Ok(_InvoicePayments);
+            // return new ObjectResult(new DataSourceResult { Data = new[] { _InvoicePayments }, Total = 1 });
         }
 
         [HttpPut("{id}")]
-        public async Task<ActionResult<Invoice>> Update(Int64 id, Invoice _Invoice)
+        public async Task<ActionResult<InvoicePayments>> Update(Int64 id, InvoicePayments _InvoicePayments)
         {
             try
             {
@@ -436,12 +451,12 @@ namespace ERPMVC.Controllers
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
 
-                var result = await _client.PutAsJsonAsync(baseadress + "api/Invoice/Update", _Invoice);
+                var result = await _client.PutAsJsonAsync(baseadress + "api/InvoicePayments/Update", _InvoicePayments);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _Invoice = JsonConvert.DeserializeObject<Invoice>(valorrespuesta);
+                    _InvoicePayments = JsonConvert.DeserializeObject<InvoicePayments>(valorrespuesta);
                 }
 
             }
@@ -451,12 +466,12 @@ namespace ERPMVC.Controllers
                 return await Task.Run(()=> BadRequest($"Ocurrio un error{ex.Message}"));
             }
 
-            return await Task.Run(() => Ok(_Invoice));
-           // return new ObjectResult(new DataSourceResult { Data = new[] { _Invoice }, Total = 1 });
+            return await Task.Run(() => Ok(_InvoicePayments));
+           // return new ObjectResult(new DataSourceResult { Data = new[] { _InvoicePayments }, Total = 1 });
         }
 
         [HttpPost("[action]")]
-        public async Task<ActionResult<Invoice>> Delete([FromBody]Invoice _Invoice)
+        public async Task<ActionResult<InvoicePayments>> Delete([FromBody]InvoicePayments _InvoicePayments)
         {
             try
             {
@@ -464,12 +479,12 @@ namespace ERPMVC.Controllers
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
 
-                var result = await _client.PostAsJsonAsync(baseadress + "api/Invoice/Delete", _Invoice);
+                var result = await _client.PostAsJsonAsync(baseadress + "api/InvoicePayments/Delete", _InvoicePayments);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _Invoice = JsonConvert.DeserializeObject<Invoice>(valorrespuesta);
+                    _InvoicePayments = JsonConvert.DeserializeObject<InvoicePayments>(valorrespuesta);
                 }
 
             }
@@ -480,19 +495,19 @@ namespace ERPMVC.Controllers
             }
 
 
-            return await Task.Run(() => Ok(_Invoice));
-           // return new ObjectResult(new DataSourceResult { Data = new[] { _Invoice }, Total = 1 });
+            return await Task.Run(() => Ok(_InvoicePayments));
+           // return new ObjectResult(new DataSourceResult { Data = new[] { _InvoicePayments }, Total = 1 });
         }
 
 
 
         [HttpGet]
-        public async Task<ActionResult> SFInvoice(Int32 id)
+        public async Task<ActionResult> SFInvoicePayments(Int32 id)
         {
             try
             {
-                InvoiceDTO _invoicedto = new InvoiceDTO { InvoiceId = id, };
-                return await Task.Run(()=> View(_invoicedto));
+                InvoicePayments _InvoicePayments = new InvoicePayments { Id = id, };
+                return await Task.Run(()=> View(_InvoicePayments));
             }
             catch (Exception)
             {
@@ -503,12 +518,12 @@ namespace ERPMVC.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult> SFInvoiceProforma(Int32 id)
+        public async Task<ActionResult> SFInvoicePaymentsProforma(Int32 id)
         {
             try
             {
-                InvoiceDTO _invoicedto = new InvoiceDTO { InvoiceId = id, };
-                return await Task.Run(() => View(_invoicedto));
+                InvoicePayments _InvoicePayments = new InvoicePayments { Id = id, };
+                return await Task.Run(() => View(_InvoicePayments));
             }
             catch (Exception)
             {
@@ -526,7 +541,7 @@ namespace ERPMVC.Controllers
 
 
 
-        public async Task<ActionResult> InvoiceCustomer()
+        public async Task<ActionResult> InvoicePaymentsCustomer()
         {
             ViewData["permisos"] = _principal;
             return await Task.Run(() => PartialView());
@@ -537,21 +552,21 @@ namespace ERPMVC.Controllers
         [HttpGet]
         public async Task<DataSourceResult> GetByCustomer([DataSourceRequest]DataSourceRequest request, Int32 CustomerId)
         {
-            List<Invoice> _Invoice = new List<Invoice>();
+            List<InvoicePayments> _InvoicePayments = new List<InvoicePayments>();
             try
             {
 
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/Invoice/GetInvoice");
+                var result = await _client.GetAsync(baseadress + "api/InvoicePayments/GetInvoicePayments");
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _Invoice = JsonConvert.DeserializeObject<List<Invoice>>(valorrespuesta);
-                    _Invoice = _Invoice.OrderByDescending(q => q.InvoiceId).ToList();
-                    _Invoice = _Invoice.Where(x => x.CustomerId ==  CustomerId).ToList();
+                    _InvoicePayments = JsonConvert.DeserializeObject<List<InvoicePayments>>(valorrespuesta);
+                    _InvoicePayments = _InvoicePayments.OrderByDescending(q => q.Id).ToList();
+                    _InvoicePayments = _InvoicePayments.Where(x => x.CustomerId ==  CustomerId).ToList();
 
                 }
 
@@ -564,7 +579,7 @@ namespace ERPMVC.Controllers
             }
 
 
-            return _Invoice.ToDataSourceResult(request);
+            return _InvoicePayments.ToDataSourceResult(request);
 
         }
 

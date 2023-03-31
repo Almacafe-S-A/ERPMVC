@@ -255,11 +255,13 @@ namespace ERPMVC
 
             Syncfusion.Licensing.SyncfusionLicenseProvider.RegisterLicense("ODM3NkAzMTM3MmUzNDJlMzBPRm41TTBEL2hiZ0pjbG93dDZPQ0VocmRCWkJHSXlzWFgrUkxrZVlDaUpzPQ==");
             app.UseAuthentication();
-            var defaultDateCulture = "es-ES";
+            var defaultDateCulture = "es-HN";
             var ci = new CultureInfo(defaultDateCulture);
-            ci.NumberFormat.NumberDecimalSeparator = ".";
-            ci.NumberFormat.CurrencyDecimalSeparator = ".";
-            ci.NumberFormat.CurrencySymbol = "L";
+            //ci.NumberFormat.NumberDecimalSeparator = ".";
+            //ci.NumberFormat.CurrencyDecimalSeparator = ".";
+            //ci.NumberFormat.NumberGroupSeparator = ",";
+            //ci.NumberFormat.CurrencySymbol = "L";
+            //ci.NumberFormat. = "L";
 
             // Configure the Localization middleware
             app.UseRequestLocalization(new RequestLocalizationOptions
