@@ -178,11 +178,6 @@ namespace ERPMVC.Controllers
                     _Invoice = JsonConvert.DeserializeObject<List<Invoice>>(valorrespuesta);
                     _Invoice = _Invoice.OrderByDescending(q => q.InvoiceId).ToList();
                 }
-                else
-                {
-                    return null;
-                }
-
 
             }
             catch (Exception ex)

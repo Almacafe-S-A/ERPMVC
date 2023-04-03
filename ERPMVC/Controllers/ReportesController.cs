@@ -117,6 +117,15 @@ namespace ERPMVC.Controllers
 
 
 
+        
+
+        //[Authorize(Policy = "Ventas.SFClienteEstadoCuenta")]
+        public async Task<IActionResult> SFClienteEstadoCuenta()
+        {
+
+            return await Task.Run(() => View());
+
+        }
 
 
     }
