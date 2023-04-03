@@ -179,7 +179,9 @@ namespace ERPMVC.Models
 
         public double Saldo { get; set; }
 
-        public string NumeroSaldo => $"{NumeroDEI} - {String.Format("{0:C2}",Saldo)}";
+        public double SaldoImpuesto { get; set; }
+
+        public string NumeroSaldo => $"{NumeroDEI} - {String.Format("{0:C2}",(Saldo+SaldoImpuesto))}";
         public List<InvoiceLine> InvoiceLine { get; set; } = new List<InvoiceLine>();
 
     }

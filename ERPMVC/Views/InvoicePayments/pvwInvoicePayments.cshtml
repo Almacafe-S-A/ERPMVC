@@ -192,7 +192,8 @@
                                                                         for="CuentaBancariaId"
                                                                         option-label="Cuenta Bancaria"
                                                                         datatextfield="BancoNumero"
-                                                                        datavaluefield="AccountManagementId"  
+                                                                        datavaluefield="AccountManagementId"
+                                                                        data-val-required="Cuenta Bancaria Fecha Pago es Requerida"
                                                                         style="width: 100%;">
                                                         <datasource type="DataSourceTagHelperType.WebApi" page-size="9999999" >
                                                             <transport>
@@ -200,7 +201,7 @@
                                                             </transport>
                                                         </datasource>
                                                     </kendo-dropdownlist>
-
+                                            <span asp-validation-for="CuentaBancariaId" class="text-danger"></span>
                                                 </div>
                                             </div>
 
@@ -213,14 +214,14 @@
                                             <div class="col-md-3">
                                                 <div class="form-group">
                                                     <label asp-for="Referrencia" class=" control-label" style="width:100%">Referencia Bancaria No</label>
-                                                    <input type="text" asp-for="Referrencia" name="Depositante" class="k-textbox" style="min-width:100%" />
+                                            <input type="text" asp-for="Referrencia" required name="Depositante" class="k-textbox" style="min-width:100%" data-val-required="No de Referencia Cuenta Bancaria Fecha Pago es Requeridaes Requerida" />
                                                     <span asp-validation-for="Referrencia" class="text-danger"></span>
                                                 </div>
                                             </div>
                                             <div class="col-md-6">
                                                 <div class="form-group">
                                                     <label asp-for="Depositante" class=" control-label" style="width:100%">Depositante</label>
-                                                    <input type="text" asp-for="Depositante" name="Depositante" class="k-textbox" style="min-width:100%" />
+                                                    <input type="text" asp-for="Depositante" required name="Depositante" class="k-textbox" style="min-width:100%" data-val-required="Depositante Cuenta Bancaria Cuenta Bancaria Fecha Pago es Requerido" />
                                                     <span asp-validation-for="Depositante" class="text-danger"></span>
                                                 </div>
                                             </div>
@@ -230,12 +231,23 @@
                                                 <kendo-numerictextbox name="MontoPagado"
                                                                       format="n2" spinners="false"
                                                                       min="0"
-                                                                      required class="control-label right bold"
                                                                       max="999999999"
                                                                       step="1"
+                                                                      required
+                                                                      data-val-required="Monto del deposito es requerido"
                                                                       value="@Model.MontoPagado"></kendo-numerictextbox>
                                                 <span asp-validation-for="MontoPagado" class="text-danger"></span>
                                             </div>
+                                        </div>
+
+                                        <div class="row">
+                                                <div class="col-md-12">
+                                                    <div class="form-group">
+                                                        <label asp-for="Sinopsis" class=" control-label" style="width:100%">Sinopsis</label>
+                                                        <input type="text" asp-for="Sinopsis" name="Sinopsis" class="k-textbox" style="min-width:100%" />
+                                                        <span asp-validation-for="Sinopsis" class="text-danger"></span>
+                                                    </div>
+                                                </div>
                                         </div>
 
                                        
@@ -352,13 +364,29 @@
             var validator = $("#frmSalesOrder").data("kendoValidator");
             var status = $(".status");
 
+            var montopagado = $('#MontoPagado').val();
 
+            var data = $("#gridInvoiceDetail").getKendoGrid().dataSource.data();
+            var totalpagado = 0;
+            data.forEach(r => totalpagado += r.MontoPagado);
+
+            if (totalpagado == 0) {
+                MostrarMensaje("Especifique los montos a pagar", "Error", "Error", 6000);
+                return;
+
+            }
+            if(montopagado!=totalpagado){
+                MostrarMensaje("Monto del desposito y el monto pagado del detalle no coinciden", "Error", "Error", 6000);
+                return;
+            
+            }
             var displayedData = $("#gridInvoiceDetail").data().kendoGrid.dataSource.view();
 
             if (!validator.validate()) {
                 MostrarMensaje('Datos incorrectos en el formulario!', "Error", "Validación", 6000);
                 $("#btnSaveInvoice").show();
                 $("#btnSaveInvoice").prop("disabled", false);
+                return;
             }
 
             var dataObject = {
@@ -369,12 +397,11 @@
                 'CustomerId': $("#CustomerId").val(),
                 'CustomerName': $("#CustomerId").data("kendoDropDownList").text(),
                 'CuentaBancariaId': $("#CuentaBancariaId").val(),
-                'InvoivceId': $("#InvoivceId").val(),                
-                //'MontoAdeudado': $('#MontoAdeudado').val(),
-                'MontoPagado': $('#MontoPagado').val(),
+                'InvoivceId': $("#InvoivceId").val(),          
+                'MontoPagado': montopagado,
                 'Referrencia': $('#Referrencia').val(),
                 'Depositante': $('#Depositante').val(),
-
+                'Sinopsis': $('#Sinopsis').val(),
                 'InvoicePaymentsLines': displayedData,
 
 

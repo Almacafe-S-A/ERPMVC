@@ -41,6 +41,8 @@ namespace ERPMVC.Models
 
         public string NoDocumentos { get; set; }
 
+        public string Sinopsis { get; set; }
+
         public Int64? CuentaBancariaId { get; set; }
         [ForeignKey("CuentaBancariaId ")]
         public AccountManagement accountManagement { get; set; }
