@@ -6,7 +6,7 @@
     <DataSource Name="ERP">
       <ConnectionProperties>
         <DataProvider>SQL</DataProvider>
-        <ConnectString>Data Source=(LOCAL); Initial Catalog=ERP-PRODUCCION;Integrated Security=True;</ConnectString>
+        <ConnectString>Data Source=(local);Initial Catalog=ERP-PRODUCCION</ConnectString>
         <IntegratedSecurity>true</IntegratedSecurity>
       </ConnectionProperties>
       <rd:SecurityType>Integrated</rd:SecurityType>
@@ -28,24 +28,23 @@ SELECT
 	dbo.F_OBTENER_FECHA(AA.DocumentDate) DocumentDate,
 	dbo.F_OBTENER_FECHA(AA.AuthorizationDate)AuthorizationDate,
 	AA.CustomerId,
-	dbo.F_OBTENER_TEXTO_ESPACIADO(AA.CustomerName,30)  CustomerName,
+	dbo.F_OBTENER_TEXTO_ESPACIADO(AA.CustomerName,55)  CustomerName,
 	AA.BankId,
 	dbo.F_OBTENER_TEXTO_ESPACIADO (AA.BankName,30) BankName,
 	CASE WHEN AA.BankId is null then AA.CustomerName else AA.BankName end Tenedor,
 	AA.ProductId,
-	dbo.F_OBTENER_TEXTO_ESPACIADO(AA.ProductName,30) ProductName,
+	dbo.F_OBTENER_TEXTO_ESPACIADO(AA.ProductName,25) ProductName,
 	AA.BranchId,
 	AA.BranchName,
 	AA.Certificados,
 	AA.Comments,
 	case when AA.NoPolizaImportacion = 0 then ' ' else AA.NoPolizaImportacion  end                   NoPolizaImportacion,
 	AA.DelegadoFiscal,
-	AA.Impreso,
+	AA.TotalUnidadesLetras,
 	AA.Autorizados,
 	AA.CartaRetiroDocName,
 	AA.LiberacionEndosoDocName,
 	AA.URLCartaRetiro,
-                 AA.TotalUnidadesLetras,
                 AA.UsuarioAprobacion,
                 AA.UsuarioRevisor,
 	AA.URLLiberacionEndoso,
@@ -122,8 +121,8 @@ AA.GoodsDeliveryAuthorizationId = @GoodsDeliveryAuthorizationId</CommandText>
           <DataField>DelegadoFiscal</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
-        <Field Name="Impreso">
-          <DataField>Impreso</DataField>
+        <Field Name="TotalUnidadesLetras">
+          <DataField>TotalUnidadesLetras</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
         <Field Name="Autorizados">
@@ -140,10 +139,6 @@ AA.GoodsDeliveryAuthorizationId = @GoodsDeliveryAuthorizationId</CommandText>
         </Field>
         <Field Name="URLCartaRetiro">
           <DataField>URLCartaRetiro</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
-        </Field>
-        <Field Name="TotalUnidadesLetras">
-          <DataField>TotalUnidadesLetras</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
         <Field Name="UsuarioAprobacion">
@@ -181,15 +176,15 @@ AA.GoodsDeliveryAuthorizationId = @GoodsDeliveryAuthorizationId</CommandText>
           </QueryParameter>
         </QueryParameters>
         <CommandText>SELECT
-    gl.GoodsDeliveryAuthorizationId,
-	gl.NoCertificadoDeposito,
-	gl.Pda,
-	sum(gl.quantity) Quantity,
-	gl.SubProductName,
-	SUM(gl.Price) Price,
-    sum(gl.valorcertificado) ValorCertificado,
-	SUM(COALESCE(gl.DerechosFiscales,0)) DerechosFiscales
-FROM GoodsDeliveryAuthorizationLine gl
+               GoodsDeliveryAuthorizationId,
+	NoCertificadoDeposito,
+	Pda,
+	sum(quantity) Quantity,
+	SubProductName,
+	SUM(Price) Price,
+                SUM(valorcertificado) Valor,
+	SUM(COALESCE(DerechosFiscales,0)) DerechosFiscales
+FROM GoodsDeliveryAuthorizationLine
 WHERE
 GoodsDeliveryAuthorizationId = @GoodsDeliveryAuthorizationId
 GROUP BY GoodsDeliveryAuthorizationId,NoCertificadoDeposito, Pda, SubProductName</CommandText>
@@ -220,8 +215,8 @@ GROUP BY GoodsDeliveryAuthorizationId,NoCertificadoDeposito, Pda, SubProductName
           <DataField>Pda</DataField>
           <rd:TypeName>System.Int32</rd:TypeName>
         </Field>
-        <Field Name="ValorCertificado">
-          <DataField>ValorCertificado</DataField>
+        <Field Name="Valor">
+          <DataField>Valor</DataField>
           <rd:TypeName>System.Decimal</rd:TypeName>
         </Field>
         <Field Name="DerechosFiscales">
@@ -411,42 +406,148 @@ WHERE TT.RowId = 3</CommandText>
         </Field>
       </Fields>
     </DataSet>
+    <DataSet Name="Sucursal">
+      <Query>
+        <DataSourceName>ERP</DataSourceName>
+        <CommandText>SELECT top(1) * FROM DBO.BRANCH
+WHERE IdEstado =1</CommandText>
+      </Query>
+      <Fields>
+        <Field Name="BranchId">
+          <DataField>BranchId</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="BranchCode">
+          <DataField>BranchCode</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="Numero">
+          <DataField>Numero</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="CustomerId">
+          <DataField>CustomerId</DataField>
+          <rd:TypeName>System.Int64</rd:TypeName>
+        </Field>
+        <Field Name="CustomerName">
+          <DataField>CustomerName</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="BranchName">
+          <DataField>BranchName</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="Description">
+          <DataField>Description</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="CurrencyId">
+          <DataField>CurrencyId</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="CurrencyName">
+          <DataField>CurrencyName</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="Address">
+          <DataField>Address</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="CityId">
+          <DataField>CityId</DataField>
+          <rd:TypeName>System.Int64</rd:TypeName>
+        </Field>
+        <Field Name="City">
+          <DataField>City</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="CountryId">
+          <DataField>CountryId</DataField>
+          <rd:TypeName>System.Int64</rd:TypeName>
+        </Field>
+        <Field Name="CountryName">
+          <DataField>CountryName</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="LimitCNBS">
+          <DataField>LimitCNBS</DataField>
+          <rd:TypeName>System.Decimal</rd:TypeName>
+        </Field>
+        <Field Name="StateId">
+          <DataField>StateId</DataField>
+          <rd:TypeName>System.Int64</rd:TypeName>
+        </Field>
+        <Field Name="State">
+          <DataField>State</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="ZipCode">
+          <DataField>ZipCode</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="Phone">
+          <DataField>Phone</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="Email">
+          <DataField>Email</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="ContactPerson">
+          <DataField>ContactPerson</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="UsuarioCreacion">
+          <DataField>UsuarioCreacion</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="IdEstado">
+          <DataField>IdEstado</DataField>
+          <rd:TypeName>System.Int64</rd:TypeName>
+        </Field>
+        <Field Name="Estado">
+          <DataField>Estado</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="URL">
+          <DataField>URL</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="Observation">
+          <DataField>Observation</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="UsuarioModificacion">
+          <DataField>UsuarioModificacion</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="FechaCreacion">
+          <DataField>FechaCreacion</DataField>
+          <rd:TypeName>System.DateTime</rd:TypeName>
+        </Field>
+        <Field Name="FechaModificacion">
+          <DataField>FechaModificacion</DataField>
+          <rd:TypeName>System.DateTime</rd:TypeName>
+        </Field>
+      </Fields>
+    </DataSet>
+    <DataSet Name="CompanyInfo">
+      <Query>
+        <DataSourceName>ERP</DataSourceName>
+        <CommandText>select top 1 imageDir from companyinfo</CommandText>
+      </Query>
+      <Fields>
+        <Field Name="imageDir">
+          <DataField>imageDir</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+      </Fields>
+    </DataSet>
   </DataSets>
   <ReportSections>
     <ReportSection>
       <Body>
         <ReportItems>
-          <Textbox Name="Textbox4">
-            <CanGrow>true</CanGrow>
-            <KeepTogether>true</KeepTogether>
-            <Paragraphs>
-              <Paragraph>
-                <TextRuns>
-                  <TextRun>
-                    <Value />
-                    <Style>
-                      <FontFamily>Arial</FontFamily>
-                    </Style>
-                  </TextRun>
-                </TextRuns>
-                <Style />
-              </Paragraph>
-            </Paragraphs>
-            <rd:DefaultName>Textbox4</rd:DefaultName>
-            <Top>1.05833mm</Top>
-            <Left>7.2519mm</Left>
-            <Height>15.94423mm</Height>
-            <Width>27.47758mm</Width>
-            <Style>
-              <Border>
-                <Style>None</Style>
-              </Border>
-              <PaddingLeft>2pt</PaddingLeft>
-              <PaddingRight>2pt</PaddingRight>
-              <PaddingTop>2pt</PaddingTop>
-              <PaddingBottom>2pt</PaddingBottom>
-            </Style>
-          </Textbox>
           <Textbox Name="Textbox5">
             <CanGrow>true</CanGrow>
             <KeepTogether>true</KeepTogether>
@@ -457,66 +558,12 @@ WHERE TT.RowId = 3</CommandText>
                     <Value>No.</Value>
                     <Style>
                       <FontFamily>Arial</FontFamily>
-                      <FontSize>14pt</FontSize>
+                      <FontSize>12pt</FontSize>
                       <FontWeight>Bold</FontWeight>
-                      <Color>Red</Color>
                     </Style>
                   </TextRun>
                   <TextRun>
                     <Value>=Sum(Fields!GoodsDeliveryAuthorizationId.Value, "Authorization")</Value>
-                    <Style>
-                      <FontFamily>Arial</FontFamily>
-                      <FontSize>14pt</FontSize>
-                      <FontWeight>Bold</FontWeight>
-                      <Color>Red</Color>
-                    </Style>
-                  </TextRun>
-                </TextRuns>
-                <Style>
-                  <TextAlign>Center</TextAlign>
-                </Style>
-              </Paragraph>
-            </Paragraphs>
-            <rd:DefaultName>Textbox4</rd:DefaultName>
-            <Top>1.05833mm</Top>
-            <Left>162.89767mm</Left>
-            <Height>8.18312mm</Height>
-            <Width>29.66207mm</Width>
-            <ZIndex>1</ZIndex>
-            <Style>
-              <Border>
-                <Style>None</Style>
-              </Border>
-              <VerticalAlign>Bottom</VerticalAlign>
-              <PaddingLeft>2pt</PaddingLeft>
-              <PaddingRight>2pt</PaddingRight>
-              <PaddingTop>2pt</PaddingTop>
-              <PaddingBottom>2pt</PaddingBottom>
-            </Style>
-          </Textbox>
-          <Textbox Name="Textbox8">
-            <CanGrow>true</CanGrow>
-            <KeepTogether>true</KeepTogether>
-            <Paragraphs>
-              <Paragraph>
-                <TextRuns>
-                  <TextRun>
-                    <Value>ALMACAFE, S.A.</Value>
-                    <Style>
-                      <FontFamily>Arial</FontFamily>
-                      <FontSize>26pt</FontSize>
-                      <FontWeight>Bold</FontWeight>
-                    </Style>
-                  </TextRun>
-                </TextRuns>
-                <Style>
-                  <TextAlign>Center</TextAlign>
-                </Style>
-              </Paragraph>
-              <Paragraph>
-                <TextRuns>
-                  <TextRun>
-                    <Value>ALMACENES GENERALES DE DEPÓSITO DE CAFÉ, S.A.</Value>
                     <Style>
                       <FontFamily>Arial</FontFamily>
                       <FontSize>12pt</FontSize>
@@ -530,11 +577,46 @@ WHERE TT.RowId = 3</CommandText>
               </Paragraph>
             </Paragraphs>
             <rd:DefaultName>Textbox4</rd:DefaultName>
-            <Top>1.05833mm</Top>
-            <Left>36.49337mm</Left>
-            <Height>16.64979mm</Height>
-            <Width>124.64041mm</Width>
-            <ZIndex>2</ZIndex>
+            <Top>11.78145mm</Top>
+            <Left>166.14755mm</Left>
+            <Height>6mm</Height>
+            <Width>26.84546mm</Width>
+            <Style>
+              <Border>
+                <Style>None</Style>
+              </Border>
+              <VerticalAlign>Bottom</VerticalAlign>
+              <PaddingLeft>2pt</PaddingLeft>
+              <PaddingRight>2pt</PaddingRight>
+              <PaddingTop>2pt</PaddingTop>
+              <PaddingBottom>2pt</PaddingBottom>
+            </Style>
+          </Textbox>
+          <Textbox Name="Textbox8">
+            <KeepTogether>true</KeepTogether>
+            <Paragraphs>
+              <Paragraph>
+                <TextRuns>
+                  <TextRun>
+                    <Value>ALMACENES GENERALES DE DEPÓSITO DE CAFÉ, S.A.</Value>
+                    <Style>
+                      <FontFamily>Arial</FontFamily>
+                      <FontSize>14pt</FontSize>
+                      <FontWeight>Bold</FontWeight>
+                    </Style>
+                  </TextRun>
+                </TextRuns>
+                <Style>
+                  <TextAlign>Center</TextAlign>
+                </Style>
+              </Paragraph>
+            </Paragraphs>
+            <rd:DefaultName>Textbox4</rd:DefaultName>
+            <Top>3.65125mm</Top>
+            <Left>40.90309mm</Left>
+            <Height>7.70687mm</Height>
+            <Width>139.07017mm</Width>
+            <ZIndex>1</ZIndex>
             <Style>
               <Border>
                 <Style>None</Style>
@@ -546,15 +628,15 @@ WHERE TT.RowId = 3</CommandText>
             </Style>
           </Textbox>
           <Textbox Name="Textbox9">
-            <CanGrow>true</CanGrow>
             <KeepTogether>true</KeepTogether>
             <Paragraphs>
               <Paragraph>
                 <TextRuns>
                   <TextRun>
-                    <Value>AUTORIZACIÓN DE RETIRO DE MERCDERÍA</Value>
+                    <Value>AUTORIZACIÓN RETIRO DE MERCADERÍA</Value>
                     <Style>
                       <FontFamily>Arial</FontFamily>
+                      <FontSize>12pt</FontSize>
                       <FontWeight>Bold</FontWeight>
                     </Style>
                   </TextRun>
@@ -565,11 +647,11 @@ WHERE TT.RowId = 3</CommandText>
               </Paragraph>
             </Paragraphs>
             <rd:DefaultName>Textbox6</rd:DefaultName>
-            <Top>18.76645mm</Top>
-            <Left>7.2519mm</Left>
+            <Top>11.78145mm</Top>
+            <Left>55.54337mm</Left>
             <Height>6mm</Height>
-            <Width>185.49508mm</Width>
-            <ZIndex>3</ZIndex>
+            <Width>109.15779mm</Width>
+            <ZIndex>2</ZIndex>
             <Style>
               <Border>
                 <Style>None</Style>
@@ -581,19 +663,26 @@ WHERE TT.RowId = 3</CommandText>
             </Style>
           </Textbox>
           <Textbox Name="Textbox10">
-            <CanGrow>true</CanGrow>
             <KeepTogether>true</KeepTogether>
             <Paragraphs>
               <Paragraph>
                 <TextRuns>
                   <TextRun>
-                    <Value>=First(Fields!FirmadoEn.Value, "Authorization")</Value>
+                    <Value>=First(Fields!City.Value, "Sucursal")</Value>
                     <Style>
                       <FontFamily>Arial</FontFamily>
                     </Style>
                   </TextRun>
                   <TextRun>
-                    <Value xml:space="preserve">         </Value>
+                    <Value>=", "</Value>
+                    <Style />
+                  </TextRun>
+                  <TextRun>
+                    <Value>=First(Fields!State.Value, "Sucursal")</Value>
+                    <Style />
+                  </TextRun>
+                  <TextRun>
+                    <Value xml:space="preserve">              </Value>
                     <Style>
                       <FontFamily>Arial</FontFamily>
                     </Style>
@@ -611,11 +700,11 @@ WHERE TT.RowId = 3</CommandText>
               </Paragraph>
             </Paragraphs>
             <rd:DefaultName>Textbox6</rd:DefaultName>
-            <Top>25.82478mm</Top>
+            <Top>19.47478mm</Top>
             <Left>7.2519mm</Left>
             <Height>6mm</Height>
             <Width>185.49508mm</Width>
-            <ZIndex>4</ZIndex>
+            <ZIndex>3</ZIndex>
             <Style>
               <Border>
                 <Style>None</Style>
@@ -632,7 +721,6 @@ WHERE TT.RowId = 3</CommandText>
             </Style>
           </Textbox>
           <Textbox Name="Textbox11">
-            <CanGrow>true</CanGrow>
             <KeepTogether>true</KeepTogether>
             <Paragraphs>
               <Paragraph>
@@ -650,11 +738,11 @@ WHERE TT.RowId = 3</CommandText>
               </Paragraph>
             </Paragraphs>
             <rd:DefaultName>Textbox6</rd:DefaultName>
-            <Top>33.58867mm</Top>
+            <Top>25.33367mm</Top>
             <Left>7.2519mm</Left>
-            <Height>6mm</Height>
+            <Height>5.25917mm</Height>
             <Width>185.49508mm</Width>
-            <ZIndex>5</ZIndex>
+            <ZIndex>4</ZIndex>
             <Style>
               <Border>
                 <Style>None</Style>
@@ -667,13 +755,12 @@ WHERE TT.RowId = 3</CommandText>
           </Textbox>
           <Textbox Name="Textbox12">
             <CanGrow>true</CanGrow>
-            <CanShrink>true</CanShrink>
             <KeepTogether>true</KeepTogether>
             <Paragraphs>
               <Paragraph>
                 <TextRuns>
                   <TextRun>
-                    <Value>Autorizamos a ALMACAFE, S.A. entregar el Sr: </Value>
+                    <Value>Autorizamos a ALMACAFE, S.A. entregar a: </Value>
                     <Style>
                       <FontFamily>Arial</FontFamily>
                     </Style>
@@ -693,6 +780,11 @@ WHERE TT.RowId = 3</CommandText>
                       <FontWeight>Bold</FontWeight>
                     </Style>
                   </TextRun>
+                </TextRuns>
+                <Style />
+              </Paragraph>
+              <Paragraph>
+                <TextRuns>
                   <TextRun>
                     <Value>por cuenta de: </Value>
                     <Style>
@@ -715,7 +807,7 @@ WHERE TT.RowId = 3</CommandText>
                     </Style>
                   </TextRun>
                   <TextRun>
-                    <Value>las mercaderías abajo detalladas y que se encuentran depositadas en sus almacenes:</Value>
+                    <Value>las mercaderías abajo detalladas y que se encuentran depositadas en: </Value>
                     <Style>
                       <FontFamily>Arial</FontFamily>
                       <FontWeight>Normal</FontWeight>
@@ -779,17 +871,15 @@ WHERE TT.RowId = 3</CommandText>
                     </Style>
                   </TextRun>
                 </TextRuns>
-                <Style>
-                  <TextAlign>Left</TextAlign>
-                </Style>
+                <Style />
               </Paragraph>
             </Paragraphs>
             <rd:DefaultName>Textbox6</rd:DefaultName>
-            <Top>40.29423mm</Top>
+            <Top>32.35673mm</Top>
             <Left>7.2519mm</Left>
-            <Height>13.17527mm</Height>
+            <Height>13.78649mm</Height>
             <Width>185.49508mm</Width>
-            <ZIndex>6</ZIndex>
+            <ZIndex>5</ZIndex>
             <Style>
               <Border>
                 <Style>None</Style>
@@ -813,13 +903,13 @@ WHERE TT.RowId = 3</CommandText>
                   <Width>27.60335mm</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>60.12492mm</Width>
+                  <Width>66.47492mm</Width>
                 </TablixColumn>
                 <TablixColumn>
                   <Width>35.70189mm</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>26.27282mm</Width>
+                  <Width>19.92282mm</Width>
                 </TablixColumn>
               </TablixColumns>
               <TablixRows>
@@ -888,6 +978,7 @@ WHERE TT.RowId = 3</CommandText>
                               <Style>Solid</Style>
                               <Width>1pt</Width>
                             </RightBorder>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -958,6 +1049,7 @@ WHERE TT.RowId = 3</CommandText>
                               <Style>Solid</Style>
                               <Width>1pt</Width>
                             </RightBorder>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -1013,6 +1105,7 @@ WHERE TT.RowId = 3</CommandText>
                               <Style>Solid</Style>
                               <Width>1pt</Width>
                             </RightBorder>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -1042,19 +1135,6 @@ WHERE TT.RowId = 3</CommandText>
                                 <TextAlign>Center</TextAlign>
                               </Style>
                             </Paragraph>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value />
-                                  <Style>
-                                    <FontFamily>Arial</FontFamily>
-                                    <FontSize>9pt</FontSize>
-                                    <FontWeight>Bold</FontWeight>
-                                  </Style>
-                                </TextRun>
-                              </TextRuns>
-                              <Style />
-                            </Paragraph>
                           </Paragraphs>
                           <rd:DefaultName>Textbox28</rd:DefaultName>
                           <Style>
@@ -1081,6 +1161,7 @@ WHERE TT.RowId = 3</CommandText>
                               <Style>Solid</Style>
                               <Width>1pt</Width>
                             </RightBorder>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -1151,6 +1232,7 @@ WHERE TT.RowId = 3</CommandText>
                               <Style>Solid</Style>
                               <Width>1pt</Width>
                             </RightBorder>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -1221,6 +1303,7 @@ WHERE TT.RowId = 3</CommandText>
                               <Style>Solid</Style>
                               <Width>1pt</Width>
                             </RightBorder>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -1281,6 +1364,7 @@ WHERE TT.RowId = 3</CommandText>
                               <Style>Solid</Style>
                               <Width>0.5pt</Width>
                             </RightBorder>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -1305,7 +1389,9 @@ WHERE TT.RowId = 3</CommandText>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
-                              <Style />
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
                             </Paragraph>
                           </Paragraphs>
                           <rd:DefaultName>Pda</rd:DefaultName>
@@ -1334,6 +1420,7 @@ WHERE TT.RowId = 3</CommandText>
                               <Style>Solid</Style>
                               <Width>0.5pt</Width>
                             </RightBorder>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -1355,7 +1442,7 @@ WHERE TT.RowId = 3</CommandText>
                                   <Style>
                                     <FontFamily>Arial</FontFamily>
                                     <FontSize>8pt</FontSize>
-                                    <Format>#,0.00;(#,0.00)</Format>
+                                    <Format>n2</Format>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -1390,6 +1477,7 @@ WHERE TT.RowId = 3</CommandText>
                               <Style>Solid</Style>
                               <Width>0.5pt</Width>
                             </RightBorder>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -1443,6 +1531,7 @@ WHERE TT.RowId = 3</CommandText>
                               <Style>Solid</Style>
                               <Width>0.5pt</Width>
                             </RightBorder>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -1453,18 +1542,18 @@ WHERE TT.RowId = 3</CommandText>
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="ValorCertificado">
+                        <Textbox Name="Valor">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Fields!ValorCertificado.Value</Value>
+                                  <Value>=Fields!Valor.Value</Value>
                                   <Style>
                                     <FontFamily>Arial</FontFamily>
                                     <FontSize>8pt</FontSize>
-                                    <Format>#,0.00;(#,0.00)</Format>
+                                    <Format>n2</Format>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -1473,7 +1562,7 @@ WHERE TT.RowId = 3</CommandText>
                               </Style>
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>ValorCertificado</rd:DefaultName>
+                          <rd:DefaultName>Valor</rd:DefaultName>
                           <Style>
                             <Border>
                               <Style>Solid</Style>
@@ -1499,6 +1588,7 @@ WHERE TT.RowId = 3</CommandText>
                               <Style>Solid</Style>
                               <Width>0.5pt</Width>
                             </RightBorder>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -1554,6 +1644,7 @@ WHERE TT.RowId = 3</CommandText>
                               <Style>Solid</Style>
                               <Width>0.5pt</Width>
                             </RightBorder>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -1614,6 +1705,7 @@ WHERE TT.RowId = 3</CommandText>
                               <Style>Solid</Style>
                               <Width>0.5pt</Width>
                             </RightBorder>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -1667,6 +1759,7 @@ WHERE TT.RowId = 3</CommandText>
                               <Style>Solid</Style>
                               <Width>0.5pt</Width>
                             </RightBorder>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -1691,9 +1784,7 @@ WHERE TT.RowId = 3</CommandText>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
-                              <Style>
-                                <TextAlign>Right</TextAlign>
-                              </Style>
+                              <Style />
                             </Paragraph>
                           </Paragraphs>
                           <rd:DefaultName>Textbox85</rd:DefaultName>
@@ -1722,6 +1813,7 @@ WHERE TT.RowId = 3</CommandText>
                               <Style>Solid</Style>
                               <Width>0.5pt</Width>
                             </RightBorder>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -1776,6 +1868,7 @@ WHERE TT.RowId = 3</CommandText>
                               <Style>Solid</Style>
                               <Width>0.5pt</Width>
                             </RightBorder>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -1786,7 +1879,7 @@ WHERE TT.RowId = 3</CommandText>
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="Textbox87">
+                        <Textbox Name="Textbox68">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
@@ -1797,7 +1890,6 @@ WHERE TT.RowId = 3</CommandText>
                                   <Style>
                                     <FontFamily>Arial</FontFamily>
                                     <FontSize>8pt</FontSize>
-                                    <Format>#,0.00;(#,0.00)</Format>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -1806,7 +1898,7 @@ WHERE TT.RowId = 3</CommandText>
                               </Style>
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>Textbox87</rd:DefaultName>
+                          <rd:DefaultName>Textbox68</rd:DefaultName>
                           <Style>
                             <Border>
                               <Style>Solid</Style>
@@ -1832,6 +1924,7 @@ WHERE TT.RowId = 3</CommandText>
                               <Style>Solid</Style>
                               <Width>0.5pt</Width>
                             </RightBorder>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -1887,6 +1980,7 @@ WHERE TT.RowId = 3</CommandText>
                               <Style>Solid</Style>
                               <Width>0.5pt</Width>
                             </RightBorder>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -1947,6 +2041,7 @@ WHERE TT.RowId = 3</CommandText>
                               <Style>Solid</Style>
                               <Width>0.5pt</Width>
                             </RightBorder>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -2000,6 +2095,7 @@ WHERE TT.RowId = 3</CommandText>
                               <Style>Solid</Style>
                               <Width>0.5pt</Width>
                             </RightBorder>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -2024,9 +2120,7 @@ WHERE TT.RowId = 3</CommandText>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
-                              <Style>
-                                <TextAlign>Right</TextAlign>
-                              </Style>
+                              <Style />
                             </Paragraph>
                           </Paragraphs>
                           <rd:DefaultName>Textbox18</rd:DefaultName>
@@ -2055,6 +2149,7 @@ WHERE TT.RowId = 3</CommandText>
                               <Style>Solid</Style>
                               <Width>0.5pt</Width>
                             </RightBorder>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -2108,6 +2203,7 @@ WHERE TT.RowId = 3</CommandText>
                               <Style>Solid</Style>
                               <Width>0.5pt</Width>
                             </RightBorder>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -2163,6 +2259,7 @@ WHERE TT.RowId = 3</CommandText>
                               <Style>Solid</Style>
                               <Width>0.5pt</Width>
                             </RightBorder>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -2218,6 +2315,7 @@ WHERE TT.RowId = 3</CommandText>
                               <Style>Solid</Style>
                               <Width>0.5pt</Width>
                             </RightBorder>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -2278,6 +2376,7 @@ WHERE TT.RowId = 3</CommandText>
                               <Style>Solid</Style>
                               <Width>0.5pt</Width>
                             </RightBorder>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -2331,6 +2430,7 @@ WHERE TT.RowId = 3</CommandText>
                               <Style>Solid</Style>
                               <Width>0.5pt</Width>
                             </RightBorder>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -2355,9 +2455,7 @@ WHERE TT.RowId = 3</CommandText>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
-                              <Style>
-                                <TextAlign>Right</TextAlign>
-                              </Style>
+                              <Style />
                             </Paragraph>
                           </Paragraphs>
                           <rd:DefaultName>Textbox24</rd:DefaultName>
@@ -2386,6 +2484,7 @@ WHERE TT.RowId = 3</CommandText>
                               <Style>Solid</Style>
                               <Width>0.5pt</Width>
                             </RightBorder>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -2439,6 +2538,7 @@ WHERE TT.RowId = 3</CommandText>
                               <Style>Solid</Style>
                               <Width>0.5pt</Width>
                             </RightBorder>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -2494,6 +2594,7 @@ WHERE TT.RowId = 3</CommandText>
                               <Style>Solid</Style>
                               <Width>0.5pt</Width>
                             </RightBorder>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -2549,6 +2650,7 @@ WHERE TT.RowId = 3</CommandText>
                               <Style>Solid</Style>
                               <Width>0.5pt</Width>
                             </RightBorder>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -2609,6 +2711,7 @@ WHERE TT.RowId = 3</CommandText>
                               <Style>Solid</Style>
                               <Width>0.5pt</Width>
                             </RightBorder>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -2662,6 +2765,7 @@ WHERE TT.RowId = 3</CommandText>
                               <Style>Solid</Style>
                               <Width>0.5pt</Width>
                             </RightBorder>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -2686,9 +2790,7 @@ WHERE TT.RowId = 3</CommandText>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
-                              <Style>
-                                <TextAlign>Right</TextAlign>
-                              </Style>
+                              <Style />
                             </Paragraph>
                           </Paragraphs>
                           <rd:DefaultName>Textbox34</rd:DefaultName>
@@ -2717,6 +2819,7 @@ WHERE TT.RowId = 3</CommandText>
                               <Style>Solid</Style>
                               <Width>0.5pt</Width>
                             </RightBorder>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -2770,6 +2873,7 @@ WHERE TT.RowId = 3</CommandText>
                               <Style>Solid</Style>
                               <Width>0.5pt</Width>
                             </RightBorder>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -2825,6 +2929,7 @@ WHERE TT.RowId = 3</CommandText>
                               <Style>Solid</Style>
                               <Width>0.5pt</Width>
                             </RightBorder>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -2880,6 +2985,7 @@ WHERE TT.RowId = 3</CommandText>
                               <Style>Solid</Style>
                               <Width>0.5pt</Width>
                             </RightBorder>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -2940,6 +3046,7 @@ WHERE TT.RowId = 3</CommandText>
                               <Style>Solid</Style>
                               <Width>0.5pt</Width>
                             </RightBorder>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -2993,6 +3100,7 @@ WHERE TT.RowId = 3</CommandText>
                               <Style>Solid</Style>
                               <Width>0.5pt</Width>
                             </RightBorder>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -3017,9 +3125,7 @@ WHERE TT.RowId = 3</CommandText>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
-                              <Style>
-                                <TextAlign>Right</TextAlign>
-                              </Style>
+                              <Style />
                             </Paragraph>
                           </Paragraphs>
                           <rd:DefaultName>Textbox54</rd:DefaultName>
@@ -3048,6 +3154,7 @@ WHERE TT.RowId = 3</CommandText>
                               <Style>Solid</Style>
                               <Width>0.5pt</Width>
                             </RightBorder>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -3101,6 +3208,7 @@ WHERE TT.RowId = 3</CommandText>
                               <Style>Solid</Style>
                               <Width>0.5pt</Width>
                             </RightBorder>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -3156,6 +3264,7 @@ WHERE TT.RowId = 3</CommandText>
                               <Style>Solid</Style>
                               <Width>0.5pt</Width>
                             </RightBorder>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -3211,6 +3320,7 @@ WHERE TT.RowId = 3</CommandText>
                               <Style>Solid</Style>
                               <Width>0.5pt</Width>
                             </RightBorder>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -3271,6 +3381,7 @@ WHERE TT.RowId = 3</CommandText>
                               <Style>Solid</Style>
                               <Width>0.5pt</Width>
                             </RightBorder>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -3324,6 +3435,7 @@ WHERE TT.RowId = 3</CommandText>
                               <Style>Solid</Style>
                               <Width>0.5pt</Width>
                             </RightBorder>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -3348,9 +3460,7 @@ WHERE TT.RowId = 3</CommandText>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
-                              <Style>
-                                <TextAlign>Right</TextAlign>
-                              </Style>
+                              <Style />
                             </Paragraph>
                           </Paragraphs>
                           <rd:DefaultName>Textbox66</rd:DefaultName>
@@ -3379,6 +3489,7 @@ WHERE TT.RowId = 3</CommandText>
                               <Style>Solid</Style>
                               <Width>0.5pt</Width>
                             </RightBorder>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -3432,6 +3543,7 @@ WHERE TT.RowId = 3</CommandText>
                               <Style>Solid</Style>
                               <Width>0.5pt</Width>
                             </RightBorder>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -3442,7 +3554,7 @@ WHERE TT.RowId = 3</CommandText>
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="Textbox68">
+                        <Textbox Name="Textbox6">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
@@ -3461,7 +3573,7 @@ WHERE TT.RowId = 3</CommandText>
                               </Style>
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>Textbox68</rd:DefaultName>
+                          <rd:DefaultName>Textbox6</rd:DefaultName>
                           <Style>
                             <Border>
                               <Style>Solid</Style>
@@ -3487,6 +3599,7 @@ WHERE TT.RowId = 3</CommandText>
                               <Style>Solid</Style>
                               <Width>0.5pt</Width>
                             </RightBorder>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -3542,6 +3655,7 @@ WHERE TT.RowId = 3</CommandText>
                               <Style>Solid</Style>
                               <Width>0.5pt</Width>
                             </RightBorder>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -3602,6 +3716,7 @@ WHERE TT.RowId = 3</CommandText>
                               <Style>Solid</Style>
                               <Width>1pt</Width>
                             </RightBorder>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -3655,6 +3770,7 @@ WHERE TT.RowId = 3</CommandText>
                               <Style>Solid</Style>
                               <Width>1pt</Width>
                             </RightBorder>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -3677,7 +3793,7 @@ WHERE TT.RowId = 3</CommandText>
                                     <FontFamily>Arial</FontFamily>
                                     <FontSize>9pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
-                                    <Format>#,0.00;(#,0.00)</Format>
+                                    <Format>n2</Format>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -3711,6 +3827,7 @@ WHERE TT.RowId = 3</CommandText>
                               <Style>Solid</Style>
                               <Width>1pt</Width>
                             </RightBorder>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -3766,6 +3883,7 @@ WHERE TT.RowId = 3</CommandText>
                               <Style>Solid</Style>
                               <Width>1pt</Width>
                             </RightBorder>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -3776,19 +3894,19 @@ WHERE TT.RowId = 3</CommandText>
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="ValorCertificado1">
+                        <Textbox Name="Valor1">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Sum(Fields!ValorCertificado.Value)</Value>
+                                  <Value>=Sum(Fields!Valor.Value)</Value>
                                   <Style>
                                     <FontFamily>Arial</FontFamily>
                                     <FontSize>9pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
-                                    <Format>#,0.00;(#,0.00)</Format>
+                                    <Format>n2</Format>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -3797,7 +3915,7 @@ WHERE TT.RowId = 3</CommandText>
                               </Style>
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>ValorCertificado1</rd:DefaultName>
+                          <rd:DefaultName>Valor1</rd:DefaultName>
                           <Style>
                             <Border>
                               <Style>Solid</Style>
@@ -3822,6 +3940,7 @@ WHERE TT.RowId = 3</CommandText>
                               <Style>Solid</Style>
                               <Width>1pt</Width>
                             </RightBorder>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -3877,6 +3996,7 @@ WHERE TT.RowId = 3</CommandText>
                               <Style>Solid</Style>
                               <Width>1pt</Width>
                             </RightBorder>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -3946,11 +4066,11 @@ WHERE TT.RowId = 3</CommandText>
               </TablixMembers>
             </TablixRowHierarchy>
             <DataSetName>AuthorizationLines</DataSetName>
-            <Top>56.90294mm</Top>
+            <Top>47.37794mm</Top>
             <Left>7.43914mm</Left>
             <Height>56.68111mm</Height>
             <Width>185.87137mm</Width>
-            <ZIndex>7</ZIndex>
+            <ZIndex>6</ZIndex>
             <Style>
               <Border>
                 <Style>None</Style>
@@ -3958,13 +4078,19 @@ WHERE TT.RowId = 3</CommandText>
             </Style>
           </Tablix>
           <Textbox Name="Textbox25">
-            <CanGrow>true</CanGrow>
             <KeepTogether>true</KeepTogether>
             <Paragraphs>
               <Paragraph>
                 <TextRuns>
                   <TextRun>
-                    <Value>ALMACAFE; S.A. no será responsable por la cantidad despachada según esta autorización, si la cantidad total de articulos solicitados no es esctrita en letras en el espacio abajo indicado, asi mismo las fimas que autoricen cualquier entrega deberan estar registradas en ALMACAFE, S.A. de lo contrario no se efectuará dicha entrega.</Value>
+                    <Value>AVISO:  </Value>
+                    <Style>
+                      <FontSize>8pt</FontSize>
+                      <FontWeight>Bold</FontWeight>
+                    </Style>
+                  </TextRun>
+                  <TextRun>
+                    <Value>ALMACAFE; S.A. no será responsable por la cantidad despachada según autorización, si la cantidad total de articulos solicitados no es esctrita en letras en el espacio abajo indicado, asi mismo las fimas que autoricen cualquier entrega deberan estar registradas en ALMACAFE, S.A. de lo contrario no se efectuará la entrega.</Value>
                     <Style>
                       <FontFamily>Arial</FontFamily>
                       <FontSize>8pt</FontSize>
@@ -3978,11 +4104,11 @@ WHERE TT.RowId = 3</CommandText>
               </Paragraph>
             </Paragraphs>
             <rd:DefaultName>Textbox6</rd:DefaultName>
-            <Top>115.70073mm</Top>
-            <Left>18.82305mm</Left>
+            <Top>105.54073mm</Top>
+            <Left>11.19841mm</Left>
             <Height>12.17602mm</Height>
-            <Width>173.92397mm</Width>
-            <ZIndex>8</ZIndex>
+            <Width>179.23013mm</Width>
+            <ZIndex>7</ZIndex>
             <Style>
               <Border>
                 <Style>None</Style>
@@ -4010,6 +4136,7 @@ WHERE TT.RowId = 3</CommandText>
                         <Value>Tenedor del Certificado de Depósito</Value>
                         <Style>
                           <FontFamily>Arial</FontFamily>
+                          <FontSize>9pt</FontSize>
                         </Style>
                       </TextRun>
                     </TextRuns>
@@ -4020,7 +4147,7 @@ WHERE TT.RowId = 3</CommandText>
                 </Paragraphs>
                 <rd:DefaultName>Textbox6</rd:DefaultName>
                 <Top>17.01416mm</Top>
-                <Left>2.7647mm</Left>
+                <Left>2.1297mm</Left>
                 <Height>6mm</Height>
                 <Width>74.13114mm</Width>
                 <Style>
@@ -4045,9 +4172,10 @@ WHERE TT.RowId = 3</CommandText>
                   <Paragraph>
                     <TextRuns>
                       <TextRun>
-                        <Value>Firmas Autorizadas</Value>
+                        <Value>Firma Autorizada</Value>
                         <Style>
                           <FontFamily>Arial</FontFamily>
+                          <FontSize>9pt</FontSize>
                         </Style>
                       </TextRun>
                     </TextRuns>
@@ -4058,7 +4186,7 @@ WHERE TT.RowId = 3</CommandText>
                 </Paragraphs>
                 <rd:DefaultName>Textbox6</rd:DefaultName>
                 <Top>17.01416mm</Top>
-                <Left>85.77298mm</Left>
+                <Left>82.28048mm</Left>
                 <Height>6mm</Height>
                 <Width>43.69776mm</Width>
                 <ZIndex>1</ZIndex>
@@ -4079,7 +4207,7 @@ WHERE TT.RowId = 3</CommandText>
               </Textbox>
               <Line Name="Line1">
                 <Top>0mm</Top>
-                <Left>81.41206mm</Left>
+                <Left>78.55456mm</Left>
                 <Height>27.46944mm</Height>
                 <Width>0mm</Width>
                 <ZIndex>2</ZIndex>
@@ -4091,7 +4219,7 @@ WHERE TT.RowId = 3</CommandText>
               </Line>
               <Line Name="Line2">
                 <Top>0mm</Top>
-                <Left>136.66739mm</Left>
+                <Left>132.85739mm</Left>
                 <Height>27.46944mm</Height>
                 <Width>0mm</Width>
                 <ZIndex>3</ZIndex>
@@ -4108,9 +4236,10 @@ WHERE TT.RowId = 3</CommandText>
                   <Paragraph>
                     <TextRuns>
                       <TextRun>
-                        <Value>Firmas Autorizadas</Value>
+                        <Value>Firma Autorizada</Value>
                         <Style>
                           <FontFamily>Arial</FontFamily>
+                          <FontSize>9pt</FontSize>
                         </Style>
                       </TextRun>
                     </TextRuns>
@@ -4121,7 +4250,7 @@ WHERE TT.RowId = 3</CommandText>
                 </Paragraphs>
                 <rd:DefaultName>Textbox6</rd:DefaultName>
                 <Top>17.01416mm</Top>
-                <Left>140.9811mm</Left>
+                <Left>136.5361mm</Left>
                 <Height>6mm</Height>
                 <Width>43.69776mm</Width>
                 <ZIndex>4</ZIndex>
@@ -4160,30 +4289,10 @@ WHERE TT.RowId = 3</CommandText>
                           <TextAlign>Center</TextAlign>
                         </Style>
                       </Paragraph>
-                    </Paragraphs>
-                    <rd:DefaultName>Textbox6</rd:DefaultName>
-                    <Top>0.35278mm</Top>
-                    <Left>0.93893mm</Left>
-                    <Height>6mm</Height>
-                    <Width>184.38965mm</Width>
-                    <Style>
-                      <Border>
-                        <Style>None</Style>
-                      </Border>
-                      <PaddingLeft>2pt</PaddingLeft>
-                      <PaddingRight>2pt</PaddingRight>
-                      <PaddingTop>2pt</PaddingTop>
-                      <PaddingBottom>2pt</PaddingBottom>
-                    </Style>
-                  </Textbox>
-                  <Textbox Name="Textbox44">
-                    <CanGrow>true</CanGrow>
-                    <KeepTogether>true</KeepTogether>
-                    <Paragraphs>
                       <Paragraph>
                         <TextRuns>
                           <TextRun>
-                            <Value>Se autoriza el retiro de las mercaderías detalladas en el presente documento.</Value>
+                            <Value>Se autoriza el retiro de las mercaderías detalladas en el presente documento</Value>
                             <Style>
                               <FontFamily>Arial</FontFamily>
                               <FontWeight>Bold</FontWeight>
@@ -4196,11 +4305,10 @@ WHERE TT.RowId = 3</CommandText>
                       </Paragraph>
                     </Paragraphs>
                     <rd:DefaultName>Textbox6</rd:DefaultName>
-                    <Top>6.35278mm</Top>
+                    <Top>0.98778mm</Top>
                     <Left>0.93893mm</Left>
-                    <Height>6mm</Height>
+                    <Height>9.70417mm</Height>
                     <Width>184.38965mm</Width>
-                    <ZIndex>1</ZIndex>
                     <Style>
                       <Border>
                         <Style>None</Style>
@@ -4221,6 +4329,7 @@ WHERE TT.RowId = 3</CommandText>
                             <Value>Revisado por</Value>
                             <Style>
                               <FontFamily>Arial</FontFamily>
+                              <FontSize>9pt</FontSize>
                             </Style>
                           </TextRun>
                         </TextRuns>
@@ -4234,7 +4343,7 @@ WHERE TT.RowId = 3</CommandText>
                     <Left>67.72146mm</Left>
                     <Height>6mm</Height>
                     <Width>43.69776mm</Width>
-                    <ZIndex>2</ZIndex>
+                    <ZIndex>1</ZIndex>
                     <Style>
                       <Border>
                         <Style>None</Style>
@@ -4260,6 +4369,7 @@ WHERE TT.RowId = 3</CommandText>
                             <Value>Aprobado por</Value>
                             <Style>
                               <FontFamily>Arial</FontFamily>
+                              <FontSize>9pt</FontSize>
                             </Style>
                           </TextRun>
                         </TextRuns>
@@ -4273,7 +4383,7 @@ WHERE TT.RowId = 3</CommandText>
                     <Left>129.58797mm</Left>
                     <Height>6mm</Height>
                     <Width>43.69776mm</Width>
-                    <ZIndex>3</ZIndex>
+                    <ZIndex>2</ZIndex>
                     <Style>
                       <Border>
                         <Style>None</Style>
@@ -4299,6 +4409,7 @@ WHERE TT.RowId = 3</CommandText>
                             <Value>Operado por</Value>
                             <Style>
                               <FontFamily>Arial</FontFamily>
+                              <FontSize>9pt</FontSize>
                             </Style>
                           </TextRun>
                         </TextRuns>
@@ -4312,7 +4423,7 @@ WHERE TT.RowId = 3</CommandText>
                     <Left>10.57148mm</Left>
                     <Height>6mm</Height>
                     <Width>43.69776mm</Width>
-                    <ZIndex>4</ZIndex>
+                    <ZIndex>3</ZIndex>
                     <Style>
                       <Border>
                         <Style>None</Style>
@@ -4352,7 +4463,7 @@ WHERE TT.RowId = 3</CommandText>
                     <Left>1.05715cm</Left>
                     <Height>0.6cm</Height>
                     <Width>4.36978cm</Width>
-                    <ZIndex>5</ZIndex>
+                    <ZIndex>4</ZIndex>
                     <Style>
                       <Border>
                         <Style>None</Style>
@@ -4387,7 +4498,7 @@ WHERE TT.RowId = 3</CommandText>
                     <Left>6.77215cm</Left>
                     <Height>0.6cm</Height>
                     <Width>4.36978cm</Width>
-                    <ZIndex>6</ZIndex>
+                    <ZIndex>5</ZIndex>
                     <Style>
                       <Border>
                         <Style>None</Style>
@@ -4422,7 +4533,7 @@ WHERE TT.RowId = 3</CommandText>
                     <Left>12.9588cm</Left>
                     <Height>0.6cm</Height>
                     <Width>4.36978cm</Width>
-                    <ZIndex>7</ZIndex>
+                    <ZIndex>6</ZIndex>
                     <Style>
                       <Border>
                         <Style>None</Style>
@@ -4437,8 +4548,8 @@ WHERE TT.RowId = 3</CommandText>
                 <KeepTogether>true</KeepTogether>
                 <Top>27.46944mm</Top>
                 <Left>0mm</Left>
-                <Height>39.88723mm</Height>
-                <Width>186.05952mm</Width>
+                <Height>36.44765mm</Height>
+                <Width>186.62305mm</Width>
                 <ZIndex>5</ZIndex>
                 <Style>
                   <Border>
@@ -4482,13 +4593,13 @@ WHERE TT.RowId = 3</CommandText>
                       </TextRun>
                     </TextRuns>
                     <Style>
-                      <TextAlign>Center</TextAlign>
+                      <TextAlign>Left</TextAlign>
                     </Style>
                   </Paragraph>
                 </Paragraphs>
                 <rd:DefaultName>Textbox84</rd:DefaultName>
                 <Top>1.10142cm</Top>
-                <Left>0.27647cm</Left>
+                <Left>0.21297cm</Left>
                 <Height>0.6cm</Height>
                 <Width>7.41311cm</Width>
                 <ZIndex>6</ZIndex>
@@ -4503,7 +4614,6 @@ WHERE TT.RowId = 3</CommandText>
                 </Style>
               </Textbox>
               <Textbox Name="Textbox71">
-                <CanGrow>true</CanGrow>
                 <KeepTogether>true</KeepTogether>
                 <Paragraphs>
                   <Paragraph>
@@ -4522,9 +4632,9 @@ WHERE TT.RowId = 3</CommandText>
                 </Paragraphs>
                 <rd:DefaultName>Textbox71</rd:DefaultName>
                 <Top>1.10142cm</Top>
-                <Left>8.5773cm</Left>
+                <Left>7.96834cm</Left>
                 <Height>0.6cm</Height>
-                <Width>4.36978cm</Width>
+                <Width>5.17276cm</Width>
                 <ZIndex>7</ZIndex>
                 <Style>
                   <Border>
@@ -4537,7 +4647,6 @@ WHERE TT.RowId = 3</CommandText>
                 </Style>
               </Textbox>
               <Textbox Name="Textbox90">
-                <CanGrow>true</CanGrow>
                 <KeepTogether>true</KeepTogether>
                 <Paragraphs>
                   <Paragraph>
@@ -4556,9 +4665,9 @@ WHERE TT.RowId = 3</CommandText>
                 </Paragraphs>
                 <rd:DefaultName>Textbox71</rd:DefaultName>
                 <Top>1.10142cm</Top>
-                <Left>14.09811cm</Left>
+                <Left>13.39863cm</Left>
                 <Height>0.6cm</Height>
-                <Width>4.36978cm</Width>
+                <Width>5.17276cm</Width>
                 <ZIndex>8</ZIndex>
                 <Style>
                   <Border>
@@ -4572,11 +4681,11 @@ WHERE TT.RowId = 3</CommandText>
               </Textbox>
             </ReportItems>
             <KeepTogether>true</KeepTogether>
-            <Top>134.30007mm</Top>
+            <Top>124.77507mm</Top>
             <Left>6.68746mm</Left>
-            <Height>67.35667mm</Height>
-            <Width>186.05952mm</Width>
-            <ZIndex>9</ZIndex>
+            <Height>63.91709mm</Height>
+            <Width>186.62305mm</Width>
+            <ZIndex>8</ZIndex>
             <Style>
               <Border>
                 <Style>Solid</Style>
@@ -4610,24 +4719,15 @@ WHERE TT.RowId = 3</CommandText>
               <Paragraph>
                 <TextRuns>
                   <TextRun>
-                    <Value>TOTAL UNIDADES:</Value>
+                    <Value>TOTAL UNIDADES: </Value>
                     <Style>
                       <FontFamily>Arial</FontFamily>
                       <FontWeight>Bold</FontWeight>
-                    </Style>
-                  </TextRun>
-                  <TextRun>
-                    <Value xml:space="preserve"> </Value>
-                    <Style>
-                      <FontFamily>Arial</FontFamily>
                     </Style>
                   </TextRun>
                   <TextRun>
                     <Value>=First(Fields!TotalUnidadesLetras.Value, "Authorization")</Value>
-                    <Style>
-                      <FontFamily>Arial</FontFamily>
-                      <FontWeight>Bold</FontWeight>
-                    </Style>
+                    <Style />
                   </TextRun>
                 </TextRuns>
                 <Style>
@@ -4636,11 +4736,11 @@ WHERE TT.RowId = 3</CommandText>
               </Paragraph>
             </Paragraphs>
             <rd:DefaultName>Textbox6</rd:DefaultName>
-            <Top>129.28785mm</Top>
+            <Top>118.77503mm</Top>
             <Left>7.43914mm</Left>
-            <Height>5.365mm</Height>
+            <Height>6.35282mm</Height>
             <Width>185.49508mm</Width>
-            <ZIndex>10</ZIndex>
+            <ZIndex>9</ZIndex>
             <Style>
               <Border>
                 <Style>None</Style>
@@ -4658,17 +4758,9 @@ WHERE TT.RowId = 3</CommandText>
               <Paragraph>
                 <TextRuns>
                   <TextRun>
-                    <Value>El Sr:</Value>
+                    <Value>El Sr:____________________________________________________</Value>
                     <Style>
                       <FontFamily>Arial</FontFamily>
-                    </Style>
-                  </TextRun>
-                  <TextRun>
-                    <Value>=First(Fields!RetiroAutorizadoA.Value, "Authorization")</Value>
-                    <Style>
-                      <FontFamily>Arial</FontFamily>
-                      <FontWeight>Bold</FontWeight>
-                      <TextDecoration>Underline</TextDecoration>
                     </Style>
                   </TextRun>
                   <TextRun>
@@ -4692,11 +4784,11 @@ WHERE TT.RowId = 3</CommandText>
               </Paragraph>
             </Paragraphs>
             <rd:DefaultName>Textbox6</rd:DefaultName>
-            <Top>204.99176mm</Top>
-            <Left>7.2519mm</Left>
-            <Height>6.21169mm</Height>
-            <Width>185.49508mm</Width>
-            <ZIndex>11</ZIndex>
+            <Top>191.51438mm</Top>
+            <Left>6.50022mm</Left>
+            <Height>10.16407mm</Height>
+            <Width>186.05948mm</Width>
+            <ZIndex>10</ZIndex>
             <Style>
               <Border>
                 <Style>None</Style>
@@ -4717,6 +4809,7 @@ WHERE TT.RowId = 3</CommandText>
                     <Value>RECIBÍ CONFORME</Value>
                     <Style>
                       <FontFamily>Arial</FontFamily>
+                      <FontSize>9pt</FontSize>
                     </Style>
                   </TextRun>
                 </TextRuns>
@@ -4726,11 +4819,11 @@ WHERE TT.RowId = 3</CommandText>
               </Paragraph>
             </Paragraphs>
             <rd:DefaultName>Textbox6</rd:DefaultName>
-            <Top>216.03087mm</Top>
-            <Left>117.30317mm</Left>
+            <Top>206.50587mm</Top>
+            <Left>88.96794mm</Left>
             <Height>6mm</Height>
-            <Width>75.63106mm</Width>
-            <ZIndex>12</ZIndex>
+            <Width>103.96629mm</Width>
+            <ZIndex>11</ZIndex>
             <Style>
               <Border>
                 <Style>None</Style>
@@ -4765,11 +4858,11 @@ WHERE TT.RowId = 3</CommandText>
               </Paragraph>
             </Paragraphs>
             <rd:DefaultName>Textbox6</rd:DefaultName>
-            <Top>224.21808mm</Top>
-            <Left>7.43914mm</Left>
+            <Top>215.64558mm</Top>
+            <Left>6.68746mm</Left>
             <Height>6mm</Height>
-            <Width>108.47642mm</Width>
-            <ZIndex>13</ZIndex>
+            <Width>109.2281mm</Width>
+            <ZIndex>12</ZIndex>
             <Style>
               <Border>
                 <Style>None</Style>
@@ -4799,11 +4892,11 @@ WHERE TT.RowId = 3</CommandText>
               </Paragraph>
             </Paragraphs>
             <rd:DefaultName>Textbox6</rd:DefaultName>
-            <Top>228.45139mm</Top>
-            <Left>117.67945mm</Left>
-            <Height>6mm</Height>
-            <Width>75.63106mm</Width>
-            <ZIndex>14</ZIndex>
+            <Top>219.87889mm</Top>
+            <Left>117.30317mm</Left>
+            <Height>5.24052mm</Height>
+            <Width>75.25653mm</Width>
+            <ZIndex>13</ZIndex>
             <Style>
               <Border>
                 <Style>None</Style>
@@ -4834,11 +4927,11 @@ WHERE TT.RowId = 3</CommandText>
               </Paragraph>
             </Paragraphs>
             <rd:DefaultName>Textbox6</rd:DefaultName>
-            <Top>235.4558mm</Top>
+            <Top>225.9308mm</Top>
             <Left>6.50022mm</Left>
-            <Height>6mm</Height>
+            <Height>5.64722mm</Height>
             <Width>186.43401mm</Width>
-            <ZIndex>15</ZIndex>
+            <ZIndex>14</ZIndex>
             <Style>
               <Border>
                 <Style>None</Style>
@@ -4871,11 +4964,11 @@ WHERE TT.RowId = 3</CommandText>
               </Paragraph>
             </Paragraphs>
             <rd:DefaultName>Textbox73</rd:DefaultName>
-            <Top>243.57247mm</Top>
+            <Top>232.45997mm</Top>
             <Left>73.01837mm</Left>
             <Height>6mm</Height>
             <Width>33.04387mm</Width>
-            <ZIndex>16</ZIndex>
+            <ZIndex>15</ZIndex>
             <Style>
               <Border>
                 <Style>None</Style>
@@ -4903,11 +4996,11 @@ WHERE TT.RowId = 3</CommandText>
               </Paragraph>
             </Paragraphs>
             <rd:DefaultName>Textbox73</rd:DefaultName>
-            <Top>250.6308mm</Top>
+            <Top>239.5183mm</Top>
             <Left>73.01837mm</Left>
             <Height>6mm</Height>
             <Width>33.04387mm</Width>
-            <ZIndex>17</ZIndex>
+            <ZIndex>16</ZIndex>
             <Style>
               <Border>
                 <Style>None</Style>
@@ -4935,11 +5028,11 @@ WHERE TT.RowId = 3</CommandText>
               </Paragraph>
             </Paragraphs>
             <rd:DefaultName>Textbox73</rd:DefaultName>
-            <Top>257.33636mm</Top>
+            <Top>246.22386mm</Top>
             <Left>73.01837mm</Left>
             <Height>6mm</Height>
             <Width>33.04387mm</Width>
-            <ZIndex>18</ZIndex>
+            <ZIndex>17</ZIndex>
             <Style>
               <Border>
                 <Style>None</Style>
@@ -4957,7 +5050,7 @@ WHERE TT.RowId = 3</CommandText>
               <Paragraph>
                 <TextRuns>
                   <TextRun>
-                    <Value>Derechos Lps</Value>
+                    <Value>Derechos L.</Value>
                     <Style>
                       <FontFamily>Arial</FontFamily>
                     </Style>
@@ -4967,11 +5060,11 @@ WHERE TT.RowId = 3</CommandText>
               </Paragraph>
             </Paragraphs>
             <rd:DefaultName>Textbox73</rd:DefaultName>
-            <Top>243.57247mm</Top>
+            <Top>232.45997mm</Top>
             <Left>114.62469mm</Left>
             <Height>6mm</Height>
-            <Width>33.04387mm</Width>
-            <ZIndex>19</ZIndex>
+            <Width>27.83058mm</Width>
+            <ZIndex>18</ZIndex>
             <Style>
               <Border>
                 <Style>None</Style>
@@ -4989,7 +5082,7 @@ WHERE TT.RowId = 3</CommandText>
               <Paragraph>
                 <TextRuns>
                   <TextRun>
-                    <Value>Póliza No</Value>
+                    <Value>Póliza No.</Value>
                     <Style>
                       <FontFamily>Arial</FontFamily>
                     </Style>
@@ -4999,11 +5092,11 @@ WHERE TT.RowId = 3</CommandText>
               </Paragraph>
             </Paragraphs>
             <rd:DefaultName>Textbox73</rd:DefaultName>
-            <Top>250.6308mm</Top>
+            <Top>239.5183mm</Top>
             <Left>114.62469mm</Left>
             <Height>6mm</Height>
-            <Width>33.04387mm</Width>
-            <ZIndex>20</ZIndex>
+            <Width>27.83058mm</Width>
+            <ZIndex>19</ZIndex>
             <Style>
               <Border>
                 <Style>None</Style>
@@ -5031,11 +5124,11 @@ WHERE TT.RowId = 3</CommandText>
               </Paragraph>
             </Paragraphs>
             <rd:DefaultName>Textbox73</rd:DefaultName>
-            <Top>257.33636mm</Top>
+            <Top>246.22386mm</Top>
             <Left>114.62469mm</Left>
             <Height>6mm</Height>
-            <Width>33.04387mm</Width>
-            <ZIndex>21</ZIndex>
+            <Width>27.83058mm</Width>
+            <ZIndex>20</ZIndex>
             <Style>
               <Border>
                 <Style>None</Style>
@@ -5053,23 +5146,23 @@ WHERE TT.RowId = 3</CommandText>
               <Paragraph>
                 <TextRuns>
                   <TextRun>
-                    <Value>=Sum(Fields!DerechosFiscales.Value, "AuthorizationLines")</Value>
+                    <Value>=IIF(Sum(Fields!DerechosFiscales.Value, "AuthorizationLines")&gt;0, Sum(Fields!DerechosFiscales.Value, "AuthorizationLines"),"")</Value>
                     <Style>
                       <FontFamily>Arial</FontFamily>
                     </Style>
                   </TextRun>
                 </TextRuns>
                 <Style>
-                  <TextAlign>Left</TextAlign>
+                  <TextAlign>Right</TextAlign>
                 </Style>
               </Paragraph>
             </Paragraphs>
             <rd:DefaultName>Textbox6</rd:DefaultName>
-            <Top>243.57247mm</Top>
-            <Left>148.02134mm</Left>
+            <Top>232.45997mm</Top>
+            <Left>144.21916mm</Left>
             <Height>6mm</Height>
-            <Width>44.18195mm</Width>
-            <ZIndex>22</ZIndex>
+            <Width>48.71507mm</Width>
+            <ZIndex>21</ZIndex>
             <Style>
               <Border>
                 <Style>None</Style>
@@ -5092,23 +5185,23 @@ WHERE TT.RowId = 3</CommandText>
               <Paragraph>
                 <TextRuns>
                   <TextRun>
-                    <Value>=First(Fields!NoPolizaImportacion.Value, "Authorization")</Value>
+                    <Value>=IIF(First(Fields!NoPolizaImportacion.Value, "Authorization")&gt;0, (First(Fields!NoPolizaImportacion.Value, "Authorization")),"")</Value>
                     <Style>
                       <FontFamily>Arial</FontFamily>
                     </Style>
                   </TextRun>
                 </TextRuns>
                 <Style>
-                  <TextAlign>Left</TextAlign>
+                  <TextAlign>Right</TextAlign>
                 </Style>
               </Paragraph>
             </Paragraphs>
             <rd:DefaultName>Textbox6</rd:DefaultName>
-            <Top>250.98358mm</Top>
-            <Left>147.66856mm</Left>
+            <Top>239.23608mm</Top>
+            <Left>144.21916mm</Left>
             <Height>6mm</Height>
-            <Width>44.53473mm</Width>
-            <ZIndex>23</ZIndex>
+            <Width>48.52782mm</Width>
+            <ZIndex>22</ZIndex>
             <Style>
               <Border>
                 <Style>None</Style>
@@ -5143,11 +5236,11 @@ WHERE TT.RowId = 3</CommandText>
               </Paragraph>
             </Paragraphs>
             <rd:DefaultName>Textbox6</rd:DefaultName>
-            <Top>257.33636mm</Top>
-            <Left>148.02134mm</Left>
+            <Top>246.22386mm</Top>
+            <Left>144.21916mm</Left>
             <Height>6mm</Height>
-            <Width>44.18195mm</Width>
-            <ZIndex>24</ZIndex>
+            <Width>48.52782mm</Width>
+            <ZIndex>23</ZIndex>
             <Style>
               <Border>
                 <Style>None</Style>
@@ -5194,19 +5287,7 @@ WHERE TT.RowId = 3</CommandText>
               <Paragraph>
                 <TextRuns>
                   <TextRun>
-                    <Value>Copia: Tenedor de Bono</Value>
-                    <Style>
-                      <FontFamily>Arial</FontFamily>
-                      <FontSize>7pt</FontSize>
-                    </Style>
-                  </TextRun>
-                </TextRuns>
-                <Style />
-              </Paragraph>
-              <Paragraph>
-                <TextRuns>
-                  <TextRun>
-                    <Value>Copia: Tenedor de Certificados</Value>
+                    <Value>Copia: Tenedor de Certificado</Value>
                     <Style>
                       <FontFamily>Arial</FontFamily>
                       <FontSize>7pt</FontSize>
@@ -5217,53 +5298,15 @@ WHERE TT.RowId = 3</CommandText>
               </Paragraph>
             </Paragraphs>
             <rd:DefaultName>Textbox83</rd:DefaultName>
-            <Top>242.86691mm</Top>
+            <Top>231.75441mm</Top>
             <Left>6.68746mm</Left>
             <Height>16.878mm</Height>
             <Width>41.18162mm</Width>
-            <ZIndex>25</ZIndex>
+            <ZIndex>24</ZIndex>
             <Style>
               <Border>
                 <Style>None</Style>
               </Border>
-              <PaddingLeft>2pt</PaddingLeft>
-              <PaddingRight>2pt</PaddingRight>
-              <PaddingTop>2pt</PaddingTop>
-              <PaddingBottom>2pt</PaddingBottom>
-            </Style>
-          </Textbox>
-          <Textbox Name="Textbox82">
-            <CanGrow>true</CanGrow>
-            <KeepTogether>true</KeepTogether>
-            <Paragraphs>
-              <Paragraph>
-                <TextRuns>
-                  <TextRun>
-                    <Value>AVISO: </Value>
-                    <Style>
-                      <FontSize>8pt</FontSize>
-                      <FontWeight>Bold</FontWeight>
-                    </Style>
-                  </TextRun>
-                </TextRuns>
-                <Style />
-              </Paragraph>
-            </Paragraphs>
-            <rd:DefaultName>Textbox82</rd:DefaultName>
-            <Top>11.57007cm</Top>
-            <Left>0.74391cm</Left>
-            <Height>1.2176cm</Height>
-            <Width>1.13839cm</Width>
-            <ZIndex>26</ZIndex>
-            <Style>
-              <Border>
-                <Style>None</Style>
-              </Border>
-              <BottomBorder>
-                <Color>Black</Color>
-                <Style>Solid</Style>
-                <Width>1pt</Width>
-              </BottomBorder>
               <PaddingLeft>2pt</PaddingLeft>
               <PaddingRight>2pt</PaddingRight>
               <PaddingTop>2pt</PaddingTop>
@@ -5289,11 +5332,11 @@ WHERE TT.RowId = 3</CommandText>
               </Paragraph>
             </Paragraphs>
             <rd:DefaultName>Textbox7</rd:DefaultName>
-            <Top>24.35725cm</Top>
+            <Top>23.246cm</Top>
             <Left>10.67678cm</Left>
             <Height>0.6cm</Height>
             <Width>0.6093cm</Width>
-            <ZIndex>27</ZIndex>
+            <ZIndex>25</ZIndex>
             <Style>
               <Border>
                 <Style>Solid</Style>
@@ -5324,11 +5367,11 @@ WHERE TT.RowId = 3</CommandText>
               </Paragraph>
             </Paragraphs>
             <rd:DefaultName>Textbox7</rd:DefaultName>
-            <Top>25.09836cm</Top>
+            <Top>23.98711cm</Top>
             <Left>10.67678cm</Left>
             <Height>0.56472cm</Height>
             <Width>0.6093cm</Width>
-            <ZIndex>28</ZIndex>
+            <ZIndex>26</ZIndex>
             <Style>
               <Border>
                 <Style>Solid</Style>
@@ -5379,11 +5422,11 @@ WHERE TT.RowId = 3</CommandText>
               </Paragraph>
             </Paragraphs>
             <rd:DefaultName>Textbox7</rd:DefaultName>
-            <Top>25.76891cm</Top>
+            <Top>24.65766cm</Top>
             <Left>10.67678cm</Left>
             <Height>0.6cm</Height>
             <Width>0.6093cm</Width>
-            <ZIndex>29</ZIndex>
+            <ZIndex>27</ZIndex>
             <Style>
               <Border>
                 <Style>Solid</Style>
@@ -5422,7 +5465,7 @@ WHERE TT.RowId = 3</CommandText>
               <Paragraph>
                 <TextRuns>
                   <TextRun>
-                    <Value>=First(Fields!NombreAutorizado.Value, "Firma3")</Value>
+                    <Value />
                     <Style />
                   </TextRun>
                 </TextRuns>
@@ -5432,11 +5475,11 @@ WHERE TT.RowId = 3</CommandText>
               </Paragraph>
             </Paragraphs>
             <rd:DefaultName>Textbox71</rd:DefaultName>
-            <Top>22.27364cm</Top>
-            <Left>11.76794cm</Left>
+            <Top>21.41639cm</Top>
+            <Left>11.73032cm</Left>
             <Height>0.6cm</Height>
-            <Width>7.48803cm</Width>
-            <ZIndex>30</ZIndex>
+            <Width>7.56311cm</Width>
+            <ZIndex>28</ZIndex>
             <Style>
               <Border>
                 <Style>None</Style>
@@ -5452,23 +5495,34 @@ WHERE TT.RowId = 3</CommandText>
               <PaddingBottom>2pt</PaddingBottom>
             </Style>
           </Textbox>
+          <Image Name="Image1">
+            <Source>External</Source>
+            <Value>=First(Fields!imageDir.Value,"CompanyInfo")</Value>
+            <Sizing>FitProportional</Sizing>
+            <Top>0.04167in</Top>
+            <Left>0.28551in</Left>
+            <Height>0.90561in</Height>
+            <Width>1.28318in</Width>
+            <ZIndex>29</ZIndex>
+            <Style>
+              <Border />
+            </Style>
+          </Image>
         </ReportItems>
-        <Height>10.48948in</Height>
+        <Height>10.02073in</Height>
         <Style>
           <Border>
             <Style>None</Style>
           </Border>
         </Style>
       </Body>
-      <Width>7.80667in</Width>
+      <Width>7.84834in</Width>
       <Page>
-        <PageHeight>29.7cm</PageHeight>
-        <PageWidth>21cm</PageWidth>
-        <LeftMargin>0.5cm</LeftMargin>
-        <RightMargin>0.5cm</RightMargin>
-        <TopMargin>0.5cm</TopMargin>
-        <BottomMargin>0.5cm</BottomMargin>
-        <ColumnSpacing>0.13cm</ColumnSpacing>
+        <LeftMargin>0.25in</LeftMargin>
+        <RightMargin>0.25in</RightMargin>
+        <TopMargin>0.1in</TopMargin>
+        <BottomMargin>0.1in</BottomMargin>
+        <ColumnSpacing>0.05118in</ColumnSpacing>
         <Style />
       </Page>
     </ReportSection>
@@ -5476,7 +5530,7 @@ WHERE TT.RowId = 3</CommandText>
   <ReportParameters>
     <ReportParameter Name="GoodsDeliveryAuthorizationId">
       <DataType>String</DataType>
-      <Prompt>GoodsDeliveryAuthorizationId</Prompt>
+      <Prompt>No.AR</Prompt>
     </ReportParameter>
   </ReportParameters>
   <ReportParametersLayout>
@@ -5492,6 +5546,6 @@ WHERE TT.RowId = 3</CommandText>
       </CellDefinitions>
     </GridLayoutDefinition>
   </ReportParametersLayout>
-  <rd:ReportUnitType>Cm</rd:ReportUnitType>
+  <rd:ReportUnitType>Inch</rd:ReportUnitType>
   <rd:ReportID>40588dc4-3aa4-48dd-99dc-debf0d85c007</rd:ReportID>
 </Report>
