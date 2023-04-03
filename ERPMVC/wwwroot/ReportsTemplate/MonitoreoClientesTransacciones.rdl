@@ -22,27 +22,37 @@
             <Value>=Parameters!fecha.Value</Value>
             <rd:UserDefined>true</rd:UserDefined>
           </QueryParameter>
+          <QueryParameter Name="@MontoMayor">
+            <Value>=Parameters!MontoMayor.Value</Value>
+          </QueryParameter>
         </QueryParameters>
-        <CommandText>
-SELECT (Select top (1)  tipoinstitucion from CompanyInfo) as TipoInstitucion,
+        <CommandText>SELECT distinct i.id,
+		(Select top (1)  tipoinstitucion from CompanyInfo) as TipoInstitucion,
 	   (Select top (1)  CodigoInstitucion from CompanyInfo) as CodigoInstitucion,
 	   b.BranchCode CodigoSucursal,
 	   b.ZipCode CodigoAgencia,
-	   
-	   i.JournalEntryId Transaccion,
-	   FORMAT( i.FechaModificacion,'yyyyMMdd') as FechaTransaccion,
+	   i.Id Transaccion,
+	   FORMAT( i.FechaPago,'yyyyMMdd') as FechaTransaccion,
 	   N'115003' CodigoTipoTransaccion,
-	   N'105005' CodigoTipoProducto,
-	   0 NumeroProductoAfectado,
-	   CONCAT(N'Pago de facturacion por parte del cliente por servicio de ', i.ProductName) as Descripcion,
+	   case when iv.ProductId = 1 then N'105003' when iv.ProductId = 2 then N'105001'  when iv.ProductId = 3 then N'105005'   end
+	   CodigoTipoProducto,
+	   ac.AccountNumber NumeroProductoAfectado,
+	   CONCAT(N'Pago de facturacion por parte del cliente por servicio de ', iv.ProductName) as Descripcion,
 	   1 CodigoMoneda,
 	   1 TasaCambio,
-	   i.Total Monto
-  FROM Customer c right join Invoice i on i.CustomerId = c.CustomerId 
-  left join Branch b on b.BranchId = i.BranchId
-  where year(i.FechaModificacion) = year(@fecha)  and month(i.FechaModificacion) = month(@fecha)</CommandText>
+	   i.MontoPagado Monto
+	   
+  FROM Customer c right join InvoicePayments i on i.CustomerId = c.CustomerId 
+  left join AccountManagement ac on ac.AccountManagementId = i.CuentaBancariaId
+  left join Branch b on b.BranchId = i.BranchId left join InvoicePaymentsLine il on i.id = il.InvoicePaymentId 
+  inner join invoice iv on iv.InvoiceId = il.InvoivceId
+  where year(i.FechaModificacion) = year(@fecha)  and month(i.FechaModificacion) = month(@fecha) and i.MontoPagado&gt;@MontoMayor</CommandText>
       </Query>
       <Fields>
+        <Field Name="id">
+          <DataField>id</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
         <Field Name="TipoInstitucion">
           <DataField>TipoInstitucion</DataField>
           <rd:TypeName>System.String</rd:TypeName>
@@ -61,7 +71,7 @@ SELECT (Select top (1)  tipoinstitucion from CompanyInfo) as TipoInstitucion,
         </Field>
         <Field Name="Transaccion">
           <DataField>Transaccion</DataField>
-          <rd:TypeName>System.Int64</rd:TypeName>
+          <rd:TypeName>System.Int32</rd:TypeName>
         </Field>
         <Field Name="FechaTransaccion">
           <DataField>FechaTransaccion</DataField>
@@ -77,7 +87,7 @@ SELECT (Select top (1)  tipoinstitucion from CompanyInfo) as TipoInstitucion,
         </Field>
         <Field Name="NumeroProductoAfectado">
           <DataField>NumeroProductoAfectado</DataField>
-          <rd:TypeName>System.Int32</rd:TypeName>
+          <rd:TypeName>System.String</rd:TypeName>
         </Field>
         <Field Name="CodigoMoneda">
           <DataField>CodigoMoneda</DataField>
@@ -366,7 +376,7 @@ SELECT (Select top (1)  tipoinstitucion from CompanyInfo) as TipoInstitucion,
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>Transaccion</Value>
+                                  <Value>NumeroTransaccion</Value>
                                   <Style>
                                     <FontSize>11pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
@@ -571,7 +581,7 @@ SELECT (Select top (1)  tipoinstitucion from CompanyInfo) as TipoInstitucion,
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>Codigo Moneda</Value>
+                                  <Value>Sinopsis</Value>
                                   <Style>
                                     <FontSize>11pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
@@ -612,7 +622,7 @@ SELECT (Select top (1)  tipoinstitucion from CompanyInfo) as TipoInstitucion,
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>Descripcion</Value>
+                                  <Value>Codigo Moneda</Value>
                                   <Style>
                                     <FontSize>11pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
@@ -1038,7 +1048,7 @@ SELECT (Select top (1)  tipoinstitucion from CompanyInfo) as TipoInstitucion,
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Sum(Fields!NumeroProductoAfectado.Value)</Value>
+                                  <Value>=Fields!NumeroProductoAfectado.Value</Value>
                                   <Style>
                                     <FontWeight>Normal</FontWeight>
                                     <Color>#333333</Color>
@@ -1064,6 +1074,39 @@ SELECT (Select top (1)  tipoinstitucion from CompanyInfo) as TipoInstitucion,
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
+                        <Textbox Name="Descripcion1">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Fields!Descripcion.Value</Value>
+                                  <Style>
+                                    <FontWeight>Normal</FontWeight>
+                                    <Color>#333333</Color>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Descripcion1</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Style>None</Style>
+                            </Border>
+                            <BackgroundColor>White</BackgroundColor>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
                         <Textbox Name="CodigoMoneda">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
@@ -1071,7 +1114,7 @@ SELECT (Select top (1)  tipoinstitucion from CompanyInfo) as TipoInstitucion,
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Sum(Fields!CodigoMoneda.Value)</Value>
+                                  <Value>=Fields!CodigoMoneda.Value</Value>
                                   <Style>
                                     <FontWeight>Normal</FontWeight>
                                     <Color>#333333</Color>
@@ -1097,39 +1140,6 @@ SELECT (Select top (1)  tipoinstitucion from CompanyInfo) as TipoInstitucion,
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="Descripcion">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value>=Fields!Descripcion.Value</Value>
-                                  <Style>
-                                    <FontWeight>Normal</FontWeight>
-                                    <Color>#333333</Color>
-                                  </Style>
-                                </TextRun>
-                              </TextRuns>
-                              <Style />
-                            </Paragraph>
-                          </Paragraphs>
-                          <rd:DefaultName>Descripcion</rd:DefaultName>
-                          <Style>
-                            <Border>
-                              <Style>None</Style>
-                            </Border>
-                            <BackgroundColor>White</BackgroundColor>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
-                    <TablixCell>
-                      <CellContents>
                         <Textbox Name="TasaCambio">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
@@ -1137,7 +1147,7 @@ SELECT (Select top (1)  tipoinstitucion from CompanyInfo) as TipoInstitucion,
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Sum(Fields!TasaCambio.Value)</Value>
+                                  <Value>=Fields!TasaCambio.Value</Value>
                                   <Style>
                                     <FontWeight>Normal</FontWeight>
                                     <Color>#333333</Color>
@@ -1170,7 +1180,7 @@ SELECT (Select top (1)  tipoinstitucion from CompanyInfo) as TipoInstitucion,
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Sum(Fields!Monto.Value)</Value>
+                                  <Value>=Fields!Monto.Value</Value>
                                   <Style>
                                     <FontWeight>Normal</FontWeight>
                                     <Color>#333333</Color>
@@ -1358,16 +1368,30 @@ SELECT (Select top (1)  tipoinstitucion from CompanyInfo) as TipoInstitucion,
       </DefaultValue>
       <Prompt>Fecha</Prompt>
     </ReportParameter>
+    <ReportParameter Name="MontoMayor">
+      <DataType>Float</DataType>
+      <DefaultValue>
+        <Values>
+          <Value>200000</Value>
+        </Values>
+      </DefaultValue>
+      <Prompt>Monto Mayor a</Prompt>
+    </ReportParameter>
   </ReportParameters>
   <ReportParametersLayout>
     <GridLayoutDefinition>
       <NumberOfColumns>1</NumberOfColumns>
-      <NumberOfRows>1</NumberOfRows>
+      <NumberOfRows>2</NumberOfRows>
       <CellDefinitions>
         <CellDefinition>
           <ColumnIndex>0</ColumnIndex>
           <RowIndex>0</RowIndex>
           <ParameterName>fecha</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>0</ColumnIndex>
+          <RowIndex>1</RowIndex>
+          <ParameterName>MontoMayor</ParameterName>
         </CellDefinition>
       </CellDefinitions>
     </GridLayoutDefinition>
