@@ -25,29 +25,27 @@
         </QueryParameters>
         <CommandText>SELECT (Select top (1)  tipoinstitucion from CompanyInfo) as TipoInstitucion,
 	   (Select top (1)  CodigoInstitucion from CompanyInfo) as CodigoInstitucion,
-	   FORMAT( @fecha ,'yyyyMMdd') FechaReporte, 	   
+	   FORMAT( SYSDATETIME() ,'yyyyMMdd') FechaReporte, 	   
 	   c.RTN,
 	   c.CustomerName,
 	   2 CodigoIdentificacion,
-	   p.Code CodigoPais,
-	   0 CodigoProfesion,
+	   p.Code CodigoNacionalidad,
+	   case when c.CustomerTypeId = 1 then substring(c.ProfesionOficio,0,4) else 0 end CodigoProfesion,
 	   0 CodigoActividadEconomica,
-	   0 Genero,
+	   'X' Genero,
 	   c.Address Direccion,
 	   p.Code ResidenciaPais,
-	   i.JournalEntryId,
-	   3 CodigoParticipacion,
+	   i.id,
 	   s.Code CodigoDepto,
 	   cy.Code,
 	   null EmpresaLabora,
-	   c.CustomerTypeId TipoPersona,
-	   c.CustomerId CIF,
-	    FORMAT( i.FechaModificacion ,'ddMMyyyy') FechaModificacion 
-  FROM [dbo].[Customer] c right join Invoice i on i.CustomerId = c.CustomerId 
+	   case when c.CustomerTypeId = 1 then 2 else 1 end TipoPersona,
+	   c.CustomerId CIF
+  FROM [dbo].[Customer] c right join InvoicePayments i on i.CustomerId = c.CustomerId 
   left join Country p on p.Id = c.CountryId 
   left join State s on s.Id = c.StateId
-  left join City cy on cy.Id = c.CityId where  FORMAT(i.FechaModificacion,'yyyy') = FORMAT(@fecha,'yyyy') and 
-  FORMAT(i.FechaModificacion,'MM') = FORMAT(@fecha,'MM') and i.Estado = 'Emitido' </CommandText>
+  left join City cy on cy.Id = c.CityId where  FORMAT(i.FechaPago,'yyyy') = FORMAT(@fecha,'yyyy') and 
+  FORMAT(i.FechaPago,'MM') = FORMAT(@fecha,'MM') and i.Estado = 'Emitido' </CommandText>
       </Query>
       <Fields>
         <Field Name="TipoInstitucion">
@@ -159,7 +157,7 @@
                   <Width>25mm</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>25mm</Width>
+                  <Width>27.54mm</Width>
                 </TablixColumn>
                 <TablixColumn>
                   <Width>25mm</Width>
@@ -460,7 +458,7 @@
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>RTN</Value>
+                                  <Value>Identificacion</Value>
                                   <Style>
                                     <FontSize>11pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
@@ -1600,7 +1598,7 @@
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Sum(Fields!EmpresaLabora.Value)</Value>
+                                  <Value>No Aplica</Value>
                                   <Style>
                                     <FontWeight>Normal</FontWeight>
                                     <Color>#333333</Color>
@@ -1732,7 +1730,7 @@
             <Top>10.16mm</Top>
             <Left>0mm</Left>
             <Height>12mm</Height>
-            <Width>500mm</Width>
+            <Width>502.54mm</Width>
             <Style>
               <Border>
                 <Style>None</Style>
@@ -1783,7 +1781,7 @@
           </Border>
         </Style>
       </Body>
-      <Width>500mm</Width>
+      <Width>502.54mm</Width>
       <Page>
         <PageFooter>
           <Height>11.43mm</Height>
