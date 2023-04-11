@@ -43,6 +43,10 @@ namespace ERPMVC.Models
 
         [Display(Name = "Vigilante")]
         public string VigilanteName { get; set; }
+        public string Certificados { get; set; }
+
+        public string Autorizaciones { get; set; }
+
 
 
         public Int64 IdEstado { get; set; }
@@ -77,7 +81,9 @@ namespace ERPMVC.Models
         public string ProductName { get; set; }
 
         [Display(Name = "Entregamos a")]
-        public string Name { get; set; }
+        public string EntregadoA { get; set; }
+
+        public string Motorista { get; set; }
         [Display(Name = "Transportado")]
         public string Reference { get; set; }
 

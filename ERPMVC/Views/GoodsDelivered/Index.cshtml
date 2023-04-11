@@ -105,7 +105,7 @@
     function ImprimirGoodsDelivered(e) {
         e.preventDefault();
         var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
-        var url = '@Url.Action("SFEntregaMercaderia", "GoodsDelivered")/' + dataItem.GoodsDeliveredId;
+        var url = '@Url.Action("SFGoodsDelivered", "GoodsDelivered")/' + dataItem.GoodsDeliveredId;
         var win = window.open(url, '_blank');
         win.focus();
     }
@@ -130,16 +130,17 @@
 
 <h3 class="text-themecolor">Entrega de Mercadería</h3>
 
-@(Html.Kendo().Grid<ERPMVC.Models.GoodsDelivered>()
+@(
+Html.Kendo().Grid<ERPMVC.Models.GoodsDelivered>()
                                       .Name("gridGoodsDelivered")
                                       .Columns(columns =>
                                       {
-                                          if (permisos.HasClaim("Inventarios.Entrega de Mercaderia.Editar", "true")
-                                          || permisos.HasClaim("Inventarios.Entrega de Mercaderia.Imprimir", "true")
-                                          || permisos.HasClaim("Inventarios.Entrega de Mercaderia.Imprimir Boleta de Salida", "true"))
-                                          {
-                                              columns.Command(command =>
-                                              {
+                                      if (permisos.HasClaim("Inventarios.Entrega de Mercaderia.Editar", "true")
+                          || permisos.HasClaim("Inventarios.Entrega de Mercaderia.Imprimir", "true")
+                          || permisos.HasClaim("Inventarios.Entrega de Mercaderia.Imprimir Boleta de Salida", "true"))
+                                      {
+                                          columns.Command(command =>
+                              {
                                                   if (permisos.HasClaim("Inventarios.Entrega de Mercaderia.Editar", "true"))
                                                   {
                                                       command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditGoodsDelivered");
@@ -152,22 +153,25 @@
                                                   {
                                                       command.Custom("ImprimirBoletaDeSalida").Text(" ").IconClass("fa fa-print").Click("ImprimirBoletaDeSalida");
                                                   }
-                                                  //  command.Edit(); command.Destroy();
                                               }).Title("Acciones").Width(150);
-                                          }
-                                          columns.Bound(p => p.GoodsDeliveredId).Title("Id").Width(100);
-                                          columns.Bound(p => p.DocumentDate).Format("{0:dd/MM/yyyy}")
-                                          .ClientTemplate("#=kendo.toString(DocumentDate,'dd/MM/yyyy')#").Title("Fecha").Width(150);
-                                          //columns.Bound(p => p.OrderDate).Format("{0:dd/MM/yyyy}").Width(150);
-                                          columns.Bound(p => p.CustomerName).Title("Cliente").Width(250);
-                                          columns.Bound(p => p.Name).Width(200).Title("Motorista");
-                                          columns.Bound(p => p.ProductId).Title("Producto").Width(200).Visible(false);
+                                      }
+                                      columns.Bound(p => p.GoodsDeliveredId).Title("Id").Width(100);
+                                      columns.Bound(p => p.DocumentDate).Format("{0:dd/MM/yyyy}")
+                          .ClientTemplate("#=kendo.toString(DocumentDate,'dd/MM/yyyy')#").Title("Fecha").Width(150);
+                                      columns.Bound(p => p.CustomerName).Title("Cliente").Width(250);
+                                      columns.Bound(p => p.EntregadoA).Width(200).Title("Entregado A");
+                                      columns.Bound(p => p.Placa).Width(200).Title("Placa");
+                                      columns.Bound(p => p.SubProductName).Title("Producto").Width(200);
+                                      columns.Bound(p => p.PesoNeto2).Title("Total Entregado").Width(150).Format("{0:N2}")
+                                          .HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" });
                                           columns.Bound(p => p.ProductName).Title("Servicio").Width(200);
-                                          //columns.Bound(p => p.BranchId).Title("Branch Id").Width(150);
                                           columns.Bound(p => p.BranchName).Title("Sucursal").Width(200);
-                                          //columns.Bound(p => p.WarehouseName).Title("Bodega").Width(200);
-                                          columns.Bound(p => p.ExitTicket).Title("Boleta de Salida").Width(150);
-                                          columns.Bound(p => p.Reference).Title("Boleta de Peso").Width(150);
+                                          columns.Bound(p => p.Certificados).Title("Certificados").Width(200);
+                                          columns.Bound(p => p.Autorizaciones).Title("Autorizaciones").Width(200);
+                                          columns.Bound(p => p.ControlId).Title("Control de Salidas Id").Width(200);
+                                          columns.Bound(p => p.ExitTicket).Title("Boleta de Salida Id").Width(150);
+                                          columns.Bound(p => p.BoletaPesoId).Title("Boleta de Peso Id").Width(150);
+                                          columns.Bound(p => p.Estado).Title("Estado").Width(150);
 
                                       })
                                       .Filterable(f => f.Operators(o => o.ForString(s => s
@@ -219,6 +223,7 @@
                                         .AutoBind(true)
                                         .Pageable(p => p.Refresh(true))
                                         .Filterable()
+                                        .Resizable(p => p.Columns(true))
                                         .Scrollable()
                                         // .ClientDetailTemplateId("template")
                                         .Pdf(pdf => pdf.FileName("GoodsDeliveredReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"

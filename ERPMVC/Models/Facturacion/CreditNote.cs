@@ -28,11 +28,7 @@ namespace ERPMVC.Models
        
         [Display(Name = "Fecha de Nota de Crédito")]
         public DateTime CreditNoteDate { get; set; }
-        [Display(Name = "Fecha de Vencimiento Nota Crédito")]
-        public DateTime CreditNoteDueDate { get; set; }
 
-        [Display(Name = "Fecha de Vencimiento")]
-        public DateTime ExpirationDate { get; set; }
         [Display(Name = "Tipo de Factura")]
         public int CreditNoteTypeId { get; set; }
 
@@ -115,10 +111,8 @@ namespace ERPMVC.Models
 
         [Display(Name = "Nombre Producto")]
         public string ProductName { get; set; }
-        [Display(Name = "Fecha de Pedido")]
-        public DateTime OrderDate { get; set; }
-        [Display(Name = "Fecha de Entrega")]
-        public DateTime DeliveryDate { get; set; }
+        
+        
 
         [Display(Name = "Moneda")]
         public int CurrencyId { get; set; }

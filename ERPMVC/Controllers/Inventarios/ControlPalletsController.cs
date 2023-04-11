@@ -81,6 +81,8 @@ namespace ERPMVC.Controllers
 
         public async Task<ActionResult> GetControlPalletsByCustomer([DataSourceRequest] DataSourceRequest request,int CustomerId,int esIngreso) {
             var res = await GetControlPallets(esIngreso);
+            
+
             return Json(res.Where(q => q.CustomerId == CustomerId).ToDataSourceResult(request));
 
 
@@ -140,7 +142,7 @@ namespace ERPMVC.Controllers
                                            ControlPalletsId = c.ControlPalletsId,
                                            CustomerName ="Control Ingreso No.:"+c.ControlPalletsId 
                                            //+" || Control de ingresos:"+c.PalletId 
-                                              + " || Cliente:" + c.CustomerName +" || Placa:"+c.Placa + " || Motorista:"+c.Motorista + " || Fecha: " + c.DocumentDate.ToString("dd/MM/yyyy") + " || Total Sacos:" + c.TotalSacos,
+                                              + " || Cliente:" + c.CustomerName + " || Producto:" + c.SubProductName + " || Placa:"+c.Placa + " || Motorista:"+c.Motorista + " || Fecha: " + c.DocumentDate.ToString("dd/MM/yyyy") + " || Total Sacos:" + c.TotalSacos,
                                            DocumentDate = c.DocumentDate,
 
                                        }
@@ -367,6 +369,7 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _ControlPallets = JsonConvert.DeserializeObject<List<ControlPallets>>(valorrespuesta);
+                    _ControlPallets = _ControlPallets.OrderByDescending(q => q.ControlPalletsId).ToList();
 
                 }
 
@@ -393,7 +396,7 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/ControlPallets/GetControlPalletsSalida");
+                var result = await _client.GetAsync(baseadress + "api/ControlPallets/GetControlPalletsNoSelectedSalida");
                 string valorrespuesta = "";
                 string IngresoSalida = esIngreso == 1 ? "Ingreso" : "Salida";
                 if (result.IsSuccessStatusCode)

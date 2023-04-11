@@ -208,9 +208,9 @@
                                                                     success: function (data) {
                                                                         debugger;
                                                                         var boletapeso = data._Boleto_Ent == null ? null : data._Boleto_Ent.clave_e;
-                                                                        $("#Name").val(data.Motorista);
                                                                         $("#Placa").val(data.Placa);
                                                                         $("#Marca").val(data.Marca);
+                                                                        $("#Motorista").val(data.Motorista);
                                                                         $("#BoletaPesoId").val(boletapeso);
                                                                         $("#Reference").val(data.WeightBallot);
                                                                         var grid = $("#gridGoodsReceivedDetail").data("kendoGrid");
@@ -225,6 +225,33 @@
                                                                  });
                                                             }
 
+
+
+                                        function GetPersonasAutorizadas(ARBoletas) { 
+                                            debugger;
+                                            var dataObject = {
+                                                'ars': ARBoletas,
+                                                'CustomerId': $("#CustomerId").val(),
+                                                'ProductId': $("#ProductId").val(),
+                                                'BranchId': $("#BranchId").val(),
+                                            };
+                                            $.ajax({
+                                                url: '@Url.Action("GetPersonasAutorizadas", "GoodsDeliveryAuthorization")',
+                                                method: 'POST',
+                                                datatype: "json",
+                                                contentType: 'application/json',
+                                                async: false,
+                                                data: JSON.stringify(dataObject),
+                                                success: function (data) {
+                                                    debugger;
+                                                    $("#EntregadoA").val(data);
+                                                },
+                                                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                                                    MostrarMensaje(textStatus + ": " + XMLHttpRequest.responseText, "Error", "Error", 30000);
+                                                }
+                                            });
+                                        }
+
                                         function GetARBoleta() {
                                             //debugger;
 
@@ -237,6 +264,7 @@
                                             };
 
                                             console.log(dataobject);
+                                            GetPersonasAutorizadas(ARBoletas);
                                             return dataobject;
 
                                         }
@@ -265,25 +293,37 @@
                                             <div class="form-group">
                                                 <label for="cbxBuscar" class="control-label" style="width:100%">Autorizacion de Retiro</label>
                                                 <input type="hidden" id="singuardar" value="0" />
-                                                <kendo-multiselect name="AsociarAutorizaciones" id="AsociarAutorizaciones" style="min-width:100%"
-                                                                   no-data-template="No se encontraron Autorizaciones para el cliente y el servicio seleccionado" on-change="refrescarDetalle" 
+                                                @if (Model.GoodsDeliveredId == 0)                                                
+                                                {
+                                                    <kendo-multiselect name="AsociarAutorizaciones" id="AsociarAutorizaciones" style="min-width:100%"
+                                                                   no-data-template="No se encontraron Autorizaciones para el cliente y el servicio seleccionado" on-change="refrescarDetalle"
                                                                    value="@Model._GoodsDeliveredLine.Select(s =>s.NoCD).Distinct().ToArray()"
                                                                    datatextfield="Comments" datavaluefield="GoodsDeliveryAuthorizationId" placeholder="Seleccione las Autorizaciones">
-                                                    <datasource page-size="999" type="DataSourceTagHelperType.WebApi" server-operation="true">
-                                                        <transport>
-                                                            <read url="@Url.Action("AutorizacionesPendientes","GoodsDeliveryAuthorization")" data="GetformDetils" />
-                                                        </transport>
-                                                    </datasource>
+                                                        <datasource page-size="999" type="DataSourceTagHelperType.WebApi" server-operation="true">
+                                                            <transport>
+                                                                <read url="@Url.Action("AutorizacionesPendientes","GoodsDeliveryAuthorization")" data="GetformDetils" />
+                                                            </transport>
+                                                        </datasource>
 
-                                                </kendo-multiselect>
+                                                    </kendo-multiselect>
+
+                                                }                                               
+                                                else
+                                                {
+                                                    <input type="text" id="Autorizaciones" required readonly class="k-textbox" style="min-width:100%;" asp-for="Autorizaciones" />
+                                                }
+                                                
 
                                             </div>
                                         </div>
                                         <div class="col-md-3">
                                             <div class="form-group">
                                                 <label asp-for="ControlId" class="control-label" style="width: 100%;">Asociar Control de Salida</label>
-                                                <kendo-dropdownlist name="ControlId" filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                @if (Model.GoodsDeliveredId == 0)
+                                                {
+                                                    <kendo-dropdownlist name="ControlId" filter="Kendo.Mvc.UI.FilterType.Contains"
                                                                     for="ControlId"
+
                                                                     option-label="Seleccione Control de Salida"
                                                                     datatextfield="CustomerName"
                                                                     datavaluefield="ControlPalletsId"
@@ -295,7 +335,14 @@
                                                             <read url="@Url.Action("GetControlesByCustomer", "ControlPallets")" data="GetformDetils" />
                                                         </transport>
                                                     </datasource>
-                                                </kendo-dropdownlist>
+                                                    </kendo-dropdownlist>
+                                                }
+                                                else
+                                                {
+                                                    <input type="text" id="ControlId" required readonly class="k-textbox" style="min-width:100%;" asp-for="ControlId" />
+                                                
+                                                }
+                                                
                                                 <span asp-validation-for="ControlId" class="text-danger"></span>
                                             </div>
 
@@ -327,17 +374,23 @@
                                                 <input type="text" id="Marca"  readonly class="k-textbox" style="min-width: 100%;" asp-for="Marca" />
                                             </div>
                                         </div>
-                                        <div class="col-md-6">
+                                        <div class="col-md-3">
                                             <div class="form-group">
-                                                <label asp-for="Name" class="control-label" style="width: 100%;">Entregamos a</label>
-                                                <input type="text" id="Name" required class="k-textbox" style="min-width:100%;" asp-for="Name" />
+                                                <label asp-for="EntregadoA" class="control-label" style="width: 100%;">Entregamos a</label>
+                                                <input type="text" id="EntregadoA" class="k-textbox" style="min-width:100%;" asp-for="EntregadoA" />
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="form-group">
+                                                <label asp-for="Motorista" class="control-label" style="width: 100%;">Motorista</label>
+                                                <input type="text" id="Motorista" required class="k-textbox" style="min-width:100%;" asp-for="Motorista" />
                                             </div>
                                         </div>
                                         
                                         <div class="col-md-12">
                                             <div class="form-group">
                                                 <label asp-for="Comments" class="control-label" style="width: 100%;"></label>
-                                                <textarea id="Comments" required class="k-textarea" style="min-width: 100%;" asp-for="Comments">@Model.Comments</textarea>
+                                                <textarea id="Comments" class="k-textarea" style="min-width: 100%;" asp-for="Comments">@Model.Comments</textarea>
                                             </div>
                                         </div>
                                     </div>
@@ -515,15 +568,20 @@
                     'BranchName': $("#BranchId").data("kendoDropDownList").text(),
                     'Placa': $("#Placa").val(),
                     'Marca': $("#Marca").val(),
+                    'ControlId': $("#ControlId").val(),
                     'ProductId': $("#ProductId").val(),
                     'ProductName': $("#ProductId").data("kendoDropDownList").text(),
                     'OrderDate': $("#DocumentDate").getKendoDateTimePicker().value().toJSON(),
                     'DocumentDate': $("#DocumentDate").getKendoDateTimePicker().value().toJSON(),
                     'BoletaPesoId': $("#BoletaPesoId").val(),
-                    'Name': $("#Name").val(),
+                    'EntregadoA': $("#EntregadoA").val(),
                     'Reference': $("#Reference").val(),
                     'ExitTicket': $("#ExitTicket").val(),
                     'Comments': $("#Comments").val(),
+                    'Motorista': $("#Motorista").val(),
+            
+    
+
                     'WeightBallot': $("#WeightBallot").val(),
                     'VigilanteId': $("#VigilanteId").data("kendoDropDownList").value(),
                     'VigilanteName': $("#VigilanteId").data("kendoDropDownList").text(),
