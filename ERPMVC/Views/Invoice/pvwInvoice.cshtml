@@ -140,8 +140,43 @@
                                             </div>
                                             <div class="col-md-3">
                                                 <div class="form-group">
+                                                    <label asp-for="SalesTypeId" class="control-label" style="width:100%"></label>
+
+                                                    <kendo-dropdownlist name="SalesTypeId" filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                                        for="SalesTypeId"
+                                                                        option-label="Seleccione el tipo de ventas"
+                                                                        datatextfield="SalesTypeName"
+                                                                        datavaluefield="SalesTypeId"
+                                                                on-change="onChangeTipoVentas"
+                                                                        style="width: 100%;"
+                                                                        required data-required-msg="Tipo de ventas es requerido">
+                                                        <datasource type="DataSourceTagHelperType.WebApi" page-size="9999999">
+                                                            <transport>
+                                                                <read url="@Url.Action("Get", "SalesType")" />
+                                                            </transport>
+                                                        </datasource>
+                                                    </kendo-dropdownlist>
+
+                                                    <span asp-validation-for="SalesTypeId" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                            <script>
+                                                function onChangeTipoVentas(){
+                                                    var tipoventas = $("#SalesTypeId").data("kendoDropDownList").text();
+                                                    if(tipoventas == 'Contado'){
+                                                        $("#DiasVencimiento").attr("readonly", true);
+                                                        $("#DiasVencimiento").val(0);
+                                                    }else{
+                                                        $("#DiasVencimiento").attr("readonly", false);
+                                                        $("#DiasVencimiento").val(30);
+                                                    }
+                                                
+                                                }
+                                            </script>
+                                            <div class="col-md-3">
+                                                <div class="form-group">
                                                     <label asp-for="DiasVencimiento" class=" control-label" style="width:100%">Dias Vencimiento</label>
-                                                    <input type="text" asp-for="DiasVencimiento" name="InvoiceId"  class="k-textbox" style="min-width:100%" />
+                                            <input type="number" asp-for="DiasVencimiento" name="DiasVencimiento" id="DiasVencimiento" class="k-textbox" style="min-width:100%" />
                                                     <span asp-validation-for="DiasVencimiento" class="text-danger"></span>
                                                 </div>
                                             </div>
@@ -160,25 +195,7 @@
                                                     <span asp-validation-for="ExpirationDate" class="text-danger"></span>
                                                 </div>
                                             </div>
-                                            <div class="col-md-3">
-                                                <div class="form-group">
-                                                    <label asp-for="BranchId" class="control-label"></label>
-                                                    <kendo-dropdownlist name="BranchId" for="BranchId" filter="Kendo.Mvc.UI.FilterType.Contains"
-                                                                        option-label="Seleccione la sucursal"
-                                                                        datatextfield="BranchName"
-                                                                        datavaluefield="BranchId"
-                                                                        required data-required-msg="La Sucursal es requerida" 
-                                                                        onchange="GetPuntoEmision();"
-                                                                        style="width: 100%;">
-                                                        <datasource type="DataSourceTagHelperType.WebApi" page-size="9999999">
-                                                            <transport>
-                                                                <read url="@Url.Action("GetBranchActivos", "Branch")" />
-                                                            </transport>
-                                                        </datasource>
-                                                    </kendo-dropdownlist>
-                                                    <span asp-validation-for="BranchId" class="text-danger"></span>
-                                                </div>
-                                            </div>
+                                            
                                         </div>
 
                                         <div class="row" id="datosfiscales" style="display:none">
@@ -279,7 +296,26 @@
                                             
                                         </div>
 
-                                        <div class="row"> 
+                                        <div class="row">
+                                            <div class="col-md-3">
+                                                <div class="form-group">
+                                                    <label asp-for="BranchId" class="control-label"></label>
+                                                    <kendo-dropdownlist name="BranchId" for="BranchId" filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                                        option-label="Seleccione la sucursal"
+                                                                        datatextfield="BranchName"
+                                                                        datavaluefield="BranchId"
+                                                                        required data-required-msg="La Sucursal es requerida"
+                                                                        onchange="GetPuntoEmision();"
+                                                                        style="width: 100%;">
+                                                        <datasource type="DataSourceTagHelperType.WebApi" page-size="9999999">
+                                                            <transport>
+                                                                <read url="@Url.Action("GetBranchActivos", "Branch")" />
+                                                            </transport>
+                                                        </datasource>
+                                                    </kendo-dropdownlist>
+                                                    <span asp-validation-for="BranchId" class="text-danger"></span>
+                                                </div>
+                                            </div>
                                             <div class="col-md-3">
                                                 <div class="form-group">
 
@@ -326,49 +362,41 @@
                                             <div class="col-md-3">
                                                 <div class="form-group">
                                                     <label asp-for="CustomerContractId" class="control-label" style="width:100%">Contrato No</label>
-
-                                                    <kendo-dropdownlist name="CustomerContractId" filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                    @if (Model.InvoiceId == 0)
+                                                    {
+                                                        <kendo-dropdownlist name="CustomerContractId" filter="Kendo.Mvc.UI.FilterType.Contains"
                                                                         for="CustomerContractId"
                                                                         option-label="Contrato Pendiente"
                                                                         datatextfield="CustomerContractId"
-                                                                        datavaluefield="CustomerContractId"   
+                                                                        datavaluefield="CustomerContractId"
                                                                         on-change="RefreshInvoiceDetail"
                                                                         cascade-from="CustomerId"
                                                                         cascade-from-parent-field="ProductId"
                                                                         style="width: 100%;">
-                                                        <datasource type="DataSourceTagHelperType.WebApi" page-size="9999999" >
-                                                            <transport>
-                                                                <read url="@Url.Action("GetByCustomerService", "CustomerContract")" data="GetClienteService" />
-                                                            </transport>
-                                                        </datasource>
-                                                    </kendo-dropdownlist>
+                                                            <datasource type="DataSourceTagHelperType.WebApi" page-size="9999999">
+                                                                <transport>
+                                                                    <read url="@Url.Action("GetByCustomerService", "CustomerContract")" data="GetClienteService" />
+                                                                </transport>
+                                                            </datasource>
+                                                        </kendo-dropdownlist>
+                                                    }else{
+                                                <input type="number" readonly asp-for="CustomerContractId" class="k-textbox" style="min-width: 100%" maxlength="50" />
+                                                    }
+                                                    
 
                                                 </div>
                                             </div>
                                             
-                                             <div class="col-md-3">
+                                        </div>  
+                                        <div class="row" id="datosExonerado" >
+                                            <div class="col-md-3">
                                                 <div class="form-group">
-                                                    <label asp-for="SalesTypeId" class="control-label" style="width:100%"></label>
-                                                                                                     
-                                                        <kendo-dropdownlist name="SalesTypeId" filter="Kendo.Mvc.UI.FilterType.Contains"
-                                                                            for="SalesTypeId"
-                                                                            option-label="Seleccione el tipo de ventas"
-                                                                            datatextfield="SalesTypeName"
-                                                                            datavaluefield="SalesTypeId"
-                                                                            style="width: 100%;"
-                                                                            required data-required-msg="Tipo de ventas es requerido">
-                                                            <datasource type="DataSourceTagHelperType.WebApi" page-size="9999999">
-                                                                <transport>
-                                                                    <read url="@Url.Action("Get", "SalesType")" />
-                                                                </transport>
-                                                            </datasource>
-                                                        </kendo-dropdownlist>
-                                                    
-                                                    <span asp-validation-for="SalesTypeId" class="text-danger"></span>
+                                                <label class="control-label" style="min-width:100%">Exonerado</label>
+                                                <kendo-switch name="Exonerado"  for="Exonerado" checked="@Model.Exonerado" >
+                                                        <messages checked="Si" unchecked="No" />
+                                                    </kendo-switch>
                                                 </div>
                                             </div>
-                                        </div>
-                                        <div class="row" id="datosExonerado" >
                                             <div class="col-md-3">
                                                 <div class="form-group">
                                                     <label asp-for="NoOCExenta" class="control-label">No. OC Exenta</label>
@@ -552,6 +580,8 @@
                 'InvoiceId': $("#InvoiceId").val() === "" ? "0" : $("#InvoiceId").val(),
                 'InvoiceName': $("#InvoiceName").val(),
                 'BranchId': $("#BranchId").val(),
+
+                'CustomerContractId': $("#CustomerContractId").val(),
                 'BranchName': $("#BranchId").data("kendoDropDownList").text(),
                 'CustomerId': $("#CustomerId").val(),
                 'CustomerName': $("#CustomerId").data("kendoDropDownList").text(),
@@ -579,6 +609,7 @@
                 'FechaLimiteEmision': $("#FechaLimiteEmision").getKendoDateTimePicker().value().toJSON(),
                 'Rango': $('#Rango').val(),
                 'DiasVencimiento': $('#DiasVencimiento').val(),
+                'Exonerado': $('#Exonerado').val(),
                 'InvoiceLine': displayedData,
 
             };
