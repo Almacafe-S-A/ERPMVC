@@ -33,6 +33,8 @@ namespace ERPMVC.Models
         [Display(Name = "Tipo de Factura")]
         public int InvoiceTypeId { get; set; }
 
+        public bool Exonerado { get; set; }
+
         [Display(Name = "Sucursal")]
         public string Sucursal { get; set; }
 
