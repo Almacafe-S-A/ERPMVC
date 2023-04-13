@@ -23,6 +23,8 @@ namespace ERPMVC.Models
         [Display(Name = "Nombre Gerente/Apoderado")]
         public string NombreApoderado { get; set; }
 
+        public bool Exonerado { get; set; }
+
         [Display(Name = "Número  de referencia de cliente")]
         public string CustomerRefNumber { get; set; }
 
