@@ -109,6 +109,41 @@ namespace ERPMVC.Controllers
 
         }
 
+
+
+        public async Task<ActionResult> GenerarNotaDebito([FromBody] DebitNote debitnote)
+        //public async Task<ActionResult> GetGoodsDeliveredById([FromBody]dynamic dto)
+        {
+            DebitNote debitNote = new DebitNote();
+            try
+            {
+
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + $"api/DebitNote/GenerarNotaDebito/{debitnote.DebitNoteId}");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    debitNote = JsonConvert.DeserializeObject<DebitNote>(valorrespuesta);
+
+                }
+                else
+                {
+                    throw new Exception(await (result.Content.ReadAsStringAsync()));
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: {ex.ToString()}");
+                return BadRequest(ex.Message);
+            }
+
+            return Json(debitNote);
+        }
+
+
         [HttpPost("[action]")]
         public async Task<ActionResult<DebitNote>> SaveDebitNote([FromBody]DebitNote _DebitNote)
         {

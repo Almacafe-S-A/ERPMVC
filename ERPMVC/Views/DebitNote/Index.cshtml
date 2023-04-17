@@ -138,6 +138,55 @@
     }
 
 
+    function GenerarNotaDebito(e) {
+        if (confirm('Esta seguro de generar una Nota de Debito?')) {
+            e.preventDefault();
+            debugger;
+            var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+            var dataObject = {
+                DebitNoteId: dataItem.DebitNoteId,
+            };
+
+            $.ajax({
+                url: '@Url.Action("GenerarNotaDebito", "DebitNote")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (result) {
+                    MostrarMensaje('Nota de Debito Generada!', "success", "Satisfactorio", 6000);
+                    RefreshCotizaciones();
+                    return;
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    MostrarMensaje(textStatus + ": " + XMLHttpRequest.responseText, "Error", "Error", 6000);
+                }
+            });
+        }
+    }
+
+
+    function dataBound(e) {
+        $.each(this.dataSource.data(), function () {
+            if (this.Estado != "Revisado") {
+                $('[data-uid=' + this.uid + ']').find('.k-grid-Aprobar').hide();
+
+            }
+            if (this.Estado != "Borrador") {
+                $('[data-uid=' + this.uid + ']').find('.k-grid-GenerarNotaDebito').hide();
+            }
+            if (this.Estado != "Revisión") {
+                $('[data-uid=' + this.uid + ']').find('.k-grid-Revisar').hide();
+            }
+            if (this.Estado != "Emitido") {
+                $('[data-uid=' + this.uid + ']').find('.k-grid-Imprimir').hide();
+            }
+
+
+        })
+    }
+
     function RefreshCotizaciones() {
         var grid = $("#gridDebitNotes").getKendoGrid();
         grid.dataSource.read();
@@ -159,7 +208,7 @@
                                           
                                               columns.Command(command =>
                                               {
-
+                                                  command.Custom("GenerarNotaDebito").Text(" ").IconClass("fa fa-file-invoice").Click("GenerarNotaDebito");
                                                   command.Custom("Imprimir").Text(" ").IconClass("fa fa-print").Click("ImprimirCotizacion");
                                                   command.Custom("Editar").Text(" ").IconClass("far fa-list-alt").Click("EditCotizacion");
                                                   
@@ -260,7 +309,7 @@
                                         .Create(create => create.Action("Insert", "DebitNote"))
                                         .Update(update => update.Action("Update", "DebitNote", new { id = "{0}" }))
                                         .Destroy(destroy => destroy.Action("Delete", "DebitNote", new { id = "{0}" }))
-                                  )
+                                  ).Events(e => e.DataBound("dataBound"))
 )
 
 <div id="divDebitNote">
