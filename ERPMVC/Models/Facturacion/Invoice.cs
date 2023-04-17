@@ -41,6 +41,16 @@ namespace ERPMVC.Models
         [Display(Name = "Caja")]
         public string Caja { get; set; }
 
+        public Int64? CuentaBancariaId { get; set; }
+        [ForeignKey("CuentaBancariaId ")]
+        public AccountManagement accountManagement { get; set; }
+
+        public Int64 Bank { get; set; }
+
+        public string BankName { get; set; }
+
+        public string CuentaBancaria { get; set; }
+
         [Display(Name = "Numero de Factura")]
         public string TipoDocumento { get; set; }
 

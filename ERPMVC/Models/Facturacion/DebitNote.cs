@@ -18,9 +18,21 @@ namespace ERPMVC.Models
         [Display(Name = "Fiscal")]
         public bool Fiscal { get; set; }
 
+        public Int64? JournalEntryId { get; set; }
+        [ForeignKey("JournalEntryId")]
+        public JournalEntry JournalEntry { get; set; }
+
+        public double Saldo { get; set; }
+
         public string Descripcion { get; set; }
 
         public int DiasVencimiento { get; set; }
+
+        public string TipoDocumento { get; set; }
+
+        public int? InvoiceId { get; set; }
+        [ForeignKey("InvoiceId")]
+        public Invoice Invoice { get; set; }
 
 
         [Display(Name = "Punto de emisión")]
@@ -31,13 +43,34 @@ namespace ERPMVC.Models
         [Display(Name = "Fecha de vencimiento")]
         public DateTime? DebitNoteDueDate { get; set; }
 
+        public string CuentaContableIngresosNombre { get; set; }
+        public Int64? CuentaContableIngresosId { get; set; }
+        [ForeignKey("CuentaContableIngresosId")]
+        public Accounting CuentaContableIngresos { get; set; }
+
+        public string CuentaContableDebitoNombre { get; set; }
+        public Int64? CuentaContableDebitoId { get; set; }
+        [ForeignKey("CuentaContableDebitoId")]
+        public Accounting CuentaContableDebito { get; set; }
+
+        public string RangoAutorizado { get; set; }
+
+        public Int64? CuentaBancariaId { get; set; }
+        [ForeignKey("CuentaBancariaId ")]
+        public AccountManagement accountManagement { get; set; }
+
+        public Int64 Bank { get; set; }
+
+        public string BankName { get; set; }
+
+        public string CuentaBancaria { get; set; }
 
         [Display(Name = "Sucursal")]
         public string Sucursal { get; set; }
 
 
         [Display(Name = "Número de Factura")]
-        public int NúmeroDEI { get; set; }
+        public string NumeroDEI { get; set; }
 
         [Display(Name = "Número de inicio")]
         public string NoInicio { get; set; }
@@ -79,7 +112,10 @@ namespace ERPMVC.Models
         public string BranchName { get; set; }
 
         [Display(Name = "Customer")]
-        public int CustomerId { get; set; }
+        public Int64 CustomerId { get; set; }
+
+        [ForeignKey("CustomerId")]
+        public Customer Customer { get; set; }
 
         [Display(Name = "Nombre Cliente")]
         public string CustomerName { get; set; }
@@ -112,24 +148,6 @@ namespace ERPMVC.Models
         public double Total { get; set; }
 
         public string TotalLetras { get; set; }
-
-        public string TipoDocumento { get; set; }
-
-        public int? InvoiceId { get; set; }
-        [ForeignKey("InvoiceId")]
-        public Invoice Invoice { get; set; }
-
-
-        public string CuentaContableIngresosNombre { get; set; }
-        public Int64? CuentaContableIngresosId { get; set; }
-        [ForeignKey("CuentaContableIngresosId")]
-        public Accounting CuentaContableIngresos { get; set; }
-
-        public string CuentaContableDebitoNombre { get; set; }
-        public Int64? CuentaContableDebitoId { get; set; }
-        [ForeignKey("CuentaContableDebitoId")]
-        public Accounting CuentaContableDebito { get; set; }
-
 
         [Display(Name = "Estado")]
         public Int64 IdEstado { get; set; }
