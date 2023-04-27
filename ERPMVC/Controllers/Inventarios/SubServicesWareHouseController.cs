@@ -62,7 +62,7 @@ namespace ERPMVC.Controllers
                 {
                     _SubServicesWareHouse = new SubServicesWareHouseDTO { 
                         SubServicesWareHouseId = 0, 
-                        StartTime = DateTime.Now, 
+                        StartTime = new DateTime(), 
                         EndTime = new DateTime() , 
                         BranchId = _SubServicesWareHousep.BranchId , 
                         DocumentDate = DateTime.Now };
