@@ -53,7 +53,7 @@ namespace ERPMVC.Controllers
         }
 
         [HttpPost("[controller]/[action]")]
-        public async Task<ActionResult> pvwCertificadoDeposito([FromBody]CertificadoDepositoDTO _CertificadoDepositoDTO)
+        public async Task<ActionResult> pvwCertificadoDeposito([FromBody] CertificadoDepositoDTO _CertificadoDepositoDTO)
         {
             CertificadoDepositoDTO _CertificadoDeposito = new CertificadoDepositoDTO();
             try
@@ -85,7 +85,7 @@ namespace ERPMVC.Controllers
                         PolizaPropia = true,
                         Seguro = "S/Tarifa",
                         OtrosCargos = "Si",
-                        
+
                         SujetasAPago = 0,
                     };
                 }
@@ -97,7 +97,7 @@ namespace ERPMVC.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                _logger.LogError($"Ocurrio un error: {ex.ToString()}");
                 throw ex;
             }
 
@@ -106,7 +106,7 @@ namespace ERPMVC.Controllers
             return PartialView(_CertificadoDeposito);
 
         }
-        
+
 
 
         [HttpGet("[controller]/[action]")]
@@ -140,7 +140,7 @@ namespace ERPMVC.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                _logger.LogError($"Ocurrio un error: {ex.ToString()}");
                 throw ex;
             }
 
@@ -148,10 +148,10 @@ namespace ERPMVC.Controllers
             return certificados.ToDataSourceResult(request);
 
         }
-        
+
 
         [HttpGet("[controller]/[action]")]
-        public async Task<DataSourceResult> GetCertificadosNoEndosados([DataSourceRequest] DataSourceRequest request,int CustomerId)
+        public async Task<DataSourceResult> GetCertificadosNoEndosados([DataSourceRequest] DataSourceRequest request, int CustomerId)
         {
             List<CertificadoDeposito> certificados = new List<CertificadoDeposito>();
             try
@@ -168,16 +168,16 @@ namespace ERPMVC.Controllers
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     certificados = JsonConvert.DeserializeObject<List<CertificadoDeposito>>(valorrespuesta);
                     certificados = certificados.OrderByDescending(q => q.IdCD).ToList();
-                    certificados =  (from ce in certificados
-                                                           select new CertificadoDeposito
-                                                           {
-                                                               IdCD = ce.IdCD,
-                                                               Comentario = $"No: {ce.IdCD} || Servicio :{ce.ServicioName} || Fecha: {ce.FechaCertificado}",
-                                                               CustomerName = ce.CustomerName,
-                                                               CustomerId = ce.CustomerId,
+                    certificados = (from ce in certificados
+                                    select new CertificadoDeposito
+                                    {
+                                        IdCD = ce.IdCD,
+                                        Comentario = $"No: {ce.IdCD} || Servicio :{ce.ServicioName} || Fecha: {ce.FechaCertificado}",
+                                        CustomerName = ce.CustomerName,
+                                        CustomerId = ce.CustomerId,
 
 
-                                                           }
+                                    }
                                             ).ToList();
                 }
 
@@ -185,7 +185,7 @@ namespace ERPMVC.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                _logger.LogError($"Ocurrio un error: {ex.ToString()}");
                 throw ex;
             }
 
@@ -214,11 +214,11 @@ namespace ERPMVC.Controllers
                     certificados = JsonConvert.DeserializeObject<List<CertificadoDeposito>>(valorrespuesta);
                     certificados = certificados.OrderByDescending(q => q.IdCD).ToList();
                     certificados = (from certificado in certificados
-                                      select new CertificadoDeposito()
-                                      {
-                                          IdCD = certificado.IdCD,
-                                          Comentario = certificado.IdCD + " - " + certificado.Comentario,
-                                      }).ToList();
+                                    select new CertificadoDeposito()
+                                    {
+                                        IdCD = certificado.IdCD,
+                                        Comentario = certificado.IdCD + " - " + certificado.Comentario,
+                                    }).ToList();
 
                 }
 
@@ -226,7 +226,7 @@ namespace ERPMVC.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                _logger.LogError($"Ocurrio un error: {ex.ToString()}");
                 throw ex;
             }
 
@@ -238,7 +238,7 @@ namespace ERPMVC.Controllers
 
 
         [HttpGet("[controller]/[action]")]
-        public async Task<DataSourceResult> GetCertificadoDeposito([DataSourceRequest]DataSourceRequest request)
+        public async Task<DataSourceResult> GetCertificadoDeposito([DataSourceRequest] DataSourceRequest request)
         {
             List<CertificadoDeposito> _CertificadoDeposito = new List<CertificadoDeposito>();
             try
@@ -260,7 +260,7 @@ namespace ERPMVC.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                _logger.LogError($"Ocurrio un error: {ex.ToString()}");
                 throw ex;
             }
 
@@ -268,12 +268,12 @@ namespace ERPMVC.Controllers
             return _CertificadoDeposito.ToDataSourceResult(request);
 
         }
-        
 
 
 
-       [HttpGet("[controller]/[action]")]
-        public async Task<DataSourceResult> GetCertificadoDepositoByCustomer([DataSourceRequest]DataSourceRequest request, Int64 CustomerId)
+
+        [HttpGet("[controller]/[action]")]
+        public async Task<DataSourceResult> GetCertificadoDepositoByCustomer([DataSourceRequest] DataSourceRequest request, Int64 CustomerId)
         {
             List<CertificadoDeposito> _CertificadoDeposito = new List<CertificadoDeposito>();
             try
@@ -294,8 +294,8 @@ namespace ERPMVC.Controllers
                                                 Comentario = $"No: {ce.IdCD} || Servicio :{ce.ServicioName} || Fecha: {ce.FechaCertificado}",
                                                 CustomerName = ce.CustomerName,
                                                 CustomerId = ce.CustomerId,
-                                                
-                                                
+
+
                                             }
                                             ).ToList();
 
@@ -306,7 +306,7 @@ namespace ERPMVC.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                _logger.LogError($"Ocurrio un error: {ex.ToString()}");
                 throw ex;
             }
 
@@ -316,7 +316,7 @@ namespace ERPMVC.Controllers
         }
 
         [HttpPost("[controller]/[action]")]
-        public async Task<ActionResult> GetCertificadoDepositoById([DataSourceRequest]DataSourceRequest request, [FromBody] CertificadoDeposito _Certificado)
+        public async Task<ActionResult> GetCertificadoDepositoById([DataSourceRequest] DataSourceRequest request, [FromBody] CertificadoDeposito _Certificado)
         {
             CertificadoDeposito _CertificadoDeposito = new CertificadoDeposito();
             try
@@ -340,7 +340,7 @@ namespace ERPMVC.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                _logger.LogError($"Ocurrio un error: {ex.ToString()}");
                 throw ex;
             }
 
@@ -349,13 +349,13 @@ namespace ERPMVC.Controllers
 
 
         [HttpPost("[controller]/[action]")]
-        public async Task<ActionResult> GetCertificadoDepositoByIdKardex([DataSourceRequest]DataSourceRequest request, [FromBody] CertificadoDepositoDTO _listado)
+        public async Task<ActionResult> GetCertificadoDepositoByIdKardex([DataSourceRequest] DataSourceRequest request, [FromBody] CertificadoDepositoDTO _listado)
         {
-            
+
             CertificadoDeposito _CertificadoDeposito = new CertificadoDeposito();
             try
             {
-                if(_listado!=null)
+                if (_listado != null)
                 {
                     foreach (var _Certificado in _listado.CertificadosList)
                     {
@@ -394,7 +394,7 @@ namespace ERPMVC.Controllers
                         if (result.IsSuccessStatusCode)
                         {
                             valorrespuesta = await (result.Content.ReadAsStringAsync());
-                            
+
                         }
 
 
@@ -409,7 +409,7 @@ namespace ERPMVC.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                _logger.LogError($"Ocurrio un error: {ex.ToString()}");
                 throw ex;
             }
 
@@ -419,7 +419,7 @@ namespace ERPMVC.Controllers
 
 
         [HttpPost("[controller]/[action]")]
-        public async Task<ActionResult<List<CertificadoDeposito>>> AgruparCertificados([FromBody]GoodsDeliveryAuthorizationParams _params)
+        public async Task<ActionResult<List<CertificadoDeposito>>> AgruparCertificados([FromBody] GoodsDeliveryAuthorizationParams _params)
         {
             List<CertificadoDeposito> _CertificadoDeposito = new List<CertificadoDeposito>();
             if (_params != null)
@@ -442,7 +442,7 @@ namespace ERPMVC.Controllers
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                        _logger.LogError($"Ocurrio un error: {ex.ToString()}");
                         throw ex;
                     }
                 }
@@ -451,7 +451,7 @@ namespace ERPMVC.Controllers
                     return await Task.Run(() => BadRequest("No llego correctamente el documento!"));
                 }
 
-            return await Task.Run(()=>Json(_CertificadoDeposito));
+            return await Task.Run(() => Json(_CertificadoDeposito));
         }
 
 
@@ -465,8 +465,8 @@ namespace ERPMVC.Controllers
                     CertificadoDeposito _listCertificadoDeposito = new CertificadoDeposito();
                     string baseadress = config.Value.urlbase;
                     HttpClient _client = new HttpClient();
-                    _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));                   
-                    var result = await _client.GetAsync(baseadress + $"api/CertificadoDeposito/AprobarCertificado/{ _CertificadoDeposito.IdCD}");
+                    _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                    var result = await _client.GetAsync(baseadress + $"api/CertificadoDeposito/AprobarCertificado/{_CertificadoDeposito.IdCD}");
                     string valorrespuesta = "";
                     _CertificadoDeposito.FechaModificacion = DateTime.Now;
                     _CertificadoDeposito.UsuarioModificacion = HttpContext.Session.GetString("user");
@@ -489,7 +489,7 @@ namespace ERPMVC.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                _logger.LogError($"Ocurrio un error: {ex.ToString()}");
                 throw ex;
             }
 
@@ -499,7 +499,7 @@ namespace ERPMVC.Controllers
 
 
         [HttpPost("[controller]/[action]")]
-        public async Task<ActionResult<CertificadoDeposito>> AnularCD([FromBody]CertificadoDepositoDTO _CertificadoDeposito)
+        public async Task<ActionResult<CertificadoDeposito>> AnularCD([FromBody] CertificadoDepositoDTO _CertificadoDeposito)
         //  public async Task<ActionResult<CertificadoDeposito>> SaveCertificadoDeposito([FromBody]dynamic dto)
         {
             // CertificadoDepositoDTO _CertificadoDeposito = new CertificadoDepositoDTO(); 
@@ -537,7 +537,7 @@ namespace ERPMVC.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                _logger.LogError($"Ocurrio un error: {ex.ToString()}");
                 throw ex;
             }
 
@@ -585,15 +585,15 @@ namespace ERPMVC.Controllers
 
 
             return certificadoDeposito;
-        
-        
+
+
         }
 
         [HttpPost("[controller]/[action]")]
-       // public async Task<ActionResult<CertificadoDeposito>>      CertificadoDeposito([FromBody]CertificadoDepositoDTO _CertificadoDeposito)
-         public async Task<ActionResult<CertificadoDeposito>> SaveCertificadoDeposito([FromBody]dynamic dto)
+        // public async Task<ActionResult<CertificadoDeposito>>      CertificadoDeposito([FromBody]CertificadoDepositoDTO _CertificadoDeposito)
+        public async Task<ActionResult<CertificadoDeposito>> SaveCertificadoDeposito([FromBody] dynamic dto)
         {
-             CertificadoDeposito _CertificadoDeposito = new CertificadoDeposito(); 
+            CertificadoDeposito _CertificadoDeposito = new CertificadoDeposito();
             try
             {
                 _CertificadoDeposito = JsonConvert.DeserializeObject<CertificadoDepositoDTO>(dto.ToString());
@@ -602,7 +602,7 @@ namespace ERPMVC.Controllers
                 {
                     foreach (var item in _CertificadoDeposito._CertificadoLine)
                     {
-                        if(item.Price==0)
+                        if (item.Price == 0)
                         {
                             return await Task.Run(() => BadRequest("Ingrese un precio valido!"));
                         }
@@ -630,7 +630,7 @@ namespace ERPMVC.Controllers
                         valorrespuesta = await (result.Content.ReadAsStringAsync());
                         _listCertificadoDeposito = JsonConvert.DeserializeObject<CertificadoDeposito>(valorrespuesta);
                     }
-                    
+
 
                     if (_listCertificadoDeposito == null) { _listCertificadoDeposito = new CertificadoDeposito(); }
                     if (_listCertificadoDeposito.IdCD == 0)
@@ -662,7 +662,7 @@ namespace ERPMVC.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                _logger.LogError($"Ocurrio un error: {ex.ToString()}");
                 throw ex;
             }
 
@@ -697,7 +697,7 @@ namespace ERPMVC.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                _logger.LogError($"Ocurrio un error: {ex.ToString()}");
                 return BadRequest($"Ocurrio un error{ex.Message}");
             }
             return await Task.Run(() => Ok(_CertificadoDeposito));
@@ -724,7 +724,7 @@ namespace ERPMVC.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                _logger.LogError($"Ocurrio un error: {ex.ToString()}");
                 return BadRequest($"Ocurrio un error{ex.Message}");
             }
 
@@ -732,7 +732,7 @@ namespace ERPMVC.Controllers
         }
 
         [HttpPost("[controller]/[action]")]
-        public async Task<ActionResult<CertificadoDeposito>> Delete([FromBody]CertificadoDeposito _CertificadoDeposito)
+        public async Task<ActionResult<CertificadoDeposito>> Delete([FromBody] CertificadoDeposito _CertificadoDeposito)
         {
             try
             {
@@ -751,7 +751,7 @@ namespace ERPMVC.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                _logger.LogError($"Ocurrio un error: {ex.ToString()}");
                 return BadRequest($"Ocurrio un error: {ex.Message}");
             }
 
@@ -802,7 +802,7 @@ namespace ERPMVC.Controllers
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
-                     valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _CertificadoDeposito = JsonConvert.DeserializeObject<List<CertificadoDeposito>>(valorrespuesta);
                     _CertificadoDeposito = (from c in _CertificadoDeposito
                                             .Where(q => q.CustomerId == Customer.CustomerId)
@@ -813,13 +813,13 @@ namespace ERPMVC.Controllers
                                                 CustomerId = c.CustomerId,
                                             }).ToList();
 
-                    
+
 
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                _logger.LogError($"Ocurrio un error: {ex.ToString()}");
                 throw ex;
             }
 
@@ -829,7 +829,7 @@ namespace ERPMVC.Controllers
 
 
 
-        public async Task<ActionResult> Virtualization_Read([DataSourceRequest] DataSourceRequest request,Int64 CustomerId)
+        public async Task<ActionResult> Virtualization_Read([DataSourceRequest] DataSourceRequest request, Int64 CustomerId)
         {
             var res = await GetCertificados(CustomerId);
             return Json(res.ToDataSourceResult(request));
@@ -866,12 +866,12 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/CertificadoDeposito/GetCertificadoDepositoLiberados/"+CustomerId);
+                var result = await _client.GetAsync(baseadress + "api/CertificadoDeposito/GetCertificadoDepositoLiberados/" + CustomerId);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                     
+
 
                     _CertificadoDeposito = JsonConvert.DeserializeObject<List<CertificadoDeposito>>(valorrespuesta);
                     _CertificadoDeposito = (from c in _CertificadoDeposito
@@ -891,12 +891,12 @@ namespace ERPMVC.Controllers
                     //    List<Int64> _endosos = 
 
                     //}
-                
+
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                _logger.LogError($"Ocurrio un error: {ex.ToString()}");
                 throw ex;
             }
 
@@ -910,7 +910,7 @@ namespace ERPMVC.Controllers
             CertificadoDepositoDTO _CertificadoDepositoDTO = new CertificadoDepositoDTO { IdCD = id, };
             try
             {
-              
+
                 string basePath = _hostingEnvironment.WebRootPath;
                 FileStream inputStream = new FileStream(basePath + "/ReportsTemplate/CertificadoDeDeposito.rdl", FileMode.Open, FileAccess.Read);
                 ReportWriter reportWriter = new ReportWriter(inputStream);
@@ -936,12 +936,12 @@ namespace ERPMVC.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                _logger.LogError($"Ocurrio un error: {ex.ToString()}");
                 throw ex;
             }
-            
-           
-            return await Task.Run(()=> View(_CertificadoDepositoDTO));
+
+
+            return await Task.Run(() => View(_CertificadoDepositoDTO));
         }
 
         [HttpGet]
@@ -975,12 +975,12 @@ namespace ERPMVC.Controllers
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
 
                 MarcarImpresion(_CertificadoDepositoDTO.IdCD, true);
-                
+
                 return new FileStreamResult(ms, "application/pdf");
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                _logger.LogError($"Ocurrio un error: {ex.ToString()}");
                 throw ex;
             }
 
@@ -1010,26 +1010,26 @@ namespace ERPMVC.Controllers
 
                 if (talon)
                 {
-                    _CertificadoDeposito.impresionesTalon = _CertificadoDeposito.impresionesTalon+1;
+                    _CertificadoDeposito.impresionesTalon = _CertificadoDeposito.impresionesTalon + 1;
 
                 }
                 else
                 {
-                    _CertificadoDeposito.Impresiones = _CertificadoDeposito.Impresiones+1;
+                    _CertificadoDeposito.Impresiones = _CertificadoDeposito.Impresiones + 1;
                 }
 
                 var resultadoUpdate = await _client.PostAsJsonAsync(baseadress + "api/CertificadoDeposito/Update", _CertificadoDeposito);
-                
+
                 if (!result.IsSuccessStatusCode)
                 {
-                   
+
                 }
 
                 //await Update(id,_CertificadoDeposito);
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                _logger.LogError($"Ocurrio un error: {ex.ToString()}");
                 throw ex;
             }
 
@@ -1042,6 +1042,17 @@ namespace ERPMVC.Controllers
         {
 
             return View();
+
+
+        }
+
+
+        [HttpGet]
+        public ActionResult SFKardexCertificado(int id)
+        {
+            CertificadoDeposito certificadoDeposito =
+                new CertificadoDeposito {IdCD = id };
+            return View(certificadoDeposito);
 
 
         }
