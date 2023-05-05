@@ -6,7 +6,7 @@
     <DataSource Name="ERP">
       <ConnectionProperties>
         <DataProvider>SQL</DataProvider>
-        <ConnectString>Data Source=(local);Initial Catalog=ERP-PRODUCCION</ConnectString>
+        <ConnectString>Data Source=(local);Initial Catalog=ERP-PROD</ConnectString>
         <IntegratedSecurity>true</IntegratedSecurity>
       </ConnectionProperties>
       <rd:SecurityType>Integrated</rd:SecurityType>
@@ -241,17 +241,21 @@ WHERE Customer.IdEstado = 1</CommandText>
             <Value>=Parameters!FechaFinal.Value</Value>
           </QueryParameter>
         </QueryParameters>
-        <CommandText>SELECT
+        <CommandText>
+SELECT
   CustomerAcccountStatus.Id
   ,CustomerAcccountStatus.InvoiceId
   ,CustomerAcccountStatus.InvoicePaymentId
   ,CustomerAcccountStatus.Debito
   ,CustomerAcccountStatus.Credito
-  ,CustomerAcccountStatus.Saldo
   ,CustomerAcccountStatus.CustomerId
   ,CustomerAcccountStatus.CustomerName
   ,CustomerAcccountStatus.Fecha
 ,CustomerAcccountStatus.Sinopsis
+,IsNull((select sum (c.Debito)- sum (c.Credito)  from CustomerAcccountStatus c where Fecha &lt; CustomerAcccountStatus.Fecha),0 )+
+CustomerAcccountStatus.Debito- 
+CustomerAcccountStatus.Credito
+Saldo 
 FROM CustomerAcccountStatus
 LEFT JOIN Invoice ON CustomerAcccountStatus.InvoiceId = Invoice.InvoiceId
 LEFT JOIN InvoicePayments ON CustomerAcccountStatus.InvoicePaymentId = InvoicePayments.Id
@@ -324,7 +328,7 @@ WHERE CustomerAcccountStatus.CustomerId = @CustomerID AND CustomerAcccountStatus
             <Value>=Parameters!FechaInicio.Value</Value>
           </QueryParameter>
         </QueryParameters>
-        <CommandText>select sum (c.Debito)- sum (c.Credito) Saldo  from CustomerAcccountStatus c where Fecha &lt; @FechaInicio</CommandText>
+        <CommandText>select sum (c.Debito)- sum (c.Credito) Saldo from CustomerAcccountStatus c where Fecha &lt; @FechaInicio</CommandText>
       </Query>
       <Fields>
         <Field Name="Saldo">
@@ -380,13 +384,16 @@ WHERE CustomerAcccountStatus.CustomerId = @CustomerID AND CustomerAcccountStatus
                   <Width>0.83844in</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>4.2541in</Width>
+                  <Width>3.25294in</Width>
                 </TablixColumn>
                 <TablixColumn>
                   <Width>1.31344in</Width>
                 </TablixColumn>
                 <TablixColumn>
                   <Width>1.23566in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>1in</Width>
                 </TablixColumn>
               </TablixColumns>
               <TablixRows>
@@ -462,7 +469,7 @@ WHERE CustomerAcccountStatus.CustomerId = @CustomerID AND CustomerAcccountStatus
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>Cargo</Value>
+                                  <Value>Cargos</Value>
                                   <Style />
                                 </TextRun>
                               </TextRuns>
@@ -492,7 +499,7 @@ WHERE CustomerAcccountStatus.CustomerId = @CustomerID AND CustomerAcccountStatus
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>Credito</Value>
+                                  <Value>Pagos</Value>
                                   <Style>
                                     <FontFamily>Arial</FontFamily>
                                   </Style>
@@ -502,6 +509,38 @@ WHERE CustomerAcccountStatus.CustomerId = @CustomerID AND CustomerAcccountStatus
                             </Paragraph>
                           </Paragraphs>
                           <rd:DefaultName>Textbox9</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox1">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>Saldo</Value>
+                                  <Style>
+                                    <FontFamily>Arial</FontFamily>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox1</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>LightGrey</Color>
@@ -650,12 +689,45 @@ WHERE CustomerAcccountStatus.CustomerId = @CustomerID AND CustomerAcccountStatus
                         </Textbox>
                       </CellContents>
                     </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Saldo1">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Fields!Saldo.Value</Value>
+                                  <Style>
+                                    <FontFamily>Arial</FontFamily>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Saldo1</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
                   </TablixCells>
                 </TablixRow>
               </TablixRows>
             </TablixBody>
             <TablixColumnHierarchy>
               <TablixMembers>
+                <TablixMember />
                 <TablixMember />
                 <TablixMember />
                 <TablixMember />
@@ -676,7 +748,7 @@ WHERE CustomerAcccountStatus.CustomerId = @CustomerID AND CustomerAcccountStatus
             <Top>0.5in</Top>
             <Left>0.3175cm</Left>
             <Height>0.59999in</Height>
-            <Width>7.64164in</Width>
+            <Width>7.64048in</Width>
             <ZIndex>1</ZIndex>
             <Style>
               <Border>
