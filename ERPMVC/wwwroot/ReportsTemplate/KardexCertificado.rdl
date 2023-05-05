@@ -22,20 +22,26 @@
             <Value>=Parameters!DocumentId.Value</Value>
           </QueryParameter>
         </QueryParameters>
-        <CommandText>Select k.KardexDate  ,k.GoodsAuthorizationId, k.SourceDocumentId,
-k.PdaNo ,k.SubProductName, sum(k.QuantityEntry) Entra, 
-sum(k.QuantityOut) Sale, sum(k.Total) Total,
-sum(k.ValorTotal) ValorTotal,
-sum(k.ValorMovimiento) ValorMovimiento
-from kardex k 
-inner join CertificadoLine cl on cl.CertificadoLineId = k.DocumentLine  
-where  DocType = 2 and k.DocumentId = @DocumentId 
-group by k.KardexDate , k.PdaNo , k.SubProductName, k.GoodsAuthorizationId,k.SourceDocumentId order by k.KardexDate asc</CommandText>
+        <CommandText>Select FORMAT(k.DocumentDate, 'dd/MM/yyyy') KardexDate ,
+k.GoodsAuthorizationId, 
+k.SourceDocumentId,
+k.PdaNo , sum(k.QuantityEntry) Entra, 
+k.Precio,
+sum(k.QuantityOut) Sale, 
+sum(k.QuantityOut) * k.Precio ValorMovimiento,
+case when GoodsAuthorizationId is null then sum(k.Total)  else min(k.Total)  end Total,
+case when GoodsAuthorizationId is null then sum(k.Total) * k.Precio   else min(k.Total) * k.Precio  end  ValorTotal
+from kardex k  
+where  DocType = 2 and k.DocumentId = @DocumentId and PdaNo is not null
+group by FORMAT(k.DocumentDate, 'dd/MM/yyyy')   
+, k.PdaNo, k.GoodsAuthorizationId,
+k.SourceDocumentId , k.Precio
+order by k.GoodsAuthorizationId   </CommandText>
       </Query>
       <Fields>
         <Field Name="KardexDate">
           <DataField>KardexDate</DataField>
-          <rd:TypeName>System.DateTime</rd:TypeName>
+          <rd:TypeName>System.String</rd:TypeName>
         </Field>
         <Field Name="GoodsAuthorizationId">
           <DataField>GoodsAuthorizationId</DataField>
@@ -53,13 +59,13 @@ group by k.KardexDate , k.PdaNo , k.SubProductName, k.GoodsAuthorizationId,k.Sou
           <DataField>Sale</DataField>
           <rd:TypeName>System.Decimal</rd:TypeName>
         </Field>
-        <Field Name="SubProductName">
-          <DataField>SubProductName</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
-        </Field>
         <Field Name="PdaNo">
           <DataField>PdaNo</DataField>
           <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="Precio">
+          <DataField>Precio</DataField>
+          <rd:TypeName>System.Decimal</rd:TypeName>
         </Field>
         <Field Name="Total">
           <DataField>Total</DataField>
@@ -83,7 +89,7 @@ group by k.KardexDate , k.PdaNo , k.SubProductName, k.GoodsAuthorizationId,k.Sou
             <Value>=Parameters!DocumentId.Value</Value>
           </QueryParameter>
         </QueryParameters>
-        <CommandText>Select IdCd, Format( FechaCertificado , 'dd-MM-yyyy' ) FechaCertificado, CustomerName,
+        <CommandText>Select IdCd, FechaCertificado, CustomerName,
 ServicioName, BranchName from CertificadoDeposito where IdCD = @DocumentId</CommandText>
       </Query>
       <Fields>
@@ -93,7 +99,7 @@ ServicioName, BranchName from CertificadoDeposito where IdCD = @DocumentId</Comm
         </Field>
         <Field Name="FechaCertificado">
           <DataField>FechaCertificado</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
+          <rd:TypeName>System.DateTime</rd:TypeName>
         </Field>
         <Field Name="CustomerName">
           <DataField>CustomerName</DataField>
@@ -118,28 +124,28 @@ ServicioName, BranchName from CertificadoDeposito where IdCD = @DocumentId</Comm
             <TablixBody>
               <TablixColumns>
                 <TablixColumn>
-                  <Width>25mm</Width>
+                  <Width>21.40167mm</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>25mm</Width>
+                  <Width>23.51833mm</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>25mm</Width>
+                  <Width>23.51834mm</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>25mm</Width>
+                  <Width>22.67166mm</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>25mm</Width>
+                  <Width>21.825mm</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>25mm</Width>
+                  <Width>33.585mm</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>25mm</Width>
+                  <Width>21.19mm</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>25mm</Width>
+                  <Width>33.88999mm</Width>
                 </TablixColumn>
               </TablixColumns>
               <TablixRows>
@@ -157,6 +163,7 @@ ServicioName, BranchName from CertificadoDeposito where IdCD = @DocumentId</Comm
                                 <TextRun>
                                   <Value />
                                   <Style>
+                                    <FontFamily>Arial</FontFamily>
                                     <FontSize>11pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
                                   </Style>
@@ -172,6 +179,11 @@ ServicioName, BranchName from CertificadoDeposito where IdCD = @DocumentId</Comm
                             <Border>
                               <Style>None</Style>
                             </Border>
+                            <TopBorder>
+                              <Color>Black</Color>
+                              <Style>Solid</Style>
+                              <Width>1pt</Width>
+                            </TopBorder>
                             <BottomBorder>
                               <Color>LightGrey</Color>
                               <Style>Solid</Style>
@@ -197,6 +209,7 @@ ServicioName, BranchName from CertificadoDeposito where IdCD = @DocumentId</Comm
                                 <TextRun>
                                   <Value />
                                   <Style>
+                                    <FontFamily>Arial</FontFamily>
                                     <FontSize>11pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
                                   </Style>
@@ -212,6 +225,11 @@ ServicioName, BranchName from CertificadoDeposito where IdCD = @DocumentId</Comm
                             <Border>
                               <Style>None</Style>
                             </Border>
+                            <TopBorder>
+                              <Color>Black</Color>
+                              <Style>Solid</Style>
+                              <Width>1pt</Width>
+                            </TopBorder>
                             <BottomBorder>
                               <Color>LightGrey</Color>
                               <Style>Solid</Style>
@@ -237,6 +255,7 @@ ServicioName, BranchName from CertificadoDeposito where IdCD = @DocumentId</Comm
                                 <TextRun>
                                   <Value>C L I E N T E</Value>
                                   <Style>
+                                    <FontFamily>Arial</FontFamily>
                                     <FontSize>11pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
                                   </Style>
@@ -252,6 +271,11 @@ ServicioName, BranchName from CertificadoDeposito where IdCD = @DocumentId</Comm
                             <Border>
                               <Style>None</Style>
                             </Border>
+                            <TopBorder>
+                              <Color>Black</Color>
+                              <Style>Solid</Style>
+                              <Width>1pt</Width>
+                            </TopBorder>
                             <BottomBorder>
                               <Color>LightGrey</Color>
                               <Style>Solid</Style>
@@ -282,6 +306,7 @@ ServicioName, BranchName from CertificadoDeposito where IdCD = @DocumentId</Comm
                                 <TextRun>
                                   <Value />
                                   <Style>
+                                    <FontFamily>Arial</FontFamily>
                                     <FontSize>11pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
                                   </Style>
@@ -297,6 +322,11 @@ ServicioName, BranchName from CertificadoDeposito where IdCD = @DocumentId</Comm
                             <Border>
                               <Style>None</Style>
                             </Border>
+                            <TopBorder>
+                              <Color>Black</Color>
+                              <Style>Solid</Style>
+                              <Width>1pt</Width>
+                            </TopBorder>
                             <BottomBorder>
                               <Color>LightGrey</Color>
                               <Style>Solid</Style>
@@ -327,6 +357,7 @@ ServicioName, BranchName from CertificadoDeposito where IdCD = @DocumentId</Comm
                                 <TextRun>
                                   <Value>PARTIDA</Value>
                                   <Style>
+                                    <FontFamily>Arial</FontFamily>
                                     <FontSize>11pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
                                   </Style>
@@ -343,7 +374,7 @@ ServicioName, BranchName from CertificadoDeposito where IdCD = @DocumentId</Comm
                               <Style>None</Style>
                             </Border>
                             <BottomBorder>
-                              <Color>LightGrey</Color>
+                              <Color>Black</Color>
                               <Style>Solid</Style>
                               <Width>1pt</Width>
                             </BottomBorder>
@@ -367,6 +398,7 @@ ServicioName, BranchName from CertificadoDeposito where IdCD = @DocumentId</Comm
                                 <TextRun>
                                   <Value>FECHA</Value>
                                   <Style>
+                                    <FontFamily>Arial</FontFamily>
                                     <FontSize>11pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
                                   </Style>
@@ -383,7 +415,7 @@ ServicioName, BranchName from CertificadoDeposito where IdCD = @DocumentId</Comm
                               <Style>None</Style>
                             </Border>
                             <BottomBorder>
-                              <Color>LightGrey</Color>
+                              <Color>Black</Color>
                               <Style>Solid</Style>
                               <Width>1pt</Width>
                             </BottomBorder>
@@ -407,6 +439,7 @@ ServicioName, BranchName from CertificadoDeposito where IdCD = @DocumentId</Comm
                                 <TextRun>
                                   <Value>A/R #</Value>
                                   <Style>
+                                    <FontFamily>Arial</FontFamily>
                                     <FontSize>11pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
                                   </Style>
@@ -423,7 +456,7 @@ ServicioName, BranchName from CertificadoDeposito where IdCD = @DocumentId</Comm
                               <Style>None</Style>
                             </Border>
                             <BottomBorder>
-                              <Color>LightGrey</Color>
+                              <Color>Black</Color>
                               <Style>Solid</Style>
                               <Width>1pt</Width>
                             </BottomBorder>
@@ -447,6 +480,7 @@ ServicioName, BranchName from CertificadoDeposito where IdCD = @DocumentId</Comm
                                 <TextRun>
                                   <Value>E/M#</Value>
                                   <Style>
+                                    <FontFamily>Arial</FontFamily>
                                     <FontSize>11pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
                                   </Style>
@@ -463,7 +497,7 @@ ServicioName, BranchName from CertificadoDeposito where IdCD = @DocumentId</Comm
                               <Style>None</Style>
                             </Border>
                             <BottomBorder>
-                              <Color>LightGrey</Color>
+                              <Color>Black</Color>
                               <Style>Solid</Style>
                               <Width>1pt</Width>
                             </BottomBorder>
@@ -487,6 +521,7 @@ ServicioName, BranchName from CertificadoDeposito where IdCD = @DocumentId</Comm
                                 <TextRun>
                                   <Value>SALIDA</Value>
                                   <Style>
+                                    <FontFamily>Arial</FontFamily>
                                     <FontSize>11pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
                                   </Style>
@@ -503,7 +538,7 @@ ServicioName, BranchName from CertificadoDeposito where IdCD = @DocumentId</Comm
                               <Style>None</Style>
                             </Border>
                             <BottomBorder>
-                              <Color>LightGrey</Color>
+                              <Color>Black</Color>
                               <Style>Solid</Style>
                               <Width>1pt</Width>
                             </BottomBorder>
@@ -527,6 +562,7 @@ ServicioName, BranchName from CertificadoDeposito where IdCD = @DocumentId</Comm
                                 <TextRun>
                                   <Value>VALOR</Value>
                                   <Style>
+                                    <FontFamily>Arial</FontFamily>
                                     <FontSize>11pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
                                   </Style>
@@ -543,7 +579,7 @@ ServicioName, BranchName from CertificadoDeposito where IdCD = @DocumentId</Comm
                               <Style>None</Style>
                             </Border>
                             <BottomBorder>
-                              <Color>LightGrey</Color>
+                              <Color>Black</Color>
                               <Style>Solid</Style>
                               <Width>1pt</Width>
                             </BottomBorder>
@@ -567,6 +603,7 @@ ServicioName, BranchName from CertificadoDeposito where IdCD = @DocumentId</Comm
                                 <TextRun>
                                   <Value>SALDO</Value>
                                   <Style>
+                                    <FontFamily>Arial</FontFamily>
                                     <FontSize>11pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
                                   </Style>
@@ -583,7 +620,7 @@ ServicioName, BranchName from CertificadoDeposito where IdCD = @DocumentId</Comm
                               <Style>None</Style>
                             </Border>
                             <BottomBorder>
-                              <Color>LightGrey</Color>
+                              <Color>Black</Color>
                               <Style>Solid</Style>
                               <Width>1pt</Width>
                             </BottomBorder>
@@ -607,6 +644,7 @@ ServicioName, BranchName from CertificadoDeposito where IdCD = @DocumentId</Comm
                                 <TextRun>
                                   <Value>VALOR</Value>
                                   <Style>
+                                    <FontFamily>Arial</FontFamily>
                                     <FontSize>11pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
                                   </Style>
@@ -623,7 +661,7 @@ ServicioName, BranchName from CertificadoDeposito where IdCD = @DocumentId</Comm
                               <Style>None</Style>
                             </Border>
                             <BottomBorder>
-                              <Color>LightGrey</Color>
+                              <Color>Black</Color>
                               <Style>Solid</Style>
                               <Width>1pt</Width>
                             </BottomBorder>
@@ -652,6 +690,7 @@ ServicioName, BranchName from CertificadoDeposito where IdCD = @DocumentId</Comm
                                 <TextRun>
                                   <Value />
                                   <Style>
+                                    <FontFamily>Arial</FontFamily>
                                     <FontSize>11pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
                                   </Style>
@@ -691,7 +730,10 @@ ServicioName, BranchName from CertificadoDeposito where IdCD = @DocumentId</Comm
                               <TextRuns>
                                 <TextRun>
                                   <Value>=First(Fields!FechaCertificado.Value, "Certificado")</Value>
-                                  <Style />
+                                  <Style>
+                                    <FontFamily>Arial</FontFamily>
+                                    <Format>d/MM/yyyy</Format>
+                                  </Style>
                                 </TextRun>
                               </TextRuns>
                               <Style>
@@ -707,7 +749,6 @@ ServicioName, BranchName from CertificadoDeposito where IdCD = @DocumentId</Comm
                             <BottomBorder>
                               <Color>LightGrey</Color>
                               <Style>Solid</Style>
-                              <Width>1pt</Width>
                             </BottomBorder>
                             <BackgroundColor>White</BackgroundColor>
                             <PaddingLeft>2pt</PaddingLeft>
@@ -728,7 +769,10 @@ ServicioName, BranchName from CertificadoDeposito where IdCD = @DocumentId</Comm
                               <TextRuns>
                                 <TextRun>
                                   <Value>=First(Fields!CustomerName.Value, "Certificado")</Value>
-                                  <Style />
+                                  <Style>
+                                    <FontFamily>Arial</FontFamily>
+                                    <FontSize>11pt</FontSize>
+                                  </Style>
                                 </TextRun>
                               </TextRuns>
                               <Style>
@@ -777,6 +821,7 @@ ServicioName, BranchName from CertificadoDeposito where IdCD = @DocumentId</Comm
                                 <TextRun>
                                   <Value>=Fields!PdaNo.Value</Value>
                                   <Style>
+                                    <FontFamily>Arial</FontFamily>
                                     <FontWeight>Normal</FontWeight>
                                   </Style>
                                 </TextRun>
@@ -811,7 +856,7 @@ ServicioName, BranchName from CertificadoDeposito where IdCD = @DocumentId</Comm
                                   <Style>
                                     <FontFamily>Arial</FontFamily>
                                     <FontWeight>Normal</FontWeight>
-                                    <Format>d</Format>
+                                    <Format>d/M/yyyy</Format>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -848,7 +893,9 @@ ServicioName, BranchName from CertificadoDeposito where IdCD = @DocumentId</Comm
                                   </Style>
                                 </TextRun>
                               </TextRuns>
-                              <Style />
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
                             </Paragraph>
                           </Paragraphs>
                           <rd:DefaultName>GoodsAuthorizationId</rd:DefaultName>
@@ -881,7 +928,9 @@ ServicioName, BranchName from CertificadoDeposito where IdCD = @DocumentId</Comm
                                   </Style>
                                 </TextRun>
                               </TextRuns>
-                              <Style />
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
                             </Paragraph>
                           </Paragraphs>
                           <rd:DefaultName>SourceDocumentId</rd:DefaultName>
@@ -907,7 +956,7 @@ ServicioName, BranchName from CertificadoDeposito where IdCD = @DocumentId</Comm
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Sum(Fields!Sale.Value)</Value>
+                                  <Value>=Fields!Sale.Value</Value>
                                   <Style>
                                     <FontFamily>Arial</FontFamily>
                                     <FontWeight>Normal</FontWeight>
@@ -941,7 +990,7 @@ ServicioName, BranchName from CertificadoDeposito where IdCD = @DocumentId</Comm
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Sum(Fields!ValorMovimiento.Value)</Value>
+                                  <Value>=Fields!ValorMovimiento.Value</Value>
                                   <Style>
                                     <FontFamily>Arial</FontFamily>
                                     <FontWeight>Normal</FontWeight>
@@ -975,7 +1024,7 @@ ServicioName, BranchName from CertificadoDeposito where IdCD = @DocumentId</Comm
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Sum(Fields!Total.Value)</Value>
+                                  <Value>=Fields!Total.Value</Value>
                                   <Style>
                                     <FontFamily>Arial</FontFamily>
                                     <FontWeight>Normal</FontWeight>
@@ -1009,7 +1058,7 @@ ServicioName, BranchName from CertificadoDeposito where IdCD = @DocumentId</Comm
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Sum(Fields!ValorTotal.Value)</Value>
+                                  <Value>=Fields!ValorTotal.Value</Value>
                                   <Style>
                                     <FontFamily>Arial</FontFamily>
                                     <FontWeight>Normal</FontWeight>
@@ -1070,6 +1119,11 @@ ServicioName, BranchName from CertificadoDeposito where IdCD = @DocumentId</Comm
                             <Border>
                               <Style>None</Style>
                             </Border>
+                            <TopBorder>
+                              <Color>Black</Color>
+                              <Style>Solid</Style>
+                              <Width>1pt</Width>
+                            </TopBorder>
                             <BottomBorder>
                               <Color>LightGrey</Color>
                               <Style>Solid</Style>
@@ -1096,7 +1150,7 @@ ServicioName, BranchName from CertificadoDeposito where IdCD = @DocumentId</Comm
                                   <Value />
                                   <Style>
                                     <FontFamily>Arial</FontFamily>
-                                    <FontWeight>Normal</FontWeight>
+                                    <FontWeight>Bold</FontWeight>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -1108,6 +1162,11 @@ ServicioName, BranchName from CertificadoDeposito where IdCD = @DocumentId</Comm
                             <Border>
                               <Style>None</Style>
                             </Border>
+                            <TopBorder>
+                              <Color>Black</Color>
+                              <Style>Solid</Style>
+                              <Width>1pt</Width>
+                            </TopBorder>
                             <BottomBorder>
                               <Color>LightGrey</Color>
                               <Style>Solid</Style>
@@ -1134,7 +1193,7 @@ ServicioName, BranchName from CertificadoDeposito where IdCD = @DocumentId</Comm
                                   <Value />
                                   <Style>
                                     <FontFamily>Arial</FontFamily>
-                                    <FontWeight>Normal</FontWeight>
+                                    <FontWeight>Bold</FontWeight>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -1146,6 +1205,11 @@ ServicioName, BranchName from CertificadoDeposito where IdCD = @DocumentId</Comm
                             <Border>
                               <Style>None</Style>
                             </Border>
+                            <TopBorder>
+                              <Color>Black</Color>
+                              <Style>Solid</Style>
+                              <Width>1pt</Width>
+                            </TopBorder>
                             <BottomBorder>
                               <Color>LightGrey</Color>
                               <Style>Solid</Style>
@@ -1172,7 +1236,7 @@ ServicioName, BranchName from CertificadoDeposito where IdCD = @DocumentId</Comm
                                   <Value />
                                   <Style>
                                     <FontFamily>Arial</FontFamily>
-                                    <FontWeight>Normal</FontWeight>
+                                    <FontWeight>Bold</FontWeight>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -1184,6 +1248,11 @@ ServicioName, BranchName from CertificadoDeposito where IdCD = @DocumentId</Comm
                             <Border>
                               <Style>None</Style>
                             </Border>
+                            <TopBorder>
+                              <Color>Black</Color>
+                              <Style>Solid</Style>
+                              <Width>1pt</Width>
+                            </TopBorder>
                             <BottomBorder>
                               <Color>LightGrey</Color>
                               <Style>Solid</Style>
@@ -1210,7 +1279,7 @@ ServicioName, BranchName from CertificadoDeposito where IdCD = @DocumentId</Comm
                                   <Value>=Sum(Fields!Sale.Value)</Value>
                                   <Style>
                                     <FontFamily>Arial</FontFamily>
-                                    <FontWeight>Normal</FontWeight>
+                                    <FontWeight>Bold</FontWeight>
                                     <Format>#,0.00;(#,0.00)</Format>
                                   </Style>
                                 </TextRun>
@@ -1223,6 +1292,11 @@ ServicioName, BranchName from CertificadoDeposito where IdCD = @DocumentId</Comm
                             <Border>
                               <Style>None</Style>
                             </Border>
+                            <TopBorder>
+                              <Color>Black</Color>
+                              <Style>Solid</Style>
+                              <Width>1pt</Width>
+                            </TopBorder>
                             <BottomBorder>
                               <Color>LightGrey</Color>
                               <Style>Solid</Style>
@@ -1249,7 +1323,7 @@ ServicioName, BranchName from CertificadoDeposito where IdCD = @DocumentId</Comm
                                   <Value>=Sum(Fields!ValorMovimiento.Value)</Value>
                                   <Style>
                                     <FontFamily>Arial</FontFamily>
-                                    <FontWeight>Normal</FontWeight>
+                                    <FontWeight>Bold</FontWeight>
                                     <Format>#,0.00;(#,0.00)</Format>
                                   </Style>
                                 </TextRun>
@@ -1262,6 +1336,11 @@ ServicioName, BranchName from CertificadoDeposito where IdCD = @DocumentId</Comm
                             <Border>
                               <Style>None</Style>
                             </Border>
+                            <TopBorder>
+                              <Color>Black</Color>
+                              <Style>Solid</Style>
+                              <Width>1pt</Width>
+                            </TopBorder>
                             <BottomBorder>
                               <Color>LightGrey</Color>
                               <Style>Solid</Style>
@@ -1284,10 +1363,10 @@ ServicioName, BranchName from CertificadoDeposito where IdCD = @DocumentId</Comm
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Sum(Fields!Total.Value)</Value>
+                                  <Value />
                                   <Style>
                                     <FontFamily>Arial</FontFamily>
-                                    <FontWeight>Normal</FontWeight>
+                                    <FontWeight>Bold</FontWeight>
                                     <Format>#,0.00;(#,0.00)</Format>
                                   </Style>
                                 </TextRun>
@@ -1300,6 +1379,11 @@ ServicioName, BranchName from CertificadoDeposito where IdCD = @DocumentId</Comm
                             <Border>
                               <Style>None</Style>
                             </Border>
+                            <TopBorder>
+                              <Color>Black</Color>
+                              <Style>Solid</Style>
+                              <Width>1pt</Width>
+                            </TopBorder>
                             <BottomBorder>
                               <Color>LightGrey</Color>
                               <Style>Solid</Style>
@@ -1323,10 +1407,10 @@ ServicioName, BranchName from CertificadoDeposito where IdCD = @DocumentId</Comm
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Sum(Fields!ValorTotal.Value)</Value>
+                                  <Value />
                                   <Style>
                                     <FontFamily>Arial</FontFamily>
-                                    <FontWeight>Normal</FontWeight>
+                                    <FontWeight>Bold</FontWeight>
                                     <Format>#,0.00;(#,0.00)</Format>
                                   </Style>
                                 </TextRun>
@@ -1339,284 +1423,16 @@ ServicioName, BranchName from CertificadoDeposito where IdCD = @DocumentId</Comm
                             <Border>
                               <Style>None</Style>
                             </Border>
+                            <TopBorder>
+                              <Color>Black</Color>
+                              <Style>Solid</Style>
+                              <Width>1pt</Width>
+                            </TopBorder>
                             <BottomBorder>
                               <Color>LightGrey</Color>
                               <Style>Solid</Style>
                               <Width>1pt</Width>
                             </BottomBorder>
-                            <BackgroundColor>White</BackgroundColor>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
-                  </TablixCells>
-                </TablixRow>
-                <TablixRow>
-                  <Height>6mm</Height>
-                  <TablixCells>
-                    <TablixCell>
-                      <CellContents>
-                        <Textbox Name="Textbox37">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value />
-                                  <Style>
-                                    <FontFamily>Arial</FontFamily>
-                                    <FontWeight>Bold</FontWeight>
-                                  </Style>
-                                </TextRun>
-                              </TextRuns>
-                              <Style />
-                            </Paragraph>
-                          </Paragraphs>
-                          <rd:DefaultName>Textbox37</rd:DefaultName>
-                          <Style>
-                            <Border>
-                              <Style>None</Style>
-                            </Border>
-                            <BackgroundColor>White</BackgroundColor>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
-                    <TablixCell>
-                      <CellContents>
-                        <Textbox Name="Textbox129">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value />
-                                  <Style>
-                                    <FontFamily>Arial</FontFamily>
-                                    <FontWeight>Bold</FontWeight>
-                                  </Style>
-                                </TextRun>
-                              </TextRuns>
-                              <Style />
-                            </Paragraph>
-                          </Paragraphs>
-                          <rd:DefaultName>Textbox129</rd:DefaultName>
-                          <Style>
-                            <Border>
-                              <Style>None</Style>
-                            </Border>
-                            <BackgroundColor>White</BackgroundColor>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
-                    <TablixCell>
-                      <CellContents>
-                        <Textbox Name="Textbox130">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value />
-                                  <Style>
-                                    <FontFamily>Arial</FontFamily>
-                                    <FontWeight>Bold</FontWeight>
-                                  </Style>
-                                </TextRun>
-                              </TextRuns>
-                              <Style />
-                            </Paragraph>
-                          </Paragraphs>
-                          <rd:DefaultName>Textbox130</rd:DefaultName>
-                          <Style>
-                            <Border>
-                              <Style>None</Style>
-                            </Border>
-                            <BackgroundColor>White</BackgroundColor>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
-                    <TablixCell>
-                      <CellContents>
-                        <Textbox Name="Textbox4">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value />
-                                  <Style>
-                                    <FontFamily>Arial</FontFamily>
-                                    <FontWeight>Bold</FontWeight>
-                                  </Style>
-                                </TextRun>
-                              </TextRuns>
-                              <Style />
-                            </Paragraph>
-                          </Paragraphs>
-                          <rd:DefaultName>Textbox4</rd:DefaultName>
-                          <Style>
-                            <Border>
-                              <Style>None</Style>
-                            </Border>
-                            <BackgroundColor>White</BackgroundColor>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
-                    <TablixCell>
-                      <CellContents>
-                        <Textbox Name="Textbox132">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value>=Sum(Fields!Sale.Value)</Value>
-                                  <Style>
-                                    <FontFamily>Arial</FontFamily>
-                                    <FontWeight>Bold</FontWeight>
-                                    <Format>#,0.00;(#,0.00)</Format>
-                                  </Style>
-                                </TextRun>
-                              </TextRuns>
-                              <Style />
-                            </Paragraph>
-                          </Paragraphs>
-                          <rd:DefaultName>Textbox132</rd:DefaultName>
-                          <Style>
-                            <Border>
-                              <Style>None</Style>
-                            </Border>
-                            <BackgroundColor>White</BackgroundColor>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
-                    <TablixCell>
-                      <CellContents>
-                        <Textbox Name="Textbox133">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value>=Sum(Fields!ValorMovimiento.Value)</Value>
-                                  <Style>
-                                    <FontFamily>Arial</FontFamily>
-                                    <FontWeight>Bold</FontWeight>
-                                    <Format>#,0.00;(#,0.00)</Format>
-                                  </Style>
-                                </TextRun>
-                              </TextRuns>
-                              <Style />
-                            </Paragraph>
-                          </Paragraphs>
-                          <rd:DefaultName>Textbox133</rd:DefaultName>
-                          <Style>
-                            <Border>
-                              <Style>None</Style>
-                            </Border>
-                            <BackgroundColor>White</BackgroundColor>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
-                    <TablixCell>
-                      <CellContents>
-                        <Textbox Name="Textbox134">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value>=Sum(Fields!Total.Value)</Value>
-                                  <Style>
-                                    <FontFamily>Arial</FontFamily>
-                                    <FontWeight>Bold</FontWeight>
-                                    <Format>#,0.00;(#,0.00)</Format>
-                                  </Style>
-                                </TextRun>
-                              </TextRuns>
-                              <Style />
-                            </Paragraph>
-                          </Paragraphs>
-                          <rd:DefaultName>Textbox134</rd:DefaultName>
-                          <Style>
-                            <Border>
-                              <Style>None</Style>
-                            </Border>
-                            <BackgroundColor>White</BackgroundColor>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
-                    <TablixCell>
-                      <CellContents>
-                        <Textbox Name="Textbox135">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value>=Sum(Fields!ValorTotal.Value)</Value>
-                                  <Style>
-                                    <FontFamily>Arial</FontFamily>
-                                    <FontWeight>Bold</FontWeight>
-                                    <Format>#,0.00;(#,0.00)</Format>
-                                  </Style>
-                                </TextRun>
-                              </TextRuns>
-                              <Style />
-                            </Paragraph>
-                          </Paragraphs>
-                          <rd:DefaultName>Textbox135</rd:DefaultName>
-                          <Style>
-                            <Border>
-                              <Style>None</Style>
-                            </Border>
                             <BackgroundColor>White</BackgroundColor>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
@@ -1657,6 +1473,7 @@ ServicioName, BranchName from CertificadoDeposito where IdCD = @DocumentId</Comm
                               <TextRun>
                                 <Value>C/D#</Value>
                                 <Style>
+                                  <FontFamily>Arial</FontFamily>
                                   <FontSize>11pt</FontSize>
                                   <FontWeight>Bold</FontWeight>
                                 </Style>
@@ -1672,6 +1489,11 @@ ServicioName, BranchName from CertificadoDeposito where IdCD = @DocumentId</Comm
                           <Border>
                             <Style>None</Style>
                           </Border>
+                          <TopBorder>
+                            <Color>Black</Color>
+                            <Style>Solid</Style>
+                            <Width>1pt</Width>
+                          </TopBorder>
                           <BottomBorder>
                             <Color>LightGrey</Color>
                             <Style>Solid</Style>
@@ -1701,6 +1523,7 @@ ServicioName, BranchName from CertificadoDeposito where IdCD = @DocumentId</Comm
                               <TextRun>
                                 <Value />
                                 <Style>
+                                  <FontFamily>Arial</FontFamily>
                                   <FontSize>11pt</FontSize>
                                   <FontWeight>Bold</FontWeight>
                                 </Style>
@@ -1717,7 +1540,7 @@ ServicioName, BranchName from CertificadoDeposito where IdCD = @DocumentId</Comm
                             <Style>None</Style>
                           </Border>
                           <BottomBorder>
-                            <Color>LightGrey</Color>
+                            <Color>Black</Color>
                             <Style>Solid</Style>
                             <Width>1pt</Width>
                           </BottomBorder>
@@ -1747,7 +1570,9 @@ ServicioName, BranchName from CertificadoDeposito where IdCD = @DocumentId</Comm
                             <TextRuns>
                               <TextRun>
                                 <Value>=Sum(Fields!IdCD.Value, "Certificado")</Value>
-                                <Style />
+                                <Style>
+                                  <FontFamily>Arial</FontFamily>
+                                </Style>
                               </TextRun>
                             </TextRuns>
                             <Style>
@@ -1797,7 +1622,7 @@ ServicioName, BranchName from CertificadoDeposito where IdCD = @DocumentId</Comm
                           <Paragraph>
                             <TextRuns>
                               <TextRun>
-                                <Value>=Fields!PdaNo.Value</Value>
+                                <Value />
                                 <Style>
                                   <FontFamily>Arial</FontFamily>
                                   <FontWeight>Normal</FontWeight>
@@ -1835,50 +1660,13 @@ ServicioName, BranchName from CertificadoDeposito where IdCD = @DocumentId</Comm
                     </TablixMember>
                   </TablixMembers>
                 </TablixMember>
-                <TablixMember>
-                  <TablixHeader>
-                    <Size>25mm</Size>
-                    <CellContents>
-                      <Textbox Name="Textbox127">
-                        <CanGrow>true</CanGrow>
-                        <KeepTogether>true</KeepTogether>
-                        <Paragraphs>
-                          <Paragraph>
-                            <TextRuns>
-                              <TextRun>
-                                <Value>Total</Value>
-                                <Style>
-                                  <FontFamily>Arial</FontFamily>
-                                  <FontWeight>Bold</FontWeight>
-                                </Style>
-                              </TextRun>
-                            </TextRuns>
-                            <Style />
-                          </Paragraph>
-                        </Paragraphs>
-                        <rd:DefaultName>Textbox127</rd:DefaultName>
-                        <Style>
-                          <Border>
-                            <Style>None</Style>
-                          </Border>
-                          <BackgroundColor>White</BackgroundColor>
-                          <PaddingLeft>2pt</PaddingLeft>
-                          <PaddingRight>2pt</PaddingRight>
-                          <PaddingTop>2pt</PaddingTop>
-                          <PaddingBottom>2pt</PaddingBottom>
-                        </Style>
-                      </Textbox>
-                    </CellContents>
-                  </TablixHeader>
-                  <KeepWithGroup>Before</KeepWithGroup>
-                </TablixMember>
               </TablixMembers>
             </TablixRowHierarchy>
             <DataSetName>Kardex</DataSetName>
             <Top>78.66944mm</Top>
             <Left>0mm</Left>
-            <Height>36mm</Height>
-            <Width>225mm</Width>
+            <Height>30mm</Height>
+            <Width>226.59999mm</Width>
             <Style>
               <Border>
                 <Style>None</Style>
@@ -1893,15 +1681,24 @@ ServicioName, BranchName from CertificadoDeposito where IdCD = @DocumentId</Comm
                 <TextRuns>
                   <TextRun>
                     <Value>=First(Fields!ServicioName.Value, "Certificado")</Value>
-                    <Style />
+                    <Style>
+                      <FontSize>11pt</FontSize>
+                      <FontWeight>Bold</FontWeight>
+                    </Style>
                   </TextRun>
                   <TextRun>
                     <Value>, </Value>
-                    <Style />
+                    <Style>
+                      <FontSize>11pt</FontSize>
+                      <FontWeight>Bold</FontWeight>
+                    </Style>
                   </TextRun>
                   <TextRun>
                     <Value>=First(Fields!BranchName.Value, "Certificado")</Value>
-                    <Style />
+                    <Style>
+                      <FontSize>11pt</FontSize>
+                      <FontWeight>Bold</FontWeight>
+                    </Style>
                   </TextRun>
                 </TextRuns>
                 <Style>
