@@ -381,7 +381,14 @@ namespace ERPMVC.Controllers
             return View(_GoodsDelivered);
         }
 
+        [HttpGet]
+        public ActionResult SFComprobanteEntregasEmitido()
+        {
 
+            return View();
+
+
+        }
 
         public ActionResult SFEntregaMercaderia(Int64 id)
         {

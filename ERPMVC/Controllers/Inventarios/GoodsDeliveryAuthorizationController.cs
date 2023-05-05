@@ -759,6 +759,15 @@ namespace ERPMVC.Controllers
             }
         }
 
+        [HttpGet]
+        public ActionResult SFAutorizacionRetiroEmitido()
+        {
+
+            return View();
+
+
+        }
+
         [HttpGet("[controller]/[action]/{id}")]
         public ActionResult SFAutorizacionRetiro(Int64 id)
         {
