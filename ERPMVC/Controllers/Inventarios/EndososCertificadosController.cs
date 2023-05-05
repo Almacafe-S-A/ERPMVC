@@ -427,5 +427,13 @@ namespace ERPMVC.Controllers
                 return await Task.Run(() => BadRequest("Ocurrio un error"));
             }
         }
+        [HttpGet]
+        public ActionResult SFEndososRegistrados()
+        {
+
+            return View();
+
+
+        }
     }
 }
