@@ -89,6 +89,54 @@
         });
     }
 
+    function dataBound(e) {
+        $.each(this.dataSource.data(), function () {
+            if (this.Estado == "Inactivo" ) {
+                $('[data-uid=' + this.uid + ']').find('.k-grid-Aprobar').hide();
+                
+            }
+            if (this.Estado == "Inactivo"){
+                $('[data-uid=' + this.uid + ']').find('.k-grid-Aprobar').hide();
+            }
+        })
+    }
+
+    function Aprobar(e) {
+        debugger;
+        if (!confirm('Esta seguro de Aprobar?')) return;
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        var dataObject = {
+            SubServicesWareHouseId: dataItem.SubServicesWareHouseId
+        };
+
+        $.ajax({
+            url: '@Url.Action("Aprobar","SubServicesWareHouse")',
+            method: 'POST',
+            datatype: "json",
+            contentType: 'application/json',
+            async: false,
+            data: JSON.stringify(dataObject),
+            success: function (result) {
+                $.toast({
+                    heading: 'Satisfactorio',
+                    text: 'Se ha aprobado correctamente.',
+                    position: 'top-right',
+                    loaderBg: '#ff6849',
+                    icon: 'success',
+                    hideAfter: 7000,
+                    stack: 6
+                });
+                RefrescarGrid();
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                notification.show({
+                    title: "Validación",
+                    message: textStatus + ": " + XMLHttpRequest.responseText
+                }, "error");
+                alert(textStatus + ": " + XMLHttpRequest.responseText);
+            }
+        });
+    }
 
     function EditSubServicesWareHouse(e) {
         e.preventDefault();
@@ -155,6 +203,7 @@
                                             columns.Command(command =>
                                             {
                                                 command.Custom("Editar").Click("EditSubServicesWareHouse").Text(" ").IconClass("fa fa-edit");
+                                                command.Custom("Aprobar").Text(" ").IconClass("fa fa-thumbs-up").Click("Aprobar");
 
                                             }).Width(150).Title("Acciones");
                                         }
@@ -218,7 +267,7 @@
                                     {
                                         e.Save("onsave");
 
-                                    })
+                                    }).Events(e => e.DataBound("dataBound"))
 )
 
 <div id="numEmployees">
@@ -243,4 +292,6 @@
     setToolbarTooltip(".k-grid-Agregar", "Agregar nuevo registro");
     //setRowButtonTooltip(".k-grid-delete", "Eliminar registro");
     setRowButtonTooltip(".k-grid-Editar", "Editar registro");
+    setRowButtonTooltip(".k-grid-Aprobar", "Aprobar registro");
+
 </script>

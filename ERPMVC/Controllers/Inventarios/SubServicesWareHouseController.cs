@@ -113,6 +113,38 @@ namespace ERPMVC.Controllers
 
         }
 
+        public async Task<ActionResult<SubServicesWareHouse>> Aprobar([FromBody] SubServicesWareHouse autorizacion)
+        {
+            try
+            {
+                if (autorizacion == null)
+                {
+                    return await Task.Run(() => BadRequest("No llego correctamente el modelo!"));
+                }
+
+                SubServicesWareHouse _listSubServicesWareHouse = new SubServicesWareHouse();
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + $"api/SubServicesWareHouse/Aprobar/{autorizacion.SubServicesWareHouseId}");
+                string valorrespuesta = "";
+                if (!result.IsSuccessStatusCode)
+                {
+                    return await Task.Run(() => BadRequest("No se Aprobo el documento!"));
+                }
+
+                return await Task.Run(() => Json(_listSubServicesWareHouse));
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: {ex.ToString()}");
+                throw ex;
+            }
+
+
+        }
+
         [HttpPost("[action]")]
         public async Task<ActionResult<SubServicesWareHouse>> SaveSubServicesWareHouse([FromBody]SubServicesWareHouse _SubServicesWareHouse)
         {
