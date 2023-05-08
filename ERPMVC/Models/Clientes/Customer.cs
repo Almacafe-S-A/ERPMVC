@@ -44,6 +44,8 @@ namespace ERPMVC.Models
         [Display(Name = "País")]
         public long? CountryId { get; set; }
 
+        public DateTime? FechaBaja { get; set; }
+
         [Display(Name = "País")]
         public string CountryName { get; set; }
 
