@@ -36,7 +36,7 @@ namespace ERPMVC.Models
         [Display(Name = "Sucursal")]
         public string BranchName { get; set; }
 
-        public int BoletaPesoId { get; set; }
+        public int? BoletaPesoId { get; set; }
 
         [Display(Name = "Vigilante")]
         public Int64 VigilanteId { get; set; }
@@ -51,15 +51,6 @@ namespace ERPMVC.Models
 
         public Int64 IdEstado { get; set; }
         public string Estado { get; set; }
-
-        [Display(Name = "Moneda")]
-        public int CurrencyId { get; set; }
-
-        [Display(Name = "Moneda")]
-        public string CurrencyName { get; set; }
-
-        [Display(Name = "Moneda tasa")]
-        public double Currency { get; set; }
 
 
         [Display(Name = "Bodega")]
