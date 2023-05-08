@@ -804,6 +804,17 @@ namespace ERPMVC.Controllers
             }
         }
 
+        [HttpGet]
+        public ActionResult SFKardexAR(int id)
+        
+        {
+            GoodsDeliveryAuthorization goodsDeliveryAuthorization = 
+                new GoodsDeliveryAuthorization {GoodsDeliveryAuthorizationId = id };
+            return View(goodsDeliveryAuthorization);
+
+
+        }
+
 
     }
 

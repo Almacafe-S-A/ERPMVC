@@ -5,7 +5,7 @@
     <DataSource Name="ERP">
       <ConnectionProperties>
         <DataProvider>SQL</DataProvider>
-        <ConnectString>Data Source=(local);Initial Catalog=ERP-PRODUCCION</ConnectString>
+        <ConnectString>Data Source=(local);Initial Catalog=ERP-QA</ConnectString>
         <IntegratedSecurity>true</IntegratedSecurity>
       </ConnectionProperties>
       <rd:SecurityType>Integrated</rd:SecurityType>
@@ -56,7 +56,7 @@ WHERE IdEstado = 1</CommandText>
         <CommandText>
 SELECT T1.FixedAssetGroupName
 , T0.FixedAssetId
-, T0.FixedAssetCode
+, T0.Codigo
 , T0.AssetDate
 , T0.FixedAssetName
 , T0.BranchName
@@ -81,8 +81,20 @@ SELECT T1.FixedAssetGroupName
 ,  CASE WHEN @MES  &gt;= 10 OR @MES = 0 THEN T2.October ELSE 0 END October
 ,  CASE WHEN @MES  &gt;= 11 OR @MES = 0 THEN T2.November ELSE 0 END November
 ,  CASE WHEN @MES  &gt;= 12 OR @MES = 0 THEN T2.December ELSE 0 END December
-, T2.TotalDepreciated + isnull((Select t3.TotalDepreciated from DepreciationFixedAsset t3 where FixedAssetId = T0.FixedAssetId and t3.Year = @ANIO - 1),0)  DepreciacionAnual 
-,T0.ToDepreciate - ( T2.TotalDepreciated + isnull((Select t3.TotalDepreciated from DepreciationFixedAsset t3 where FixedAssetId = T0.FixedAssetId and t3.Year = @ANIO - 1),0))
+
+, CASE WHEN @MES  = 1 THEN T2.January 
+		WHEN @MES  = 2  THEN T2.January + T2.February 
+		 WHEN @MES  = 3 THEN T2.January + T2.February + T2.March 
+		 WHEN @MES  = 4  THEN T2.January + T2.February + T2.March + T2.April 
+		 WHEN @MES  = 5  THEN T2.January + T2.February + T2.March + T2.April + T2.May 
+		 WHEN @MES  = 6  THEN T2.January + T2.February + T2.March + T2.April + T2.May + T2.June 
+		 WHEN @MES  = 7  THEN T2.January + T2.February + T2.March + T2.April + T2.May + T2.June+T2.July  
+		 WHEN @MES  = 8  THEN T2.January + T2.February + T2.March + T2.April + T2.May + T2.June+T2.July+T2.August 
+		 WHEN @MES  = 9  THEN T2.January + T2.February + T2.March + T2.April + T2.May + T2.June+T2.July+T2.August +T2.September 
+		 WHEN @MES  = 10  THEN T2.January + T2.February + T2.March + T2.April + T2.May + T2.June+T2.July+T2.August +T2.September +T2.October  
+		 WHEN @MES  = 11  THEN T2.January + T2.February + T2.March + T2.April + T2.May + T2.June+T2.July+T2.August +T2.September +T2.October  +T2.November 
+		 WHEN @MES  = 12 OR @MES = 0 THEN T2.January + T2.February + T2.March + T2.April + T2.May + T2.June+T2.July+T2.August +T2.September +T2.October  +T2.November +T2.December ELSE 0 END   DepreciacionAnual 
+,T0.ToDepreciate + (isnull((Select SUM(t3.TotalDepreciated) from DepreciationFixedAsset t3 where FixedAssetId = T0.FixedAssetId and t3.Year &lt; @ANIO ),0 ) )
 AS 'PorDepreciar'
 FROM FixedAsset T0
 Left JOIN FixedAssetGroup T1 ON T0.FixedAssetGroupId = T1.FixedAssetGroupId
@@ -102,8 +114,8 @@ order by t0.FixedAssetId</CommandText>
           <DataField>FixedAssetId</DataField>
           <rd:TypeName>System.Int64</rd:TypeName>
         </Field>
-        <Field Name="FixedAssetCode">
-          <DataField>FixedAssetCode</DataField>
+        <Field Name="Codigo">
+          <DataField>Codigo</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
         <Field Name="AssetDate">
@@ -332,9 +344,6 @@ union select 0, 'TODOS' </CommandText>
           <Tablix Name="Tablix1">
             <TablixBody>
               <TablixColumns>
-                <TablixColumn>
-                  <Width>1in</Width>
-                </TablixColumn>
                 <TablixColumn>
                   <Width>1in</Width>
                 </TablixColumn>
@@ -1191,40 +1200,6 @@ union select 0, 'TODOS' </CommandText>
                         </Textbox>
                       </CellContents>
                     </TablixCell>
-                    <TablixCell>
-                      <CellContents>
-                        <Textbox Name="TextBox126">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value>Por Depreciar</Value>
-                                  <Style>
-                                    <FontWeight>Bold</FontWeight>
-                                  </Style>
-                                </TextRun>
-                              </TextRuns>
-                              <Style>
-                                <TextAlign>Center</TextAlign>
-                                <LineHeight>10pt</LineHeight>
-                              </Style>
-                            </Paragraph>
-                          </Paragraphs>
-                          <Style>
-                            <Border>
-                              <Color>Gray</Color>
-                              <Style>Solid</Style>
-                            </Border>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
                   </TablixCells>
                 </TablixRow>
                 <TablixRow>
@@ -1953,40 +1928,7 @@ union select 0, 'TODOS' </CommandText>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Fields!DepreciacionAnual.Value</Value>
-                                  <Style>
-                                    <Format>n2</Format>
-                                  </Style>
-                                </TextRun>
-                              </TextRuns>
-                              <Style>
-                                <LineHeight>10pt</LineHeight>
-                              </Style>
-                            </Paragraph>
-                          </Paragraphs>
-                          <Style>
-                            <Border>
-                              <Color>Gray</Color>
-                              <Style>Solid</Style>
-                            </Border>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
-                    <TablixCell>
-                      <CellContents>
-                        <Textbox Name="TextBox149">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value>=Sum(Fields!PorDepreciar.Value)</Value>
+                                  <Value>=Fields!DepreciacionAnual.Value+Fields!depreciaAnioAnterior.Value</Value>
                                   <Style>
                                     <Format>n2</Format>
                                   </Style>
@@ -2764,41 +2706,7 @@ union select 0, 'TODOS' </CommandText>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Sum(Fields!DepreciacionAnual.Value)</Value>
-                                  <Style>
-                                    <FontWeight>Bold</FontWeight>
-                                    <Format>n2</Format>
-                                  </Style>
-                                </TextRun>
-                              </TextRuns>
-                              <Style>
-                                <LineHeight>10pt</LineHeight>
-                              </Style>
-                            </Paragraph>
-                          </Paragraphs>
-                          <Style>
-                            <Border>
-                              <Color>Gray</Color>
-                              <Style>Solid</Style>
-                            </Border>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
-                    <TablixCell>
-                      <CellContents>
-                        <Textbox Name="TextBox172">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value>=Sum(Fields!PorDepreciar.Value)</Value>
+                                  <Value>=Sum(Fields!DepreciacionAnual.Value+Fields!depreciaAnioAnterior.Value)</Value>
                                   <Style>
                                     <FontWeight>Bold</FontWeight>
                                     <Format>n2</Format>
@@ -3564,41 +3472,7 @@ union select 0, 'TODOS' </CommandText>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Sum(Fields!DepreciacionAnual.Value)</Value>
-                                  <Style>
-                                    <FontWeight>Bold</FontWeight>
-                                    <Format>n2</Format>
-                                  </Style>
-                                </TextRun>
-                              </TextRuns>
-                              <Style>
-                                <LineHeight>10pt</LineHeight>
-                              </Style>
-                            </Paragraph>
-                          </Paragraphs>
-                          <Style>
-                            <Border>
-                              <Color>Gray</Color>
-                              <Style>Solid</Style>
-                            </Border>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
-                    <TablixCell>
-                      <CellContents>
-                        <Textbox Name="TextBox195">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value>=Sum(Fields!PorDepreciar.Value)</Value>
+                                  <Value>=Sum(Fields!DepreciacionAnual.Value+Fields!depreciaAnioAnterior.Value)</Value>
                                   <Style>
                                     <FontWeight>Bold</FontWeight>
                                     <Format>n2</Format>
@@ -3629,7 +3503,6 @@ union select 0, 'TODOS' </CommandText>
             </TablixBody>
             <TablixColumnHierarchy>
               <TablixMembers>
-                <TablixMember />
                 <TablixMember />
                 <TablixMember />
                 <TablixMember />
@@ -3796,7 +3669,7 @@ union select 0, 'TODOS' </CommandText>
             <Top>0.125in</Top>
             <Left>0.125in</Left>
             <Height>1in</Height>
-            <Width>25in</Width>
+            <Width>24in</Width>
             <ZIndex>2</ZIndex>
             <Style />
           </Tablix>

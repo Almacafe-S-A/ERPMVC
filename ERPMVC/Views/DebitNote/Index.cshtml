@@ -55,13 +55,7 @@
               //  console.log(result);
                 $("#divDebitNote").html('');
                 $("#divDebitNote").html(result);
-                $("#Tefono").kendoMaskedTextBox({
-                    mask: "(999) 0000-0000"
-                });
-                $("#TefonoAlert").hide();
-                //document.getElementById('FacturaInterna').style.display = 'none';
-                //RefreshDebitNoteDetail();
-                 $("#btnSaveDebitNote").show();
+               
                  $('#myModalSalesOrder').modal('show');
             },
              error: function (XMLHttpRequest, textStatus, errorThrown) {
@@ -83,7 +77,6 @@
             editar : 0
         };
 
-        var IdPuntoEmision = 0;
         $.ajax({
             url: '@Url.Action("pvwDebitNote", "DebitNote")',
             method: 'POST',
@@ -94,18 +87,6 @@
             success: function (result) {
                 $("#divDebitNote").html('');
                 $("#divDebitNote").html(result);
-                $("#Tefono").kendoMaskedTextBox({
-                    mask: "(999) 0000-0000"
-                });
-                $("#TefonoAlert").hide();
-                var txt = $(result);
-                var found = $("#IdPuntoEmision", txt);
-                IdPuntoEmision = $(found).val();
-
-                 $("#IdPuntoEmision").data("kendoDropDownList").value(IdPuntoEmision);
-
-                 //RefreshDebitNoteDetail();
-                 $("#btnSaveDebitNote").hide();
                  $('#myModalSalesOrder').modal('show');
             },
              error: function (XMLHttpRequest, textStatus, errorThrown) {
@@ -157,6 +138,59 @@
     }
 
 
+    function GenerarNotaDebito(e) {
+        if (confirm('Esta seguro de generar una Nota de Debito?')) {
+            e.preventDefault();
+            debugger;
+            var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+            var dataObject = {
+                DebitNoteId: dataItem.DebitNoteId,
+            };
+
+            $.ajax({
+                url: '@Url.Action("GenerarNotaDebito", "DebitNote")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (result) {
+                    MostrarMensaje('Nota de Debito Generada!', "success", "Satisfactorio", 6000);
+                    RefreshCotizaciones();
+                    return;
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    MostrarMensaje(textStatus + ": " + XMLHttpRequest.responseText, "Error", "Error", 6000);
+                }
+            });
+        }
+    }
+
+
+    function dataBound(e) {
+        $.each(this.dataSource.data(), function () {
+            if (this.Estado != "Revisado") {
+                $('[data-uid=' + this.uid + ']').find('.k-grid-Aprobar').hide();
+
+            }
+            if (this.Estado != "Borrador") {
+                $('[data-uid=' + this.uid + ']').find('.k-grid-GenerarNotaDebito').hide();
+            }
+            if (this.Estado != "Revisión") {
+                $('[data-uid=' + this.uid + ']').find('.k-grid-Revisar').hide();
+            }
+            if (this.Estado != "Emitido") {
+                $('[data-uid=' + this.uid + ']').find('.k-grid-Imprimir').hide();
+            }
+
+
+        })
+    }
+
+    function RefreshCotizaciones() {
+        var grid = $("#gridDebitNotes").getKendoGrid();
+        grid.dataSource.read();
+    }
 
     function closecondition() {
         $('#myModalConditions').modal('hide');
@@ -171,30 +205,21 @@
                                       .Name("gridDebitNotes")
                                       .Columns(columns =>
                                       {
-                                          if (permisos.HasClaim("Ventas.Nota de Debito.Ver Detalle", "true")
-                                          || permisos.HasClaim("Ventas.Nota de Debito.Imprimir", "true"))
-                                          {
+                                          
                                               columns.Command(command =>
                                               {
-                                                  if (permisos.HasClaim("Ventas.Nota de Debito.Ver Detalle", "true"))
-                                                  {
-                                                      command.Custom("Editar").Text(" ").IconClass("far fa-list-alt").Click("EditCotizacion");
-                                                  }
-                                                  if (permisos.HasClaim("Ventas.Nota de Debito.Imprimir", "true"))
-                                                  {
-                                                      command.Custom("Imprimir").Text(" ").IconClass("fa fa-print").Click("ImprimirCotizacion");
-                                                  }
-                                                  //command.Custom("GenerarFactura").Text(" ").IconClass("fa fa-file-import").Click("GenerarFactura");
-
-                                                  //  command.Edit(); command.Destroy();
+                                                  command.Custom("GenerarNotaDebito").Text(" ").IconClass("fa fa-file-invoice").Click("GenerarNotaDebito");
+                                                  command.Custom("Imprimir").Text(" ").IconClass("fa fa-print").Click("ImprimirCotizacion");
+                                                  command.Custom("Editar").Text(" ").IconClass("far fa-list-alt").Click("EditCotizacion");
+                                                  
                                               }).Title("Acciones").Width(130);
-                                          }
-                                          columns.Bound(p => p.DebitNoteId).Title("Id").Width(100).Visible(false);
-                                          columns.Bound(p => p.FechaCreacion).Format("{0:dd/MM/yyyy}").Title("Fecha de Creación").Width(210);
-                                          columns.Bound(p => p.NoSAG).Title("Numeración SAR").Width(200);
-                                          columns.Bound(p => p.DebitNoteName).Title("Nota Débito").Width(250);
-                                          columns.Bound(p => p.DebitNoteDate).Format("{0:dd/MM/yyyy}").Title("Fecha de Nota Débito").Width(250);
-                                          columns.Bound(p => p.ExpirationDate).Format("{0:dd/MM/yyyy}").Title("Fecha de Expiración").Width(250);
+                                          
+                                          columns.Bound(p => p.DebitNoteId).Title("No Ref.").Width(100).Visible(true);
+                                          columns.Bound(p => p.DebitNoteDate).Format("{0:dd/MM/yyyy}").Title("Fecha").Width(150);
+                                          columns.Bound(p => p.NumeroDEI).Title("Numeración SAR").Width(150);
+                                          columns.Bound(p => p.CustomerName).Title("Cliente").Width(250);
+                                          columns.Bound(p => p.Amount).Title("Monto").Width(150).Format("{0:N2}");
+                                          columns.Bound(p => p.DebitNoteDueDate).Format("{0:dd/MM/yyyy}").Title("Fecha de Expiración").Width(250);
                                           columns.Bound(p => p.BranchName).Title("Sucursal").Width(250);
                                       })
                                           .Filterable(f => f.Operators(o => o.ForString(s => s
@@ -284,11 +309,11 @@
                                         .Create(create => create.Action("Insert", "DebitNote"))
                                         .Update(update => update.Action("Update", "DebitNote", new { id = "{0}" }))
                                         .Destroy(destroy => destroy.Action("Delete", "DebitNote", new { id = "{0}" }))
-                                  )
+                                  ).Events(e => e.DataBound("dataBound"))
 )
 
 <div id="divDebitNote">
-    @await Html.PartialAsync("pvwDebitNote", new ERPMVC.DTO.DebitNoteDTO { DebitNoteId = 0, DebitNoteDate = DateTime.Now, DeliveryDate = DateTime.Now, ExpirationDate = DateTime.Now.AddDays(30) })
+    @await Html.PartialAsync("pvwDebitNote", new ERPMVC.DTO.DebitNoteDTO { DebitNoteId = 0, DebitNoteDate = DateTime.Now,  DebitNoteDueDate = DateTime.Now.AddDays(30) })
 </div>
 
 
