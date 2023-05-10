@@ -3,7 +3,8 @@
 @{
     ClaimsPrincipal permisos = (ClaimsPrincipal)ViewData["permisosEndosos"];
 
-    bool editar = Model.EndososCertificadosId != 0;
+    bool editar = Model.editar == 1;
+    bool nuevo = Model.EndososCertificadosId == 1;
 }
 
 <script>
@@ -155,6 +156,16 @@
                 return formatter.format(valor).replace(/[a-z]{3}/i, "").trim();
     }
 
+    var eventocontador = 0;
+    function Edicion(valor){
+        debugger;
+        if(eventocontador > 0){
+            return valor;
+        }
+        var editar = '@editar';
+        eventocontador ++;
+        return editar === 'True' ? 0 : valor;
+    }
 
 </script>
 
@@ -184,16 +195,17 @@
                                                               columns.Bound(p => p.Saldo).Width(150).Format("{0:N2}")
                                                               .ClientFooterTemplate("<div style='text-align: right'>#=totalColumnas(6,0)#</div>")
                                                               .ClientTemplate("<div style='text-align: right'><span class='saldoSpan'>#=formatoMiles(Saldo)#</span></div>")
-                                                              .HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" }).Visible(editar) ;
+                                                              .HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" }).Visible(!nuevo) ;
                                                               columns.Bound(p => p.CantidadLiberacion).Width(150).Format("{0:N2}")
+                                                              .ClientTemplate("#=Edicion (CantidadLiberacion)#")
                                                               .ClientFooterTemplate("<div style='text-align: right'>#=totalColumnas(4,0)#</div>")
-                                                              .HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" }).Visible(editar) ;
+                                                              .HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;background-color:LightGray;" }).Visible(!nuevo);
                                                               columns.Bound(p => p.Price).Width(150).Format("{0:C2}")
                                                               .HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" }) ;
                                                               columns.Bound(p => p.ValorLiberado).Width(150).Format("{0:N2}")
                                                               .ClientFooterTemplate("<div style='text-align: right'>#=totalColumnas(5,0)#</div>")
                                                               .ClientTemplate("<div style='text-align: right'><span class='totalliberacion'>#=formatoMiles(ValorLiberado)#</span></div>")
-                                                              .HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" }).Visible(editar) ;
+                                                              .HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" }).Visible(!nuevo);
                                                               columns.Bound(p => p.ValorEndoso).Width(150).Title("Valor").Format("{0:C2}")
                                                               .HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" })
                                                                   .ClientFooterTemplate("<div style='text-align: right'>#=totalColumnas(3,0)#</div>");
@@ -265,7 +277,7 @@
                                                                 model.Field(p => p.ValorUnitarioDerechos).Editable(false);
                                                                 model.Field(p => p.Pda).Editable(false);
                                                                  model.Field(p => p.Price).Editable(false);
-                                                                  model.Field(p => p.CantidadLiberacion).Editable(true);
+                                                                  model.Field(p => p.CantidadLiberacion).Editable(editar);
                                                                    model.Field(p => p.ValorLiberado).Editable(false);
                                                                     model.Field(p => p.Saldo).Editable(false);
                                                                      model.Field(p => p.SubProductName).Editable(false);
@@ -310,9 +322,10 @@
         var saldo = e.model.Saldo ;
         if (e.container) {
             if (e.model.CantidadLiberacion > e.model.Saldo) {
-                 MostrarMensaje('La cantidad a Liberar no puede ser mayor al saldo disponible', "Error", "Error", 30000);
                 e.model.CantidadLiberacion = 0;
                 e.model.Saldo = saldo;
+                
+                 MostrarMensaje('La cantidad a Liberar no puede ser mayor al saldo disponible', "Error", "Error", 30000);
             }
             e.model.Saldo = e.model.Saldo ;
             e.model.ValorLiberado = e.model.CantidadLiberacion * e.model.Price;
