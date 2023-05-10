@@ -14,7 +14,7 @@ namespace ERPMVC.Models
 
         public int LiquidacionId { get; set; }
         [ForeignKey("LiquidacionId")]
-        public Liquidacion Liqudacion { get; set; }
+        public Liquidacion Liquidacion { get; set; }
 
         public Int64? GoodsReceivedLineId { get; set; }
 
