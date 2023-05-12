@@ -85,9 +85,11 @@ namespace ERPMVC.Controllers
 
         }
 
-
-
-    
+        [HttpGet]
+        public ActionResult SFReporteInvoice()
+        {
+            return View();
+        }
 
         [HttpGet]
         public async Task<DataSourceResult> Get([DataSourceRequest]DataSourceRequest request)
