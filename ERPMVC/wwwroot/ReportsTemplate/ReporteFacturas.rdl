@@ -30,7 +30,8 @@
         <DataSourceName>ERP</DataSourceName>
         <CommandText>SELECT BranchId, BranchName 
 From BRANCH
-Where IdEstado =1</CommandText>
+Where IdEstado =1
+UNION SELECT 0 , 'TODOS'</CommandText>
       </Query>
       <Fields>
         <Field Name="BranchId">
@@ -63,18 +64,30 @@ UNION SELECT 0 , 'TODOS'</CommandText>
     <DataSet Name="Productos">
       <Query>
         <DataSourceName>ERP</DataSourceName>
-        <CommandText>SELECT SUBPRODUCTID, PRODUCTNAME 
-FROM SUBPRODUCT
-WHERE IdEstado =1 and ProductTypeId=2
+        <CommandText>SELECT
+  Product.ProductId
+  ,Product.ProductName
+FROM
+  Product
+WHERE IdEstado =1
 UNION SELECT 0 , 'TODOS'</CommandText>
+        <rd:DesignerState>
+          <QueryDefinition xmlns="http://schemas.microsoft.com/ReportingServices/QueryDefinition/Relational">
+            <SelectedColumns>
+              <ColumnExpression ColumnOwner="Product" ColumnName="ProductId" />
+              <ColumnExpression ColumnOwner="Product" ColumnName="ProductName" />
+            </SelectedColumns>
+          </QueryDefinition>
+        </rd:DesignerState>
+        <rd:UseGenericDesigner>true</rd:UseGenericDesigner>
       </Query>
       <Fields>
-        <Field Name="SubproductId">
-          <DataField>SUBPRODUCTID</DataField>
+        <Field Name="ProductId">
+          <DataField>ProductId</DataField>
           <rd:TypeName>System.Int64</rd:TypeName>
         </Field>
         <Field Name="ProductName">
-          <DataField>PRODUCTNAME</DataField>
+          <DataField>ProductName</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
       </Fields>
@@ -92,39 +105,68 @@ UNION SELECT 0 , 'TODOS'</CommandText>
           <QueryParameter Name="@CustomerId">
             <Value>=Parameters!CustomerId.Value</Value>
           </QueryParameter>
+          <QueryParameter Name="@ProductId">
+            <Value>=Parameters!ProductId.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@SucursalId">
+            <Value>=Parameters!SucursalId.Value</Value>
+          </QueryParameter>
         </QueryParameters>
         <CommandText>SELECT
-  Invoice.InvoiceId
-  ,Invoice.InvoiceDate
-  ,Invoice.NumeroDEI
-  ,InvoiceLine.InvoiceLineId
-  ,InvoiceLine.ProductId
-  ,InvoiceLine.ProductName
-  ,InvoiceLine.SubProductId
-  ,InvoiceLine.SubProductName
-  ,InvoiceLine.UnitOfMeasureId
-  ,InvoiceLine.UnitOfMeasureName
-  ,InvoiceLine.SubTotal
-  ,InvoiceLine.TaxAmount
-  ,InvoiceLine.Total
-  ,Invoice.CustomerId
-  ,Invoice.CustomerName,
-CASE WHEN Invoice.NumeroDEI = '%PROFORMA%' THEN Invoice.NumeroDEI ELSE NULL END AS DEI,
-CASE WHEN InvoiceLine.SubProductName = 'ALMACENAJE' THEN InvoiceLine.SubTotal ELSE NULL END AS Almacenaje,
-CASE WHEN InvoiceLine.SubProductName = 'BASCULA' THEN InvoiceLine.SubTotal ELSE NULL END AS Bascula,
-CASE WHEN InvoiceLine.SubProductName = 'SEGURO' THEN InvoiceLine.SubTotal ELSE NULL END AS Seguro,
-CASE WHEN InvoiceLine.SubProductName = 'FUMIGACION' THEN InvoiceLine.SubTotal ELSE NULL END AS Fumigacion,
-CASE WHEN InvoiceLine.SubProductName = 'MONTACARGA' THEN InvoiceLine.SubTotal ELSE NULL END AS Montacarga,
-CASE WHEN InvoiceLine.SubProductName = 'BANDA TRANSPORTADORA' THEN InvoiceLine.SubTotal ELSE NULL END AS Banda,
-CASE WHEN InvoiceLine.SubProductName = 'MULA HIDRÁULICA' THEN InvoiceLine.SubTotal ELSE NULL END AS Mula,
-CASE WHEN InvoiceLine.SubProductName = 'HORAS EXTRAS' THEN InvoiceLine.SubTotal ELSE NULL END AS Horas,
-CASE WHEN InvoiceLine.SubProductName = 'PAPELERÍA' THEN InvoiceLine.SubTotal ELSE NULL END AS Papelería,
-CASE WHEN InvoiceLine.SubProductName NOT IN ('Almacenaje', 'Bascula', 'Seguro', 'Fumigacion', 'Montacarga', 'Banda', 'Mula', 'Horas', 'Papelería') THEN InvoiceLine.SubTotal ELSE NULL END AS Otros
-FROM
-  Invoice
-  INNER JOIN InvoiceLine
-    ON Invoice.InvoiceId = InvoiceLine.InvoiceId
-WHERE Invoice.InvoiceDate BETWEEN @FechaInicio and @FechaFin AND (Invoice.CustomerId = @CustomerId or  @CustomerId = 0)</CommandText>
+  Invoice.InvoiceId,
+  Invoice.BranchId,
+  Invoice.BranchName,
+  Invoice.InvoiceDate,
+  Invoice.NumeroDEI,
+  InvoiceLine.InvoiceLineId,
+  InvoiceLine.ProductId,
+  InvoiceLine.ProductName,
+  InvoiceLine.SubProductId,
+  InvoiceLine.SubProductName,
+  InvoiceLine.UnitOfMeasureId,
+  InvoiceLine.UnitOfMeasureName,
+  InvoiceLine.SubTotal,
+  InvoiceLine.TaxAmount,
+  InvoiceLine.Total,
+  Invoice.CustomerId,
+  Invoice.CustomerName,
+  CASE WHEN Invoice.NumeroDEI LIKE '%PROFORMA%' THEN NULL ELSE Invoice.NumeroDEI END AS DEI,
+  CASE WHEN InvoiceLine.SubProductName = 'ALMACENAJE' THEN InvoiceLine.SubTotal ELSE NULL END AS Almacenaje,
+  CASE WHEN InvoiceLine.SubProductName = 'BASCULA' THEN InvoiceLine.SubTotal ELSE NULL END AS Bascula,
+  CASE WHEN InvoiceLine.SubProductName = 'SEGURO' THEN InvoiceLine.SubTotal ELSE NULL END AS Seguro,
+  CASE WHEN InvoiceLine.SubProductName = 'FUMIGACION' THEN InvoiceLine.SubTotal ELSE NULL END AS Fumigacion,
+  CASE WHEN InvoiceLine.SubProductName = 'MONTACARGA' THEN InvoiceLine.SubTotal ELSE NULL END AS Montacarga,
+  CASE WHEN InvoiceLine.SubProductName = 'BANDA TRANSPORTADORA' THEN InvoiceLine.SubTotal ELSE NULL END AS Banda,
+  CASE WHEN InvoiceLine.SubProductName = 'MULA HIDRÁULICA' THEN InvoiceLine.SubTotal ELSE NULL END AS Mula,
+  CASE WHEN InvoiceLine.SubProductName = 'HORAS EXTRAS' THEN InvoiceLine.SubTotal ELSE NULL END AS Horas,
+  CASE WHEN InvoiceLine.SubProductName = 'PAPELERÍA' THEN InvoiceLine.SubTotal ELSE NULL END AS Papelería,
+  CASE WHEN InvoiceLine.SubProductName NOT IN ('Almacenaje', 'Bascula', 'Seguro', 'Fumigacion', 'Montacarga', 'Banda', 'Mula', 'Horas', 'Papelería') THEN InvoiceLine.SubTotal ELSE NULL END AS Otros
+FROM Invoice
+INNER JOIN InvoiceLine ON Invoice.InvoiceId = InvoiceLine.InvoiceId
+WHERE
+  ESTADO = 'Emitido'
+  AND Invoice.InvoiceDate BETWEEN @FechaInicio AND @FechaFin
+  AND (Invoice.CustomerId = @CustomerId OR @CustomerId = 0)
+  AND (Invoice.ProductId = @ProductId OR @ProductId = 0)
+  AND (Invoice.BranchId = @SucursalId OR @SucursalId = 0)
+GROUP BY 
+  Invoice.InvoiceId,
+  Invoice.BranchId,
+  Invoice.BranchName,
+  Invoice.InvoiceDate,
+  Invoice.NumeroDEI,
+  InvoiceLine.InvoiceLineId,
+  InvoiceLine.ProductId,
+  InvoiceLine.ProductName,
+  InvoiceLine.SubProductId,
+  InvoiceLine.SubProductName,
+  InvoiceLine.UnitOfMeasureId,
+  InvoiceLine.UnitOfMeasureName,
+  InvoiceLine.SubTotal,
+  InvoiceLine.TaxAmount,
+  InvoiceLine.Total,
+  Invoice.CustomerId,
+  Invoice.CustomerName;</CommandText>
         <rd:DesignerState>
           <QueryDefinition xmlns="http://schemas.microsoft.com/ReportingServices/QueryDefinition/Relational">
             <SelectedColumns>
@@ -159,6 +201,14 @@ WHERE Invoice.InvoiceDate BETWEEN @FechaInicio and @FechaFin AND (Invoice.Custom
         <Field Name="InvoiceId">
           <DataField>InvoiceId</DataField>
           <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="BranchId">
+          <DataField>BranchId</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="BranchName">
+          <DataField>BranchName</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
         </Field>
         <Field Name="InvoiceDate">
           <DataField>InvoiceDate</DataField>
@@ -271,7 +321,7 @@ WHERE Invoice.InvoiceDate BETWEEN @FechaInicio and @FechaFin AND (Invoice.Custom
             <TablixBody>
               <TablixColumns>
                 <TablixColumn>
-                  <Width>0.5199in</Width>
+                  <Width>0.62268in</Width>
                 </TablixColumn>
                 <TablixColumn>
                   <Width>0.64703in</Width>
@@ -318,7 +368,7 @@ WHERE Invoice.InvoiceDate BETWEEN @FechaInicio and @FechaFin AND (Invoice.Custom
               </TablixColumns>
               <TablixRows>
                 <TablixRow>
-                  <Height>0.325in</Height>
+                  <Height>0.45833in</Height>
                   <TablixCells>
                     <TablixCell>
                       <CellContents>
@@ -351,7 +401,7 @@ WHERE Invoice.InvoiceDate BETWEEN @FechaInicio and @FechaFin AND (Invoice.Custom
                               <Style>Solid</Style>
                               <Width>1pt</Width>
                             </BottomBorder>
-                            <BackgroundColor>White</BackgroundColor>
+                            <BackgroundColor>Silver</BackgroundColor>
                             <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
@@ -392,7 +442,7 @@ WHERE Invoice.InvoiceDate BETWEEN @FechaInicio and @FechaFin AND (Invoice.Custom
                               <Style>Solid</Style>
                               <Width>1pt</Width>
                             </BottomBorder>
-                            <BackgroundColor>White</BackgroundColor>
+                            <BackgroundColor>Silver</BackgroundColor>
                             <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
@@ -433,7 +483,7 @@ WHERE Invoice.InvoiceDate BETWEEN @FechaInicio and @FechaFin AND (Invoice.Custom
                               <Style>Solid</Style>
                               <Width>1pt</Width>
                             </BottomBorder>
-                            <BackgroundColor>White</BackgroundColor>
+                            <BackgroundColor>Silver</BackgroundColor>
                             <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
@@ -460,7 +510,7 @@ WHERE Invoice.InvoiceDate BETWEEN @FechaInicio and @FechaFin AND (Invoice.Custom
                                 </TextRun>
                               </TextRuns>
                               <Style>
-                                <TextAlign>Right</TextAlign>
+                                <TextAlign>Center</TextAlign>
                               </Style>
                             </Paragraph>
                           </Paragraphs>
@@ -474,7 +524,7 @@ WHERE Invoice.InvoiceDate BETWEEN @FechaInicio and @FechaFin AND (Invoice.Custom
                               <Style>Solid</Style>
                               <Width>1pt</Width>
                             </BottomBorder>
-                            <BackgroundColor>White</BackgroundColor>
+                            <BackgroundColor>Silver</BackgroundColor>
                             <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
@@ -501,7 +551,7 @@ WHERE Invoice.InvoiceDate BETWEEN @FechaInicio and @FechaFin AND (Invoice.Custom
                                 </TextRun>
                               </TextRuns>
                               <Style>
-                                <TextAlign>Right</TextAlign>
+                                <TextAlign>Center</TextAlign>
                               </Style>
                             </Paragraph>
                           </Paragraphs>
@@ -515,7 +565,7 @@ WHERE Invoice.InvoiceDate BETWEEN @FechaInicio and @FechaFin AND (Invoice.Custom
                               <Style>Solid</Style>
                               <Width>1pt</Width>
                             </BottomBorder>
-                            <BackgroundColor>White</BackgroundColor>
+                            <BackgroundColor>Silver</BackgroundColor>
                             <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
@@ -542,7 +592,7 @@ WHERE Invoice.InvoiceDate BETWEEN @FechaInicio and @FechaFin AND (Invoice.Custom
                                 </TextRun>
                               </TextRuns>
                               <Style>
-                                <TextAlign>Right</TextAlign>
+                                <TextAlign>Center</TextAlign>
                               </Style>
                             </Paragraph>
                           </Paragraphs>
@@ -556,7 +606,7 @@ WHERE Invoice.InvoiceDate BETWEEN @FechaInicio and @FechaFin AND (Invoice.Custom
                               <Style>Solid</Style>
                               <Width>1pt</Width>
                             </BottomBorder>
-                            <BackgroundColor>White</BackgroundColor>
+                            <BackgroundColor>Silver</BackgroundColor>
                             <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
@@ -583,7 +633,7 @@ WHERE Invoice.InvoiceDate BETWEEN @FechaInicio and @FechaFin AND (Invoice.Custom
                                 </TextRun>
                               </TextRuns>
                               <Style>
-                                <TextAlign>Right</TextAlign>
+                                <TextAlign>Center</TextAlign>
                               </Style>
                             </Paragraph>
                           </Paragraphs>
@@ -597,7 +647,7 @@ WHERE Invoice.InvoiceDate BETWEEN @FechaInicio and @FechaFin AND (Invoice.Custom
                               <Style>Solid</Style>
                               <Width>1pt</Width>
                             </BottomBorder>
-                            <BackgroundColor>White</BackgroundColor>
+                            <BackgroundColor>Silver</BackgroundColor>
                             <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
@@ -624,7 +674,7 @@ WHERE Invoice.InvoiceDate BETWEEN @FechaInicio and @FechaFin AND (Invoice.Custom
                                 </TextRun>
                               </TextRuns>
                               <Style>
-                                <TextAlign>Right</TextAlign>
+                                <TextAlign>Center</TextAlign>
                               </Style>
                             </Paragraph>
                           </Paragraphs>
@@ -638,7 +688,7 @@ WHERE Invoice.InvoiceDate BETWEEN @FechaInicio and @FechaFin AND (Invoice.Custom
                               <Style>Solid</Style>
                               <Width>1pt</Width>
                             </BottomBorder>
-                            <BackgroundColor>White</BackgroundColor>
+                            <BackgroundColor>Silver</BackgroundColor>
                             <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
@@ -665,7 +715,7 @@ WHERE Invoice.InvoiceDate BETWEEN @FechaInicio and @FechaFin AND (Invoice.Custom
                                 </TextRun>
                               </TextRuns>
                               <Style>
-                                <TextAlign>Right</TextAlign>
+                                <TextAlign>Center</TextAlign>
                               </Style>
                             </Paragraph>
                           </Paragraphs>
@@ -679,7 +729,7 @@ WHERE Invoice.InvoiceDate BETWEEN @FechaInicio and @FechaFin AND (Invoice.Custom
                               <Style>Solid</Style>
                               <Width>1pt</Width>
                             </BottomBorder>
-                            <BackgroundColor>White</BackgroundColor>
+                            <BackgroundColor>Silver</BackgroundColor>
                             <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
@@ -706,7 +756,7 @@ WHERE Invoice.InvoiceDate BETWEEN @FechaInicio and @FechaFin AND (Invoice.Custom
                                 </TextRun>
                               </TextRuns>
                               <Style>
-                                <TextAlign>Right</TextAlign>
+                                <TextAlign>Center</TextAlign>
                               </Style>
                             </Paragraph>
                           </Paragraphs>
@@ -720,7 +770,7 @@ WHERE Invoice.InvoiceDate BETWEEN @FechaInicio and @FechaFin AND (Invoice.Custom
                               <Style>Solid</Style>
                               <Width>1pt</Width>
                             </BottomBorder>
-                            <BackgroundColor>White</BackgroundColor>
+                            <BackgroundColor>Silver</BackgroundColor>
                             <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
@@ -747,7 +797,7 @@ WHERE Invoice.InvoiceDate BETWEEN @FechaInicio and @FechaFin AND (Invoice.Custom
                                 </TextRun>
                               </TextRuns>
                               <Style>
-                                <TextAlign>Right</TextAlign>
+                                <TextAlign>Center</TextAlign>
                               </Style>
                             </Paragraph>
                           </Paragraphs>
@@ -761,7 +811,7 @@ WHERE Invoice.InvoiceDate BETWEEN @FechaInicio and @FechaFin AND (Invoice.Custom
                               <Style>Solid</Style>
                               <Width>1pt</Width>
                             </BottomBorder>
-                            <BackgroundColor>White</BackgroundColor>
+                            <BackgroundColor>Silver</BackgroundColor>
                             <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
@@ -788,7 +838,7 @@ WHERE Invoice.InvoiceDate BETWEEN @FechaInicio and @FechaFin AND (Invoice.Custom
                                 </TextRun>
                               </TextRuns>
                               <Style>
-                                <TextAlign>Right</TextAlign>
+                                <TextAlign>Center</TextAlign>
                               </Style>
                             </Paragraph>
                           </Paragraphs>
@@ -802,7 +852,7 @@ WHERE Invoice.InvoiceDate BETWEEN @FechaInicio and @FechaFin AND (Invoice.Custom
                               <Style>Solid</Style>
                               <Width>1pt</Width>
                             </BottomBorder>
-                            <BackgroundColor>White</BackgroundColor>
+                            <BackgroundColor>Silver</BackgroundColor>
                             <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
@@ -829,7 +879,7 @@ WHERE Invoice.InvoiceDate BETWEEN @FechaInicio and @FechaFin AND (Invoice.Custom
                                 </TextRun>
                               </TextRuns>
                               <Style>
-                                <TextAlign>Right</TextAlign>
+                                <TextAlign>Center</TextAlign>
                               </Style>
                             </Paragraph>
                           </Paragraphs>
@@ -843,7 +893,7 @@ WHERE Invoice.InvoiceDate BETWEEN @FechaInicio and @FechaFin AND (Invoice.Custom
                               <Style>Solid</Style>
                               <Width>1pt</Width>
                             </BottomBorder>
-                            <BackgroundColor>White</BackgroundColor>
+                            <BackgroundColor>Silver</BackgroundColor>
                             <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
@@ -862,7 +912,7 @@ WHERE Invoice.InvoiceDate BETWEEN @FechaInicio and @FechaFin AND (Invoice.Custom
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>Tax Amount</Value>
+                                  <Value>impuesto</Value>
                                   <Style>
                                     <FontSize>8pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
@@ -870,7 +920,7 @@ WHERE Invoice.InvoiceDate BETWEEN @FechaInicio and @FechaFin AND (Invoice.Custom
                                 </TextRun>
                               </TextRuns>
                               <Style>
-                                <TextAlign>Right</TextAlign>
+                                <TextAlign>Center</TextAlign>
                               </Style>
                             </Paragraph>
                           </Paragraphs>
@@ -884,7 +934,7 @@ WHERE Invoice.InvoiceDate BETWEEN @FechaInicio and @FechaFin AND (Invoice.Custom
                               <Style>Solid</Style>
                               <Width>1pt</Width>
                             </BottomBorder>
-                            <BackgroundColor>White</BackgroundColor>
+                            <BackgroundColor>Silver</BackgroundColor>
                             <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
@@ -911,7 +961,7 @@ WHERE Invoice.InvoiceDate BETWEEN @FechaInicio and @FechaFin AND (Invoice.Custom
                                 </TextRun>
                               </TextRuns>
                               <Style>
-                                <TextAlign>Right</TextAlign>
+                                <TextAlign>Center</TextAlign>
                               </Style>
                             </Paragraph>
                           </Paragraphs>
@@ -925,7 +975,7 @@ WHERE Invoice.InvoiceDate BETWEEN @FechaInicio and @FechaFin AND (Invoice.Custom
                               <Style>Solid</Style>
                               <Width>1pt</Width>
                             </BottomBorder>
-                            <BackgroundColor>White</BackgroundColor>
+                            <BackgroundColor>Silver</BackgroundColor>
                             <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
@@ -953,7 +1003,6 @@ WHERE Invoice.InvoiceDate BETWEEN @FechaInicio and @FechaFin AND (Invoice.Custom
                                   <Style>
                                     <FontSize>8pt</FontSize>
                                     <FontWeight>Normal</FontWeight>
-                                    <Color>#333333</Color>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -989,8 +1038,7 @@ WHERE Invoice.InvoiceDate BETWEEN @FechaInicio and @FechaFin AND (Invoice.Custom
                                   <Style>
                                     <FontSize>8pt</FontSize>
                                     <FontWeight>Normal</FontWeight>
-                                    <Format>d</Format>
-                                    <Color>#333333</Color>
+                                    <Format>dd/MM/yyyy</Format>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -1026,7 +1074,6 @@ WHERE Invoice.InvoiceDate BETWEEN @FechaInicio and @FechaFin AND (Invoice.Custom
                                   <Style>
                                     <FontSize>8pt</FontSize>
                                     <FontWeight>Normal</FontWeight>
-                                    <Color>#333333</Color>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -1063,7 +1110,6 @@ WHERE Invoice.InvoiceDate BETWEEN @FechaInicio and @FechaFin AND (Invoice.Custom
                                     <FontSize>8pt</FontSize>
                                     <FontWeight>Normal</FontWeight>
                                     <Format>#,0.00;(#,0.00)</Format>
-                                    <Color>#333333</Color>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -1100,7 +1146,6 @@ WHERE Invoice.InvoiceDate BETWEEN @FechaInicio and @FechaFin AND (Invoice.Custom
                                     <FontSize>8pt</FontSize>
                                     <FontWeight>Normal</FontWeight>
                                     <Format>#,0.00;(#,0.00)</Format>
-                                    <Color>#333333</Color>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -1137,7 +1182,6 @@ WHERE Invoice.InvoiceDate BETWEEN @FechaInicio and @FechaFin AND (Invoice.Custom
                                     <FontSize>8pt</FontSize>
                                     <FontWeight>Normal</FontWeight>
                                     <Format>#,0.00;(#,0.00)</Format>
-                                    <Color>#333333</Color>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -1174,7 +1218,6 @@ WHERE Invoice.InvoiceDate BETWEEN @FechaInicio and @FechaFin AND (Invoice.Custom
                                     <FontSize>8pt</FontSize>
                                     <FontWeight>Normal</FontWeight>
                                     <Format>#,0.00;(#,0.00)</Format>
-                                    <Color>#333333</Color>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -1211,7 +1254,6 @@ WHERE Invoice.InvoiceDate BETWEEN @FechaInicio and @FechaFin AND (Invoice.Custom
                                     <FontSize>8pt</FontSize>
                                     <FontWeight>Normal</FontWeight>
                                     <Format>#,0.00;(#,0.00)</Format>
-                                    <Color>#333333</Color>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -1248,7 +1290,6 @@ WHERE Invoice.InvoiceDate BETWEEN @FechaInicio and @FechaFin AND (Invoice.Custom
                                     <FontSize>8pt</FontSize>
                                     <FontWeight>Normal</FontWeight>
                                     <Format>#,0.00;(#,0.00)</Format>
-                                    <Color>#333333</Color>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -1285,7 +1326,6 @@ WHERE Invoice.InvoiceDate BETWEEN @FechaInicio and @FechaFin AND (Invoice.Custom
                                     <FontSize>8pt</FontSize>
                                     <FontWeight>Normal</FontWeight>
                                     <Format>#,0.00;(#,0.00)</Format>
-                                    <Color>#333333</Color>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -1322,7 +1362,6 @@ WHERE Invoice.InvoiceDate BETWEEN @FechaInicio and @FechaFin AND (Invoice.Custom
                                     <FontSize>8pt</FontSize>
                                     <FontWeight>Normal</FontWeight>
                                     <Format>#,0.00;(#,0.00)</Format>
-                                    <Color>#333333</Color>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -1359,7 +1398,6 @@ WHERE Invoice.InvoiceDate BETWEEN @FechaInicio and @FechaFin AND (Invoice.Custom
                                     <FontSize>8pt</FontSize>
                                     <FontWeight>Normal</FontWeight>
                                     <Format>#,0.00;(#,0.00)</Format>
-                                    <Color>#333333</Color>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -1396,7 +1434,6 @@ WHERE Invoice.InvoiceDate BETWEEN @FechaInicio and @FechaFin AND (Invoice.Custom
                                     <FontSize>8pt</FontSize>
                                     <FontWeight>Normal</FontWeight>
                                     <Format>#,0.00;(#,0.00)</Format>
-                                    <Color>#333333</Color>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -1433,7 +1470,6 @@ WHERE Invoice.InvoiceDate BETWEEN @FechaInicio and @FechaFin AND (Invoice.Custom
                                     <FontSize>8pt</FontSize>
                                     <FontWeight>Normal</FontWeight>
                                     <Format>#,0.00;(#,0.00)</Format>
-                                    <Color>#333333</Color>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -1470,7 +1506,6 @@ WHERE Invoice.InvoiceDate BETWEEN @FechaInicio and @FechaFin AND (Invoice.Custom
                                     <FontSize>8pt</FontSize>
                                     <FontWeight>Normal</FontWeight>
                                     <Format>#,0.00;(#,0.00)</Format>
-                                    <Color>#333333</Color>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -1510,8 +1545,7 @@ WHERE Invoice.InvoiceDate BETWEEN @FechaInicio and @FechaFin AND (Invoice.Custom
                                   <Value />
                                   <Style>
                                     <FontSize>8pt</FontSize>
-                                    <FontWeight>Normal</FontWeight>
-                                    <Color>#333333</Color>
+                                    <FontWeight>Bold</FontWeight>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -1530,7 +1564,7 @@ WHERE Invoice.InvoiceDate BETWEEN @FechaInicio and @FechaFin AND (Invoice.Custom
                               <Style>Solid</Style>
                               <Width>1pt</Width>
                             </TopBorder>
-                            <BackgroundColor>White</BackgroundColor>
+                            <BackgroundColor>Silver</BackgroundColor>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -1551,8 +1585,7 @@ WHERE Invoice.InvoiceDate BETWEEN @FechaInicio and @FechaFin AND (Invoice.Custom
                                   <Value />
                                   <Style>
                                     <FontSize>8pt</FontSize>
-                                    <FontWeight>Normal</FontWeight>
-                                    <Color>#333333</Color>
+                                    <FontWeight>Bold</FontWeight>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -1571,7 +1604,7 @@ WHERE Invoice.InvoiceDate BETWEEN @FechaInicio and @FechaFin AND (Invoice.Custom
                               <Style>Solid</Style>
                               <Width>1pt</Width>
                             </TopBorder>
-                            <BackgroundColor>White</BackgroundColor>
+                            <BackgroundColor>Silver</BackgroundColor>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -1589,16 +1622,15 @@ WHERE Invoice.InvoiceDate BETWEEN @FechaInicio and @FechaFin AND (Invoice.Custom
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value />
+                                  <Value>TOTAL:</Value>
                                   <Style>
                                     <FontSize>8pt</FontSize>
-                                    <FontWeight>Normal</FontWeight>
-                                    <Color>#333333</Color>
+                                    <FontWeight>Bold</FontWeight>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
                               <Style>
-                                <TextAlign>Right</TextAlign>
+                                <TextAlign>Left</TextAlign>
                               </Style>
                             </Paragraph>
                           </Paragraphs>
@@ -1612,7 +1644,7 @@ WHERE Invoice.InvoiceDate BETWEEN @FechaInicio and @FechaFin AND (Invoice.Custom
                               <Style>Solid</Style>
                               <Width>1pt</Width>
                             </TopBorder>
-                            <BackgroundColor>White</BackgroundColor>
+                            <BackgroundColor>Silver</BackgroundColor>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -1633,9 +1665,8 @@ WHERE Invoice.InvoiceDate BETWEEN @FechaInicio and @FechaFin AND (Invoice.Custom
                                   <Value>=Sum(Fields!Almacenaje.Value)</Value>
                                   <Style>
                                     <FontSize>8pt</FontSize>
-                                    <FontWeight>Normal</FontWeight>
+                                    <FontWeight>Bold</FontWeight>
                                     <Format>#,0.00;(#,0.00)</Format>
-                                    <Color>#333333</Color>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -1654,7 +1685,7 @@ WHERE Invoice.InvoiceDate BETWEEN @FechaInicio and @FechaFin AND (Invoice.Custom
                               <Style>Solid</Style>
                               <Width>1pt</Width>
                             </TopBorder>
-                            <BackgroundColor>White</BackgroundColor>
+                            <BackgroundColor>Silver</BackgroundColor>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -1675,9 +1706,8 @@ WHERE Invoice.InvoiceDate BETWEEN @FechaInicio and @FechaFin AND (Invoice.Custom
                                   <Value>=Sum(Fields!Seguro.Value)</Value>
                                   <Style>
                                     <FontSize>8pt</FontSize>
-                                    <FontWeight>Normal</FontWeight>
+                                    <FontWeight>Bold</FontWeight>
                                     <Format>#,0.00;(#,0.00)</Format>
-                                    <Color>#333333</Color>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -1696,7 +1726,7 @@ WHERE Invoice.InvoiceDate BETWEEN @FechaInicio and @FechaFin AND (Invoice.Custom
                               <Style>Solid</Style>
                               <Width>1pt</Width>
                             </TopBorder>
-                            <BackgroundColor>White</BackgroundColor>
+                            <BackgroundColor>Silver</BackgroundColor>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -1717,9 +1747,8 @@ WHERE Invoice.InvoiceDate BETWEEN @FechaInicio and @FechaFin AND (Invoice.Custom
                                   <Value>=Sum(Fields!Fumigacion.Value)</Value>
                                   <Style>
                                     <FontSize>8pt</FontSize>
-                                    <FontWeight>Normal</FontWeight>
+                                    <FontWeight>Bold</FontWeight>
                                     <Format>#,0.00;(#,0.00)</Format>
-                                    <Color>#333333</Color>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -1738,7 +1767,7 @@ WHERE Invoice.InvoiceDate BETWEEN @FechaInicio and @FechaFin AND (Invoice.Custom
                               <Style>Solid</Style>
                               <Width>1pt</Width>
                             </TopBorder>
-                            <BackgroundColor>White</BackgroundColor>
+                            <BackgroundColor>Silver</BackgroundColor>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -1759,9 +1788,8 @@ WHERE Invoice.InvoiceDate BETWEEN @FechaInicio and @FechaFin AND (Invoice.Custom
                                   <Value>=Sum(Fields!Montacarga.Value)</Value>
                                   <Style>
                                     <FontSize>8pt</FontSize>
-                                    <FontWeight>Normal</FontWeight>
+                                    <FontWeight>Bold</FontWeight>
                                     <Format>#,0.00;(#,0.00)</Format>
-                                    <Color>#333333</Color>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -1780,7 +1808,7 @@ WHERE Invoice.InvoiceDate BETWEEN @FechaInicio and @FechaFin AND (Invoice.Custom
                               <Style>Solid</Style>
                               <Width>1pt</Width>
                             </TopBorder>
-                            <BackgroundColor>White</BackgroundColor>
+                            <BackgroundColor>Silver</BackgroundColor>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -1801,9 +1829,8 @@ WHERE Invoice.InvoiceDate BETWEEN @FechaInicio and @FechaFin AND (Invoice.Custom
                                   <Value>=Sum(Fields!Banda.Value)</Value>
                                   <Style>
                                     <FontSize>8pt</FontSize>
-                                    <FontWeight>Normal</FontWeight>
+                                    <FontWeight>Bold</FontWeight>
                                     <Format>#,0.00;(#,0.00)</Format>
-                                    <Color>#333333</Color>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -1822,7 +1849,7 @@ WHERE Invoice.InvoiceDate BETWEEN @FechaInicio and @FechaFin AND (Invoice.Custom
                               <Style>Solid</Style>
                               <Width>1pt</Width>
                             </TopBorder>
-                            <BackgroundColor>White</BackgroundColor>
+                            <BackgroundColor>Silver</BackgroundColor>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -1843,9 +1870,8 @@ WHERE Invoice.InvoiceDate BETWEEN @FechaInicio and @FechaFin AND (Invoice.Custom
                                   <Value>=Sum(Fields!Bascula.Value)</Value>
                                   <Style>
                                     <FontSize>8pt</FontSize>
-                                    <FontWeight>Normal</FontWeight>
+                                    <FontWeight>Bold</FontWeight>
                                     <Format>#,0.00;(#,0.00)</Format>
-                                    <Color>#333333</Color>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -1864,7 +1890,7 @@ WHERE Invoice.InvoiceDate BETWEEN @FechaInicio and @FechaFin AND (Invoice.Custom
                               <Style>Solid</Style>
                               <Width>1pt</Width>
                             </TopBorder>
-                            <BackgroundColor>White</BackgroundColor>
+                            <BackgroundColor>Silver</BackgroundColor>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -1885,9 +1911,8 @@ WHERE Invoice.InvoiceDate BETWEEN @FechaInicio and @FechaFin AND (Invoice.Custom
                                   <Value>=Sum(Fields!Mula.Value)</Value>
                                   <Style>
                                     <FontSize>8pt</FontSize>
-                                    <FontWeight>Normal</FontWeight>
+                                    <FontWeight>Bold</FontWeight>
                                     <Format>#,0.00;(#,0.00)</Format>
-                                    <Color>#333333</Color>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -1906,7 +1931,7 @@ WHERE Invoice.InvoiceDate BETWEEN @FechaInicio and @FechaFin AND (Invoice.Custom
                               <Style>Solid</Style>
                               <Width>1pt</Width>
                             </TopBorder>
-                            <BackgroundColor>White</BackgroundColor>
+                            <BackgroundColor>Silver</BackgroundColor>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -1927,9 +1952,8 @@ WHERE Invoice.InvoiceDate BETWEEN @FechaInicio and @FechaFin AND (Invoice.Custom
                                   <Value>=Sum(Fields!Otros.Value)</Value>
                                   <Style>
                                     <FontSize>8pt</FontSize>
-                                    <FontWeight>Normal</FontWeight>
+                                    <FontWeight>Bold</FontWeight>
                                     <Format>#,0.00;(#,0.00)</Format>
-                                    <Color>#333333</Color>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -1948,7 +1972,7 @@ WHERE Invoice.InvoiceDate BETWEEN @FechaInicio and @FechaFin AND (Invoice.Custom
                               <Style>Solid</Style>
                               <Width>1pt</Width>
                             </TopBorder>
-                            <BackgroundColor>White</BackgroundColor>
+                            <BackgroundColor>Silver</BackgroundColor>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -1969,9 +1993,8 @@ WHERE Invoice.InvoiceDate BETWEEN @FechaInicio and @FechaFin AND (Invoice.Custom
                                   <Value>=Sum(Fields!Papelería.Value)</Value>
                                   <Style>
                                     <FontSize>8pt</FontSize>
-                                    <FontWeight>Normal</FontWeight>
+                                    <FontWeight>Bold</FontWeight>
                                     <Format>#,0.00;(#,0.00)</Format>
-                                    <Color>#333333</Color>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -1990,7 +2013,7 @@ WHERE Invoice.InvoiceDate BETWEEN @FechaInicio and @FechaFin AND (Invoice.Custom
                               <Style>Solid</Style>
                               <Width>1pt</Width>
                             </TopBorder>
-                            <BackgroundColor>White</BackgroundColor>
+                            <BackgroundColor>Silver</BackgroundColor>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -2011,9 +2034,8 @@ WHERE Invoice.InvoiceDate BETWEEN @FechaInicio and @FechaFin AND (Invoice.Custom
                                   <Value>=Sum(Fields!Horas.Value)</Value>
                                   <Style>
                                     <FontSize>8pt</FontSize>
-                                    <FontWeight>Normal</FontWeight>
+                                    <FontWeight>Bold</FontWeight>
                                     <Format>#,0.00;(#,0.00)</Format>
-                                    <Color>#333333</Color>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -2032,7 +2054,7 @@ WHERE Invoice.InvoiceDate BETWEEN @FechaInicio and @FechaFin AND (Invoice.Custom
                               <Style>Solid</Style>
                               <Width>1pt</Width>
                             </TopBorder>
-                            <BackgroundColor>White</BackgroundColor>
+                            <BackgroundColor>Silver</BackgroundColor>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -2053,9 +2075,8 @@ WHERE Invoice.InvoiceDate BETWEEN @FechaInicio and @FechaFin AND (Invoice.Custom
                                   <Value>=Sum(Fields!TaxAmount.Value)</Value>
                                   <Style>
                                     <FontSize>8pt</FontSize>
-                                    <FontWeight>Normal</FontWeight>
+                                    <FontWeight>Bold</FontWeight>
                                     <Format>#,0.00;(#,0.00)</Format>
-                                    <Color>#333333</Color>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -2074,7 +2095,7 @@ WHERE Invoice.InvoiceDate BETWEEN @FechaInicio and @FechaFin AND (Invoice.Custom
                               <Style>Solid</Style>
                               <Width>1pt</Width>
                             </TopBorder>
-                            <BackgroundColor>White</BackgroundColor>
+                            <BackgroundColor>Silver</BackgroundColor>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -2095,9 +2116,8 @@ WHERE Invoice.InvoiceDate BETWEEN @FechaInicio and @FechaFin AND (Invoice.Custom
                                   <Value>=Sum(Fields!Total.Value)</Value>
                                   <Style>
                                     <FontSize>8pt</FontSize>
-                                    <FontWeight>Normal</FontWeight>
+                                    <FontWeight>Bold</FontWeight>
                                     <Format>#,0.00;(#,0.00)</Format>
-                                    <Color>#333333</Color>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -2116,7 +2136,7 @@ WHERE Invoice.InvoiceDate BETWEEN @FechaInicio and @FechaFin AND (Invoice.Custom
                               <Style>Solid</Style>
                               <Width>1pt</Width>
                             </TopBorder>
-                            <BackgroundColor>White</BackgroundColor>
+                            <BackgroundColor>Silver</BackgroundColor>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -2167,8 +2187,8 @@ WHERE Invoice.InvoiceDate BETWEEN @FechaInicio and @FechaFin AND (Invoice.Custom
             </TablixRowHierarchy>
             <DataSetName>Detalle</DataSetName>
             <Left>0.04722in</Left>
-            <Height>0.825in</Height>
-            <Width>10.40152in</Width>
+            <Height>0.95833in</Height>
+            <Width>10.5043in</Width>
             <Style>
               <Border>
                 <Style>None</Style>
@@ -2415,7 +2435,7 @@ WHERE Invoice.InvoiceDate BETWEEN @FechaInicio and @FechaFin AND (Invoice.Custom
                 <Paragraph>
                   <TextRuns>
                     <TextRun>
-                      <Value>=UCase(First(Fields!ProductName.Value, "Detalle"))</Value>
+                      <Value>=UCase(Parameters!ProductId.Label) &amp; " - " &amp; UCase(Parameters!SucursalId.Label)</Value>
                       <Style>
                         <FontSize>11pt</FontSize>
                         <FontWeight>Bold</FontWeight>
@@ -2430,9 +2450,9 @@ WHERE Invoice.InvoiceDate BETWEEN @FechaInicio and @FechaFin AND (Invoice.Custom
               <rd:WatermarkTextbox>Title</rd:WatermarkTextbox>
               <rd:DefaultName>ReportTitle</rd:DefaultName>
               <Top>0.84228cm</Top>
-              <Left>3.12958in</Left>
+              <Left>2.13791in</Left>
               <Height>0.2in</Height>
-              <Width>4.23958in</Width>
+              <Width>6.21112in</Width>
               <ZIndex>7</ZIndex>
               <Style>
                 <Border>
@@ -2467,7 +2487,7 @@ WHERE Invoice.InvoiceDate BETWEEN @FechaInicio and @FechaFin AND (Invoice.Custom
               <rd:WatermarkTextbox>Title</rd:WatermarkTextbox>
               <rd:DefaultName>ReportTitle</rd:DefaultName>
               <Top>0.299cm</Top>
-              <Left>3.12958in</Left>
+              <Left>3.12368in</Left>
               <Height>0.2in</Height>
               <Width>4.23958in</Width>
               <ZIndex>8</ZIndex>
@@ -2523,6 +2543,28 @@ WHERE Invoice.InvoiceDate BETWEEN @FechaInicio and @FechaFin AND (Invoice.Custom
         </DataSetReference>
       </ValidValues>
     </ReportParameter>
+    <ReportParameter Name="ProductId">
+      <DataType>Integer</DataType>
+      <Prompt>Producto</Prompt>
+      <ValidValues>
+        <DataSetReference>
+          <DataSetName>Productos</DataSetName>
+          <ValueField>ProductId</ValueField>
+          <LabelField>ProductName</LabelField>
+        </DataSetReference>
+      </ValidValues>
+    </ReportParameter>
+    <ReportParameter Name="SucursalId">
+      <DataType>Integer</DataType>
+      <Prompt>Sucursal</Prompt>
+      <ValidValues>
+        <DataSetReference>
+          <DataSetName>Sucursal</DataSetName>
+          <ValueField>BranchId</ValueField>
+          <LabelField>BranchName</LabelField>
+        </DataSetReference>
+      </ValidValues>
+    </ReportParameter>
   </ReportParameters>
   <ReportParametersLayout>
     <GridLayoutDefinition>
@@ -2543,6 +2585,16 @@ WHERE Invoice.InvoiceDate BETWEEN @FechaInicio and @FechaFin AND (Invoice.Custom
           <ColumnIndex>0</ColumnIndex>
           <RowIndex>1</RowIndex>
           <ParameterName>CustomerId</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>1</ColumnIndex>
+          <RowIndex>1</RowIndex>
+          <ParameterName>ProductId</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>0</ColumnIndex>
+          <RowIndex>2</RowIndex>
+          <ParameterName>SucursalId</ParameterName>
         </CellDefinition>
       </CellDefinitions>
     </GridLayoutDefinition>
