@@ -8,72 +8,6 @@
 <script>
 
 
-    function GetGoodsDeliveredLineId() {
-        if ($("#SubProductIddetail").val() > 0 || @Model.GoodsDeliveredId> 0) {
-            debugger
-            var subproductname = '', unidaddemedida = '', WareHouseId = '';
-            if ($("#SubProductIddetail") != null) {
-                if ($("#SubProductIddetail").data("kendoDropDownList") != null) {
-                    subproductname = $("#SubProductIddetail").data("kendoDropDownList").text();
-                }
-            }
-
-            if ($("#UnitOfMeasureId") != null) {
-                if ($("#UnitOfMeasureId").data("kendoDropDownList") != null) {
-                    unidaddemedida = $("#UnitOfMeasureId").data("kendoDropDownList").text();
-                }
-            }
-
-            if ($("#WareHouseId") != null) {
-                if ($("#WareHouseId").data("kendoDropDownList") != null) {
-                    WareHouseId = $("#WareHouseId").data("kendoDropDownList").text();
-                }
-            }
-
-
-            var displayedData = $("#gridGoodsDeliveredDetail").data().kendoGrid.dataSource.data();
-            var id = -999999;
-            ////debugger;
-
-            if (Number($("#GoodsDeliveredLinedId").val()) === 0) {
-                if (displayedData.length > 0) {
-                    for (var i = 0; i < displayedData.length; i++) {
-
-                        if (displayedData[i].GoodsDeliveredLinedId > id)
-                            id = displayedData[i].GoodsDeliveredLinedId;
-                    }
-
-                    id = id + 1;
-                }
-                else if (Number($("#SubProductIddetail").val()) > 0) {
-                    id = 1;
-                }
-            }
-            else {
-                id = $("#GoodsDeliveredLinedId").val();
-            }
-            return {
-                'GoodsDeliveredLinedId': id,
-                'GoodsDeliveredId':@Model.GoodsDeliveredId,
-                'UnitOfMeasureId': $("#UnitOfMeasureId").val(),
-                'UnitOfMeasureName': unidaddemedida,
-                'ProducId': $("#ProducId").val(),
-                //'ProductName': $("#ProducId").data("kendoDropDownList").text(),
-                'SubProductId': $("#SubProductIddetail").val(),
-                'SubProductName': subproductname,
-                'Description': $("#Description").val(),
-                'ControlPalletsId': $("#ControlPalletsId").val(),
-                'Quantity': $("#Quantity").val(),
-                'QuantitySacos': $("#QuantitySacos").val(),
-                'Price': $("#Price").val(),
-                'Total': $("#Total").val(),
-                'WareHouseId': $("#WareHouseId").val(),
-                'WareHouseName': WareHouseId,
-                'CostCenterId': $("#CostCenterId").val(),
-
-            }
-        }
-    }
 
     function RefreshGoodsDeliveredDetail() {
       //  console.log('Refresca Entrada de mercaderias');
@@ -83,138 +17,23 @@
     }
 
 
-    function AddGoodsDeliveredDetalle() {
-        var notification = $("#notification").data("kendoNotification");
-      //  console.log($("#ProductId").val());
-        if ($("#ProductId").val() !== '' && $("#ProductId").val() !== '0'
-            && $("#CustomerId").val() !== '0' && $("#CustomerId").val() !== ''  ) {
+    function GetARBoleta() {
+                                            //debugger;
 
-           // llenarsubproduct();
-            $("#frmGoodsDeliveredLine :input").not('#GoodsDeliveredLinedId').prop("disabled", false);
-            //$("#frmGoodsDeliveredLine :input").val('');
-            $('#myModalGoodsDeliveredLine').modal('show');
-        } else {
-            //var notification = $("#notification").data("kendoNotification");
-            //notification.show({
-            //    title: "Validacion",
-            //    message: "Debe seleccionar un producto y un cliente!"
-            //}, "error");
+                                            var ARBoletaSelect = $("#AsociarAutorizaciones").data("kendoMultiSelect");
+                                            var ARBoletas = ARBoletaSelect == undefined ? [] : ARBoletaSelect.value();
+                                            var dataobject = {
+                                                'ARBoletas': ARBoletas,
+                                                'Id': $('#GoodsDeliveredId').val(),
+                                                'ControlId': $('#ControlId').val(),
+                                            };
 
-             MostrarMensaje('Debe seleccionar un producto y un cliente!', "Error", "Validación", 30000);
-        }
+                                            console.log(dataobject);
+                                            
+                                           // GetPersonasAutorizadas(ARBoletas);
+                                            return dataobject;
 
-    }
-
-
-    function EditGoodsDeliveredDetalle(e) {
-
-        e.preventDefault();
-        //var notification = $("#notification").data("kendoNotification");
-        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
-
-        if (dataItem.GoodsDeliveredId > 0) {
-            var subproducto = 0;
-            var dataObject = { 'GoodsDeliveredLinedId': dataItem.GoodsDeliveredLinedId };
-            $.ajax({
-                url: '@Url.Action("pvwGoodsDeliveredLine", "GoodsDeliveredLine")',
-                method: 'POST',
-                datatype: "json",
-                contentType: 'application/json',
-                async: false,
-                data: JSON.stringify(dataObject),
-                success: function (data) {
-                    $("#GoodsDeliveredLineMant").html('');
-                    $("#GoodsDeliveredLineMant").html(data);
-                    var txt = $(data);
-                    var found = $("#SubProductIddetail", txt);
-                    subproducto = $(found).val();
-                },
-                error: function (XMLHttpRequest, textStatus, errorThrown) {
-                    console.log(textStatus + ": " + XMLHttpRequest.responseText);
-                    //  $("#btngenerarfactura").show();
-                    //notification.show({
-                    //    title: "Validacion",
-                    //    message: textStatus + ": " + XMLHttpRequest.responseText
-                    //}, "error");
-                     MostrarMensaje(textStatus + ": " + XMLHttpRequest.responseText, "Error", "Error", 30000);
-                }
-            });
-
-
-            hcustom = $("#CustomerId").val();
-         //   console.log(hcustom + ' -> ' + subproducto);
-            $("#frmGoodsDeliveredLine :input").prop("disabled", true);
-            //llenarsubproduct();
-            var combobox = $('#SubProductIddetail').getKendoDropDownList();
-            combobox.value(subproducto);
-            combobox.trigger('change');
-        }
-        else {
-            $("#GoodsDeliveredLinedId").val(dataItem.GoodsDeliveredLinedId);
-            $("#GoodsDeliveredId").val(dataItem.GoodsDeliveredId);
-
-          //  $("#UnitOfMeasureName").val(dataItem.UnitOfMeasureName);
-            $("#UnitOfMeasureId").data("kendoDropDownList").value(dataItem.UnitOfMeasureId);
-            $("#WareHouseId").data("kendoDropDownList").value(dataItem.WareHouseId);
-            $("#SubProductIddetail").data("kendoDropDownList").dataSource.read();
-            $("#SubProductIddetail").data("kendoDropDownList").value(dataItem.SubProductId);
-            //$("#SubProductName").val(dataItem.SubProductName);
-
-            var quantity = $("#Quantity").data("kendoNumericTextBox");
-            quantity.value(dataItem.Quantity);
-            quantity.trigger('change');
-
-            hcustom = $("#CustomerId").val();
-
-            var quantitysacos = $("#QuantitySacos").data("kendoNumericTextBox");
-            if (quantitysacos !== null && dataItem.QuantitySacos != null)
-                quantitysacos.value(dataItem.QuantitySacos);
-            quantitysacos.trigger('change');
-
-            $("#WareHouseId").data("kendoDropDownList").value(dataItem.WareHouseId);
-            //  data.WarehouseId
-            var ControlPalletsId = $("#ControlPalletsId").data("kendoNumericTextBox");
-            ControlPalletsId.value(dataItem.ControlPalletsId);
-            ControlPalletsId.trigger('change');
-        }
-
-        $('#myModalGoodsDeliveredLine').modal('show');
-
-    }
-
-    function Delete(e) {
-
-        e.preventDefault();
-        if (confirm('Esta seguro que desea eliminar la fila?')) {
-           // var notification = $("#notification").data("kendoNotification");
-            var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
-
-            $.ajax({
-                url: '@Url.Action("Delete", "GoodsDeliveredLine")',
-                method: 'POST',
-                datatype: "json",
-                contentType: 'application/json',
-                async: false,
-                data: JSON.stringify(dataItem),
-                success: function (data) {
-                },
-                error: function (XMLHttpRequest, textStatus, errorThrown) {
-
-                    //  $("#btngenerarfactura").show();
-                    //notification.show({
-                    //    title: "Validacion",
-                    //    message: textStatus + ": " + XMLHttpRequest.responseText
-                    //}, "error");
-                     MostrarMensaje(' textStatus + ": " + XMLHttpRequest.responseText', "Error", "Validación", 30000);
-                }
-            });
-
-            var grid = $("#gridGoodsDeliveredDetail").data("kendoGrid");
-            grid.dataSource.remove(dataItem);
-            //Sync it with the grid
-            //grid.dataSource.sync();
-        }
-    }
+                                        }
 
 
     function totalColumnas(tiporesultado, moneda) {
