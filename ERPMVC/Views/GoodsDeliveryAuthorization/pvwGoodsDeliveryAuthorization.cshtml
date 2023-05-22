@@ -250,20 +250,9 @@
 
                                             <div class="col-sm-3 col-md-3">
                                                 <div class="form-group">
-                                                    <label asp-for="BankId" class="control-label" style="width:100%">Banco</label>
-                                                    <kendo-dropdownlist name="BankId" for="@Model.BankId" filter="Kendo.Mvc.UI.FilterType.Contains"
-                                                                        option-label="N/A"
-                                                                        datatextfield="BankName"
-                                                                        datavaluefield="BankId"
-                                                                        auto-bind="true"
-                                                                        enable="false"
-                                                                        style="min-width: 100%;">
-                                                        <datasource type="DataSourceTagHelperType.WebApi" server-operation="true">
-                                                            <transport>
-                                                                <read url="@Url.Action("GetJsonActivos", "Bank")" />
-                                                            </transport>
-                                                        </datasource>
-                                                    </kendo-dropdownlist>
+                                                    <label asp-for="BankName" class="control-label" style="width:100%">Banco</label>
+                                                    <input type="text" asp-for="BankName" class="k-textbox" style="min-width: 100%;" readonly />
+                                                    <input type="text" asp-for="BankId" class="k-textbox" style="min-width: 100%;" readonly hidden />
                                                 </div>
 
                                             </div>
@@ -340,6 +329,33 @@
                                                     $(".k-grid-add", "#gridGoodsDeliveredAuthorizationLine").show();
                                                 } else {
                                                     $(".k-grid-add", "#gridGoodsDeliveredAuthorizationLine").hide();
+                                                }
+
+                                                var certificados = GetCertificados();
+                                                
+                                                if ( certificados.recibos != null){
+                                                    var dataObject = {
+                                                        recibos:certificados.recibos,
+                                                    
+                                                    };
+                                                     $.ajax({
+                                                        url: '@Url.Action("GetEndosos", "EndososCertificados")',
+                                                                    method: 'POST',
+                                                                    datatype: "json",
+                                                                    contentType: 'application/json',
+                                                                    async: false,
+                                                                    data: JSON.stringify(dataObject),
+                                                                    success: function (data) {
+                                                                        debugger;
+                                                                        $("#BankName").val(data.BankName);
+                                                                        $("#BankId").val(data.BankName);
+                                                                    },
+                                                                    error: function (XMLHttpRequest, textStatus, errorThrown) {
+                                                                         MostrarMensaje(textStatus + ": " + XMLHttpRequest.responseText, "Error", "Error", 30000);
+                                                                    }
+                                                                 });
+                                                            
+                                                
                                                 }
 
 
@@ -527,7 +543,7 @@
             'AuthorizationDate': $("#AuthorizationDate").getKendoDateTimePicker().value().toJSON(),
             'NoCD': $("#NoCD").val(),
             'BankId': $("#BankId").val(),
-            'BankName': $("#BankId").data("kendoDropDownList").text(),
+            'BankName': $("#BankName").val(),
             'ProductId': $("#ProductId").val(),
             'ProductName': $("#ProductId").data("kendoDropDownList").text(),
             'BranchId': $("#BranchId").val(),
@@ -544,6 +560,8 @@
             'RetiroAutorizadoA': $("#RetiroAutorizadoA").val(),
             'Firmas': Firmas,
             'CertificadosAsociados': listCertificados
+
+            
         };
 
         var validator = $("#frmGoodsDeliveryAuthorization").data("kendoValidator");

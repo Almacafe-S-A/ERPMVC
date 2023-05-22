@@ -60,20 +60,20 @@ namespace ERPMVC.Controllers
 
                 if (_EndososCertificados == null)
                 {
-                    _EndososCertificados = new EndososDTO { 
-                        FechaOtorgado = DateTime.Now, 
-                        DocumentDate = DateTime.Now, 
+                    _EndososCertificados = new EndososDTO {
+                        FechaOtorgado = DateTime.Now,
+                        DocumentDate = DateTime.Now,
                         ExpirationDate = DateTime.Now,
                         FechaCancelacion = null,
                         FechaLiberacion = null,
                     };
                 }
-                
+
                 ViewData["permisos"] = _principal;
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                _logger.LogError($"Ocurrio un error: {ex.ToString()}");
                 throw ex;
             }
 
@@ -85,7 +85,7 @@ namespace ERPMVC.Controllers
 
 
         [HttpGet]
-        public async Task<DataSourceResult> Get([DataSourceRequest]DataSourceRequest request)
+        public async Task<DataSourceResult> Get([DataSourceRequest] DataSourceRequest request)
         {
             List<EndososCertificados> _EndososCertificados = new List<EndososCertificados>();
             try
@@ -107,12 +107,65 @@ namespace ERPMVC.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                _logger.LogError($"Ocurrio un error: {ex.ToString()}");
                 throw ex;
             }
 
 
             return _EndososCertificados.ToDataSourceResult(request);
+
+        }
+
+
+
+
+        public async Task<ActionResult<EndososCertificados>> GetEndosos([FromBody] DTOEndoso endoso)
+        {
+            List<EndososCertificados> endososCertificados = new List<EndososCertificados>();
+            int[] recibos = endoso.recibos;
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                string requestURl;
+                string strrecibos = "?";
+                foreach (var item in recibos)
+                {
+                    strrecibos += $"Recibos={item}";
+                    if (item != recibos.ElementAt(recibos.Count() - 1))
+                    {
+                        strrecibos += "&&";
+                    }
+                }
+                requestURl = $"api/EndososCertificados/GetEndosos/{strrecibos}";
+
+
+
+                var result = await _client.GetAsync(baseadress + requestURl);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    endososCertificados = JsonConvert.DeserializeObject<List<EndososCertificados>>(valorrespuesta);
+                    endososCertificados = endososCertificados.OrderByDescending(e => e.EndososCertificadosId).ToList();
+                }
+                else
+                {
+                    return BadRequest(await result.Content.ReadAsStringAsync());
+                }
+
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: {ex.ToString()}");
+                throw ex;
+            }
+
+            return endososCertificados.FirstOrDefault();
+
+
 
         }
 
