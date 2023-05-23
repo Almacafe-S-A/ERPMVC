@@ -57,6 +57,8 @@ namespace ERPMVC.Models
         public int EsSalida { get; set; }
         public int SubTotal { get; set; }
 
+        public double Total { get; set; }
+
         [Display(Name = "Total Sacos")]
         public double TotalSacos { get; set; }
 
