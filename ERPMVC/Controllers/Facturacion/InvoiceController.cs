@@ -32,7 +32,7 @@ namespace ERPMVC.Controllers
             _principal = httpContextAccessor.HttpContext.User;
         }
 
-        [Authorize(Policy = "Ventas.Factura")]
+        [Authorize(Policy = "Cuentas por Cobrar.Factura")]
         public IActionResult Index()
         {
             ViewData["permisos"] = _principal;

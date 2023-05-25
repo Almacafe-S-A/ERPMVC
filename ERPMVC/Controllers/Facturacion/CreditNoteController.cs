@@ -32,7 +32,7 @@ namespace ERPMVC.Controllers
             _principal = httpContextAccessor.HttpContext.User;
         }
 
-        [Authorize(Policy = "Ventas.Nota de Credito")]
+        [Authorize(Policy = "Cuentas por Cobrar.Nota de Credito")]
         public IActionResult Index()
         {
             ViewData["permisos"] = _principal;
@@ -181,7 +181,7 @@ namespace ERPMVC.Controllers
 
 
 
-        public async Task<ActionResult> Generar([FromBody] CreditNote creditnote)
+        public async Task<ActionResult> Generar([FromBody] CreditNoteDTO creditnote)
         //public async Task<ActionResult> GetGoodsDeliveredById([FromBody]dynamic dto)
         {
             Invoice _Invoice = new Invoice();
@@ -191,7 +191,7 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + $"api/CreditNote/Generar/{creditnote.CreditNoteId}");
+                var result = await _client.GetAsync(baseadress + $"api/CreditNote/Generar/{creditnote.CreditNoteId}/{creditnote.interna}");
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
@@ -223,7 +223,7 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/CreditNote/GetCreditNoteById/" + _CreditNote.CreditNoteId);
+                var result = await _client.GetAsync(baseadress + $"api/CreditNote/GetCreditNoteById/{_CreditNote.CreditNoteId}" );
                 string valorrespuesta = "";
                 _CreditNote.FechaModificacion = DateTime.Now;
                 _CreditNote.UsuarioModificacion = HttpContext.Session.GetString("user");
