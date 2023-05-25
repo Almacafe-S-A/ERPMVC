@@ -257,7 +257,7 @@ namespace ERPMVC.Controllers
         }
 
 
-        public async Task<ActionResult> Virtualization_Read([DataSourceRequest] DataSourceRequest request, Customer _customerp, bool esIngreso,bool completo = true)
+        public async Task<ActionResult> Virtualization_Read([DataSourceRequest] DataSourceRequest request, int CustomerId, bool esIngreso,bool completo = true)
         {
             //var res = await GetBoletaEntrada(_customerp);
             //bool completo = true;
@@ -265,7 +265,7 @@ namespace ERPMVC.Controllers
             string baseadress = config.Value.urlbase;
             HttpClient _client = new HttpClient();
             _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-            var result = await _client.GetAsync(baseadress + $"api/Boleto_Ent/GetBoletasdePesoByCustomer/{_customerp.CustomerId}/{esIngreso}/{completo}");
+            var result = await _client.GetAsync(baseadress + $"api/Boleto_Ent/GetBoletasdePesoByCustomer/{CustomerId}/{esIngreso}/{completo}");
             string valorrespuesta = "";
             if (result.IsSuccessStatusCode)
             {
