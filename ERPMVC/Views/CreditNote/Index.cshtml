@@ -203,13 +203,14 @@
     }
 
 
-    function GenerarFactura(e) {
-        if (confirm('Esta seguro de generar una Factura?')) {
+    function Generar(e) {
+        if (confirm('Esta seguro de generar una Nota de Credito?')) {
             e.preventDefault();
             debugger;
             var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
             var dataObject = {
                 CreditNoteId: dataItem.CreditNoteId,
+                interna:0
             };
 
             $.ajax({
@@ -232,6 +233,35 @@
     }
 
 
+    function GenerarInterna(e) {
+        if (confirm('Esta seguro de generar una Nota de Credito Interna?')) {
+            e.preventDefault();
+            debugger;
+            var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+            var dataObject = {
+                CreditNoteId: dataItem.CreditNoteId,
+                interna:1
+            };
+
+            $.ajax({
+                url: '@Url.Action("Generar", "CreditNote")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (result) {
+                    MostrarMensaje('Nota de Credito Generada!', "success", "Satisfactorio", 6000);
+                    RefreshCotizaciones();
+                    return;
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    MostrarMensaje(textStatus + ": " + XMLHttpRequest.responseText, "Error", "Error", 6000);
+                }
+            });
+        }
+    }
+
     function dataBound(e) {
         $.each(this.dataSource.data(), function () {
             if (this.Estado != "Revisado") {
@@ -239,8 +269,10 @@
 
             }
             if (this.Estado != "Aprobado") {
-                $('[data-uid=' + this.uid + ']').find('.k-grid-GenerarFactura').hide();
+                $('[data-uid=' + this.uid + ']').find('.k-grid-Generar').hide();
+                $('[data-uid=' + this.uid + ']').find('.k-grid-GenerarInterna').hide();
             }
+
             if (this.Estado != "Revisión") {
                 $('[data-uid=' + this.uid + ']').find('.k-grid-Revisar').hide();
             }
@@ -268,13 +300,22 @@
                                               
                                               command.Custom("Editar").Text(" ").IconClass("far fa-eye").Click("EditCotizacion");
                                               command.Custom("Imprimir").Text(" ").IconClass("fa fa-print").Click("ImprimirCotizacion");
-                                              if (User.HasClaim("Ventas.Factura", "true"))
+                                              
+
+                                              if (User.HasClaim("Cuentas por Cobrar.Nota de Credito.Aprobar", "true"))
                                                   {
-                                                      command.Custom("Aprobar").Text(" ").IconClass("fa fa-thumbs-up").Click("Aprobar");
-                                                      command.Custom("GenerarFactura").Text(" ").IconClass("fa fa-file-invoice").Click("GenerarFactura");
+                                                      
+                                                  command.Custom("Aprobar").Text(" ").IconClass("fa fa-thumbs-up").Click("Aprobar");
+                                                  }
+                                              
+                                              if (User.HasClaim("Cuentas por Cobrar.Nota de Credito.Generar", "true"))
+                                                  {
+                                                      
+                                                      command.Custom("Generar").Text(" ").IconClass("fa fa-file-invoice").Click("Generar");
+                                                      command.Custom("GenerarInterna").Text(" ").IconClass("fa fa-file-invoice").Click("GenerarInterna");
                                                   }
 
-                                              if (User.HasClaim("Ventas.Factura", "true"))
+                                              if (User.HasClaim("Cuentas por Cobrar.Nota de Credito.Revisar", "true"))
                                                   {
                                                       command.Custom("Revisar").Text(" ").IconClass("fa fa-check").Click("Revisar");
                                                   }
@@ -412,6 +453,7 @@
     setRowButtonTooltip(".k-grid-Aprobar", "Aprobar");
     setRowButtonTooltip(".k-grid-Revisar", "Revisar");
     setRowButtonTooltip(".k-grid-Generar", "Generar");
+    setRowButtonTooltip(".k-grid-GenerarInterna", "Generar Interna");
 
 </script>
 <script>
