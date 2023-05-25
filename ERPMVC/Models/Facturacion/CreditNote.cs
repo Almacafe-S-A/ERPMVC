@@ -18,7 +18,7 @@ namespace ERPMVC.Models
         public int ShipmentId { get; set; }
 
         [Display(Name = "Número de Factura")]
-        public int NumeroDEI { get; set; }
+        public string NumeroDEI { get; set; }
 
         [Display(Name = "Fiscal")]
         public bool Fiscal { get; set; }
