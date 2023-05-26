@@ -207,6 +207,11 @@ namespace ERPMVC.Controllers
                     _RetentionReceiptP.UsuarioCreacion = HttpContext.Session.GetString("user");
                     _RetentionReceiptP.UsuarioModificacion = HttpContext.Session.GetString("user");
                     var insertresult = await Insert(_RetentionReceiptP);
+
+                    if (insertresult is BadRequestObjectResult)
+                    {
+                        return BadRequest(((BadRequestObjectResult)insertresult).Value);
+                    }
                 }
                 else
                 {
@@ -247,6 +252,9 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _RetentionReceiptS = JsonConvert.DeserializeObject<RetentionReceipt>(valorrespuesta);
+                }
+                else {
+                    return BadRequest(result.Content.ReadAsStringAsync());
                 }
             }
             catch (Exception ex)
