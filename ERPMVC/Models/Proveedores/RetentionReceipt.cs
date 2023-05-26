@@ -10,7 +10,7 @@ namespace ERPMVC.Models
     public class RetentionReceipt
     {
         [Display(Name = "Id")]
-        [Key]
+        [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int RetentionReceiptId { get; set; }
 
         [Display(Name = "Fecha de vencimiento")]
@@ -24,12 +24,23 @@ namespace ERPMVC.Models
         public Int64 IdTipoDocumento { get; set; }
 
         [Display(Name = "No Correlativo")]
-        public string NoCorrelativo { get; set; }
+        public string NoCorrelativoDocumento { get; set; }
+
+        public DateTime FechaLimiteDocumento { get; set; }
+
+        public string CAIDocumento { get; set; }
 
         [Display(Name = "CAI")]
         public string CAI { get; set; }
 
-        [Display(Name = "Fecha de Emisión")]
+        public string NumeroDEI { get; set; }
+
+        public DateTime? FechaLimiteEmision { get; set; }
+
+        public string RangoEmision { get; set; }
+
+
+        [Display(Name = "Fecha de Emision")]
         public DateTime FechaEmision { get; set; }
 
         [Display(Name = "RTN")]
@@ -42,42 +53,41 @@ namespace ERPMVC.Models
         [ForeignKey("VendorId")]
         [Display(Name = "Proveedor")]
         public Int64 VendorId { get; set; }
+
         [Display(Name = "CAI Proveedor")]
-        public string VendorCAI { get; set; }
-        [ForeignKey("IdEmpleado")]
-        [Display(Name = "Empleado")]
-        public long IdEmpleado { get; set; }
+        public string VendorName { get; set; }
+
+        public int VendorInvoiceId { get; set; }
+
+        public string CantidadLetras { get; set; }
+
         [ForeignKey("BranchId")]
         [Display(Name = "Sucursal")]
         public int BranchId { get; set; }
 
         [Display(Name = "Nombre Sucursal")]
         public string BranchName { get; set; }
-        [Display(Name = "Código Sucursal")]
+
+        [Display(Name = "Codigo Sucursal")]
         public string BranchCode { get; set; }
 
-        [ForeignKey("IdPuntoEmision")]
-        [Display(Name = "Punto de Emisión")]
-        public Int64 IdPuntoEmision { get; set; }
 
         public Int64 IdEstado { get; set; }
 
         public string Estado { get; set; }
 
-        [Display(Name = "Número de Factura")]
-        public int NumeroDEI { get; set; }
-
-        [Display(Name = "Descripción Impuesto Retenido")]
+        [Display(Name = "Descripcion Impuesto Retenido")]
         public string RetentionTaxDescription { get; set; }
 
         [Display(Name = "Base Imponible")]
         public double TaxableBase { get; set; }
 
-        [Display(Name = "Impuesto")]
+        [Display(Name = "Porcentaje")]
         public double Percentage { get; set; }
 
         [Display(Name = "Importe Total")]
         public double TotalAmount { get; set; }
+
         public DateTime FechaCreacion { get; set; }
         public DateTime FechaModificacion { get; set; }
         public string UsuarioCreacion { get; set; }
