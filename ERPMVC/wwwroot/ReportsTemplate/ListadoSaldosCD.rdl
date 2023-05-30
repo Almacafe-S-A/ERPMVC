@@ -97,28 +97,33 @@ UNION SELECT 0 , 'TODOS'</CommandText>
           </QueryParameter>
         </QueryParameters>
         <CommandText>SELECT
+   Detalle.SaldoInicial AS SaldoInicial,
+   Detalle.SaldoInicial * Detalle.Precio AS ValorInicial,
    Kardex.DocumentId
-  ,SUM(CL.Quantity)AS  SaldoInicial
-  ,SUM(CL.Price) AS Precio
-  ,(SUM(CL.Quantity * CL.Price)) AS ValorInicial
   ,(SUM(Kardex.QuantityEntry) - SUM(Kardex.QuantityOut)) AS SaldoActual
-  ,(SUM(Kardex.QuantityEntry) - SUM(Kardex.QuantityOut))* SUM(CL.Price) AS ValorActual
+  ,(SUM(Kardex.QuantityEntry) - SUM(Kardex.QuantityOut))* Detalle.Precio AS ValorActual
   ,CD.Producto
   ,CD.CustomerName
-  ,CD.FechaCertificado
+  ,Kardex.KardexDate
   ,CD.BranchName
 FROM [ERP-PRODUCCION].[dbo].[Kardex]
-LEFT JOIN CertificadoLine CL ON CL.IdCD = Kardex.DocumentId
-LEFT JOIN CertificadoDeposito CD ON CD.IdCD = CL.IdCD
-WHERE Kardex.DocType = 2 AND CD.FechaCertificado Between @FechaInicio and @FechaFin
-AND (CD.CustomerId = @CustomerId or  @CustomerId = 0) AND CD.BranchId = @Sucursal
+LEFT JOIN CertificadoDeposito CD ON CD.IdCD = Kardex.DocumentId
+LEFT JOIN(
+SELECT DISTINCT 
+CL.IdCD,
+SUM(CL.Price) AS Precio, SUM(CL.Quantity) AS SaldoInicial
+FROM CertificadoLine CL
+GROUP BY CL.IdCD
+) AS Detalle ON Kardex.DocumentId = Detalle.IdCD
+WHERE Kardex.DocType = 2 AND Kardex.KardexDate Between @FechaInicio and @FechaFin AND (CD.CustomerId = @CustomerId or @CustomerId =0) AND (CD.BranchId=@Sucursal or @Sucursal=0)
 GROUP BY
   Kardex.DocumentId
   ,CD.Producto
   ,CD.CustomerName
-  ,CD.FechaCertificado
+  ,Kardex.KardexDate
   ,CD.BranchName
-ORDER BY Kardex.DocumentId DESC;</CommandText>
+  ,Detalle.SaldoInicial
+  ,Detalle.Precio</CommandText>
         <rd:DesignerState>
           <QueryDefinition xmlns="http://schemas.microsoft.com/ReportingServices/QueryDefinition/Relational">
             <SelectedColumns>
@@ -132,21 +137,17 @@ ORDER BY Kardex.DocumentId DESC;</CommandText>
         </rd:DesignerState>
       </Query>
       <Fields>
-        <Field Name="DocumentId">
-          <DataField>DocumentId</DataField>
-          <rd:TypeName>System.Int64</rd:TypeName>
-        </Field>
         <Field Name="SaldoInicial">
           <DataField>SaldoInicial</DataField>
-          <rd:TypeName>System.Decimal</rd:TypeName>
-        </Field>
-        <Field Name="Precio">
-          <DataField>Precio</DataField>
           <rd:TypeName>System.Decimal</rd:TypeName>
         </Field>
         <Field Name="ValorInicial">
           <DataField>ValorInicial</DataField>
           <rd:TypeName>System.Decimal</rd:TypeName>
+        </Field>
+        <Field Name="DocumentId">
+          <DataField>DocumentId</DataField>
+          <rd:TypeName>System.Int64</rd:TypeName>
         </Field>
         <Field Name="SaldoActual">
           <DataField>SaldoActual</DataField>
@@ -164,8 +165,8 @@ ORDER BY Kardex.DocumentId DESC;</CommandText>
           <DataField>CustomerName</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
-        <Field Name="FechaCertificado">
-          <DataField>FechaCertificado</DataField>
+        <Field Name="KardexDate">
+          <DataField>KardexDate</DataField>
           <rd:TypeName>System.DateTime</rd:TypeName>
         </Field>
         <Field Name="BranchName">
@@ -229,7 +230,7 @@ FROM
                   <Width>1.15833in</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>1.35in</Width>
+                  <Width>1.125in</Width>
                 </TablixColumn>
                 <TablixColumn>
                   <Width>1.14167in</Width>
@@ -635,14 +636,14 @@ FROM
                   <TablixCells>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="FechaCertificado">
+                        <Textbox Name="KardexDate">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Fields!FechaCertificado.Value</Value>
+                                  <Value>=Fields!KardexDate.Value</Value>
                                   <Style>
                                     <FontWeight>Normal</FontWeight>
                                     <Format>d</Format>
@@ -655,7 +656,7 @@ FROM
                               </Style>
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>FechaCertificado</rd:DefaultName>
+                          <rd:DefaultName>KardexDate</rd:DefaultName>
                           <Style>
                             <Border>
                               <Style>None</Style>
@@ -1372,9 +1373,7 @@ FROM
                     </CellContents>
                   </TablixHeader>
                   <TablixMembers>
-                    <TablixMember>
-                      <Group Name="Details" />
-                    </TablixMember>
+                    <TablixMember />
                   </TablixMembers>
                 </TablixMember>
                 <TablixMember>
@@ -1423,7 +1422,7 @@ FROM
             </TablixRowHierarchy>
             <DataSetName>Kardex</DataSetName>
             <Height>0.9in</Height>
-            <Width>10.32749in</Width>
+            <Width>10.10249in</Width>
             <Style>
               <Border>
                 <Style>None</Style>
@@ -1431,13 +1430,13 @@ FROM
             </Style>
           </Tablix>
         </ReportItems>
-        <Height>6.47993in</Height>
+        <Height>1.02993in</Height>
         <Style>
           <Border />
           <BackgroundColor>White</BackgroundColor>
         </Style>
       </Body>
-      <Width>10.61541in</Width>
+      <Width>10.16541in</Width>
       <Page>
         <PageHeader>
           <Height>1.73in</Height>
@@ -1493,7 +1492,7 @@ FROM
               </Paragraphs>
               <rd:DefaultName>ExecutionTime</rd:DefaultName>
               <Top>0.21885in</Top>
-              <Left>8.44514in</Left>
+              <Left>8.19514in</Left>
               <Height>0.17499in</Height>
               <Width>1.82402in</Width>
               <ZIndex>1</ZIndex>
@@ -1527,7 +1526,7 @@ FROM
               </Paragraphs>
               <rd:DefaultName>ExecutionTime</rd:DefaultName>
               <Top>0.04247in</Top>
-              <Left>8.44514in</Left>
+              <Left>8.19514in</Left>
               <Height>0.17499in</Height>
               <Width>1.82402in</Width>
               <ZIndex>2</ZIndex>
