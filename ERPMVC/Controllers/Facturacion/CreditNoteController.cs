@@ -32,7 +32,7 @@ namespace ERPMVC.Controllers
             _principal = httpContextAccessor.HttpContext.User;
         }
 
-        [Authorize(Policy = "Ventas.Nota de Credito")]
+        [Authorize(Policy = "Cuentas por Cobrar.Nota de Credito")]
         public IActionResult Index()
         {
             ViewData["permisos"] = _principal;
@@ -114,6 +114,105 @@ namespace ERPMVC.Controllers
 
         }
 
+
+        public async Task<ActionResult<GoodsDeliveryAuthorization>> Aprobar([FromBody] CreditNote creditnote)
+        {
+            try
+            {
+                if (creditnote == null)
+                {
+                    return await Task.Run(() => BadRequest("No llego correctamente el modelo!"));
+                }
+
+                GoodsDeliveryAuthorization goodsDeliveryAuthorization = new GoodsDeliveryAuthorization();
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + $"api/CreditNote/ChangeStatus/{creditnote.CreditNoteId}/{2}");
+                string valorrespuesta = "";
+                if (!result.IsSuccessStatusCode)
+                {
+                    return await Task.Run(() => BadRequest("No se Aprobo el documento!"));
+                }
+
+                return await Task.Run(() => Json(goodsDeliveryAuthorization));
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: {ex.ToString()}");
+                throw ex;
+            }
+
+
+        }
+
+        public async Task<ActionResult<GoodsDeliveryAuthorization>> Revisar([FromBody] CreditNote creditnote)
+        {
+            try
+            {
+                if (creditnote == null)
+                {
+                    return await Task.Run(() => BadRequest("No llego correctamente el modelo!"));
+                }
+
+                GoodsDeliveryAuthorization goodsDeliveryAuthorization = new GoodsDeliveryAuthorization();
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + $"api/CreditNote/ChangeStatus/{creditnote.CreditNoteId}/{1}");
+                string valorrespuesta = "";
+                if (!result.IsSuccessStatusCode)
+                {
+                    return await Task.Run(() => BadRequest("No se Aprobo el documento!"));
+                }
+
+                return await Task.Run(() => Json(goodsDeliveryAuthorization));
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: {ex.ToString()}");
+                throw ex;
+            }
+
+
+        }
+
+
+
+        public async Task<ActionResult> Generar([FromBody] CreditNoteDTO creditnote)
+        //public async Task<ActionResult> GetGoodsDeliveredById([FromBody]dynamic dto)
+        {
+            Invoice _Invoice = new Invoice();
+            try
+            {
+
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + $"api/CreditNote/Generar/{creditnote.CreditNoteId}/{creditnote.interna}");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _Invoice = JsonConvert.DeserializeObject<Invoice>(valorrespuesta);
+
+                }
+                else
+                {
+                    throw new Exception(await (result.Content.ReadAsStringAsync()));
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: {ex.ToString()}");
+                return BadRequest(ex.Message);
+            }
+
+            return Json(_Invoice);
+        }
+
         [HttpPost("[action]")]
         public async Task<ActionResult<CreditNote>> SaveCreditNote([FromBody]CreditNote _CreditNote)
         {
@@ -124,7 +223,7 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/CreditNote/GetCreditNoteById/" + _CreditNote.CreditNoteId);
+                var result = await _client.GetAsync(baseadress + $"api/CreditNote/GetCreditNoteById/{_CreditNote.CreditNoteId}" );
                 string valorrespuesta = "";
                 _CreditNote.FechaModificacion = DateTime.Now;
                 _CreditNote.UsuarioModificacion = HttpContext.Session.GetString("user");

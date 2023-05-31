@@ -62,8 +62,8 @@ namespace ERPMVC.Controllers
                 {
                     _SubServicesWareHouse = new SubServicesWareHouseDTO { 
                         SubServicesWareHouseId = 0, 
-                        StartTime = DateTime.Now, 
-                        EndTime = new DateTime() , 
+                        StartTime = new DateTime(00 - 00 - 00),
+                        EndTime = new DateTime(00 - 00 - 00) , 
                         BranchId = _SubServicesWareHousep.BranchId , 
                         DocumentDate = DateTime.Now };
                 }
@@ -110,6 +110,38 @@ namespace ERPMVC.Controllers
 
 
             return await Task.Run(() => _SubServicesWareHouse.ToDataSourceResult(request));
+
+        }
+
+        public async Task<ActionResult<SubServicesWareHouse>> Aprobar([FromBody] SubServicesWareHouse autorizacion)
+        {
+            try
+            {
+                if (autorizacion == null)
+                {
+                    return await Task.Run(() => BadRequest("No llego correctamente el modelo!"));
+                }
+
+                SubServicesWareHouse _listSubServicesWareHouse = new SubServicesWareHouse();
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + $"api/SubServicesWareHouse/Aprobar/{autorizacion.SubServicesWareHouseId}");
+                string valorrespuesta = "";
+                if (!result.IsSuccessStatusCode)
+                {
+                    return await Task.Run(() => BadRequest("No se Aprobo el documento!"));
+                }
+
+                return await Task.Run(() => Json(_listSubServicesWareHouse));
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: {ex.ToString()}");
+                throw ex;
+            }
+
 
         }
 

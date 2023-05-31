@@ -1057,7 +1057,14 @@ namespace ERPMVC.Controllers
 
         }
 
+        [HttpGet]
+        public ActionResult SFListadoCD()
+        {
 
+            return View();
+
+
+        }
 
 
 

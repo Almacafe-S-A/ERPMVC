@@ -105,4 +105,8 @@ namespace ERPMVC.Models
         public List<EndososCertificadosLine> EndososCertificadosLine { get; set; } = new List<EndososCertificadosLine>();
 
     }
+
+    public class DTOEndoso : EndososCertificados {
+        public int[] recibos { get; set; }
+    }
 }

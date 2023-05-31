@@ -2,6 +2,7 @@
 @using System.Security.Claims
 @{
     ClaimsPrincipal permisos = (ClaimsPrincipal)ViewData["permisosCreditNote"];
+    bool editable = Model.CreditNoteId == 0;
 }
 
 <script>
@@ -9,7 +10,7 @@
 
     function GetInvoiceId() {
         var InvoiceId = $("#InvoiceId").val();
-        var CreditNoteId = $("#CReditNoteId").val();
+        var CreditNoteId = $("#CreditNoteId").val();
 
         return{
             InvoiceId: InvoiceId,
@@ -23,230 +24,71 @@
     }
 
 
-    function AddCotizacionDetalle() {
-        var notification = $("#notification").data("kendoNotification");
-      //  console.log($("#ProductId").val());
-        if ($("#ProductId").val() !== '' && $("#ProductId").val() !== '0') {
-            CalcularTotalDocumento();
-            var validator = $("#frmSalesOrderLine").data("kendoValidator");
-            validator.hideMessages();
-            //$(".k-icon k-i-warning").empty();
-            //document.getElementsByClassName("k-icon k-i-warning").innerHTML = "";
-            llenarsubproduct();
-            $("#frmSalesOrderLine :input").not('#SalesOrderId').prop("disabled", false);
-            $("#CreditNoteLineId").val(0);
-            $('#TaxId').data("kendoDropDownList").value(0);
-            $('#DescriptionDetail').val('');
-            $('#SubProductId').data("kendoDropDownList").value(0);
-            $("#Quantity").data("kendoNumericTextBox").value(0);
-            $("#DiscountPercentage").data("kendoNumericTextBox").value(0);
-            $("#DiscountAmount").data("kendoNumericTextBox").value(0);
-            $("#Price").data("kendoNumericTextBox").value(0);
-            //$("#Amount").data("kendoNumericTextBox").value(0);
-            $("#SubTotalLine").data("kendoNumericTextBox").value(0);
-            $("#TaxAmount").data("kendoNumericTextBox").value(0);
-            $("#AmountLine").data("kendoNumericTextBox").value(0);
-            $("#TotalLine").data("kendoNumericTextBox").value(0);
-            $("#AccountId").data("kendoDropDownList").value('');
-            //$("#UnitOfMeasureId").data("kendoDropDownList").value('');
-            $("#TaxPercentage").data("kendoNumericTextBox").value(0);
-            var x = document.getElementsByClassName("k-invalid");
-            if (x.length > 0) {
-                $("span").removeClass("k-invalid");
-            }
-            var validator = $("#frmSalesOrderLine").data("kendoValidator");
-            validator.hideMessages();
-            $('#myModalInvoiceLine').modal('show');
-        } else {
-            var notification = $("#notification").data("kendoNotification");
-            //notification.show({
-            //    title: "Validación",
-            //    message: "Debe seleccionar un producto!"
-            //}, "error");
-            $.toast({
-                heading: 'Validación',
-                text: "Debe seleccionar un Servicio!",
-                position: 'top-right',
-                loaderBg: '#ff6849',
-                icon: 'error',
-                hideAfter: 30000,
-                stack: 6
-            });
+    function Calcular(e) {
+        debugger;
+        if (e.model.CreditValue >  e.model.Total){
 
+            MostrarMensaje("La cantidad de credito no puede ser mayor al valor del item", "Error", "Validación", 6000);
+            e.model.CreditValue = 0
+            
         }
 
-    }
+            
+        $("#gridCreditNoteDetail").data("kendoGrid").refresh();
 
-    function llenarsubproduct() {
-        var combobox = $('#SubProductId').getKendoDropDownList();
-        if (combobox != null) {
-            var dataObject = { 'ProductId': $("#ProductId").val() };
-            $.ajax({
-                url: '@Url.Action("GetSubProductByProductId", "ProductRelation")',
-                method: 'GET',
-                datatype: "json",
-                contentType: 'application/json',
-                async: false,
-                data: dataObject,
-                success: function (data) {
-                    combobox.setDataSource(data);
-                },
-                error: function (XMLHttpRequest, textStatus, errorThrown) {
-                    $.toast({
-                        heading: 'Validación',
-                        text: textStatus + ": " + XMLHttpRequest.responseText,
-                        position: 'top-right',
-                        loaderBg: '#ff6849',
-                        icon: 'error',
-                        hideAfter: 30000,
-                        stack: 6
-                    });
-
-                }
-            });
-        }
-    }
-
-    function llenarsubproductprincipal() {
-        var combobox = $('#SubProductPrincipal').getKendoDropDownList();
-        if (combobox != null) {
-            var dataObject = { 'ProductId': $("#ProductId").val() };
-            $.ajax({
-                url: '@Url.Action("GetSubProductByProductId", "ProductRelation")',
-                method: 'GET',
-                datatype: "json",
-                contentType: 'application/json',
-                async: false,
-                data: dataObject,
-                success: function (data) {
-                    combobox.setDataSource(data);
-                },
-                error: function (XMLHttpRequest, textStatus, errorThrown) {
-                    $.toast({
-                        heading: 'Validación',
-                        text: textStatus + ": " + XMLHttpRequest.responseText,
-                        position: 'top-right',
-                        loaderBg: '#ff6849',
-                        icon: 'error',
-                        hideAfter: 30000,
-                        stack: 6
-                    });
-
-                }
-            });
-        }
-    }
-
-    var hcustom = 0;
-    function EditCotizacionDetalle(e) {
-        var notification = $("#notification").data("kendoNotification");
-        e.preventDefault();
-        var notification = $("#notification").data("kendoNotification");
-        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
-        //  //debugger;
-        if (dataItem.CreditNoteId > 0) {
-             $("#btnActualizarCotizacionLinea").prop("disabled", true);
-            var subproducto = 0;
-            var dataObject = { 'CreditNoteLineId': dataItem.CreditNoteLineId };
-            $.ajax({
-                url: '@Url.Action("pvwCreditNoteLine", "CreditNoteLine")',
-                method: 'POST',
-                datatype: "json",
-                contentType: 'application/json',
-                async: false,
-                data: JSON.stringify(dataObject),
-                success: function (data) {
-                    $("#SalesOrderLineMant").html('');
-                    $("#SalesOrderLineMant").html(data);
-                    GetPercentage();
-                    llenarsubproduct();
-                    $("#SubProductId").data("kendoDropDownList").value(dataItem.SubProductId);
-                },
-                error: function (XMLHttpRequest, textStatus, errorThrown) {
-                    $.toast({
-                        heading: 'Validación',
-                        text: textStatus + ": " + XMLHttpRequest.responseText,
-                        position: 'top-right',
-                        loaderBg: '#ff6849',
-                        icon: 'error',
-                        hideAfter: 30000,
-                        stack: 6
-                    });
-
-                }
-            });
-
-            $("#frmSalesOrderLine :input").prop("disabled", true);
-        }
-        else {
-
-
-            $("#btnActualizarCotizacionLinea").prop("disabled", false);
-            var x = document.getElementsByClassName("k-invalid");
-            if (x.length > 0) {
-                $("span").removeClass("k-invalid");
-            }
-            var validator = $("#frmSalesOrderLine").data("kendoValidator");
-            validator.hideMessages();
-            $("#CreditNoteLineId").val(dataItem.CreditNoteLineId);
-            llenarsubproduct();
-            $("#AccountId").data("kendoDropDownList").value(dataItem.AccountId);
-            $("#SubProductId").data("kendoDropDownList").value(dataItem.SubProductId);
-            $("#DescriptionDetail").val(dataItem.Description);
-            $("#Quantity").data("kendoNumericTextBox").value(dataItem.Quantity);
-            $("#Price").data("kendoNumericTextBox").value(dataItem.Price);
-            $("#AmountLine").data("kendoNumericTextBox").value(dataItem.Amount);
-            $("#DiscountPercentage").data("kendoNumericTextBox").value(dataItem.DiscountPercentage);
-            $("#DiscountAmount").data("kendoNumericTextBox").value(dataItem.DiscountAmount);
-            $("#SubTotalLine").data("kendoNumericTextBox").value(dataItem.SubTotal);
-            $("#TaxId").data("kendoDropDownList").value(dataItem.TaxId);
-            $("#TaxPercentage").data("kendoNumericTextBox").value(dataItem.TaxPercentage);
-            $("#TaxAmount").data("kendoNumericTextBox").value(dataItem.TaxAmount);
-            $("#TotalLine").data("kendoNumericTextBox").value(dataItem.Total);
-        }
-
-
-
-
-        $('#myModalInvoiceLine').modal('show');
-
+            return;
     }
 
 
-        function Delete(e) {
+    function totalColumnas(tiporesultado, moneda) {
+        var data = $("#gridCreditNoteDetail").getKendoGrid().dataSource.data();
+        var total = 0;
 
-        e.preventDefault();
-        if (confirm('¿Esta seguro que desea eliminar la fila?')) {
-            var notification = $("#notification").data("kendoNotification");
-            var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        switch (tiporesultado) {
+            case 1:
+                data.forEach(r => total += r.CreditValue);
+                break;
+            case 2: /// Calcular el total CIB
+                data.forEach(r => total += r.DiscountAmount);
+                break;
+            case 3: ////Calcular el total CIF LPS
+                data.forEach(r => total += r.SubTotal);
+                break;
+            case 4://///Calcular el total de Valor de derechos importacion
+                data.forEach(r => total += r.TaxAmount);
+                break;
+            case 5:
+                data.forEach(r => total += r.Total);
+                break;
 
-            $.ajax({
-                url: '@Url.Action("Delete", "CreditNoteLine")',
-                method: 'POST',
-                datatype: "json",
-                contentType: 'application/json',
-                async: false,
-                data: JSON.stringify(dataItem),
-                success: function (data) {
-                },
-                error: function (XMLHttpRequest, textStatus, errorThrown) {
-                    $.toast({
-                        heading: 'Validación',
-                        text: textStatus + ": " + XMLHttpRequest.responseText,
-                        position: 'top-right',
-                        loaderBg: '#ff6849',
-                        icon: 'error',
-                        hideAfter: 30000,
-                        stack: 6
-                    });
-
-                }
-            });
-
-            var grid = $("#gridCreditNoteDetail").data("kendoGrid");
-            grid.dataSource.remove(dataItem);
-            CalcularTotalDocumento();
+            default:
+                break;
         }
+        var formatter = new Intl.NumberFormat('es-HN', {
+            style: 'currency',
+            currency: 'LPS',
+            minimumFractionDigits: 2
+        });
+        if (moneda == 1) {
+            return formatter.format(total);
+        }
+        if (moneda == 2) {
+            formatter = new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD',
+                minimumFractionDigits: 2
+            });
+            return formatter.format(total);
+        }
+        if (moneda == 0) {
+            formatter = new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'LPS',
+                minimumFractionDigits: 2
+            });
+            return formatter.format(total).replace(/[a-z]{3}/i, "").trim();
+        }
+        return total;
     }
 
 </script>
@@ -259,6 +101,10 @@
         @(
             Html.Kendo().Grid<ERPMVC.Models.CreditNoteLine>()
                                                                                       .Name("gridCreditNoteDetail")
+                                                                                        .Events(e =>
+                                                                                        e.CellClose("Calcular")
+                                                                                        //.DataBound("Calcular")
+                                                                                        )
                                                                                       .Columns(columns =>
                                                                                       {
 
@@ -268,9 +114,7 @@
 
                                                                                           }).Width(80).Title(" ");
 
-                                                                                      columns.Bound(p => p.CreditNoteLineId).Title("Id Línea").Width(150).Hidden(true);
-                                                                                      columns.Bound(p => p.AccountId).Title("Cuenta").Width(150).Hidden(true);
-                                                                                      columns.Bound(p => p.AccountName).Title("Nombre Cuenta").Width(250).Visible(false);
+                                                                                      columns.Bound(p => p.CreditNoteLineId).Title("Id Línea").Width(150).Hidden(true);                                                                                    
                                                                                       columns.Bound(p => p.SubProductId).Title("IdProducto").Width(150).Hidden(true);
                                                                                       columns.Bound(p => p.SubProductName).Title("Servicio").Width(150).Visible(false);
                                                                                       columns.Bound(p => p.SubProduct).Title("Producto")
@@ -282,8 +126,10 @@
                                                                                       columns.Bound(p => p.Quantity).Format("{0:n2}").Title("Cantidad").Width(150);
                                                                                       columns.Bound(p => p.Price).Format("{0:n2}").Title("Precio").Format("{0:n2}").Width(150);
                                                                                       columns.Bound(p => p.Amount).Format("{0:n2}").Title("Monto").Width(150);
-                                                                                      columns.Bound(p => p.DiscountPercentage).Format("{0:n2}").Title("Porcentaje Descuento").Width(250).Visible(false);
-                                                                                      columns.Bound(p => p.DiscountAmount).Format("{0:n2}").Title("Descuentos").Width(200);
+                                                                                      columns.Bound(p => p.CreditValue).Format("{0:n2}").Title("Valor del Credito").Width(250)
+                                                                                      .ClientFooterTemplate("<div style='text-align: right'>#=totalColumnas(1,0)#</div>")
+                                                                                         .HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right; background-color:LightGray;" });
+                                                                                      columns.Bound(p => p.DiscountAmount).Format("{0:n2}").Title("Descuentos").Width(200).Visible(false);
                                                                                       columns.Bound(p => p.SubTotal).Format("{0:n2}").Title("Sub Total").Width(150);
                                                                                       columns.Bound(p => p.TaxId).Format("{0:n2}").Title("Impuesto").Width(150).Visible(false);
                                                                                       columns.Bound(p => p.TaxCode).Title("Tipo Impuesto").Width(200).Visible(false);
@@ -366,6 +212,18 @@
                                                                                         model.Id(p => p.CreditNoteLineId);
                                                                                         model.Field(p => p.CreditNoteLineId).Editable(false);
                                                                                         model.Field(p => p.CreditNoteId).Editable(false);
+                                                                                        model.Field(p => p.Amount).Editable(false);
+                                                                                        model.Field(p => p.Quantity).Editable(false);
+                                                                                        model.Field(p => p.Price).Editable(false);
+                                                                                        model.Field(p => p.CreditValue).Editable(editable);
+                                                                                        model.Field(p => p.TaxAmount).Editable(false);
+
+                                                                                        model.Field(p => p.DiscountAmount).Editable(false);
+                                                                                        model.Field(p => p.Total).Editable(false);
+                                                                                        model.Field(p => p.SubTotal).Editable(false);
+                                                                                        model.Field(p => p.SubProduct).Editable(editable);
+                                                                                        model.Field(p => p.UnitOfMeasure).Editable(editable);
+
 
                                                                                     })
                                                                                     .Sort(s => s.Add(m => m.CreditNoteLineId).Descending())

@@ -102,7 +102,6 @@
 
 
     function RefreshPresupuesto(){
-        debugger;
         var grid = $("#gridPresupuesto").getKendoGrid();
         var idCentroCosto = $("#CostCenterId").val();
         var idPeriodo = $("#PeriodoId").val();
@@ -525,7 +524,11 @@
                     {
                         aggregates.Add(p => p.PresupuestoEnero).Sum();
                     })
-                .Events(events => events.Error("error_handler"))
+                .Events(events =>
+                {
+                    events.Error("error_handler");
+                    events.RequestEnd("checkResult");
+                })
                 .Read(read => read.Action("GetPreuspuestosByPeriodo", "Presupuesto").Data("GetPeriodo"))
                 .Create(create => create.Action("savepresupuesto", "Presupuesto"))
                 .Update(update => update.Action("Update", "Presupuesto", new { id = "{0}" }).Type(HttpVerbs.Post))
@@ -656,13 +659,25 @@
         return total;
     }
 
-
+    function checkResult(e) {
+         if (e.type == "create" && e.response.Errors==null){
+            $.toast({
+                heading: 'Éxito',
+                text: '¡Datos guardados correctamente!',
+                position: 'top-right',
+                loaderBg: '#00ff00',
+                icon: 'success',
+                hideAfter: 30000,
+                stack: 6
+            });
+            RefreshPresupuesto();
+         }
+ }
+			
     function error_handler(e) {
-        if (e.xhr.responseText == "Por favor seleccione una cuenta.") {
-
             $.toast({
                 heading: 'Error',
-                text: '<br/>Por favor seleccione una cuenta!.<br/>',
+                text: e.xhr.responseText,
                 position: 'top-right',
                 loaderBg: '#ff6849',
                 icon: 'error',
@@ -670,12 +685,7 @@
                 stack: 6
 
             });
-
-
         }
-
-
-    }
 
 
 

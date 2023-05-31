@@ -33,14 +33,14 @@
                                       class="validation-wizard wizard-circle">
                                     <div class="form-body">
                                         <div class="row">
-                                            <div class="col-md-4">
+                                            <div class="col-md-3">
                                                 <div class="form-group">
-                                                    <label asp-for="RetentionReceiptId" class=" control-label" style="min-width:100%">Id Comprobante de Retención</label>
-                                                    <input type="text" asp-for="RetentionReceiptId" name="RetentionReceiptId" class="form-control" disabled="disabled" style="min-width:100%" />
+                                                    <label asp-for="RetentionReceiptId" class=" control-label" style="min-width:100%">No Ref</label>
+                                                    <input type="text" asp-for="RetentionReceiptId" name="RetentionReceiptId" class="k-textbox" disabled="disabled" style="min-width:100%" />
                                                     <span asp-validation-for="RetentionReceiptId" class="text-danger"></span>
                                                 </div>
                                             </div>
-                                            <div class="col-md-4">
+                                            <div class="col-md-3">
                                                 <script>
                                                     function GetPuntoEmision() {
                                                         $("#IdPuntoEmision").data("kendoDropDownList").dataSource.read();
@@ -67,40 +67,25 @@
                                                     <span asp-validation-for="BranchId" class="text-danger"></span>
                                                 </div>
                                             </div>
-                                            <div class="col-md-4">
-                                                <script>
-                                                    function GetBranchId() {
-                                                        return {
-                                                            'IdTipoDocumento': 7,
-                                                            'BranchId': $("#BranchId").data("kendoDropDownList").value(),
-                                                        }
-                                                    }
-                                                </script>
+
+                                            <div class="col-md-3">
                                                 <div class="form-group">
-                                                    <label asp-for="IdPuntoEmision" class="control-label"></label>
-                                                    <kendo-dropdownlist name="IdPuntoEmision" for="IdPuntoEmision" filter="Kendo.Mvc.UI.FilterType.Contains"
-                                                                        option-label="Seleccione el Punto de Emisión!"
-                                                                        auto-bind="true"
-                                                                        datatextfield="PuntoEmision"
-                                                                        datavaluefield="IdPuntoEmision"
-                                                                        style="width: 100%;" required data-required-msg="El Punto de emisión es requerido.">
-                                                        <datasource type="DataSourceTagHelperType.WebApi" page-size="9999999">
-                                                            <sorts>
-                                                                <sort field="PuntoEmision" direction="asc" />
-                                                            </sorts>
-                                                            <transport>
-                                                                <read url="@Url.Action("GetPuntoEmisonEnNumeracionSAR", "NumeracionSAR")" data="GetBranchId" />
-                                                            </transport>
-                                                        </datasource>
-                                                    </kendo-dropdownlist>
-                                                    <span asp-validation-for="IdPuntoEmision" class="text-danger"></span>
+                                                    <label asp-for="FechaEmision" class="control-label"></label>
+                                                    <kendo-datepicker name="FechaEmision"  
+                                                                      format="dd/MM/yyyy"
+                                                                      data-val-required="La Fecha de Emisión es requerida." min="@DateTime.Now"
+                                                                      value="@Model.FechaEmision" />
+                                                    <span asp-validation-for="FechaEmision" class="text-danger"></span>
                                                 </div>
                                             </div>
-                                            <div class="col-md-4">
+
+                                            <div class="col-md-3">
                                                 <div class="form-group">
                                                     <label asp-for="VendorId" class=" control-label" style="min-width:100%"></label>
                                                     <kendo-dropdownlist name="VendorId" required data-required-msg="El Proveedor es requerido."
                                                                         for="@Model.VendorId"
+                                                                        on-data-bound="databoundRetencion"
+
                                                                         filter="Kendo.Mvc.UI.FilterType.Contains"
                                                                         option-label="Seleccione el Proveedor!"
                                                                         datatextfield="VendorName"
@@ -118,64 +103,56 @@
                                                     <span asp-validation-for="VendorId" class="text-danger"></span>
                                                 </div>
                                             </div>
-                                            <div class="col-md-4">
+                                            </div>
+                                                <div class="row" id="datosfiscales">
+
+                                                    <div class="col-md-3">
+                                                        <div class="form-group">
+                                                            <label asp-for="NumeroDEI" class=" control-label" style="min-width:100%">No Retencion</label>
+                                                            <input type="text" asp-for="NumeroDEI" name="NumeroDEI" class="k-textbox" autocomplete="off" style="min-width:100%" />
+                                                            <span asp-validation-for="NumeroDEI" class="text-danger"></span>
+                                                            <span id="CorrelativoAlert" class="text-danger"><span role="alert" class="k-icon k-i-warning"></span> Complete el número de la Factura del Proveedor.</span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-3">
+                                                        <div class="form-group">
+                                                            <label asp-for="CAI" class=" control-label" style="min-width:100%">CAI</label>
+                                                            <input type="text" maxlength="40" asp-for="CAI" readonly name="VendorCAI" class="k-textbox" autocomplete="off" style="min-width:100%" />
+                                                            <span asp-validation-for="CAI" class="text-danger"></span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-3">
+                                                        <div class="form-group">
+                                                            <label asp-for="FechaLimiteEmision" class="control-label">Fecha Limite Emision</label>
+                                                            <kendo-datepicker name="FechaLimiteEmision"
+                                                                              format="dd/MM/yyyy"
+                                                                              value="@Model.FechaLimiteEmision" />
+                                                            <span asp-validation-for="FechaLimiteEmision" class="text-danger"></span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-3">
+                                                        <div class="form-group">
+                                                            <label asp-for="RangoEmision" class=" control-label" style="min-width:100%">Rango de Emisión</label>
+                                                            <input type="text" maxlength="40" asp-for="RangoEmision" readonly name="RangoEmision" class="k-textbox" autocomplete="off" style="min-width:100%" />
+                                                            <span asp-validation-for="RangoEmision" class="text-danger"></span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+
+
+                                            <div class="row">
+                                            <div class="col-md-3">
                                                 <div class="form-group">
                                                     <label asp-for="RTN" class=" control-label" style="min-width:100%"></label>
-                                                    <input type="text" maxlength="14" asp-for="RTN" name="RTN" required data-required-msg="El RTN es requerido." class="form-control" autocomplete="off" style="min-width:100%" />
+                                                    <input type="text" maxlength="14" asp-for="RTN" name="RTN" required data-required-msg="El RTN es requerido." class="k-textbox" autocomplete="off" style="min-width:100%" />
                                                     <span asp-validation-for="RTN" class="text-danger"></span>
                                                 </div>
                                             </div>
-                                            @if (Model.RetentionReceiptId > 0)
-                                            {
-                                                <div class="col-md-4">
-                                                    <div class="form-group">
-                                                        <label asp-for="FechaEmision" class="control-label"></label>
-                                                        <kendo-datepicker name="FechaEmision" style="min-width: 93%;" class="form-control"
-                                                                          format="dd/MM/yyyy"
-                                                                          data-val-required="La Fecha de Emisión es requerida."
-                                                                          value="@Model.FechaEmision" />
-                                                        <span asp-validation-for="FechaEmision" class="text-danger"></span>
-                                                    </div>
-                                                </div>
-                                            }
-                                            else
-                                            {
-                                                <div class="col-md-4">
-                                                    <div class="form-group">
-                                                        <label asp-for="FechaEmision" class="control-label"></label>
-                                                        <kendo-datepicker name="FechaEmision" style="min-width: 93%;" class="form-control"
-                                                                          format="dd/MM/yyyy"
-                                                                          data-val-required="La Fecha de Emisión es requerida." min="@DateTime.Now"
-                                                                          value="@Model.FechaEmision" />
-                                                        <span asp-validation-for="FechaEmision" class="text-danger"></span>
-                                                    </div>
-                                                </div>
-                                            }
-                                        </div>
-
-                                        <div class="row">
-                                            <div class="col-md-8">
+                                            <div class="col-md-9">
                                                 <div class="form-group">
                                                     <label class=" control-label" style="min-width:100%">Factura de Proveedor</label>
-                                                   @if (Model.RetentionReceiptId > 0){
-                                                        <kendo-dropdownlist name="VendorInvoiceId" required data-required-msg="La Factura de Proveedor es requerida."
-                                                                            filter="Kendo.Mvc.UI.FilterType.Contains" enable="true"
-                                                                            option-label="Seleccione la Factura de Proveedor!"
-                                                                            datatextfield="VendorInvoiceName"
-                                                                            datavaluefield="VendorInvoiceId"
-                                                                            style="min-width: 100%;">
-                                                            <datasource type="DataSourceTagHelperType.WebApi" server-operation="true" page-size="9999999">
-                                                                <sorts>
-                                                                    <sort field="VendorInvoiceName" direction="asc" />
-                                                                </sorts>
-                                                                <transport>
-                                                                    <read url="@Url.Action("GetVendorInvoiceByVendorId", "VendorInvoice")" data="GetVendorId" />
-                                                                </transport>
-                                                            </datasource>
-                                                        </kendo-dropdownlist>
-                                                    }
-                                                    else
-                                                    {
+                                                   
                                                         <kendo-dropdownlist name="VendorInvoiceId" required data-required-msg="La Factura de Proveedor es requerida."
                                                                             filter="Kendo.Mvc.UI.FilterType.Contains" enable="false"
                                                                             option-label="Seleccione la Factura de Proveedor!"
@@ -191,87 +168,28 @@
                                                                 </transport>
                                                             </datasource>
                                                         </kendo-dropdownlist>
-                                                    }
+                                                    
                                                     <span class="text-danger"></span>
                                                 </div>
                                             </div>
-                                            <div class="col-md-4">
-                                                <div class="form-group">
-                                                    <label asp-for="NoCorrelativo" class=" control-label" style="min-width:100%"></label>
-                                                    <input type="text" asp-for="NoCorrelativo" name="NoCorrelativo" required data-required-msg="El Número Correlativo es requerido." class="form-control" autocomplete="off" style="min-width:100%" />
-                                                    <span asp-validation-for="NoCorrelativo" class="text-danger"></span>
-                                                    <span id="CorrelativoAlert" class="text-danger"><span role="alert" class="k-icon k-i-warning"></span> Complete el número de la Factura del Proveedor.</span>
-                                                </div>
-                                            </div>
-                                            <div class="col-md-4" hidden>
-                                                <div class="form-group">
-                                                    <label asp-for="IdTipoDocumento" class=" control-label" style="min-width:100%"></label>
-                                                    <kendo-dropdownlist name="IdTipoDocumento" required data-required-msg="El Tipo de Documento es Requerido."
-                                                                        for="@Model.IdTipoDocumento"
-                                                                        filter="Kendo.Mvc.UI.FilterType.Contains"
-                                                                        option-label="Seleccione Tipo de Documento!"
-                                                                        datatextfield="Descripcion" data-validate="false"
-                                                                        datavaluefield="IdTipoDocumento" value="7"
-                                                                        style="width: 100%;">
-                                                        <datasource type="DataSourceTagHelperType.WebApi" server-operation="true">
-                                                            <sorts>
-                                                                <sort field="Descripcion" direction="asc" />
-                                                            </sorts>
-                                                            <transport>
-                                                                <read url="@Url.Action("GetTiposDocumento", "TiposDocumento")" />
-                                                            </transport>
-                                                        </datasource>
-                                                    </kendo-dropdownlist>
-                                                    <span asp-validation-for="IdTipoDocumento" class="text-danger"></span>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div class="row">
-                                            <div class="col-md-4" id="VendorCAIdiv" hidden>
-                                                <div class="form-group">
-                                                    <label asp-for="VendorCAI" class=" control-label" style="min-width:100%"></label>
-                                                    <input type="text" maxlength="40" asp-for="VendorCAI" name="VendorCAI" required data-required-msg="El Número CAI es requerido." class="form-control" autocomplete="off" style="min-width:100%" />
-                                                    <span asp-validation-for="VendorCAI" class="text-danger"></span>
-                                                </div>
-                                            </div>
                                             
-                                            <div class="col-md-4" hidden>
-                                                @if (Model.RetentionReceiptId > 0)
-                                                {
-                                                    <div class="form-group">
-                                                        <label asp-for="DueDate" class="control-label"></label>
-                                                        <kendo-datepicker name="DueDate" style="min-width: 93%;" class="form-control"
-                                                                            format="dd/MM/yyyy"
-                                                                            data-val-required="La Fecha de Vencimiento es requerida."
-                                                                            value="@Model.DueDate" />
-                                                        <span asp-validation-for="DueDate" class="text-danger"></span>
-                                                    </div>
-
-                                                }
-                                                else
-                                                {
-                                                    <div class="form-group">
-                                                        <label asp-for="DueDate" class="control-label"></label>
-                                                        <kendo-datepicker name="DueDate" style="min-width: 93%;" class="form-control"
-                                                                            format="dd/MM/yyyy"
-                                                                            data-val-required="La Fecha de Vencimiento es requerida." min="@DateTime.Now"
-                                                                            value="@Model.DueDate" />
-                                                        <span asp-validation-for="DueDate" class="text-danger"></span>
-                                                    </div>
-                                                }
-                                            </div>
+                                               
+                                            
                                         </div>
 
+                                        
                                         <div class="row">
-                                            <div class="col-md-4">
+                                         <div class="col-md-12">
                                                 <div class="form-group">
                                                     <label asp-for="RetentionTaxDescription" class=" control-label" style="min-width:100%"></label>
-                                                    <input type="text" maxlength="150" asp-for="RetentionTaxDescription" name="RetentionTaxDescription" required data-required-msg="La Descripción del Impuesto Retenido es requerida." class="form-control" autocomplete="off" style="min-width:100%" />
+                                                    <input type="text" maxlength="150" asp-for="RetentionTaxDescription" name="RetentionTaxDescription" required data-required-msg="La Descripción del Impuesto Retenido es requerida." class="k-textbox" autocomplete="off" style="min-width:100%" />
                                                     <span asp-validation-for="RetentionTaxDescription" class="text-danger"></span>
                                                 </div>
                                             </div>
-                                            <div class="col-md-4">
+                                        </div>
+                                        <div class="row">
+                                           
+                                            <div class="col-md-3">
                                                 <div class="form-group">
                                                     <label asp-for="Percentage" class=" control-label" style="min-width:100%">Impuesto de Retención</label>
                                                     @(Html.Kendo().DropDownList()
@@ -295,10 +213,10 @@
                                                     <span asp-validation-for="Percentage" class="text-danger"></span>
                                                 </div>
                                             </div>
-                                            <div class="col-md-4" hidden>
+                                            <div class="col-md-3" >
                                                 <div class="form-group">
-                                                    <label asp-for="TaxableBase" class=" control-label" style="min-width:100%"></label>
-                                                    <kendo-numerictextbox name="TaxableBase" class="readonly"
+                                                    <label asp-for="TaxableBase" class=" control-label" style="min-width:100%">Base Imponible</label>
+                                                    <kendo-numerictextbox name="TaxableBase"
                                                                           format="c2" spinners="false" decimals="2" tabindex="-1"
                                                                           min="0" data-val-required="La Base Imponible es requerida." data-min-msg="La Base Imponible no puede ser negativo."
                                                                           style="min-width: 100%;text-align:right;padding-right: 3px"
@@ -308,10 +226,10 @@
                                                     <span asp-validation-for="TaxableBase" class="text-danger"></span>
                                                 </div>
                                             </div>
-                                            <div class="col-md-4">
+                                            <div class="col-md-3">
                                                 <div class="form-group">
                                                     <label asp-for="TotalAmount" class=" control-label" style="min-width:100%"></label>
-                                                    <kendo-numerictextbox name="TotalAmount" class="readonly"
+                                                    <kendo-numerictextbox name="TotalAmount" 
                                                                           format="c2" spinners="false" decimals="2" tabindex="-1"
                                                                           min="0" data-val-required="El Monto Total es requerido." data-min-msg="El Monto Total no puede ser negativo."
                                                                           style="min-width: 100%;text-align:right;padding-right: 3px"
@@ -321,42 +239,17 @@
                                                     <span asp-validation-for="TotalAmount" class="text-danger"></span>
                                                 </div>
                                             </div>
-                                            <div class="col-md-4" hidden>
-                                                <div class="form-group">
-                                                    <label asp-for="DocumentId" class=" control-label" style="min-width:100%"></label>
-                                                    <input type="text" maxlength="30" asp-for="DocumentId" name="DocumentId" disabled required data-required-msg="El Documento es requerido." class="form-control" autocomplete="off" style="min-width:100%" />
-                                                    <span asp-validation-for="DocumentId" class="text-danger"></span>
+                                        </div>
+                                        @if (Model.RetentionReceiptId == 0)
+                                        {
+                                            <div class="row">
+                                                <div class="col-md-12">
+                                                    <button id="btnComprobanteRetencion" class="form-control btn-miboton" type="submit"> Guardar </button>
                                                 </div>
                                             </div>
-                                            <div class="col-md-4" hidden>
-                                                <div class="form-group">
-                                                    <label asp-for="IdEstado" class=" control-label" style="width:100%">Estado</label>
-                                                    <kendo-dropdownlist name="EstadoId" data-val-required="El Estado es requerido."
-                                                                        for="@Model.IdEstado" enable="false"
-                                                                        filter="Kendo.Mvc.UI.FilterType.Contains"
-                                                                        option-label="Seleccionar Estado"
-                                                                        datatextfield="NombreEstado"
-                                                                        datavaluefield="IdEstado"
-                                                                        style="width: 100%;">
-                                                        <datasource type="DataSourceTagHelperType.WebApi" server-operation="true">
-                                                            <sorts>
-                                                                <sort field="NombreEstado" direction="asc" />
-                                                            </sorts>
-                                                            <transport>
-                                                                <read url="@Url.Action("Get", "Estados")" />
-                                                            </transport>
-                                                        </datasource>
-                                                    </kendo-dropdownlist>
-                                                    <span asp-validation-for="IdEstado" class="text-danger"></span>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div class="row">
-                                            <div class="col-md-12">
-                                                <button id="btnComprobanteRetencion" class="form-control btn-miboton" type="submit"> Guardar </button>
-                                            </div>
-                                        </div>
+                                        
+                                        }
+                                        
                                     </div>
                                 </form>
                             </div>
@@ -369,21 +262,25 @@
 </div>
 <script>
     $(document).ready(function () {
-        $("#NoCorrelativo").kendoMaskedTextBox({
-            mask: "000-000-00-00000000"
-        });
-
-        if (@Model.RetentionReceiptId > 0) {
-            $("#VendorInvoiceId").data("kendoDropDownList").value(@Model.DocumentId);
-        }
-
-        $("#IdEstado").data('kendoDropDownList').value(5);
+        
 
         $("#Percentage").attr("required", "required");
         $("#Percentage").attr("data-required-msg", "El Porcentaje Retención es requerido.");
 
-        $("#CorrelativoAlert").hide();
     });
+
+
+    function databoundRetencion(){
+        var id = $("#RetentionReceiptId").val();
+        if(id == 0){
+            $("#datosfiscales").hide();
+
+            }else{
+            $("#datosfiscales").show()
+        }
+        
+    
+    }
 
     function GetVendorId() {
         return {
@@ -482,9 +379,8 @@
                             $("#VendorCAIdiv").prop("hidden", true);
                         }
 
-                        $("#NoCorrelativo").val(result.NumeroDEI);
-                        var maskedtextbox = $("#NoCorrelativo").data("kendoMaskedTextBox");
-                        maskedtextbox.value($("#NoCorrelativo").val());
+                       
+                        
                         $("#DocumentId").val(result.VendorInvoiceId);
                         $("#TaxableBase").data("kendoNumericTextBox").value(result.Total);
                         CalcularTotalImporte();
@@ -544,34 +440,49 @@
     })
 
     function SaveComprobanteRetencion() {
-        $("#btnComprobanteRetencion").hide();
-        $("#btnComprobanteRetencion").prop("disabled", true);
-
-        var dataObject = {
-            'RetentionReceiptId': $("#RetentionReceiptId").val() === "" ? "0" : $("#RetentionReceiptId").val(),
-            'DocumentId': $("#DocumentId").val(),
-            'FechaEmision': $("#FechaEmision").getKendoDatePicker().value().toJSON(),
-            'DueDate': $("#DueDate").getKendoDatePicker().value().toJSON(),
-            'IdTipoDocumento': $("#IdTipoDocumento").data("kendoDropDownList").value(),
-            'NoCorrelativo': $("#NoCorrelativo").val(),
-            'VendorCAI': $("#VendorCAI").val(),
-            'RTN': $("#RTN").val(),
-            'VendorId': $("#VendorId").data("kendoDropDownList").value(),
-            'BranchId': $("#BranchId").data("kendoDropDownList").value(),
-            'BranchName': $("#BranchId").data("kendoDropDownList").text(),
-            'IdPuntoEmision': $("#IdPuntoEmision").data("kendoDropDownList").value(),
-            'IdEstado': $("#IdEstado").data("kendoDropDownList").value(),
-            'Estado': $("#IdEstado").data("kendoDropDownList").text(),
-            'RetentionTaxDescription': $("#RetentionTaxDescription").val(),
-            'TaxableBase': $("#TaxableBase").val(),
-            'Percentage': $("#Percentage").val(),
-            'TotalAmount': $("#TotalAmount").val(),
-        };
-        
+        debugger;
         var validator = $("#frmComprobanteRetencion").data("kendoValidator");
         var status = $(".status");
-        debugger;
-        if (validator.validate()) {
+        
+        if (!validator.validate()) {
+            status.text("Oops! There is invalid data in the form.")
+                .removeClass("valid")
+                .addClass("invalid");
+            return;
+        }
+
+        try{
+            $("#btnComprobanteRetencion").hide();
+            $("#btnComprobanteRetencion").prop("disabled", true);
+
+            var fechalimite = $("#FechaLimiteEmision").getKendoDatePicker().value() == null? null:  $("#FechaLimiteEmision").getKendoDatePicker().value().toJSON();
+
+            var dataObject = {
+                'RetentionReceiptId': $("#RetentionReceiptId").val() === "" ? "0" : $("#RetentionReceiptId").val(),
+                'FechaEmision': $("#FechaEmision").getKendoDatePicker().value().toJSON(),
+                'VendorCAI': $("#VendorCAI").val(),
+                'RTN': $("#RTN").val(),
+                'VendorId': $("#VendorId").data("kendoDropDownList").value(),
+                'BranchId': $("#BranchId").data("kendoDropDownList").value(),
+                'BranchName': $("#BranchId").data("kendoDropDownList").text(),
+                'RetentionTaxDescription': $("#RetentionTaxDescription").val(),
+                'TaxableBase': $("#TaxableBase").val(),
+                'Percentage': $("#Percentage").val(),
+                'TotalAmount': $("#TotalAmount").val(),
+                'NumeroDEI': $("#NumeroDEI").val(),
+                'CAI': $("#CAI").val(),
+                'FechaLimiteEmision': fechalimite,
+                'RangoEmision': $("#RangoEmision").val(),
+                'VendorInvoiceId': $("#VendorInvoiceId").val(),
+
+                
+
+
+
+
+            };
+
+
             $.ajax({
                 url: '@Url.Action("SaveComprobanteRetencion", "RetentionReceipt")',
                 method: 'POST',
@@ -605,12 +516,15 @@
                     });
                 }
             });
+
+        
+        }catch(e){
+            MostrarMensaje(e, "Error", "Error", 6000);
+        }finally{
+             $("#btnComprobanteRetencion").show();
+            $("#btnComprobanteRetencion").prop("disabled", false);
         }
-        else {
-            status.text("Oops! There is invalid data in the form.")
-                .removeClass("valid")
-                .addClass("invalid");
-        }
+        
     }
 
     function CalcularTotalImporte() {

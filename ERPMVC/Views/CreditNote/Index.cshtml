@@ -86,19 +86,6 @@
             success: function (result) {
                 $("#divCreditNote").html('');
                 $("#divCreditNote").html(result);
-                $("#Tefono").kendoMaskedTextBox({
-                    mask: "(999) 0000-0000"
-                });
-                $("#TefonoAlert").hide();
-                var txt = $(result);
-                var found = $("#IdPuntoEmision", txt);
-                IdPuntoEmision = $(found).val();
-
-                 $("#IdPuntoEmision").data("kendoDropDownList").value(IdPuntoEmision);
-                //$("#Fiscal").data("kendoDropDownList").value(IdPuntoEmision);
-                //$("#Fiscal").val(result.Fiscal);
-                 //RefreshCreditNoteDetail();
-                 $("#btnSaveCreditNote").hide();
                  $('#myModalSalesOrder').modal('show');
             },
              error: function (XMLHttpRequest, textStatus, errorThrown) {
@@ -123,6 +110,182 @@
 
     }
 
+
+    function Aprobar(e) {
+        var notification = $("#notification").data("kendoNotification");
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        if (dataItem.Estado == 6) {
+            notification.show({
+                title: "Validación",
+                message: "la Autorizacion ha sido aprobada"
+            }, "error");
+        }
+        if (!confirm('Esta seguro de aprobar la Factura?')) {
+            return;
+
+        }
+
+        var dataObject = {
+            CreditNoteId: dataItem.CreditNoteId,
+        };
+
+        $.ajax({
+            url: '@Url.Action("Aprobar", "CreditNote")',
+            method: 'POST',
+            datatype: "json",
+            contentType: 'application/json',
+            async: false,
+            data: JSON.stringify(dataObject),
+            success: function (result) {
+                $.toast({
+                    heading: 'Satisfactorio',
+                    text: 'La Nota de Credito Proforma se ha aprobado correctamente.',
+                    position: 'top-right',
+                    loaderBg: '#ff6849',
+                    icon: 'success',
+                    hideAfter: 7000,
+                    stack: 6
+                });
+                RefreshCotizaciones();
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                notification.show({
+                    title: "Validación",
+                    message: textStatus + ": " + XMLHttpRequest.responseText
+                }, "error");
+                alert(textStatus + ": " + XMLHttpRequest.responseText);
+            }
+        });
+    }
+
+
+
+
+    function Revisar(e) {
+        
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        if (!confirm('Esta seguro de marcar como revisada esta Nota de Crédito?')) {
+            return;
+
+        }
+
+        var dataObject = {
+            CreditNoteId: dataItem.CreditNoteId,
+        };
+
+        $.ajax({
+            url: '@Url.Action("Revisar", "CreditNote")',
+            method: 'POST',
+            datatype: "json",
+            contentType: 'application/json',
+            async: false,
+            data: JSON.stringify(dataObject),
+            success: function (result) {
+                $.toast({
+                    heading: 'Satisfactorio',
+                    text: 'La Nota de Credito Proforma se ha revisado correctamente.',
+                    position: 'top-right',
+                    loaderBg: '#ff6849',
+                    icon: 'success',
+                    hideAfter: 7000,
+                    stack: 6
+                });
+                RefreshCotizaciones();
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                notification.show({
+                    title: "Validación",
+                    message: textStatus + ": " + XMLHttpRequest.responseText
+                }, "error");
+                alert(textStatus + ": " + XMLHttpRequest.responseText);
+            }
+        });
+    }
+
+
+    function Generar(e) {
+        if (confirm('Esta seguro de generar una Nota de Credito?')) {
+            e.preventDefault();
+            debugger;
+            var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+            var dataObject = {
+                CreditNoteId: dataItem.CreditNoteId,
+                interna:0
+            };
+
+            $.ajax({
+                url: '@Url.Action("Generar", "CreditNote")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (result) {
+                    MostrarMensaje('Nota de Credito Generada!', "success", "Satisfactorio", 6000);
+                    RefreshCotizaciones();
+                    return;
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    MostrarMensaje(textStatus + ": " + XMLHttpRequest.responseText, "Error", "Error", 6000);
+                }
+            });
+        }
+    }
+
+
+    function GenerarInterna(e) {
+        if (confirm('Esta seguro de generar una Nota de Credito Interna?')) {
+            e.preventDefault();
+            debugger;
+            var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+            var dataObject = {
+                CreditNoteId: dataItem.CreditNoteId,
+                interna:1
+            };
+
+            $.ajax({
+                url: '@Url.Action("Generar", "CreditNote")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (result) {
+                    MostrarMensaje('Nota de Credito Generada!', "success", "Satisfactorio", 6000);
+                    RefreshCotizaciones();
+                    return;
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    MostrarMensaje(textStatus + ": " + XMLHttpRequest.responseText, "Error", "Error", 6000);
+                }
+            });
+        }
+    }
+
+    function dataBound(e) {
+        $.each(this.dataSource.data(), function () {
+            if (this.Estado != "Revisado") {
+                $('[data-uid=' + this.uid + ']').find('.k-grid-Aprobar').hide();
+
+            }
+            if (this.Estado != "Aprobado") {
+                $('[data-uid=' + this.uid + ']').find('.k-grid-Generar').hide();
+                $('[data-uid=' + this.uid + ']').find('.k-grid-GenerarInterna').hide();
+            }
+
+            if (this.Estado != "Revisión") {
+                $('[data-uid=' + this.uid + ']').find('.k-grid-Revisar').hide();
+            }
+            if (this.Estado != "Emitido") {
+                $('[data-uid=' + this.uid + ']').find('.k-grid-Imprimir').hide();
+            }
+
+
+        })
+    }
+
+
+
 </script>
 
 <h3 class="text-themecolor">Notas Crédito</h3>
@@ -135,16 +298,36 @@
                                       columns.Command(command =>
                                           {
                                               
-                                              command.Custom("Editar").Text(" ").IconClass("far fa-list-alt").Click("EditCotizacion");
+                                              command.Custom("Editar").Text(" ").IconClass("far fa-eye").Click("EditCotizacion");
                                               command.Custom("Imprimir").Text(" ").IconClass("fa fa-print").Click("ImprimirCotizacion");
+                                              
 
+                                              if (User.HasClaim("Cuentas por Cobrar.Nota de Credito.Aprobar", "true"))
+                                                  {
+                                                      
+                                                  command.Custom("Aprobar").Text(" ").IconClass("fa fa-thumbs-up").Click("Aprobar");
+                                                  }
+                                              
+                                              if (User.HasClaim("Cuentas por Cobrar.Nota de Credito.Generar", "true"))
+                                                  {
+                                                      
+                                                      command.Custom("Generar").Text(" ").IconClass("fa fa-file-invoice").Click("Generar");
+                                                      command.Custom("GenerarInterna").Text(" ").IconClass("fa fa-file-invoice").Click("GenerarInterna");
+                                                  }
+
+                                              if (User.HasClaim("Cuentas por Cobrar.Nota de Credito.Revisar", "true"))
+                                                  {
+                                                      command.Custom("Revisar").Text(" ").IconClass("fa fa-check").Click("Revisar");
+                                                  }
                                           }).Width(100).Title("Acciones");
                                       columns.Bound(p => p.CreditNoteId).Title("No Ref").Width(100);
-                                      columns.Bound(p => p.NumeroSAR).Title("Número").Width(120);
+                                      columns.Bound(p => p.BranchName).Title("Sucursal").Width(140);
+                                      columns.Bound(p => p.NumeroDEI).Title("Número").Width(120);
                                       columns.Bound(p => p.CustomerName).Width(300).Title("Cliente");
                                       columns.Bound(p => p.CreditNoteDate).Title("Fecha").Format("{0:dd/MM/yyyy}").Width(130);
                                       columns.Bound(p => p.Total).Title("Total").Format("{0:N2}").Width(130);
                                       columns.Bound(p => p.CreditNoteDate).Title("Vencimiento").Format("{0:dd/MM/yyyy}").Width(130);
+                                      columns.Bound(p => p.Estado).Title("Estado").Width(130);
                                   })
                                       .Filterable(f => f.Operators(o => o.ForString(s => s
                                                .Clear()
@@ -234,8 +417,9 @@
                                     .Create(create => create.Action("Insert", "CreditNote"))
                                     .Update(update => update.Action("Update", "CreditNote", new { id = "{0}" }))
                                     .Destroy(destroy => destroy.Action("Delete", "CreditNote", new { id = "{0}" }))
-                              )
+                              ).Events(e => e.DataBound("dataBound"))
 )
+
 
 <div id="divCreditNote">
     @await Html.PartialAsync("pvwCreditNote", new ERPMVC.DTO.CreditNoteDTO { CreditNoteId = 0, CreditNoteDate = DateTime.Now })
@@ -263,11 +447,14 @@
         });
     }
 
-    setToolbarTooltip(".k-grid-Agregar", "Agregar nuevo registro");
-    //setRowButtonTooltip(".k-grid-edit", "Tooltip for Edit button");
-    //setRowButtonTooltip(".k-grid-GenerarFactura", "Generar una factura fiscal!");
-    setRowButtonTooltip(".k-grid-Imprimir", "Imprimir registro");
+    setToolbarTooltip(".k-grid-Agregar", "Nueva Nota de Crédito");
+    setRowButtonTooltip(".k-grid-Imprimir", "Imprimir");
     setRowButtonTooltip(".k-grid-Editar", "Ver Detalle");
+    setRowButtonTooltip(".k-grid-Aprobar", "Aprobar");
+    setRowButtonTooltip(".k-grid-Revisar", "Revisar");
+    setRowButtonTooltip(".k-grid-Generar", "Generar");
+    setRowButtonTooltip(".k-grid-GenerarInterna", "Generar Interna");
+
 </script>
 <script>
 

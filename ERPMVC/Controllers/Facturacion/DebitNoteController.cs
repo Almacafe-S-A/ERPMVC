@@ -32,7 +32,7 @@ namespace ERPMVC.Controllers
             _principal = httpContextAccessor.HttpContext.User;
         }
 
-        [Authorize(Policy = "Ventas.Nota de Debito")]
+        [Authorize(Policy = "Cuentas por Cobrar.Nota de Debito")]
         public IActionResult Index()
         {
             ViewData["permisos"] = _principal;

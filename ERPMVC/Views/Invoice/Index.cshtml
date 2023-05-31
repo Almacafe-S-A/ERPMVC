@@ -140,6 +140,12 @@
         $('#myModalConditions').modal('hide');
     }
 
+    function ReporteInvoice(e) {
+        var url = '@Url.Action("SFReporteInvoice", "Invoice")/';
+        var win = window.open(url, '_blank');
+        win.focus();
+    }
+	
     function dataBound(e) {
         $.each(this.dataSource.data(), function () {
             if (this.Estado != "Revisado" ) {
@@ -267,27 +273,32 @@
                               .Name("gridInvoices")
                               .Columns(columns =>
                               {
-                                  if (User.HasClaim("Ventas.Factura.Ver", "true")
-                                      || User.HasClaim("Ventas.Factura.Imprimir", "true"))
-                                  {
-                                      
-                                  }
+                                  
                                   columns.Command(command =>
                                       {
 
-                                          command.Custom("Detalles").Text(" ").IconClass("far fa-list-alt").Click("EditCotizacion");
-                                          command.Custom("GenerarFactura").Text(" ").IconClass("fa fa-file-invoice").Click("GenerarFactura");
+                                          command.Custom("Detalles").Text(" ").IconClass("far fa-list-alt").Click("EditCotizacion");                                         
                                           command.Custom("Imprimir").Text(" ").IconClass("fa fa-print").Click("ImprimirFactura");
                                           command.Custom("ImprimirProforma").Text(" ").IconClass("fa fa-print").Click("ImprimirProforma");
-                                          if (User.HasClaim("Ventas.Factura", "true"))
+                                          if (User.HasClaim("Cuentas por Cobrar.Factura.Revisar", "true"))
                                                   {
-                                                      command.Custom("Aprobar").Text(" ").IconClass("fa fa-thumbs-up").Click("Aprobar");
+                                                                    command.Custom("Revisar").Text(" ").IconClass("fa fa-check").Click("Revisar");                                        
                                                   }
+                                          if (User.HasClaim("Cuentas por Cobrar.Factura.Aprobar", "true"))
+                                          {
+                                              command.Custom("Aprobar").Text(" ").IconClass("fa fa-thumbs-up").Click("Aprobar");
+                                          }
+                                          if (User.HasClaim("Cuentas por Cobrar.Factura.Generar", "true"))
+                                          {
+                                              command.Custom("GenerarFactura").Text(" ").IconClass("fa fa-file-invoice").Click("GenerarFactura");
+                                          }
+                                          
 
-                                          if (User.HasClaim("Ventas.Factura", "true"))
-                                                  {
-                                                      command.Custom("Revisar").Text(" ").IconClass("fa fa-check").Click("Revisar");
-                                                  }
+                                          
+                                          
+                                          
+
+                                          
                                       
                                       }).Title("Acciones").Width(150);
 
@@ -296,6 +307,8 @@
                                   columns.Bound(p => p.ExpirationDate).Format("{0:dd/MM/yyyy}").Title("Vencimiento").Width(170);
                                   columns.Bound(p => p.CustomerName).Title("Cliente").Width(250);
                                   columns.Bound(p => p.NumeroDEI).Title("No Factura").Width(280);
+                                  columns.Bound(p => p.ProductName).Title("Servicio").Width(280);
+                                  columns.Bound(p => p.Exonerado).Title("Exonerado").ClientTemplate("#= Exonerado? 'Si' : 'No'#").Width(280);
                                   columns.Bound(p => p.BranchName).Title("Sucursal").Width(280); 
                                   columns.Bound(p => p.Total).Format("{0:n2}").Title("Total").Width(200);
                                   columns.Bound(p => p.Estado).Title("Estado").Width(200);
@@ -333,20 +346,21 @@
                               .ToolBar(tools =>
                               {
                                   // tools.Create();
-                                  if (User.HasClaim("Ventas.Factura.Agregar", "true"))
+                                  if (User.HasClaim("Cuentas por Cobrar.Factura.Agregar", "true"))
                                   {
                                       tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
                                                  .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddCotizacion();" });
                                   }
-                                  if (User.HasClaim("Ventas.Factura.Reporte Libro de Ventas", "true"))
+                                  if (User.HasClaim("Cuentas por Cobrar.Factura.Reporte Libro de Ventas", "true"))
                                   {
-                                      tools.Custom().Text("Reporte").IconClass("")
+                                      tools.Custom().Text("Libro Auxiliar de Ventas").IconClass("k-icon k-i-file")
                                      .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "ImprimirLibroVentas();" });
                                   }
                                     
                                       tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
                                       tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
-
+                                      tools.Custom().Text("Reporte de Facturas").IconClass("k-icon k-i-file")
+                                       .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "ReporteInvoice();" });
 
                               })
                                .Editable(e => e.Mode(GridEditMode.PopUp))

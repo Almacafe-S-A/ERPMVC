@@ -74,6 +74,8 @@ namespace ERPMVC.Models
         [Display(Name = "Numero de orden de compra exenta")]
         public string NoOCExenta { get; set; }
 
+        public string Sinopsis { get; set; }
+
         [Display(Name = "Numero de constancia de registro de exoneracion")]
         public string NoConstanciadeRegistro { get; set; }
 
