@@ -228,7 +228,7 @@ namespace ERPMVC.Controllers
                         Customer customer = new Customer();
                         customer = JsonConvert.DeserializeObject<Customer>(valorrespuesta);
 
-                        if (customer != null)
+                        if (customer != null && _Boleto_Ent.Boleto_Sal != null)
                         {
                             _Boleto_Ent.UnidadPreferidaId = customer.UnitOfMeasurePreference  == null ? 0 : (int)customer.UnitOfMeasurePreference;
                             _Boleto_Ent.PesoUnidadPreferidaNeto = _Boleto_Ent.Convercion(_Boleto_Ent.Boleto_Sal.peso_n, _Boleto_Ent.UnidadPreferidaId);
