@@ -11,6 +11,60 @@
 
 <script>
 
+
+                                                         function valueMapper(options) {
+                                                            $.ajax({
+                                                                url: "@Url.Action("Orders_ValueMapper", "GoodsDelivered")",
+                                                                data: convertValues(options.value),
+                                                                success: function (data) {
+                                                                    options.success(data);
+                                                                }
+                                                            });
+                                                        }
+
+                                                        function convertValues(value) {
+                                                            var data = {};
+                                                            value = $.isArray(value) ? value : [value];
+
+                                                            for (var idx = 0; idx < value.length; idx++) {
+                                                                data["values[" + idx + "]"] = value[idx];
+                                                            }
+
+                                                            return data;
+                                                        }
+
+                                                        function changesetearvalues() {
+                                                            var dataObject = { 'GoodsDeliveredId' : $("#GoodsDeliveredId").val() };
+                                                            var notification = $("#notification").data("kendoNotification");
+                                                            var subproductid = 0;
+                                                            kendo.ui.progress($("#myModalBoletaDeSalida"), true);
+                                                            $.ajax({
+                                                                url: '@Url.Action("GetGoodsDeliveredById", "GoodsDelivered")',
+                                                                method: 'POST',
+                                                                datatype: "json",
+                                                                contentType: 'application/json',
+                                                                async: false,
+                                                                data: JSON.stringify(dataObject),
+                                                                success: function (data) {
+                                                                    debugger;
+                                                                    $("#Placa").val(data.Placa);
+                                                                    $("#Motorista").val(data.Name);
+                                                                    $("#Marca").val(data.Marca);
+                                                                    $("#Quantity").data("kendoNumericTextBox").value(data._GoodsDeliveredLine[0].QuantitySacos);
+                                                                    $("#CustomerId").data("kendoDropDownList").value(data.CustomerId);
+                                                                    $("#SubProductId").data("kendoDropDownList").dataSource.read();
+                                                                    $("#UnitOfMeasureId").data("kendoDropDownList").value(data._GoodsDeliveredLine[0].UnitOfMeasureId);
+                                                                    $("#BranchId").data("kendoDropDownList").value(data.BranchId);
+                                                                    subproductid = data._GoodsDeliveredLine[0].SubProductId;
+                                                                },
+                                                                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                                                                     MostrarMensaje(textStatus + ": " + XMLHttpRequest.responseText, "Error", "Validación", 30000);
+                                                                }
+                                                            });
+
+                                                            $("#SubProductId").data("kendoDropDownList").value(subproductid);
+                                                        }
+
     function customFunction(input) {
 
         if (input.attr('name') === "BranchId" && input.val() === "0") {
@@ -337,7 +391,7 @@
                                                 <div class="form-group">
                                                     <label asp-for="WeightBallot" class="control-label" style="width: 100%;"></label>
 
-                                                    @if (Model.WeightBallot == 0)
+                                                    @if (Model.BoletaDeSalidaId == 0)
                                                     {
                                                         <kendo-dropdownlist option-label="Sin Boleta de Peso" 
                                                                             datavaluefield="clave_e"
@@ -372,7 +426,7 @@
                                                        
                                                         <input type="text" id="WeightBallot" required class="k-textbox" style="min-width:100%;" asp-for="WeightBallot" />
                                                     }
-                                                    <span asp-validation-for="WeightBallot" class="text-danger"></span>
+                                                    
                                                 </div>
 
                                          </div>

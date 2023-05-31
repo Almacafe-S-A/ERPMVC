@@ -228,7 +228,7 @@ namespace ERPMVC.Controllers
                         Customer customer = new Customer();
                         customer = JsonConvert.DeserializeObject<Customer>(valorrespuesta);
 
-                        if (customer != null)
+                        if (customer != null && _Boleto_Ent.Boleto_Sal != null)
                         {
                             _Boleto_Ent.UnidadPreferidaId = customer.UnitOfMeasurePreference  == null ? 0 : (int)customer.UnitOfMeasurePreference;
                             _Boleto_Ent.PesoUnidadPreferidaNeto = _Boleto_Ent.Convercion(_Boleto_Ent.Boleto_Sal.peso_n, _Boleto_Ent.UnidadPreferidaId);
@@ -257,7 +257,7 @@ namespace ERPMVC.Controllers
         }
 
 
-        public async Task<ActionResult> Virtualization_Read([DataSourceRequest] DataSourceRequest request, Customer _customerp, bool esIngreso,bool completo = true)
+        public async Task<ActionResult> Virtualization_Read([DataSourceRequest] DataSourceRequest request, int CustomerId, bool esIngreso,bool completo = true)
         {
             //var res = await GetBoletaEntrada(_customerp);
             //bool completo = true;
@@ -265,7 +265,7 @@ namespace ERPMVC.Controllers
             string baseadress = config.Value.urlbase;
             HttpClient _client = new HttpClient();
             _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-            var result = await _client.GetAsync(baseadress + $"api/Boleto_Ent/GetBoletasdePesoByCustomer/{_customerp.CustomerId}/{esIngreso}/{completo}");
+            var result = await _client.GetAsync(baseadress + $"api/Boleto_Ent/GetBoletasdePesoByCustomer/{CustomerId}/{esIngreso}/{completo}");
             string valorrespuesta = "";
             if (result.IsSuccessStatusCode)
             {

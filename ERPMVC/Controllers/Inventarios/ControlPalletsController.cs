@@ -461,6 +461,7 @@ namespace ERPMVC.Controllers
                         editar = 1,
                         EsIngreso = _ControlPalletsId.EsIngreso,
                         EsSalida = _ControlPalletsId.EsSalida,
+
                         ProductoPesado = true,
                         FechaCreacion = DateTime.Now,
                         BranchId = Convert.ToInt64(HttpContext.Session.GetString("BranchId"))
