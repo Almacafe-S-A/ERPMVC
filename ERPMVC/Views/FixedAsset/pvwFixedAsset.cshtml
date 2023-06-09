@@ -179,17 +179,17 @@
                                                     <span asp-validation-for="CenterCostId" class="text-danger"></span>
                                                 </div>
                                             </div>
-                                            <div class="col-md-3" hidden >
+                                            <div class="col-md-3" hidden  >
 
-                                                <div class="form-group">
+                                                <div class="form-group" >
                                                     <label asp-for="IdEstado" class="control-label"></label>
                                                     
                                                     <kendo-dropdownlist for="IdEstado" datatextfield="NombreEstado"
-                                                                        datavaluefield="IdEstado" style="min-width:100%" enable="false"
+                                                                        datavaluefield="IdEstado" style="min-width:100%" enable=false
                                                                         option-label="Seleccione Estado">
                                                         <datasource page-size="999" type="DataSourceTagHelperType.WebApi" server-operation="true">
                                                             <transport>
-                                                                <read url="@Url.Action("GetporGrupoEstado","Estados",new { GrupoId = 6})" />
+                                                                <read url="@Url.Action("Get","Estados")" />
                                                             </transport>
                                                         </datasource>
 
@@ -373,97 +373,118 @@
 
     function SaveFixedAsset(e) {
         debugger;        
-        $("#btnFixedAsset").prop("disabled", true);
+        try{
+            $("#btnFixedAsset").prop("disabled", true);
 
-		if ($('#FixedActiveLife').val() < 0 || $('#Amount').val() < 0 || $('#Cost').val() < 0) {
-			alert("No se permiten valores negativos");
-			return;
-		}
+            if ($('#FixedActiveLife').val() < 0 || $('#Amount').val() < 0 || $('#Cost').val() < 0) {
+                alert("No se permiten valores negativos");
+                return;
+            }
 
-		var dataObject =
-		{
-			'FixedAssetId': $('#FixedAssetId').val() === "" ? "0" : $("#FixedAssetId").val(),
-			'FixedAssetName': $('#FixedAssetName').val(),
-            'Ubicacion': $('#Ubicacion').val(),
-			'FixedAssetCode': $('#FixedAssetCode').val(),
-            'AssetDate': $("#AssetDate").getKendoDatePicker().value().toJSON(),
-			'FixedAssetGroupId': $("#FixedAssetGroupId").data("kendoDropDownList").value(),
-			'FixedAssetCode': $('#FixedAssetCode').val(),
-			'BranchId': $("#BranchId").data("kendoDropDownList").value(),
-			'BranchName': $("#BranchId").data("kendoDropDownList").text(),
-			'CenterCostId': $("#CenterCostId").data("kendoDropDownList").value(),
-			'CenterCostName': $("#CenterCostId").data("kendoDropDownList").text(),
-			'FixedActiveLife': $('#FixedActiveLife').val(),
-			'Amount': $('#Amount').val(),
-            'Cost': $('#Cost').val() === "" ? "0" : $("#Cost").val(),
-            'ActiveTotalCost': $('#ActiveTotalCost').val(),
-            'ResidualValuePercent': $('#ResidualValuePercent').val(),
-            'NetValue': $('#NetValue').val() === "" ? "0" : $("#NetValue").val(),
-            'ResidualValue': $('#ResidualValue').val(),
-            'AccumulatedDepreciation': $('#AccumulatedDepreciation').val() === "" ? "0" : $("#AccumulatedDepreciation").val(),
-			'ToDepreciate': $('#ToDepreciate').val(),
-			'TotalDepreciated': $('#TotalDepreciated').val(),
-			'IdEstado': $("#IdEstado").data("kendoDropDownList").value() ,
-            'Estado': $("#IdEstado").data("kendoDropDownList").text(),
-			'Codigo' : $("#Codigo").val(),
-			'Marca' : $("#Marca").val(),
-			'Serie' : $("#Serie").val(),
-			'Modelo' : $("#Modelo").val(),
-            'VidaUtilNIIF' :$("#VidaUtilNIIF").val(),
-            'DepreciacionMensualNIIF' :$("#DepreciacionMensualNIIF").val(),
-            'TotalaDepreciarNIIF' :$("#TotalaDepreciarNIIF").val(),
+            var dataObject =
+            {
+                'FixedAssetId': $('#FixedAssetId').val() === "" ? "0" : $("#FixedAssetId").val(),
+                'FixedAssetName': $('#FixedAssetName').val(),
+                'Ubicacion': $('#Ubicacion').val(),
+                'FixedAssetCode': $('#Codigo').val(),
+                'AssetDate': $("#AssetDate").getKendoDatePicker().value().toJSON(),
+                'FixedAssetGroupId': $("#FixedAssetGroupId").data("kendoDropDownList").value(),
+                'BranchId': $("#BranchId").data("kendoDropDownList").value(),
+                'BranchName': $("#BranchId").data("kendoDropDownList").text(),
+                'CenterCostId': $("#CenterCostId").data("kendoDropDownList").value(),
+                'CenterCostName': $("#CenterCostId").data("kendoDropDownList").text(),
+                'FixedActiveLife': $('#FixedActiveLife').val(),
+                'Amount': $('#Amount').val(),
+                'Cost': $('#Cost').val() === "" ? "0" : $("#Cost").val(),
+                'ActiveTotalCost': $('#ActiveTotalCost').val(),
+                'ResidualValuePercent': $('#ResidualValuePercent').val(),
+                'NetValue': $('#NetValue').val() === "" ? "0" : $("#NetValue").val(),
+                'ResidualValue': $('#ResidualValue').val(),
+                'AccumulatedDepreciation': $('#AccumulatedDepreciation').val() === "" ? "0" : $("#AccumulatedDepreciation").val(),
+                'ToDepreciate': $('#ToDepreciate').val(),
+                'TotalDepreciated': $('#TotalDepreciated').val(),
+                'IdEstado': $("#IdEstado").data("kendoDropDownList").value(),
+                'Estado': $("#IdEstado").data("kendoDropDownList").text(),
+                'Codigo': $("#Codigo").val(),
+                'Marca': $("#Marca").val(),
+                'Serie': $("#Serie").val(),
+                'Modelo': $("#Modelo").val(),
+                'VidaUtilNIIF': $("#VidaUtilNIIF").val(),
+                'DepreciacionMensualNIIF': $("#DepreciacionMensualNIIF").val(),
+                'TotalaDepreciarNIIF': $("#TotalaDepreciarNIIF").val(),
 
 
-		};
+            };
 
-		var validator = $("#frmFixedAsset").data("kendoValidator");
-		var status = $(".status");
-        var notification = $("#notification").data("kendoNotification");
+            var validator = $("#frmFixedAsset").data("kendoValidator");
+            var status = $(".status");
+            var notification = $("#notification").data("kendoNotification");
 
-		if (validator.validate()) {
-			$.ajax({
-				url: '@Url.Action("SaveFixedAsset", "FixedAsset")',
-				method: "POST",
-				dataType: 'json',
-				contentType: 'application/json',
-				async: false,
-				data: JSON.stringify(dataObject),
-				success: function (data) {
-					$("#btnFixedAsset").show();
-					$("#warning").show();
-					$.toast({
-                        heading: 'Satisfactorio',
-                        text: 'Datos guardados correctamente.',
-                        position: 'top-right',
-                        loaderBg: '#ff6849',
-                        icon: 'success',
-                        hideAfter: 3000,
-                        stack: 6
-					});
-                     $("#btnFixedAsset").prop("disabled", false);
-					$('#ModalFixedAsset').modal('hide');
-				},
-				error: function (XMLHttpRequest, textStatus, errorThrown) {
-					notification.show({
-						title: "Validación",
-						message:"Error al guardar activo" }, "error");
-                         $("#btnFixedAsset").prop("disabled", false);
-				}
-			});
+            if (validator.validate()) {
+                $.ajax({
+                    url: '@Url.Action("SaveFixedAsset", "FixedAsset")',
+                    method: "POST",
+                    dataType: 'json',
+                    contentType: 'application/json',
+                    async: false,
+                    data: JSON.stringify(dataObject),
+                    success: function (data) {
+                        $("#btnFixedAsset").show();
+                        $("#warning").show();
+                        $.toast({
+                            heading: 'Satisfactorio',
+                            text: 'Datos guardados correctamente.',
+                            position: 'top-right',
+                            loaderBg: '#ff6849',
+                            icon: 'success',
+                            hideAfter: 3000,
+                            stack: 6
+                        });
+                       
+                        $('#ModalFixedAsset').modal('hide');
+                    },
+                    error: function (XMLHttpRequest, textStatus, errorThrown) {
+                        
+                        $.toast({
+                        heading: 'Validación',
+                                    text: 'Error al guardar activo',
+                            position: 'top-right',
+                            loaderBg: '#ff6849',
+                            icon: 'error',
+                            hideAfter: 3000,
+                            stack: 6
+                        });
+                       
+                    }
+                });
+            }
+            else {
+                
+                
+                return false;
+            }
+        
+        }catch(e){
+            console.log(e);
+         
+
+                $.toast({
+                heading: 'Validación',
+                text: 'Ingrese todos los datos en el formulario!',
+                    position: 'top-right',
+                    loaderBg: '#ff6849',
+                    icon: 'error',
+                    hideAfter: 3000,
+                    stack: 6
+                });
+        
+        }finally{
+            $("#btnFixedAsset").prop("disabled", true);
+            RefrescarGrid();
+
+        
         }
-        else {
-			notification.show({
-				title: "Validación",
-				message: "Ingrese todos los datos en el formulario!"
-            }, "error");
-            $("#btnFixedAsset").show();
-            $("#btnFixedAsset").prop("disabled", false);
-            return false;
-        }
-        $("#btnFixedAsset").show();
-        $("#btnFixedAsset").prop("disabled", true);
-        RefrescarGrid();
-
+        
 	}
 
     function RefreshCenterCost() {

@@ -118,6 +118,10 @@ namespace ERPMVC.Controllers
             FixedAsset fixedAsset = new FixedAsset();
             try
             {
+                if (_FixedAsset == null)
+                {
+                    return BadRequest("Error al enviar el modelo");
+                }
                 FixedAsset _listFixedAsset = new FixedAsset();
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
