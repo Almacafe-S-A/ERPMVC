@@ -333,6 +333,10 @@ namespace ERPMVC.Controllers
 
         }
 
-
+        [HttpGet]
+        public ActionResult SFReportePresupuesto()
+        {
+            return View();
+        }
     }
 }
