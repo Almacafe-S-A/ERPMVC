@@ -12,12 +12,8 @@
     };
         var rules = new Dictionary<string, string>() { { "custom", "customFunction" } };
     }*@
-    2
 
 <style>
-
-
-
     .k-checkbox + .k-checkbox-label {
         border-color: #ff6358;
         color: #fff;
@@ -74,13 +70,13 @@
     </div>
 
     <div class="col-md-2">
-        <label id="CostCenterLbl">Mostrar Presupuesto</label>
+        <label id="CostCenterLbl">Mostrar Presupuesto </label>
         <br />
         @(Html.Kendo().CheckBox().Name("checkepresupuesto").Checked(true).HtmlAttributes(new { onchange = "check();" }))
     </div>
 
     <div class="col-md-2">
-        <label id="CostCenterLbl">Mostrar Ejecución</label>
+        <label id="CostCenterLbl"> Mostrar Ejecución</label>
         <br />
         @(Html.Kendo().CheckBox().Name("checkejecucion").Checked(true).HtmlAttributes(new { onchange = "check2();" }))
     </div>
@@ -126,6 +122,49 @@
         
     }
 	
+    function AnularPresupuesto(e) {
+        debugger;
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        var dataObject = {
+            Id: dataItem.Id
+        };
+
+        if (confirm("Esta seguro que desea anular el presupuesto?")) {
+            $.ajax({
+                url: '@Url.Action("Delete", "Presupuesto")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (result) {
+                    $.toast({
+                        heading: 'Satisfactorio',
+                        text: 'El Presupuesto se ha anulado correctamente.',
+                        position: 'top-right',
+                        loaderBg: '#ff6849',
+                        icon: 'success',
+                        hideAfter: 7000,
+                        stack: 6
+                    });
+                    RefreshPresupuesto();
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+
+                    $.toast({
+                        heading: 'Error',
+                        text: XMLHttpRequest.responseText,
+                        position: 'top-right',
+                        loaderBg: '#ff0000',
+                        icon: 'error',
+                        hideAfter: 7000,
+                        stack: 6
+                    });
+                }
+            });
+        }
+    }
+
     function RefreshPresupuesto() {
     var grid = $("#gridPresupuesto").getKendoGrid();
     var idCentroCosto = $("#CostCenterId").val();
@@ -189,15 +228,55 @@
         }
     }
 
+	function ocultarTotal(){
+        var grids = $("#gridPresupuesto").data("kendoGrid");
+        var rows = grid.table.find("tr");
+        var lastRow = rows.last();
+        lastRow.hide();
+    }
+
+    function ocultarFooter() {
+        var footerRow = $("#gridPresupuesto").find(".k-footer-template");
+        footerRow.hide();
+    }
+	
+    function eliminarFooter() {
+        var footerRow = $("#gridPresupuesto").find(".k-footer-template");
+        footerRow.remove();
+    }
+	
+    function exportarExcel() {
+		debugger
+        var rows = e.workbook.sheets[0].rows;
+
+        for (var ri = 0; ri < rows.length; ri++) {
+            var row = rows[ri];
+
+            if (row.type == "group-footer" || row.type == "footer") {
+                for (var ci = 0; ci < row.cells.length; ci++) {
+                    var cell = row.cells[ci];
+                    if (cell.value) {
+                        // Use jQuery.fn.text to remove the HTML and get only the text
+                        cell.value = $(cell.value).text();
+                        // Set the alignment
+                        cell.hAlign = "right";
+                    }
+                }
+            }
+            }
+        var grid = $("#gridPresupuesto").data("kendoGrid");
+        // Realizar la exportación a Excel
+        grid.saveAsExcel();
+    }
+
+
+
 
     function check2() {
 
         var grids = $("#gridPresupuesto").data("kendoGrid");
 
         if ($("#checkejecucion").is(':checked')) {
-
-
-
 
             grids.showColumn(3);
             grids.showColumn(5);
@@ -359,7 +438,6 @@
     });
 
 
-
 </script>
 
 
@@ -404,59 +482,209 @@
     </div>
 </div>
 
-
-
-@(Html.Kendo().Grid<ERPMVC.Models.Presupuesto>
+@(
+Html.Kendo().Grid<ERPMVC.Models.Presupuesto>
                 ()
                 .Name("gridPresupuesto")
                 .Columns(columns =>
                 {
-                    
-                        if (permisos.HasClaim("Contabilidad.Presupuesto.Editar", "true"))
-                        {
-                            columns.Command(command =>
-                            {
+
+                    if (permisos.HasClaim("Contabilidad.Presupuesto.Editar", "true"))
+                    {
+                        columns.Command(command =>
+            {
                                 command.Custom("edit").Text(" ").Click("editrow").IconClass("fa fa-pencil");
-                                
-                                command.Destroy().Text(" ").IconClass("fa fa-trash");
+                                command.Custom("anular").Text(" ").Click("AnularPresupuesto").IconClass("fa fa-trash");
+								
                             }).Width(120)/*.Locked(true)*/.Title("Acciones");
-                        }
+                    }
                     columns.Bound(p => p.Id).Width(100).Visible(false);
                     //columns.Bound(p => p.Accounting).ClientTemplate("<div style='text-align: right'>#=Accounting.AccountName#</div>").Sortable(false).Width(180).Title("Cuentas");
                     columns.ForeignKey(p => p.AccountigId, (System.Collections.IEnumerable)ViewData["Cuentas"], "AccountId", "AccountName").Title("Cuentas").Width(200);
-                    columns.Bound(p => p.PresupuestoEnero).Title("Presupuesto Enero").Format("{0:n2}").Width(200)
-                    .HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" })
-                    .ClientFooterTemplate("<div style='text-align: right'>#=totalColumnas(1,1)#</div>").Format("{0:n2}");
-                    columns.Bound(p => p.EjecucionEnero).Title("Ejecución Enero ").Format("{0:n2}").Width(200)
-                    .HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" })
-                     .ClientFooterTemplate("<div style='text-align: right'>#=totalColumnas(2,1)#</div>").Format("{0:n2}");
                     columns.Bound(p => p.AccountCode).Title("Codigo").Width(200);
                     columns.Bound(p => p.AccountingName).Title("Nombre de Codigo").Width(200);
-                    columns.Bound(p => p.PresupuestoFebrero).Title("Presupuesto Febrero").Format("{0:n2}").ClientFooterTemplate("<div style='text-align: right'>#=totalColumnas(3,1)#</div>").HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" }).Width(200);
-                    columns.Bound(p => p.EjecucionFebrero).Title("Ejecución Febrero").Format("{0:n2}").ClientFooterTemplate("<div style='text-align: right'>#=totalColumnas(4,1)#</div>").HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" }).Width(200);
-                    columns.Bound(p => p.PresupuestoMarzo).Title("Presupuesto Marzo").Format("{0:n2}").ClientFooterTemplate("<div style='text-align: right'>#=totalColumnas(5,1)#</div>").HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" }).Width(200);
-                    columns.Bound(p => p.EjecucionMarzo).Title("Ejecución Marzo").Format("{0:n2}").ClientFooterTemplate("<div style='text-align: right'>#=totalColumnas(6,1)#</div>").HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" }).Width(200);
-                    columns.Bound(p => p.PresupuestoAbril).Title("Presupuesto Abril").Format("{0:n2}").ClientFooterTemplate("<div style='text-align: right'>#=totalColumnas(7,1)#</div>").HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" }).Width(200);
-                    columns.Bound(p => p.EjecucionAbril).Title("Ejecución Abril").Format("{0:n2}").ClientFooterTemplate("<div style='text-align: right'>#=totalColumnas(8,1)#</div>").HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" }).Width(200);
-                    columns.Bound(p => p.PresupuestoMayo).Title("Presupuesto Mayo").Format("{0:n2}").ClientFooterTemplate("<div style='text-align: right'>#=totalColumnas(9,1)#</div>").HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" }).Width(200);
-                    columns.Bound(p => p.EjecucionMayo).Title("Ejecución Mayo").Format("{0:n2}").ClientFooterTemplate("<div style='text-align: right'>#=totalColumnas(10,1)#</div>").HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" }).Width(200);
-                    columns.Bound(p => p.PresupuestoJunio).Title("Presupuesto Junio").Format("{0:n2}").ClientFooterTemplate("<div style='text-align: right'>#=totalColumnas(11,1)#</div>").HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" }).Width(200);
-                    columns.Bound(p => p.EjecucionJunio).Title("Ejecución Junio").Format("{0:n2}").ClientFooterTemplate("<div style='text-align: right'>#=totalColumnas(12,1)#</div>").HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" }).Width(200);
-                    columns.Bound(p => p.PresupuestoJulio).Title("Presupuesto Julio").Format("{0:n2}").ClientFooterTemplate("<div style='text-align: right'>#=totalColumnas(13,1)#</div>").HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" }).Width(200);
-                    columns.Bound(p => p.EjecucionJulio).Title("Ejecución Julio").Format("{0:n2}").ClientFooterTemplate("<div style='text-align: right'>#=totalColumnas(14,1)#</div>").HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" }).Width(200);
-                    columns.Bound(p => p.PresupuestoAgosto).Title("Presupuesto Agosto").Format("{0:n2}").ClientFooterTemplate("<div style='text-align: right'>#=totalColumnas(15,1)#</div>").HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" }).Width(200);
-                    columns.Bound(p => p.EjecucionAgosto).Title("Ejecución Agosto").Format("{0:n2}").ClientFooterTemplate("<div style='text-align: right'>#=totalColumnas(16,1)#</div>").HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" }).Width(200);
-                    columns.Bound(p => p.PresupuestoSeptiembre).Title("Presupuesto Septiembre").Format("{0:n2}").ClientFooterTemplate("<div style='text-align: right'>#=totalColumnas(17,1)#</div>").HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" }).Width(200);
-                    columns.Bound(p => p.EjecucionSeptiembre).Title("Ejecución Septiembre").Format("{0:n2}").ClientFooterTemplate("<div style='text-align: right'>#=totalColumnas(18,1)#</div>").HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" }).Width(200);
-                    columns.Bound(p => p.PresupuestoOctubre).Title("Presupuesto Octubre").Format("{0:n2}").ClientFooterTemplate("<div style='text-align: right'>#=totalColumnas(19,1)#</div>").HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" }).Width(200);
-                    columns.Bound(p => p.EjecucionOctubre).Title("Ejecución Octubre").Format("{0:n2}").ClientFooterTemplate("<div style='text-align: right'>#=totalColumnas(20,1)#</div>").HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" }).Width(200);
-                    columns.Bound(p => p.PresupuestoNoviembre).Title("Presupuesto Noviembre").Format("{0:n2}").ClientFooterTemplate("<div style='text-align: right'>#=totalColumnas(21,1)#</div>").HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" }).Width(200);
-                    columns.Bound(p => p.EjecucionNoviembre).Title("Ejecución Noviembre").Format("{0:n2}").ClientFooterTemplate("<div style='text-align: right'>#=totalColumnas(22,1)#</div>").HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" }).Width(200);
-                    columns.Bound(p => p.PresupuestoDiciembre).Title("Presupuesto Diciembre").Format("{0:n2}").ClientFooterTemplate("<div style='text-align: right'>#=totalColumnas(23,1)#</div>").HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" }).Width(200);
-                    columns.Bound(p => p.EjecucionDiciembre).Title("Ejecución Diciembre").Format("{0:n2}").ClientFooterTemplate("<div style='text-align: right'>#=totalColumnas(24,1)#</div>").HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" }).Width(200);
-                    columns.Bound(p => p.TotalMontoPresupuesto).Title("TotalMonto Presupuesto").Format("{0:n2}").ClientFooterTemplate("<div style='text-align: right'>#=totalColumnas(25,1)#</div>").HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" }).Width(200);
-                    columns.Bound(p => p.TotalMontoEjecucion).Title("TotalMonto Ejecución").Format("{0:n2}").ClientFooterTemplate("<div style='text-align: right'>#=totalColumnas(26,1)#</div>").HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" }).Width(200);
-                     
+                    columns.Bound(p => p.PresupuestoEnero)
+                    .Title("Presupuesto Enero")
+                    .Format("{0:n2}")
+                    .Width(200)
+                    .HtmlAttributes(new Dictionary<string, object> { ["style"] = "text-align: right;" })
+                    .FooterHtmlAttributes(new Dictionary<string, object> { ["style"] = "text-align: right;" })
+                    .ClientFooterTemplate("#=totalColumnas(1,1)#");
+                    columns.Bound(p => p.EjecucionEnero)
+                    .Title("Ejecución Enero ")
+                    .Format("{0:n2}")
+                    .Width(200)
+                    .HtmlAttributes(new Dictionary<string, object> { ["style"] = "text-align: right;" })
+                    .FooterHtmlAttributes(new Dictionary<string, object> { ["style"] = "text-align: right;" })
+                    .ClientFooterTemplate("#=totalColumnas(2,1)#");
+                    columns.Bound(p => p.PresupuestoFebrero)
+                    .Title("Presupuesto Febrero")
+                    .Format("{0:n2}")
+                    .Width(200)
+                    .HtmlAttributes(new Dictionary<string, object> { ["style"] = "text-align: right;" })
+                    .FooterHtmlAttributes(new Dictionary<string, object> { ["style"] = "text-align: right;" })
+                    .ClientFooterTemplate("#=totalColumnas(3,1)#");
+                    columns.Bound(p => p.EjecucionFebrero)
+                    .Title("Ejecución Febrero")
+                    .Format("{0:n2}")
+                    .Width(200)
+                    .HtmlAttributes(new Dictionary<string, object> { ["style"] = "text-align: right;" })
+                    .FooterHtmlAttributes(new Dictionary<string, object> { ["style"] = "text-align: right;" })
+                    .ClientFooterTemplate("#=totalColumnas(4,1)#");
+                    columns.Bound(p => p.PresupuestoMarzo)
+                    .Title("Presupuesto Marzo")
+                    .Format("{0:n2}")
+                    .Width(200)
+                    .HtmlAttributes(new Dictionary<string, object> { ["style"] = "text-align: right;" })
+                    .FooterHtmlAttributes(new Dictionary<string, object> { ["style"] = "text-align: right;" })
+                    .ClientFooterTemplate("#=totalColumnas(5,1)#");
+                    columns.Bound(p => p.EjecucionMarzo)
+                    .Title("Ejecución Marzo")
+                    .Format("{0:n2}")
+                    .Width(200)
+                    .HtmlAttributes(new Dictionary<string, object> { ["style"] = "text-align: right;" })
+                    .FooterHtmlAttributes(new Dictionary<string, object> { ["style"] = "text-align: right;" })
+                    .ClientFooterTemplate("#=totalColumnas(6,1)#");
+                    columns.Bound(p => p.PresupuestoAbril)
+                    .Title("Presupuesto Abril")
+                    .Format("{0:n2}")
+                    .Width(200)
+                    .HtmlAttributes(new Dictionary<string, object> { ["style"] = "text-align: right;" })
+                    .FooterHtmlAttributes(new Dictionary<string, object> { ["style"] = "text-align: right;" })
+                    .ClientFooterTemplate("#=totalColumnas(7,1)#"); 
+                    columns.Bound(p => p.EjecucionAbril)
+                    .Title("Ejecución Abril")
+                    .Format("{0:n2}")
+                    .Width(200)
+                    .HtmlAttributes(new Dictionary<string, object> { ["style"] = "text-align: right;" })
+                    .FooterHtmlAttributes(new Dictionary<string, object> { ["style"] = "text-align: right;" })
+                    .ClientFooterTemplate("#=totalColumnas(8,1)#");
+                    columns.Bound(p => p.PresupuestoMayo)
+                    .Title("Presupuesto Mayo")
+                    .Format("{0:n2}")
+                    .Width(200)
+                    .HtmlAttributes(new Dictionary<string, object> { ["style"] = "text-align: right;" })
+                    .FooterHtmlAttributes(new Dictionary<string, object> { ["style"] = "text-align: right;" })
+                    .ClientFooterTemplate("#=totalColumnas(9,1)#");
+                    columns.Bound(p => p.EjecucionMayo)
+                    .Title("Ejecución Mayo")
+                    .Format("{0:n2}")
+                    .Width(200)
+                    .HtmlAttributes(new Dictionary<string, object> { ["style"] = "text-align: right;" })
+                    .FooterHtmlAttributes(new Dictionary<string, object> { ["style"] = "text-align: right;" })
+                    .ClientFooterTemplate("#=totalColumnas(10,1)#");
+                    columns.Bound(p => p.PresupuestoJunio)
+                    .Title("Presupuesto Junio")
+                    .Format("{0:n2}")
+                    .Width(200)
+                    .HtmlAttributes(new Dictionary<string, object> { ["style"] = "text-align: right;" })
+                    .FooterHtmlAttributes(new Dictionary<string, object> { ["style"] = "text-align: right;" })
+                    .ClientFooterTemplate("#=totalColumnas(11,1)#"); 
+                    columns.Bound(p => p.EjecucionJunio)
+                    .Title("Ejecución Junio")
+                    .Format("{0:n2}")
+                    .Width(200)
+                    .HtmlAttributes(new Dictionary<string, object> { ["style"] = "text-align: right;" })
+                    .FooterHtmlAttributes(new Dictionary<string, object> { ["style"] = "text-align: right;" })
+                    .ClientFooterTemplate("#=totalColumnas(12,1)#");
+                    columns.Bound(p => p.PresupuestoJulio)
+                    .Title("Presupuesto Julio")
+                    .Format("{0:n2}")
+                    .Width(200)
+                    .HtmlAttributes(new Dictionary<string, object> { ["style"] = "text-align: right;" })
+                    .FooterHtmlAttributes(new Dictionary<string, object> { ["style"] = "text-align: right;" })
+                    .ClientFooterTemplate("#=totalColumnas(13,1)#");
+                    columns.Bound(p => p.EjecucionJulio)
+                    .Title("Ejecución Julio")
+                    .Format("{0:n2}")
+                    .Width(200)
+                    .HtmlAttributes(new Dictionary<string, object> { ["style"] = "text-align: right;" })
+                    .FooterHtmlAttributes(new Dictionary<string, object> { ["style"] = "text-align: right;" })
+                    .ClientFooterTemplate("#=totalColumnas(14,1)#");
+                    columns.Bound(p => p.PresupuestoAgosto)
+                    .Title("Presupuesto Agosto")
+                    .Format("{0:n2}")
+                    .Width(200)
+                    .HtmlAttributes(new Dictionary<string, object> { ["style"] = "text-align: right;" })
+                    .FooterHtmlAttributes(new Dictionary<string, object> { ["style"] = "text-align: right;" })
+                    .ClientFooterTemplate("#=totalColumnas(15,1)#");
+                    columns.Bound(p => p.EjecucionAgosto)
+                    .Title("Ejecución Agosto")
+                    .Format("{0:n2}")
+                    .Width(200)
+                    .HtmlAttributes(new Dictionary<string, object> { ["style"] = "text-align: right;" })
+                    .FooterHtmlAttributes(new Dictionary<string, object> { ["style"] = "text-align: right;" })
+                    .ClientFooterTemplate("#=totalColumnas(16,1)#");
+                    columns.Bound(p => p.PresupuestoSeptiembre)
+                    .Title("Presupuesto Septiembre")
+                    .Format("{0:n2}")
+                    .Width(200)
+                    .HtmlAttributes(new Dictionary<string, object> { ["style"] = "text-align: right;" })
+                    .FooterHtmlAttributes(new Dictionary<string, object> { ["style"] = "text-align: right;" })
+                    .ClientFooterTemplate("#=totalColumnas(17,1)#");
+                    columns.Bound(p => p.EjecucionSeptiembre)
+                    .Title("Ejecución Septiembre")
+                    .Format("{0:n2}")
+                    .Width(200)
+                    .HtmlAttributes(new Dictionary<string, object> { ["style"] = "text-align: right;" })
+                    .FooterHtmlAttributes(new Dictionary<string, object> { ["style"] = "text-align: right;" })
+                    .ClientFooterTemplate("#=totalColumnas(18,1)#");
+                    columns.Bound(p => p.PresupuestoOctubre)
+                    .Title("Presupuesto Octubre")
+                    .Format("{0:n2}")
+                    .Width(200)
+                    .HtmlAttributes(new Dictionary<string, object> { ["style"] = "text-align: right;" })
+                    .FooterHtmlAttributes(new Dictionary<string, object> { ["style"] = "text-align: right;" })
+                    .ClientFooterTemplate("#=totalColumnas(19,1)#");
+                    columns.Bound(p => p.EjecucionOctubre)
+                    .Title("Ejecución Octubre")
+                    .Format("{0:n2}")
+                    .Width(200)
+                    .HtmlAttributes(new Dictionary<string, object> { ["style"] = "text-align: right;" })
+                    .FooterHtmlAttributes(new Dictionary<string, object> { ["style"] = "text-align: right;" })
+                    .ClientFooterTemplate("#=totalColumnas(20,1)#");
+                    columns.Bound(p => p.PresupuestoNoviembre)
+                    .Title("Presupuesto Noviembre")
+                    .Format("{0:n2}")
+                    .Width(200)
+                    .HtmlAttributes(new Dictionary<string, object> { ["style"] = "text-align: right;" })
+                    .FooterHtmlAttributes(new Dictionary<string, object> { ["style"] = "text-align: right;" })
+                    .ClientFooterTemplate("#=totalColumnas(21,1)#");
+                    columns.Bound(p => p.EjecucionNoviembre)
+                    .Title("Ejecución Noviembre")
+                    .Format("{0:n2}")
+                    .Width(200)
+                    .HtmlAttributes(new Dictionary<string, object> { ["style"] = "text-align: right;" })
+                    .FooterHtmlAttributes(new Dictionary<string, object> { ["style"] = "text-align: right;" })
+                    .ClientFooterTemplate("#=totalColumnas(22,1)#");
+                    columns.Bound(p => p.PresupuestoDiciembre)
+                    .Title("Presupuesto Diciembre")
+                    .Format("{0:n2}")
+                    .Width(200)
+                    .HtmlAttributes(new Dictionary<string, object> { ["style"] = "text-align: right;" })
+                    .FooterHtmlAttributes(new Dictionary<string, object> { ["style"] = "text-align: right;" })
+                    .ClientFooterTemplate("#=totalColumnas(23,1)#");
+                    columns.Bound(p => p.EjecucionDiciembre)
+                    .Title("Ejecución Diciembre")
+                    .Format("{0:n2}")
+                    .Width(200)
+                    .HtmlAttributes(new Dictionary<string, object> { ["style"] = "text-align: right;" })
+                    .FooterHtmlAttributes(new Dictionary<string, object> { ["style"] = "text-align: right;" })
+                    .ClientFooterTemplate("#=totalColumnas(24,1)#");
+                    columns.Bound(p => p.TotalMontoPresupuesto)
+                    .Title("TotalMonto Presupuesto")
+                    .Format("{0:n2}")
+                    .Width(200)
+                    .HtmlAttributes(new Dictionary<string, object> { ["style"] = "text-align: right;" })
+                    .FooterHtmlAttributes(new Dictionary<string, object> { ["style"] = "text-align: right;" })
+                    .ClientFooterTemplate("#=totalColumnas(25,1)#");
+                    columns.Bound(p => p.TotalMontoEjecucion)
+                    .Title("TotalMonto Ejecución")
+                    .Format("{0:n2}")
+                    .Width(200)
+                    .HtmlAttributes(new Dictionary<string, object> { ["style"] = "text-align: right;" })
+                    .FooterHtmlAttributes(new Dictionary<string, object> { ["style"] = "text-align: right;" })
+                    .ClientFooterTemplate("#=totalColumnas(26,1)#");
                 })
                 .Filterable(f => f.Operators(o => o.ForString(s => s
                 .Clear()
@@ -493,13 +721,14 @@
                 {
                     if (permisos.HasClaim("Contabilidad.Presupuesto.Editar", "true"))
                     {
-                            tools.Create().Text("Agregar").HtmlAttributes(new { @class = "k-i-plus-sm", @style = "display:none;", onclick = "AddPresupuesto();" });
+                        tools.Create().Text("Agregar").HtmlAttributes(new { @class = "k-i-plus-sm", @style = "display:none;", onclick = "AddPresupuesto();" });
                     }
                     tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" }).Text("Exportar a excel");
                     tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" }).Text("Exportar a pdf");
                     tools.Custom().Text("Variaciones de Presupuestos").IconClass("k-icon k-i-print")
                                                      .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "ImprimirReportPresupuesto();" });
-
+                    tools.Custom().Text("Exportar").IconClass("k-icon k-i-print")
+                                                     .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "exportarExcel();" });
                 })
 
                 .Editable(e => e.Mode(GridEditMode.InLine))
@@ -510,51 +739,58 @@
                 .Pdf(pdf => pdf.FileName("UsuariosReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
                 + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
                 .ProxyURL(Url.Action("Export", "Home")).AllPages())
-                .Excel(excel => excel.FileName("UsuariosReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-                + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
-                .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+                .Excel(excel =>
+                {
+                    excel.FileName("Presupuesto " + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                        + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx");
+                    excel.Filterable(true);
+                    excel.ProxyURL(Url.Action("Export", "Home"));
+                    excel.AllPages(true);
+                })
                 .DataSource(dataSource =>
                 dataSource
-                
+
                 .WebApi()
                 .ServerOperation(true)
                 .Model(model =>
                 {
-                model.Id(p => p.Id);
-                model.Field(p => p.Id).Editable(false);
-                model.Field(p => p.AccountigId).Editable(true);
-                model.Field(p => p.PresupuestoEnero).Editable(true);
-                model.Field(p => p.EjecucionEnero).Editable(false);
-                model.Field(p => p.PresupuestoFebrero).Editable(true);
-                model.Field(p => p.EjecucionFebrero).Editable(false);
-                model.Field(p => p.PresupuestoMarzo).Editable(true);
-                model.Field(p => p.EjecucionMarzo).Editable(false);
-                model.Field(p => p.PresupuestoAbril).Editable(true);
-                model.Field(p => p.EjecucionAbril).Editable(false);
-                model.Field(p => p.PresupuestoMayo).Editable(true);
-                model.Field(p => p.EjecucionMayo).Editable(false);
-                model.Field(p => p.PresupuestoJunio).Editable(true);
-                model.Field(p => p.EjecucionJunio).Editable(false);
-                model.Field(p => p.PresupuestoJulio).Editable(true);
-                model.Field(p => p.EjecucionJulio).Editable(false);
-                model.Field(p => p.PresupuestoAgosto).Editable(true);
-                model.Field(p => p.EjecucionAgosto).Editable(false);
-                model.Field(p => p.PresupuestoSeptiembre).Editable(true);
-                model.Field(p => p.EjecucionSeptiembre).Editable(false);
-                model.Field(p => p.PresupuestoOctubre).Editable(true);
-                model.Field(p => p.EjecucionOctubre).Editable(false);
-                model.Field(p => p.PresupuestoNoviembre).Editable(true);
-                model.Field(p => p.EjecucionNoviembre).Editable(false);
-                model.Field(p => p.PresupuestoDiciembre).Editable(true);
-                model.Field(p => p.EjecucionDiciembre).Editable(false);
-                model.Field(p => p.TotalMontoPresupuesto).Editable(false);
-                model.Field(p => p.TotalMontoEjecucion).Editable(false);
-                model.Field(p => p.FechaModificacion).Editable(false);
-                model.Field(p => p.FechaCreacion).Editable(false);
-                model.Field(p => p.UsuarioCreacion).Editable(false);
-                model.Field(p => p.UsuarioModificacion).Editable(false);
-                model.Field(p => p.CostCenterId).Editable(true);
-                model.Field(p => p.PeriodoId).Editable(true);
+                    model.Id(p => p.Id);
+                    model.Field(p => p.Id).Editable(false);
+                    model.Field(p => p.AccountigId).Editable(true);
+                    model.Field(p => p.AccountCode).Editable(false);
+                    model.Field(p => p.AccountingName).Editable(false);
+                    model.Field(p => p.PresupuestoEnero).Editable(true);
+                    model.Field(p => p.EjecucionEnero).Editable(false);
+                    model.Field(p => p.PresupuestoFebrero).Editable(true);
+                    model.Field(p => p.EjecucionFebrero).Editable(false);
+                    model.Field(p => p.PresupuestoMarzo).Editable(true);
+                    model.Field(p => p.EjecucionMarzo).Editable(false);
+                    model.Field(p => p.PresupuestoAbril).Editable(true);
+                    model.Field(p => p.EjecucionAbril).Editable(false);
+                    model.Field(p => p.PresupuestoMayo).Editable(true);
+                    model.Field(p => p.EjecucionMayo).Editable(false);
+                    model.Field(p => p.PresupuestoJunio).Editable(true);
+                    model.Field(p => p.EjecucionJunio).Editable(false);
+                    model.Field(p => p.PresupuestoJulio).Editable(true);
+                    model.Field(p => p.EjecucionJulio).Editable(false);
+                    model.Field(p => p.PresupuestoAgosto).Editable(true);
+                    model.Field(p => p.EjecucionAgosto).Editable(false);
+                    model.Field(p => p.PresupuestoSeptiembre).Editable(true);
+                    model.Field(p => p.EjecucionSeptiembre).Editable(false);
+                    model.Field(p => p.PresupuestoOctubre).Editable(true);
+                    model.Field(p => p.EjecucionOctubre).Editable(false);
+                    model.Field(p => p.PresupuestoNoviembre).Editable(true);
+                    model.Field(p => p.EjecucionNoviembre).Editable(false);
+                    model.Field(p => p.PresupuestoDiciembre).Editable(true);
+                    model.Field(p => p.EjecucionDiciembre).Editable(false);
+                    model.Field(p => p.TotalMontoPresupuesto).Editable(false);
+                    model.Field(p => p.TotalMontoEjecucion).Editable(false);
+                    model.Field(p => p.FechaModificacion).Editable(false);
+                    model.Field(p => p.FechaCreacion).Editable(false);
+                    model.Field(p => p.UsuarioCreacion).Editable(false);
+                    model.Field(p => p.UsuarioModificacion).Editable(false);
+                    model.Field(p => p.CostCenterId).Editable(true);
+                    model.Field(p => p.PeriodoId).Editable(true);
                 }).Aggregates(aggregates =>
                     {
                         aggregates.Add(p => p.PresupuestoEnero).Sum();
