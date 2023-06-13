@@ -162,10 +162,10 @@ Html.Kendo().Grid<ERPMVC.Models.InvoicePaymentsLine>()
                                                                   {
                                                                       if (Model.Id == 0)
                                                                       {
-                                                                        columns.Command(command =>
-                                                                          {
-                                                                                  command.Destroy().Text(" ").IconClass("far fa-trash-alt");
-                                                                          
+                                                                          columns.Command(command =>
+                                                                {
+                                                                              command.Destroy().Text(" ").IconClass("far fa-trash-alt");
+
                                                                           }).Title("").Width(80);
                                                                       }
                                                                       columns.Bound(p => p.Id).Title("No").Width(80).Visible(false);
@@ -173,24 +173,27 @@ Html.Kendo().Grid<ERPMVC.Models.InvoicePaymentsLine>()
                                                                       columns.Bound(p => p.InvoicePaymentId).Title("Factura Id").Width(200).Visible(false);
                                                                       columns.Bound(p => p.SubProductId).Title("IdProducto").Visible(false);
                                                                       columns.Bound(p => p.SubProductName).Title("Producto").Width(250).Visible(false);
-                                                                      columns.Bound(p => p.SubProduct).Title("Servicio")
+                                                                      columns.Bound(p => p.SubProduct).Title("Sub Servicio")
                                                                       .ClientTemplate("#=typeof SubProduct === 'undefined'||SubProduct===null?SubProductName:SubProduct.ProductName#").Width(250);
-                                                                     
-                                                                      columns.Bound(p => p.MontoAdeudaPrevio).Title("Monto Adeudado").Format("{0:n2}").Width(180)
+
+                                                                      columns.Bound(p => p.MontoAdeudaPrevio).Title("Valor Servicio").Format("{0:n2}").Width(180)
                                                                       .ClientTemplate("<div style='text-align: right'><span class='MontoAdeudaPrevioSpan'>#= formattear.format(MontoAdeudaPrevio).replace(/[a-z]{3}/i, '').trim() #</span></div>")
                                                                         .Width(200)
                                                                         .ClientFooterTemplate("<div style='text-align: right'><span class='MontoAdeudaPrevio'>#= totalColumnas(1,1)#</span></div>")
-                                                                        .HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" }); ;
+                                                                        .HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" })
+                                                                        .FooterHtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" });
                                                                       columns.Bound(p => p.MontoPagado).Format("{0:n2}").Title("Pago").Width(200)
                                                                       .ClientTemplate("<div style='text-align: right'><span class='MontoPagadoSpan'>#= formattear.format(MontoPagado).replace(/[a-z]{3}/i, '').trim() #</span></div>")
                                                                         .Width(200)
                                                                         .ClientFooterTemplate("<div style='text-align: right'><span class='MontoPagado'>#= totalColumnas(2,1)#</span></div>")
-                                                                        .HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" });;
-                                                                      columns.Bound(p => p.MontoRestante).Format("{0:n2}").Title("Resta").Width(200)
+                                                                        .HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" })
+                                                                            .FooterHtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" });
+                                                                      columns.Bound(p => p.MontoRestante).Format("{0:n2}").Title("Saldo Pendiente").Width(200)
                                                                       .ClientTemplate("<div style='text-align: right'><span class='MontoRestanteSpan'>#= formattear.format(MontoAdeudaPrevio - MontoPagado).replace(/[a-z]{3}/i, '').trim() #</span></div>")
                                                                         .Width(200)
                                                                         .ClientFooterTemplate("<div style='text-align: right'><span class='MontoRestante'>#= totalColumnas(3,1)#</span></div>")
-                                                                        .HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" });;
+                                                                        .HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" })
+                                                                        .FooterHtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" });
                                                                       
 
                                                                   })
@@ -225,11 +228,20 @@ Html.Kendo().Grid<ERPMVC.Models.InvoicePaymentsLine>()
                                                          .IsNotEqualTo("No es igual que")
                                                           )
                                                        ))
-                                                                  
-                                                                   .Editable(e => e.Mode(GridEditMode.InCell))
-                                                                    .Sortable()
+                                                                  .ToolBar(tools =>
+                                                                  {
+                                                                      @*if (Model.Id == 0)
+                                                                      {
+                                                                          tools.Create().Text("Agregar").IconClass("k-icon k-i-plus")
+                                                                          .HtmlAttributes(new { @class = "k-i-plus-sm" });
+                                                                      }*@
+
+
+                                                                  })
+                                                                   .Editable(e => e.Mode(GridEditMode.InCell).CreateAt(GridInsertRowPosition.Bottom))
+                                                                    .Sortable(false)
                                                                     .AutoBind(true)
-                                                                    .Navigatable()
+                                                                    .Navigatable(true)
                                                                     .Filterable()
                                                                     .Scrollable()
                                                                     //.Events(e => e.DataBound("CalcularTotalDocumento"))
@@ -243,7 +255,7 @@ Html.Kendo().Grid<ERPMVC.Models.InvoicePaymentsLine>()
                                                                     .Model(model =>
                                                                     {
                                                                         model.Id(p => p.Id);
-                                                                        model.Field(p => p.MontoPagado).Editable(true);
+                                                                        model.Field(p => p.MontoPagado).Editable(Model.Id == 0);
                                                                         model.Field(p => p.MontoAdeudaPrevio).Editable(false);
                                                                         model.Field(p => p.MontoRestante).Editable(false);
                                                                         model.Field(p => p.SubProduct).Editable(false);

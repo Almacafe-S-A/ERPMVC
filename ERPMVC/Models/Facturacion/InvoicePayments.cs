@@ -18,7 +18,7 @@ namespace ERPMVC.Models
 
         public DateTime FechaPago { get; set; }
 
-        public int InvoivceId { get; set; }
+        public int? InvoivceId { get; set; }
 
         [ForeignKey("InvoivceId")]
         public Invoice Invoice { get; set; }
