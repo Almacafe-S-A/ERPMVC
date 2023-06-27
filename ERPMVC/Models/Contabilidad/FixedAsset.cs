@@ -55,6 +55,9 @@ namespace ERPMVC.Models
         [Display(Name = "Vida útil")]
         public double FixedActiveLife { get; set; }
 
+
+        public DateTime? FechaBaja { get; set; }
+
         [Display(Name = "Monto")]
         public double Amount { get; set; }
 
