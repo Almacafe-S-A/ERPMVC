@@ -268,7 +268,7 @@ namespace ERPMVC.Controllers
 
         //[HttpPost("Delete")]
         [AcceptVerbs("Post")]
-        public async Task<ActionResult<Presupuesto>> Delete(Presupuesto _Presupuesto)
+        public async Task<ActionResult<Presupuesto>> Delete([FromBody] Presupuesto _Presupuesto)
         {
             try
             {
@@ -333,6 +333,10 @@ namespace ERPMVC.Controllers
 
         }
 
-
+        [HttpGet]
+        public ActionResult SFReportePresupuesto()
+        {
+            return View();
+        }
     }
 }

@@ -83,11 +83,11 @@ namespace ERPMVC.Controllers
 
         }
 
-        public async Task<ActionResult> Guardar([DataSourceRequest] DataSourceRequest request, Feriado feriado)
+        [HttpPost]
+        public async Task<ActionResult<Presupuesto>> Guardar(Feriado feriado)
         {
             try
             {
-
                     if (feriado.Id == 0)
                     {
                         feriado.UsuarioCreacion = HttpContext.Session.GetString("user");
@@ -102,19 +102,18 @@ namespace ERPMVC.Controllers
                     }
                     var respuesta = await Utils.HttpPostAsync(HttpContext.Session.GetString("token"),
                         config.Value.urlbase + "api/Feriado/Guardar", feriado);
+                string valorrespuesta = "";
                     if (respuesta.IsSuccessStatusCode)
                     {
-                        var contenido = await respuesta.Content.ReadAsStringAsync();
-                        var resultado = JsonConvert.DeserializeObject<Feriado>(contenido);
-                        feriado.Id = resultado.Id;
-                        return Json(new[] { resultado }.ToDataSourceResult(request, ModelState));
-                    }
-                    else
+                        valorrespuesta = await (respuesta.Content.ReadAsStringAsync());
+                        feriado = JsonConvert.DeserializeObject<Feriado>(valorrespuesta);
+                        return Ok(valorrespuesta);
+                }
+                else
                     {
-                        return BadRequest(respuesta.Content.ReadAsStringAsync());
+                    valorrespuesta = await respuesta.Content.ReadAsStringAsync();
+                    return BadRequest(valorrespuesta);
                     }
-
-                return BadRequest();
             }
             catch (Exception ex)
             {
@@ -123,42 +122,37 @@ namespace ERPMVC.Controllers
             }
         }
 
-        public async Task<ActionResult> Delete([DataSourceRequest] DataSourceRequest request, Feriado feriado)
+        [HttpPost]
+        //[AcceptVerbs("Post")]
+        public async Task<ActionResult<Feriado>> Delete(Feriado feriado)
         {
             try
             {
-                if (ModelState.IsValid)
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.PostAsJsonAsync(baseadress + "api/Feriado/Delete", feriado);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
                 {
-                    if (feriado.Id == 0)
-                    {
-                        feriado.UsuarioCreacion = HttpContext.Session.GetString("user");
-                        feriado.UsuarioModificacion = feriado.UsuarioCreacion;
-                        feriado.FechaCreacion = DateTime.Now;
-                        feriado.FechaModificacion = feriado.FechaCreacion;
-                    }
-                    else
-                    {
-                        feriado.UsuarioModificacion = HttpContext.Session.GetString("user");
-                        feriado.FechaModificacion = DateTime.Now;
-                    }
-                    var respuesta = await Utils.HttpPostAsync(HttpContext.Session.GetString("token"),
-                        config.Value.urlbase + "api/Feriado/Delete", feriado);
-                    if (respuesta.IsSuccessStatusCode)
-                    {
-                        var contenido = await respuesta.Content.ReadAsStringAsync();
-                        var resultado = JsonConvert.DeserializeObject<Feriado>(contenido);
-                        feriado.Id = resultado.Id;
-                        return Json(new[] { resultado }.ToDataSourceResult(request, ModelState));
-                    }
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    feriado = JsonConvert.DeserializeObject<Feriado>(valorrespuesta);
+                }
+                else
+                {
+                    valorrespuesta = await result.Content.ReadAsStringAsync();
+                    return BadRequest(valorrespuesta);
                 }
 
-                return BadRequest();
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, "Error al actualizar configuración del ISR");
-                return BadRequest();
+                return BadRequest($"Ocurrio un error: {ex.Message}");
             }
+
+
+
+            return new ObjectResult(new DataSourceResult { Data = new[] { feriado }, Total = 1 });
         }
 
         [HttpPost]
@@ -185,9 +179,8 @@ namespace ERPMVC.Controllers
                 else
                 {
                     valorRespuesta = await result.Content.ReadAsStringAsync();
-                    return BadRequest("Este feriado ya ha sido modificado para el periodo seleccionado");
+                    return BadRequest(valorRespuesta);
                 }
-
             }
             catch (Exception ex)
             {
@@ -197,6 +190,8 @@ namespace ERPMVC.Controllers
 
             return new ObjectResult(new DataSourceResult { Data = new[] { _feriado }, Total = 1 });
         }
+
+
 
     }
 }
