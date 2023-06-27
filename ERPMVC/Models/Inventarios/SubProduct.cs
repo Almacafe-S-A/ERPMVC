@@ -39,6 +39,8 @@ namespace ERPMVC.Models
         [Display(Name = "Saldo Quintales")]
         public double Balance { get; set; }
 
+        public bool CobroPorTiempo { get; set; }
+
         public int TipoCafe { get; set; }
 
         [Display(Name = "Saldo Sacos")]
