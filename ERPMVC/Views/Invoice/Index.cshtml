@@ -136,6 +136,35 @@
         }
     }
 
+
+    function AnularFactura(e) {
+        if (confirm('Esta seguro de anular una Factura?')) {
+            e.preventDefault();
+            debugger;
+            var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+            var dataObject = {
+                InvoiceId: dataItem.InvoiceId,
+            };
+
+            $.ajax({
+                url: '@Url.Action("AnularFactura", "Invoice")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (result) {
+                    MostrarMensaje('Factura Generada!', "success", "Satisfactorio", 6000);
+                    RefreshCotizaciones();
+                    return;
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    MostrarMensaje(textStatus + ": " + XMLHttpRequest.responseText, "Error", "Error", 6000);
+                }
+            });
+        }
+    }
+
     function closecondition() {
         $('#myModalConditions').modal('hide');
     }
@@ -160,6 +189,10 @@
             }
             if (this.Estado != "Emitido") {
                 $('[data-uid=' + this.uid + ']').find('.k-grid-Imprimir').hide();
+                $('[data-uid=' + this.uid + ']').find('.k-grid-AnularFactura').hide();
+            }
+            if (this.Estado != "Anulado") {
+                //$('[data-uid=' + this.uid + ']').find('.k-grid-AnularFactura').hide();
             }
 
 
@@ -291,6 +324,7 @@
                                           if (User.HasClaim("Cuentas por Cobrar.Factura.Generar", "true"))
                                           {
                                               command.Custom("GenerarFactura").Text(" ").IconClass("fa fa-file-invoice").Click("GenerarFactura");
+                                              command.Custom("AnularFactura").Text(" ").IconClass("fa fa-ban").Click("AnularFactura");
                                           }
                                           
 
@@ -300,7 +334,7 @@
 
                                           
                                       
-                                      }).Title("Acciones").Width(150);
+                                      }).Title("Acciones").Width(180);
 
                                   columns.Bound(p => p.InvoiceId).Title("No. Proforma").Width(150);
                                   columns.Bound(p => p.OrderDate).Format("{0:dd/MM/yyyy}").Title("Fecha").Width(170);
@@ -427,11 +461,12 @@
 
     setToolbarTooltip(".k-button k-button-icontext k-grid-Agregar k-i-plus-sm", "Agregar un nuevo registro");
     //setRowButtonTooltip(".k-grid-edit", "Tooltip for Edit button");
+    setRowButtonTooltip(".k-grid-AnularFactura", "Anular Factura");
     setRowButtonTooltip(".k-grid-GenerarFactura", "Generar Factura");
     setRowButtonTooltip(".k-grid-Imprimir", "Imprimir Factura"); 
     setRowButtonTooltip(".k-grid-ImprimirProforma", "Imprimir Proforma");
     setRowButtonTooltip(".k-grid-Detalles", "Ver Detalle");
-    setRowButtonTooltip(".k-grid-Agregar", "Nueva Factura Proforma");
+    setRowButtonTooltip(".k-grid-Agregar", "Nueva Factura Proforma"); 
 </script>
 
 
