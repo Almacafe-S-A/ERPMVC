@@ -30,6 +30,9 @@ namespace ERPMVC.Models
 
         public string TipoDocumento { get; set; }
 
+        public string NumeroDEIString { get; set; }
+
+
         public int? InvoiceId { get; set; }
         [ForeignKey("InvoiceId")]
         public Invoice Invoice { get; set; }
