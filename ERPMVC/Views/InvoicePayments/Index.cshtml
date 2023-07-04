@@ -149,8 +149,9 @@
             if (this.Estado != "Revisión"){
                 $('[data-uid=' + this.uid + ']').find('.k-grid-Revisar').hide();
             }
-            if (this.Estado != "Emitido") {
-                //$('[data-uid=' + this.uid + ']').find('.k-grid-Imprimir').hide();
+            if (this.Estado != "Aprobado") {
+                $('[data-uid=' + this.uid + ']').find('.k-grid-Imprimir').hide();
+                $('[data-uid=' + this.uid + ']').find('.k-grid-AnularRecibo').hide();
             }
 
 
@@ -256,6 +257,39 @@
 
 
 
+    function AnularRecibo(e) {
+        
+            e.preventDefault();
+            debugger;
+            var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+            var dataObject = {
+                Id: dataItem.Id,
+            };
+
+            if (!confirm('Esta seguro de anular el Recibo de Pago No '+dataObject.Id+'?')) {
+            return;
+            }
+
+            $.ajax({
+            url: '@Url.Action("AnularRecibo", "InvoicePayments")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (result) {
+                    MostrarMensaje('Factura Generada!', "success", "Satisfactorio", 6000);
+                    RefreshCotizaciones();
+                    return;
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    MostrarMensaje(textStatus + ": " + XMLHttpRequest.responseText, "Error", "Error", 6000);
+                }
+            });
+        
+    }
+
+
 </script>
 
 <h3 class="text-themecolor">Recibos de Pago</h3>
@@ -273,17 +307,9 @@
                                       {
 
                                           command.Custom("Detalles").Text(" ").IconClass("far fa-list-alt").Click("EditCotizacion");
-                                          command.Custom("GenerarFactura").Text(" ").IconClass("fa fa-file-invoice").Click("GenerarFactura");
+                                          command.Custom("AnularRecibo").Text(" ").IconClass("fa fa-ban").Click("AnularRecibo");
                                           command.Custom("Imprimir").Text(" ").IconClass("fa fa-print").Click("ImprimirFactura");
-                                          if (User.HasClaim("Ventas.Factura", "true"))
-                                                  {
-                                                      command.Custom("Aprobar").Text(" ").IconClass("fa fa-thumbs-up").Click("Aprobar");
-                                                  }
-
-                                          if (User.HasClaim("Ventas.Factura", "true"))
-                                                  {
-                                                      command.Custom("Revisar").Text(" ").IconClass("fa fa-check").Click("Revisar");
-                                                  }
+                                         
                                       
                                       }).Title("Acciones").Width(150);
 
@@ -401,7 +427,8 @@
     setToolbarTooltip(".k-button k-button-icontext k-grid-Agregar k-i-plus-sm", "Agregar Registrar un nuevo Pago");
     setRowButtonTooltip(".k-grid-Imprimir", "Imprimir Recibo"); 
     setRowButtonTooltip(".k-grid-Detalles", "Ver Detalle");
-    setRowButtonTooltip(".k-grid-Agregar", "Agregar Registrar un nuevo Pago");
+    setRowButtonTooltip(".k-grid-Agregar", "Agregar Registrar un nuevo Pago"); 
+    setRowButtonTooltip(".k-grid-AnularRecibo", "Anular Recibo");
 </script>
 
 
