@@ -53,7 +53,7 @@ namespace ERPMVC.Models
 
         public int TipoPago { get; set; }
 
-        public Int64 JournalId { get; set; }
+        public Int64? JournalId { get; set; }
 
         [ForeignKey("JournalId ")]
         public JournalEntry journalEntry { get; set; }
