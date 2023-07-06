@@ -278,10 +278,44 @@
             }
             if (this.Estado != "Emitido") {
                 $('[data-uid=' + this.uid + ']').find('.k-grid-Imprimir').hide();
+                 $('[data-uid=' + this.uid + ']').find('.k-grid-Anular').hide();
             }
 
 
         })
+    }
+
+
+    function Anular(e) {
+
+        e.preventDefault();
+        debugger;
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        var dataObject = {
+            CreditNoteId: dataItem.CreditNoteId,
+        };
+
+        if (!confirm('Esta seguro de anular la Nota de Credito No ' + dataItem.NumeroDEI + '?')) {
+            return;
+        }
+
+        $.ajax({
+            url: '@Url.Action("Anular", "CreditNote")',
+            method: 'POST',
+            datatype: "json",
+            contentType: 'application/json',
+            async: false,
+            data: JSON.stringify(dataObject),
+            success: function (result) {
+                MostrarMensaje('Nota de Credito Anulada!', "success", "Satisfactorio", 6000);
+                RefreshCotizaciones();
+                return;
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                MostrarMensaje(textStatus + ": " + XMLHttpRequest.responseText, "Error", "Error", 6000);
+            }
+        });
+
     }
 
 
@@ -313,13 +347,14 @@
                                                       
                                                       command.Custom("Generar").Text(" ").IconClass("fa fa-file-invoice").Click("Generar");
                                                       command.Custom("GenerarInterna").Text(" ").IconClass("fa fa-file-invoice").Click("GenerarInterna");
+                                                      command.Custom("Anular").Text(" ").IconClass("fa fa-ban").Click("Anular");
                                                   }
 
                                               if (User.HasClaim("Cuentas por Cobrar.Nota de Credito.Revisar", "true"))
                                                   {
                                                       command.Custom("Revisar").Text(" ").IconClass("fa fa-check").Click("Revisar");
                                                   }
-                                          }).Width(100).Title("Acciones");
+                                          }).Width(160).Title("Acciones");
                                       columns.Bound(p => p.CreditNoteId).Title("No Ref").Width(100);
                                       columns.Bound(p => p.BranchName).Title("Sucursal").Width(140);
                                       columns.Bound(p => p.NumeroDEI).Title("Número").Width(200);
@@ -457,6 +492,7 @@
     setRowButtonTooltip(".k-grid-Revisar", "Revisar");
     setRowButtonTooltip(".k-grid-Generar", "Generar");
     setRowButtonTooltip(".k-grid-GenerarInterna", "Generar Interna");
+    setRowButtonTooltip(".k-grid-Anular", "Anular");
 
 </script>
 <script>

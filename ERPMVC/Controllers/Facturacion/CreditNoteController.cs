@@ -114,6 +114,39 @@ namespace ERPMVC.Controllers
 
         }
 
+        public async Task<ActionResult> Anular([FromBody] CreditNote invoice)
+        //public async Task<ActionResult> GetGoodsDeliveredById([FromBody]dynamic dto)
+        {
+            CreditNote _Invoice = new CreditNote();
+            try
+            {
+
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + $"api/CreditNote/Anular/{invoice.CreditNoteId}");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _Invoice = JsonConvert.DeserializeObject<CreditNote>(valorrespuesta);
+
+                }
+                else
+                {
+                    throw new Exception(await (result.Content.ReadAsStringAsync()));
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: {ex.ToString()}");
+                return BadRequest(ex.Message);
+            }
+
+            return Json(_Invoice);
+        }
+
+
 
         public async Task<ActionResult<GoodsDeliveryAuthorization>> Aprobar([FromBody] CreditNote creditnote)
         {
