@@ -149,6 +149,8 @@
             }
             if (this.Estado != "Emitido") {
                 $('[data-uid=' + this.uid + ']').find('.k-grid-Imprimir').hide();
+                $('[data-uid=' + this.uid + ']').find('.k-grid-Anular').hide();
+
             }
 
 
@@ -162,6 +164,40 @@
 
     function closecondition() {
         $('#myModalConditions').modal('hide');
+    }
+
+
+
+    function Anular(e) {
+
+        e.preventDefault();
+        debugger;
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        var dataObject = {
+            DebitNoteId: dataItem.DebitNoteId,
+        };
+
+        if (!confirm('Esta seguro de anular la Nota de Debito No ' + dataItem.NumeroDEI + '?')) {
+            return;
+        }
+
+        $.ajax({
+            url: '@Url.Action("Anular", "DebitNote")',
+            method: 'POST',
+            datatype: "json",
+            contentType: 'application/json',
+            async: false,
+            data: JSON.stringify(dataObject),
+            success: function (result) {
+                MostrarMensaje('Nota de Debito Anulada!', "success", "Satisfactorio", 6000);
+                RefreshCotizaciones();
+                return;
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                MostrarMensaje(textStatus + ": " + XMLHttpRequest.responseText, "Error", "Error", 6000);
+            }
+        });
+
     }
 
 
@@ -179,8 +215,9 @@
                                                   command.Custom("GenerarNotaDebito").Text(" ").IconClass("fa fa-file-invoice").Click("GenerarNotaDebito");
                                                   command.Custom("Imprimir").Text(" ").IconClass("fa fa-print").Click("ImprimirCotizacion");
                                                   command.Custom("Editar").Text(" ").IconClass("far fa-list-alt").Click("EditCotizacion");
+                                                  command.Custom("Anular").Text(" ").IconClass("fa fa-ban").Click("Anular");
                                                   
-                                              }).Title("Acciones").Width(130);
+                                              }).Title("Acciones").Width(160);
                                           
                                           columns.Bound(p => p.DebitNoteId).Title("No Ref.").Width(100).Visible(true);
                                           columns.Bound(p => p.DebitNoteDate).Format("{0:dd/MM/yyyy}").Title("Fecha").Width(150);
@@ -306,8 +343,9 @@
     setToolbarTooltip(".k-grid-Agregar", "Agregar nuevo registro");
     //setRowButtonTooltip(".k-grid-edit", "Tooltip for Edit button");
     setRowButtonTooltip(".k-grid-GenerarNotaDebito", "Generar Nota de Debito Fiscal!");
-    setRowButtonTooltip(".k-grid-Imprimir", "Imprimir registro");
+    setRowButtonTooltip(".k-grid-Imprimir", "Imprimir");
     setRowButtonTooltip(".k-grid-Editar", "Ver Detalle");
+     setRowButtonTooltip(".k-grid-Anular", "Anular");
 
 </script>
 

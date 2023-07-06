@@ -77,7 +77,39 @@ namespace ERPMVC.Controllers
             return PartialView(_DebitNote);
 
         }
-        
+
+        public async Task<ActionResult> Anular([FromBody] DebitNote invoice)
+        //public async Task<ActionResult> GetGoodsDeliveredById([FromBody]dynamic dto)
+        {
+            DebitNote _Invoice = new DebitNote();
+            try
+            {
+
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + $"api/DebitNote/Anular/{invoice.DebitNoteId}");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _Invoice = JsonConvert.DeserializeObject<DebitNote>(valorrespuesta);
+
+                }
+                else
+                {
+                    throw new Exception(await (result.Content.ReadAsStringAsync()));
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: {ex.ToString()}");
+                return BadRequest(ex.Message);
+            }
+
+            return Json(_Invoice);
+        }
+
         [HttpGet]
         public async Task<DataSourceResult> Get([DataSourceRequest]DataSourceRequest request)
         {
