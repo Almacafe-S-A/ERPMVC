@@ -178,7 +178,14 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _Invoice = JsonConvert.DeserializeObject<List<Invoice>>(valorrespuesta);
-                    _Invoice = _Invoice.OrderByDescending(q => q.InvoiceId).ToList();
+                    _Invoice = (from c in _Invoice
+                                select new Invoice{
+                                    InvoiceId = c.InvoiceId,
+                                    CustomerId= c.CustomerId,
+                                    NumeroDEI = $"{c.NumeroDEI} - {c.ProductName}",
+
+                                }).OrderByDescending(q => q.InvoiceId).ToList();
+
                 }
 
             }

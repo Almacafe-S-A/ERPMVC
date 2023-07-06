@@ -26,12 +26,14 @@
 
     function Calcular(e) {
         debugger;
-        if (e.model.CreditValue >  e.model.Total){
+        if (e.model.CreditValue > e.model.SaldoPendiente) {
 
             MostrarMensaje("La cantidad de credito no puede ser mayor al valor del item", "Error", "Validación", 6000);
             e.model.CreditValue = 0
             
         }
+        e.model.SaldoPendiente = e.model.Amount;
+        e.model.SaldoPendiente -= e.model.CreditValue;
 
             
         $("#gridCreditNoteDetail").data("kendoGrid").refresh();
@@ -59,6 +61,13 @@
                 break;
             case 5:
                 data.forEach(r => total += r.Total);
+                break;
+
+            case 6:
+                data.forEach(r => total += r.SaldoPendiente);
+                break;
+            case 7:
+                data.forEach(r => total += r.Amount);
                 break;
 
             default:
@@ -116,27 +125,32 @@
 
                                                                                       columns.Bound(p => p.CreditNoteLineId).Title("Id Línea").Width(150).Hidden(true);                                                                                    
                                                                                       columns.Bound(p => p.SubProductId).Title("IdProducto").Width(150).Hidden(true);
-                                                                                      columns.Bound(p => p.SubProductName).Title("Servicio").Width(150).Visible(false);
+                                                                                      columns.Bound(p => p.SubProductName).Title("SubServicio").Width(150).Visible(false);
                                                                                       columns.Bound(p => p.SubProduct).Title("Producto")
                                                                                       .ClientTemplate("#=typeof SubProduct === 'undefined'||SubProduct===null?SubProductName:SubProduct.ProductName#").Width(250);
                                                                                       columns.Bound(p => p.UnitOfMeasure).Title("Unidad Medida")
-                                                                                      .ClientTemplate("#=typeof UnitOfMeasure === 'undefined'||UnitOfMeasure===null?UnitOfMeasureName:UnitOfMeasure.UnitOfMeasureName#").Width(250);
+                                                                                      .ClientTemplate("#=typeof UnitOfMeasure === 'undefined'||UnitOfMeasure===null?UnitOfMeasureName:UnitOfMeasure.UnitOfMeasureName#").Width(150);
 
                                                                                       columns.Bound(p => p.Description).Title("Descripción").Width(250).Hidden(true);
-                                                                                      columns.Bound(p => p.Quantity).Format("{0:n2}").Title("Cantidad").Width(150);
+                                                                                      columns.Bound(p => p.Quantity).Format("{0:n2}").Title("Cantidad").Width(150).Hidden(true);
                                                                                       columns.Bound(p => p.Price).Format("{0:n2}").Title("Precio").Format("{0:n2}").Width(150);
-                                                                                      columns.Bound(p => p.Amount).Format("{0:n2}").Title("Monto").Width(150);
-                                                                                      columns.Bound(p => p.CreditValue).Format("{0:n2}").Title("Valor del Credito").Width(250)
+                                                                                      columns.Bound(p => p.Amount).Format("{0:n2}").Title("Valor del Servicio").Width(200)
+                                                                                      .ClientFooterTemplate("<div style='text-align: right'>#=totalColumnas(7,0)#</div>")
+                                                                                         .HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right; " });
+                                                                                      columns.Bound(p => p.CreditValue).Format("{0:n2}").Title("Valor del Credito").Width(200)
                                                                                       .ClientFooterTemplate("<div style='text-align: right'>#=totalColumnas(1,0)#</div>")
                                                                                          .HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right; background-color:LightGray;" });
+                                                                                      columns.Bound(p => p.SaldoPendiente).Format("{0:n2}").Title("Saldo Pendiente").Width(200)
+                                                                                      .ClientFooterTemplate("<div style='text-align: right'>#=totalColumnas(6,0)#</div>")
+                                                                                         .HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right; " });
                                                                                       columns.Bound(p => p.DiscountAmount).Format("{0:n2}").Title("Descuentos").Width(200).Visible(false);
-                                                                                      columns.Bound(p => p.SubTotal).Format("{0:n2}").Title("Sub Total").Width(150);
+                                                                                      columns.Bound(p => p.SubTotal).Format("{0:n2}").Title("Sub Total").Width(150).Visible(false);
                                                                                       columns.Bound(p => p.TaxId).Format("{0:n2}").Title("Impuesto").Width(150).Visible(false);
                                                                                       columns.Bound(p => p.TaxCode).Title("Tipo Impuesto").Width(200).Visible(false);
                                                                                       columns.Bound(p => p.TaxPercentage).Format("{0:n2}").Title("Porcentaje Impuesto").Width(250).Visible(false);                                                                                      
-                                                                                      columns.Bound(p => p.TaxAmount).Format("{0:n2}").Title("Impuestos").Width(150);
+                                                                                      columns.Bound(p => p.TaxAmount).Format("{0:n2}").Title("Impuestos").Width(150).Visible(false);
 
-                                                                                      columns.Bound(p => p.Total).Format("{0:n2}").Title("Total").Width(150);
+                                                                                      columns.Bound(p => p.Total).Format("{0:n2}").Title("Saldo Pendiente").Width(150).Visible(false);
 
                                                                                   })
                                                                                       .Filterable(f => f.Operators(o => o.ForString(s => s
@@ -184,6 +198,7 @@
                                                                                   })
                                                                                    .Editable(e => e.Mode(GridEditMode.InCell))
                                                                                     .Sortable()
+                                                                                    .Resizable(r => r.Columns(true))
                                                                                     .AutoBind(true)
                                                                                     .Pageable(s => s
                                                                                     .Messages(m => m.Display("Elementos mostrados {0} - {1} de {2}")
@@ -223,6 +238,7 @@
                                                                                         model.Field(p => p.SubTotal).Editable(false);
                                                                                         model.Field(p => p.SubProduct).Editable(editable);
                                                                                         model.Field(p => p.UnitOfMeasure).Editable(editable);
+                                                                                        model.Field(p => p.SaldoPendiente).Editable(false);
 
 
                                                                                     })
