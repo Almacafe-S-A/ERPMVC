@@ -1,5 +1,8 @@
 ﻿@using Microsoft.AspNetCore.Http
 @inject IHttpContextAccessor HttpContextAccessor
+@{
+	var notificaciones = ViewData["Notifications"] as List<ERPMVC.Models.Notifications>;
+}
 <!DOCTYPE html>
 <html>
 <head>
@@ -244,8 +247,9 @@
                             <div class="dropdown-menu dropdown-menu-right mailbox animated bounceInDown">
                                 <ul>
                                     <li>
-                                        <div class="drop-title">Notificaciones</div>
-                                    </li>
+                                    <div class="drop-title">Notificaciones</div>
+                        </li>
+
                                     <li>
                                         <div class="message-center">
                                             <!-- Message -->
@@ -257,6 +261,18 @@
                                                         <h5>Cierre Contable</h5> <span class="mail-desc">No se ha ejecutado el cierre </span> <span class="time"></span>
                                                     </div>
                                                 </a>
+                                            }
+                                            @if (notificaciones != null)
+                                            {
+                                                @foreach (var item in notificaciones)
+                                                {
+                                                    <a asp-action="@item.Action" asp-controller="@item.Controller" onclick="markNotificationAsRead()">
+                                                        <div class="btn btn-danger btn-circle"><i class="@item.Icono"></i></div>
+                                                        <div class="mail-contnet">
+                                                            <h5>@item.Titulo</h5> <span class="mail-desc">@item.Description</span> <span class="time"></span>
+                                                        </div>
+                                                    </a>
+                                                }
                                             }
                                         </div>
                                     </li>
@@ -365,14 +381,30 @@
     @RenderSection("scripts", required: false)
     <ejs-scripts></ejs-scripts>
     <script>
-            //$(document).ready(function () {
-            //    $("#thetoggle").click();
-            //    //SOLUCION PROVISIONAL PARA ELIMINAR EL # DE LA URL
-            //    $('.k-button').attr('href', 'javascript:void(0)');
-            //    $(".k-button").click(function (e) {
-            //        e.preventDefault();
-            //    });
-            //});
+        function markNotificationAsRead(e) {
+            debugger;
+            e.preventDefault();
+            var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+            var dataObject = {
+                Id: dataItem.Id // Id de la notificación que deseas marcar como leída
+            };
+
+            $.ajax({
+                url: '@Url.Action("MarkNotificationAsRead", "Notifications")',
+                method: 'POST',
+                dataType: "json",
+                contentType: 'application/json',
+                data: JSON.stringify(dataObject),
+                success: function (result) {
+                    // La notificación se marcó como leída con éxito
+                    // Aquí puedes realizar cualquier acción adicional después de marcarla como leída
+                    console.log("Notificación marcada como leída:", result);
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+                }
+            });
+        }
     </script>
     <script src="~/js/Syncfusion/ej.localetexts.es-ES.min.js"></script>
     <script src="~/js/Syncfusion/ej.culture.es-ES.min.js"></script>
