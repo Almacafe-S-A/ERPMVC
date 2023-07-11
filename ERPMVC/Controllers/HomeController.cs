@@ -99,7 +99,7 @@ namespace ERPMVC.Controllers
 			return notificationsList;
 		}
 
-        [HttpPost("[action]")]
+        [HttpGet("[action]/{Id}")]
         public async Task<ActionResult> MarkNotificationAsRead(int Id)
         {
             try
@@ -108,7 +108,7 @@ namespace ERPMVC.Controllers
                 HttpClient client = new HttpClient();
                 client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
 
-                var result = await client.PostAsync($"{baseAddress}api/Notifications/MarkNotificationAsRead?Id={Id}", null);
+                var result = await client.GetAsync($"{baseAddress}api/Notifications/MarkNotificationAsRead/{Id}");
 
                 if (result.IsSuccessStatusCode)
                 {
@@ -119,7 +119,7 @@ namespace ERPMVC.Controllers
                     existingNotification.Leido = true;
                     existingNotification.FechaLectura = DateTime.Now;
 
-                    return Ok(existingNotification);
+                    return RedirectToAction(existingNotification.Action, existingNotification.Controller);
                 }
                 else
                 {
