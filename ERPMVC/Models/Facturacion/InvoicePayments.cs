@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore.Metadata.Internal;
+﻿using ERPMVC.DTO;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -91,7 +92,7 @@ namespace ERPMVC.Models
 
 
     public class InvoicePaymentsDTO {
-        public int[] Facturas { get; set; }
+        public List<Identificador> Facturas { get; set; }
 
         public int Id { get; set; }
 
