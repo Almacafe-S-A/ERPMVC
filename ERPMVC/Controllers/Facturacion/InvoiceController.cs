@@ -165,7 +165,7 @@ namespace ERPMVC.Controllers
 
         public async Task<DataSourceResult> GetFacturasPendientesPagoByCustomer([DataSourceRequest] DataSourceRequest request, int CustomerId)
         {
-            List<Invoice> _Invoice = new List<Invoice>();
+            List<DocumentoDTO> _Invoice = new List<DocumentoDTO>();
             try
             {
 
@@ -177,14 +177,21 @@ namespace ERPMVC.Controllers
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _Invoice = JsonConvert.DeserializeObject<List<Invoice>>(valorrespuesta);
+                    _Invoice = JsonConvert.DeserializeObject<List<DocumentoDTO>>(valorrespuesta);
                     _Invoice = (from c in _Invoice
-                                select new Invoice{
-                                    InvoiceId = c.InvoiceId,
-                                    CustomerId= c.CustomerId,
-                                    NumeroDEI = $"{c.NumeroDEI} - {c.ProductName}",
+                                select new DocumentoDTO{
+                                    DocumentoId = (int)c.DocumentoId,
+                                     CustomerId= (int)c.CustomerId, 
+                                     DocumentType = c.DocumentType,
+                                     DocumentTypeId= c.DocumentTypeId,
+                                     Identificador = new Identificador {
+                                        Id = c.DocumentoId,
+                                        Tipo = c.DocumentTypeId,
+                                     },
 
-                                }).OrderByDescending(q => q.InvoiceId).ToList();
+                                    NumeroDEI = $"{c.NumeroDEI} - {c.ProductName} - {(c.Saldo + c.SaldoImpuesto).ToString("C2")}",
+
+                                }).OrderByDescending(q => q.DocumentoId).ToList();
 
                 }
 
