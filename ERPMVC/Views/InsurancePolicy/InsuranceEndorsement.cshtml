@@ -138,12 +138,67 @@
         $('#myModalConditions').modal('hide');
     }
 
+    function totalColumnas(tiporesultado, moneda) {
+        var data = $("#gridInsurances").getKendoGrid().dataSource.data();
+        var total = 0;
 
+        switch (tiporesultado) {
+            case 1:
+                data.forEach(r => total += r.TotalAmountLp);
+                break;
+            case 2:
+                data.forEach(r => total += r.TotalAmountDl);
+                break;
+            default:
+                break;
+        }
+        var formatter = new Intl.NumberFormat('es-HN', {
+            style: 'currency',
+            currency: 'LPS',
+            minimumFractionDigits: 2
+        });
+        if (moneda == 1) {
+            return formatter.format(total);
+        }
+        if (moneda == 2) {
+            formatter = new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD',
+                minimumFractionDigits: 2
+            });
+            return formatter.format(total);
+        }
+        if (moneda == 0) {
+            formatter = new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'LPS',
+                minimumFractionDigits: 2
+            });
+            return formatter.format(total).replace(/[a-z]{3}/i, "").trim();
+        }
+        return total;
+    } 
+    function calculateField(e) {
+
+        //Actualizar Total
+        var footer = $('tr.k-footer-template'),
+            idx = 5, // replace with the column index you want to aggregate
+            aggregate = $(footer).children('td')[idx];
+        $(aggregate).text(totalColumnas(1, 1)).css('text-align', 'right');
+        var footer = $('tr.k-footer-template'),
+            idx = 6, // replace with the column index you want to aggregate
+            aggregate = $(footer).children('td')[idx];
+        $(aggregate).text(totalColumnas(2, 2)).css('text-align', 'right');
+    }
 </script>
 
 
 @(Html.Kendo().Grid<ERPMVC.Models.InsuranceEndorsement>()
                                               .Name("gridInsurances")
+                                      .Events(e =>
+    e.CellClose("calculateField")
+
+    )
                                               .Columns(columns =>
                                               {
 
@@ -158,9 +213,20 @@
                                                   columns.Bound(p => p.InsuranceEndorsementId).Title("Id").Width(150);
                                                   columns.Bound(p => p.ProductName).Title("Servicio").Width(250);
                                                   columns.Bound(p => p.CostCenter.CostCenterName).Title("Centro de Costo").Width(150);
-                                                  columns.Bound(p => p.TotalAmountLp).Title("Monto Lps").Width(150);
-                                                  columns.Bound(p => p.TotalAmountDl).Title("Monto $").Width(150);
-                                                  columns.Bound(p => p.InsurancePolicyId).Title("Póliza").Width(250);
+                                                  columns.Bound(p => p.TotalAmountLp)
+                                                        .Title("Monto Lps")
+                                                        .Width(150)
+                                                        .ClientTemplate("#=kendo.toString(TotalAmountLp, 'n2')#")
+                                                        .ClientFooterTemplate("<div style='text-align: right'>#=totalColumnas(1,1)#</div>")
+                                                        .HtmlAttributes(new { style = "text-align: right" });
+                                                  columns.Bound(p => p.TotalAmountDl)
+                                                      .Title("Monto $")
+                                                      .Width(150)
+                                                      .ClientTemplate("#=kendo.toString(TotalAmountDl, 'n2')#")
+                                                      .ClientFooterTemplate("<div style='text-align: right'>#=totalColumnas(2,2)#</div>")
+                                                      .HtmlAttributes(new { style = "text-align: right" });
+                                                  columns.Bound(p => p.InsurancePolicyId).Title("Póliza").Width(250)
+                                                  .HtmlAttributes(new { style = "text-align: right" });
                                                   columns.Bound(p => p.DateGenerated).Format("{0:dd/MM/yyyy}").Title("Fecha").Width(170);
                                                   columns.Bound(p => p.EstadoId).ClientTemplate("#if (EstadoId == 1) {#Activo#} else {#Inactivo#} #").Title("Estado").Width(150);
                                               })
@@ -260,7 +326,7 @@
 </div>
 
 <script>
-
+    
     function setToolbarTooltip(btn_cl, btn_tooltip) {
         $("#gridInsurances").kendoTooltip({
             filter: btn_cl,
