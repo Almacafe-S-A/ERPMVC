@@ -143,7 +143,7 @@ namespace ERPMVC.Controllers
 
 
 
-        public async Task<ActionResult> GenerarNotaDebito([FromBody] DebitNote debitnote)
+        public async Task<ActionResult> GenerarNotaDebito([FromBody] DebitNoteDTO debitnoteDTO)
         //public async Task<ActionResult> GetGoodsDeliveredById([FromBody]dynamic dto)
         {
             DebitNote debitNote = new DebitNote();
@@ -153,7 +153,7 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + $"api/DebitNote/GenerarNotaDebito/{debitnote.DebitNoteId}");
+                var result = await _client.GetAsync(baseadress + $"api/DebitNote/GenerarNotaDebito/{debitnoteDTO.DebitNoteId}/{debitnoteDTO.interna}");
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {

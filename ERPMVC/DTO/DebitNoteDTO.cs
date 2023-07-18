@@ -12,5 +12,7 @@ namespace ERPMVC.DTO
         [Display(Name = "Número SAR")]
         
         public int editar { get; set; } = 1;
+
+        public int interna { get; set; }
     }
 }
