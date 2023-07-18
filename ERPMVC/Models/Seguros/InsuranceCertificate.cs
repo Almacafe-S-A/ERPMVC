@@ -20,6 +20,7 @@ namespace ERPMVC.Models
         public int InsuranceId { get; set; }
         [ForeignKey("InsuranceId")]
         public Insurances Insurace { get; set; }
+        public string InsuranceName { get; set; }
 
         public decimal Amount { get; set; }
 
