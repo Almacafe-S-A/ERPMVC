@@ -60,10 +60,6 @@ namespace ERPMVC.Controllers
                 {
                     _CreditNote = new CreditNoteDTO {CreditNoteDate = DateTime.Now.AddDays(30), editar = 1, BranchId = Convert.ToInt32(HttpContext.Session.GetString("BranchId")) };
                 }
-                else
-                {
-                    _CreditNote.NumeroDEIString = $"{_CreditNote.Sucursal}-{_CreditNote.Caja}-{_CreditNote.TipoDocumento}-{_CreditNote.NúmeroDEI.ToString().PadLeft(8, '0')} ";
-                }
                 ViewData["permisos"] = _principal;
             }
             catch (Exception ex)
@@ -95,10 +91,6 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _CreditNote = JsonConvert.DeserializeObject<List<CreditNote>>(valorrespuesta);
-                    foreach (var item in _CreditNote)
-                    {
-                        item.NoSAG = $"{item.Sucursal}-{item.Caja}-{item.TipoDocumento}-{item.NúmeroDEI.ToString().PadLeft(8, '0')} ";
-                    }
                 }
 
 

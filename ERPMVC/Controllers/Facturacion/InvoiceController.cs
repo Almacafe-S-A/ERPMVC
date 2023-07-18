@@ -206,6 +206,52 @@ namespace ERPMVC.Controllers
             return _Invoice.ToDataSourceResult(request);
 
         }
+        
+
+
+        public async Task<DataSourceResult> GetFacturasPendientesVigentesByCustomer([DataSourceRequest] DataSourceRequest request, int CustomerId)
+        {
+            List<Invoice> _Invoice = new List<Invoice>();
+            try
+            {
+
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/Invoice/GetFacturasPendientesVigentesByCustomer/" + CustomerId);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _Invoice = JsonConvert.DeserializeObject<List<Invoice>>(valorrespuesta);
+                    _Invoice = (from c in _Invoice
+                                select new Invoice
+                                {
+                                    InvoiceId = (int)c.InvoiceId,
+                                    CustomerId = (int)c.CustomerId,
+                                    // = c.DocumentType,
+                                    //DocumentTypeId = c.DocumentTypeId,
+                                    
+
+                                    NumeroDEI = $"{c.NumeroDEI} - {c.ProductName} - {(c.Saldo + c.SaldoImpuesto).ToString("C2")}",
+
+                                }).OrderByDescending(q => q.NumeroDEI).ToList();
+
+                }
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: {ex.ToString()}");
+                throw ex;
+            }
+
+            DataSourceResult dataSource= new DataSourceResult();
+            dataSource = _Invoice.ToDataSourceResult(request);
+            dataSource.Data = _Invoice;
+            return dataSource;
+
+        }
 
 
         [HttpPost]
