@@ -44,7 +44,11 @@ namespace ERPMVC.Models
         public DateTime FechaModificacion { get; set; }
         public string UsuarioCreacion { get; set; }
         public string UsuarioModificacion { get; set; }
+        public Int64? ServicioId { get; set; }
+        [ForeignKey("ServicioId")]
+        public Product Servicio { get; set; }
 
+        public string ServicioName { get; set; }
 
 
         public List<InsuranceCertificateLine> InsuranceCertificaLines { get; set; }
