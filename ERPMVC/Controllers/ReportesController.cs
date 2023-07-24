@@ -74,9 +74,160 @@ namespace ERPMVC.Controllers
 
         }
 
+        [Authorize(Policy = "Inventarios.Reportes.Movimientos Diarios")]
+        public async Task<IActionResult> SFMovimientosBoletasPeso()
+        {
+
+            return await Task.Run(() => View());
+
+        }
+
+        [Authorize(Policy = "Inventarios.Reportes.Movimientos Diarios")]
+        public async Task<IActionResult> SFMovimientosDetalleBoletasPeso()
+        {
+
+            return await Task.Run(() => View());
+
+        }
+        
+        [Authorize(Policy = "Inventarios.Reportes.Movimientos Diarios")]
+        public async Task<IActionResult> SFRecibosMercaderiaDetallado()
+        {
+
+            return await Task.Run(() => View());
+
+        }
+        
+        [Authorize(Policy = "Inventarios.Reportes.Movimientos Diarios")]
+        public async Task<IActionResult> SFRecibosMercaderiaCertificar()
+        {
+
+            return await Task.Run(() => View());
+
+        }
+        
+        [Authorize(Policy = "Inventarios.Reportes.Movimientos Diarios")]
+        public async Task<IActionResult> SFSolicitudesDepositoDetallado()
+        {
+
+            return await Task.Run(() => View());
+
+        }
+
+        [Authorize(Policy = "Inventarios.Reportes.Movimientos Diarios")]
+        public async Task<IActionResult> SFCertificadosDepositoDetallado()
+        {
+
+            return await Task.Run(() => View());
+
+        }
+
+        [Authorize(Policy = "Inventarios.Reportes.Movimientos Diarios")]
+        public async Task<IActionResult> SFEndososRegistradosxCliente()
+        {
+
+            return await Task.Run(() => View());
+
+        }
+
+        [Authorize(Policy = "Inventarios.Reportes.Movimientos Diarios")]
+        public async Task<IActionResult> SFEndososRegistradosxBanco()
+        {
+
+            return await Task.Run(() => View());
+
+        }
+
+        [Authorize(Policy = "Inventarios.Reportes.Movimientos Diarios")]
+        public async Task<IActionResult> SFAutorizacionRetiroDetallado()
+        {
+
+            return await Task.Run(() => View());
+
+        }
+
+        [Authorize(Policy = "Inventarios.Reportes.Movimientos Diarios")]
+        public async Task<IActionResult> SFComprobanteEntregaDetallado()
+        {
+
+            return await Task.Run(() => View());
+
+        }
+
+        [Authorize(Policy = "Inventarios.Reportes.Movimientos Diarios")]
+        public async Task<IActionResult> SFBoletasSalidaDetallado()
+        {
+
+            return await Task.Run(() => View());
+
+        }
+
+        [Authorize(Policy = "Inventarios.Reportes.Movimientos Diarios")]
+        public async Task<IActionResult> SFSaldosCD()
+        {
+
+            return await Task.Run(() => View());
+
+        }
+
+        [Authorize(Policy = "Inventarios.Reportes.Movimientos Diarios")]
+        public async Task<IActionResult> SFSaldosAR()
+        {
+
+            return await Task.Run(() => View());
+
+        }
+
+        [Authorize(Policy = "Inventarios.Reportes.Movimientos Diarios")]
+        public async Task<IActionResult> SFKardexProductoxBodega()
+        {
+
+            return await Task.Run(() => View());
+
+        }
+
+        [Authorize(Policy = "Inventarios.Reportes.Movimientos Diarios")]
+        public async Task<IActionResult> SFKardexBodegaxEstiba()
+        {
+
+            return await Task.Run(() => View());
+
+        }
+
+        [Authorize(Policy = "Inventarios.Reportes.Movimientos Diarios")]
+        public async Task<IActionResult> SFKardexDetalladoxProducto()
+        {
+
+            return await Task.Run(() => View());
+
+        }
+
+        [Authorize(Policy = "Inventarios.Reportes.Movimientos Diarios")]
+        public async Task<IActionResult> SFKardexCD()
+        {
+
+            return await Task.Run(() => View());
+
+        }
+
+        [Authorize(Policy = "Inventarios.Reportes.Movimientos Diarios")]
+        public async Task<IActionResult> SFKardexAR()
+        {
+
+            return await Task.Run(() => View());
+
+        }
 
         [Authorize(Policy = "Inventarios.Reportes.Movimientos Diarios")]
         public async Task<IActionResult> SFMovimientosDiarios()
+        {
+
+            return await Task.Run(() => View());
+
+        }
+
+        [Authorize(Policy = "Inventarios.Reportes.Movimientos Diarios")]
+        public async Task<IActionResult> SFServicioBodega()
         {
 
             return await Task.Run(() => View());
