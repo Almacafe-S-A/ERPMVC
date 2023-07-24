@@ -58,7 +58,10 @@ namespace ERPMVC.Controllers
                 }
                 if (_CreditNote == null)
                 {
-                    _CreditNote = new CreditNoteDTO {CreditNoteDate = DateTime.Now.AddDays(30), editar = 1, BranchId = Convert.ToInt32(HttpContext.Session.GetString("BranchId")) };
+                    _CreditNote = new CreditNoteDTO {
+                        CreditNoteDate = DateTime.Now, editar = 1, 
+                        BranchId = Convert.ToInt32(HttpContext.Session.GetString("BranchId")) 
+                    };
                 }
                 ViewData["permisos"] = _principal;
             }
