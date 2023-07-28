@@ -110,6 +110,11 @@ namespace ERPMVC.Controllers
             return Json(_Invoice);
         }
 
+        public ActionResult SFReporteND()
+        {
+            return View();
+        }
+
         [HttpGet]
         public async Task<DataSourceResult> Get([DataSourceRequest]DataSourceRequest request)
         {

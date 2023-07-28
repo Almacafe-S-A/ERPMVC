@@ -615,8 +615,10 @@ namespace ERPMVC.Controllers
 
         }
 
-
-
+        public ActionResult SFReporteIP()
+        {
+            return View();
+        }
 
     }
 }
