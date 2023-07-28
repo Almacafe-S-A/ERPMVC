@@ -110,69 +110,9 @@ namespace ERPMVC.Controllers
             return Json(_Invoice);
         }
 
-
-        public async Task<ActionResult<GoodsDeliveryAuthorization>> Aprobar([FromBody] DebitNote debitnote)
+        public ActionResult SFReporteND()
         {
-            try
-            {
-                if (debitnote == null)
-                {
-                    return await Task.Run(() => BadRequest("No llego correctamente el modelo!"));
-                }
-
-                GoodsDeliveryAuthorization goodsDeliveryAuthorization = new GoodsDeliveryAuthorization();
-                string baseadress = config.Value.urlbase;
-                HttpClient _client = new HttpClient();
-                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + $"api/DebitNote/ChangeStatus/{debitnote.DebitNoteId}/{2}");
-                string valorrespuesta = "";
-                if (!result.IsSuccessStatusCode)
-                {
-                    return await Task.Run(() => BadRequest("No se Aprobo el documento!"));
-                }
-
-                return await Task.Run(() => Json(goodsDeliveryAuthorization));
-
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError($"Ocurrio un error: {ex.ToString()}");
-                throw ex;
-            }
-
-
-        }
-
-        public async Task<ActionResult<GoodsDeliveryAuthorization>> Revisar([FromBody] DebitNote creditnote)
-        {
-            try
-            {
-                if (creditnote == null)
-                {
-                    return await Task.Run(() => BadRequest("No llego correctamente el modelo!"));
-                }
-
-                GoodsDeliveryAuthorization goodsDeliveryAuthorization = new GoodsDeliveryAuthorization();
-                string baseadress = config.Value.urlbase;
-                HttpClient _client = new HttpClient();
-                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + $"api/DebitNote/ChangeStatus/{creditnote.DebitNoteId}/{1}");
-                string valorrespuesta = "";
-                if (!result.IsSuccessStatusCode)
-                {
-                    return await Task.Run(() => BadRequest("No se Aprobo el documento!"));
-                }
-
-                return await Task.Run(() => Json(goodsDeliveryAuthorization));
-
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError($"Ocurrio un error: {ex.ToString()}");
-                throw ex;
-            }
-
-
+            return View();
         }
 
         [HttpGet]
@@ -208,7 +148,7 @@ namespace ERPMVC.Controllers
 
 
 
-        public async Task<ActionResult> GenerarNotaDebito([FromBody] DebitNoteDTO debitnoteDTO)
+        public async Task<ActionResult> GenerarNotaDebito([FromBody] DebitNote debitnote)
         //public async Task<ActionResult> GetGoodsDeliveredById([FromBody]dynamic dto)
         {
             DebitNote debitNote = new DebitNote();
@@ -218,7 +158,7 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + $"api/DebitNote/GenerarNotaDebito/{debitnoteDTO.DebitNoteId}/{debitnoteDTO.interna}");
+                var result = await _client.GetAsync(baseadress + $"api/DebitNote/GenerarNotaDebito/{debitnote.DebitNoteId}");
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {

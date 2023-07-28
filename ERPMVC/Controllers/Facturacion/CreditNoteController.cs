@@ -468,5 +468,10 @@ namespace ERPMVC.Controllers
             }
             return await Task.Run(() => Ok(_creditNote));
         }
+
+        public ActionResult SFReporteNC()
+        {
+            return View();
+        }
     }
 }
