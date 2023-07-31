@@ -212,7 +212,7 @@ namespace ERPMVC.Controllers
         public async Task<ActionResult> Generar([FromBody] CreditNoteDTO creditnote)
         //public async Task<ActionResult> GetGoodsDeliveredById([FromBody]dynamic dto)
         {
-            DebitNote _Invoice = new DebitNote();
+            CreditNote _Invoice = new CreditNote();
             try
             {
 
@@ -224,7 +224,7 @@ namespace ERPMVC.Controllers
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _Invoice = JsonConvert.DeserializeObject<DebitNote>(valorrespuesta);
+                    _Invoice = JsonConvert.DeserializeObject<CreditNote>(valorrespuesta);
 
                 }
                 else
