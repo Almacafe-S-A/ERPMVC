@@ -212,6 +212,10 @@ namespace ERPMVC.Controllers
                     _DebitNote.UsuarioCreacion = HttpContext.Session.GetString("user");
                     var insertresult = await Insert(_DebitNote);
                     var value = (insertresult.Result as ObjectResult).Value;
+                    if ((insertresult.Result is BadRequestObjectResult))
+                    {
+                        return await Task.Run(() => BadRequest(insertresult.Result));
+                    }
 
                     DebitNote resultado = ((DebitNote)(value));
                     

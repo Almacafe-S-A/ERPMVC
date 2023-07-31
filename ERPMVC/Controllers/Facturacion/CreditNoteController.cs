@@ -272,6 +272,10 @@ namespace ERPMVC.Controllers
                    
                     var insertresult = await Insert(_CreditNote);
                     var value = (insertresult.Result as ObjectResult).Value;
+                    if ((insertresult.Result is BadRequestObjectResult))
+                    {
+                        return await Task.Run(() => BadRequest(insertresult.Result));
+                    }
                     CreditNote resultado = ((CreditNote)(value));
                 }
                 else
