@@ -143,7 +143,7 @@ namespace ERPMVC.Controllers
 
 
 
-        public async Task<ActionResult<GoodsDeliveryAuthorization>> Aprobar([FromBody] CreditNote creditnote)
+        public async Task<ActionResult<CreditNote>> Aprobar([FromBody] CreditNote creditnote)
         {
             try
             {
@@ -175,7 +175,7 @@ namespace ERPMVC.Controllers
 
         }
 
-        public async Task<ActionResult<GoodsDeliveryAuthorization>> Revisar([FromBody] CreditNote creditnote)
+        public async Task<ActionResult<CreditNote>> Revisar([FromBody] CreditNote creditnote)
         {
             try
             {
@@ -212,7 +212,7 @@ namespace ERPMVC.Controllers
         public async Task<ActionResult> Generar([FromBody] CreditNoteDTO creditnote)
         //public async Task<ActionResult> GetGoodsDeliveredById([FromBody]dynamic dto)
         {
-            Invoice _Invoice = new Invoice();
+            CreditNote _Invoice = new CreditNote();
             try
             {
 
@@ -224,7 +224,7 @@ namespace ERPMVC.Controllers
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _Invoice = JsonConvert.DeserializeObject<Invoice>(valorrespuesta);
+                    _Invoice = JsonConvert.DeserializeObject<CreditNote>(valorrespuesta);
 
                 }
                 else
