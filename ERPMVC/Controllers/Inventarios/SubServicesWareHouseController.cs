@@ -155,8 +155,8 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                TimeSpan t = _SubServicesWareHouse.EndTime.Subtract(_SubServicesWareHouse.StartTime);
-                _SubServicesWareHouse.QuantityHours = t.TotalHours;
+                //TimeSpan t = _SubServicesWareHouse.EndTime.Subtract(_SubServicesWareHouse.StartTime);
+                //_SubServicesWareHouse.QuantityHours = t.TotalHours;
                 var result = await _client.GetAsync(baseadress + "api/SubServicesWareHouse/GetSubServicesWareHouseById/" + _SubServicesWareHouse.SubServicesWareHouseId);
                 string valorrespuesta = "";
                 _SubServicesWareHouse.FechaModificacion = DateTime.Now;
