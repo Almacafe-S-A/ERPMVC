@@ -225,6 +225,14 @@ namespace ERPMVC.Controllers
             return await Task.Run(() => View());
 
         }
+        [Authorize(Policy = "Inventarios.Reportes.Reporte de Transacciones")]
+        public async Task<IActionResult> SFReporteTransacciones()
+        {
+
+            return await Task.Run(() => View());
+
+        }
+
 
         [Authorize(Policy = "Inventarios.Reportes.Movimientos Diarios")]
         public async Task<IActionResult> SFServicioBodega()
