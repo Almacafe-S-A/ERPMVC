@@ -104,94 +104,6 @@
                     win.focus();
     }
 
-
-
-
-    function Aprobar(e) {
-        var notification = $("#notification").data("kendoNotification");
-        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
-        if (dataItem.Estado == 6) {
-            notification.show({
-                title: "Validación",
-                message: "la Autorizacion ha sido aprobada"
-            }, "error");
-        }
-        if (!confirm('Esta seguro de aprobar la Debito?')) {
-            return;
-
-        }
-
-        var dataObject = {
-            DebitNoteId: dataItem.DebitNoteId,
-        };
-
-        $.ajax({
-            url: '@Url.Action("Aprobar", "DebitNote")',
-            method: 'POST',
-            datatype: "json",
-            contentType: 'application/json',
-            async: false,
-            data: JSON.stringify(dataObject),
-            success: function (result) {
-                $.toast({
-                    heading: 'Satisfactorio',
-                    text: 'La Nota de Credito Proforma se ha aprobado correctamente.',
-                    position: 'top-right',
-                    loaderBg: '#ff6849',
-                    icon: 'success',
-                    hideAfter: 7000,
-                    stack: 6
-                });
-                RefreshCotizaciones();
-            },
-            error: function (XMLHttpRequest, textStatus, errorThrown) {
-               
-                alert(textStatus + ": " + XMLHttpRequest.responseText);
-            }
-        });
-    }
-
-
-
-
-    function Revisar(e) {
-
-        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
-        if (!confirm('Esta seguro de marcar como revisada esta Nota de Debito?')) {
-            return;
-
-        }
-
-        var dataObject = {
-            DebitNoteId: dataItem.DebitNoteId,
-        };
-
-        $.ajax({
-            url: '@Url.Action("Revisar", "DebitNote")',
-            method: 'POST',
-            datatype: "json",
-            contentType: 'application/json',
-            async: false,
-            data: JSON.stringify(dataObject),
-            success: function (result) {
-                $.toast({
-                    heading: 'Satisfactorio',
-                    text: 'La Nota de Credito Proforma se ha revisado correctamente.',
-                    position: 'top-right',
-                    loaderBg: '#ff6849',
-                    icon: 'success',
-                    hideAfter: 7000,
-                    stack: 6
-                });
-                RefreshCotizaciones();
-            },
-            error: function (XMLHttpRequest, textStatus, errorThrown) {
-                
-                alert(textStatus + ": " + XMLHttpRequest.responseText);
-            }
-        });
-    }
-
  
 
     function GenerarNotaDebito(e) {
@@ -201,49 +113,17 @@
             var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
             var dataObject = {
                 DebitNoteId: dataItem.DebitNoteId,
-                interna:0
             };
 
             $.ajax({
-                url: '@Url.Action("Generar", "DebitNote")',
+                url: '@Url.Action("GenerarNotaDebito", "DebitNote")',
                 method: 'POST',
                 datatype: "json",
                 contentType: 'application/json',
                 async: false,
                 data: JSON.stringify(dataObject),
                 success: function (result) {
-                    MostrarMensaje('Nota de Debito Fiscal Generada!', "success", "Satisfactorio", 6000);
-                    RefreshCotizaciones();
-                    return;
-                },
-                error: function (XMLHttpRequest, textStatus, errorThrown) {
-                    MostrarMensaje(textStatus + ": " + XMLHttpRequest.responseText, "Error", "Error", 6000);
-                }
-            });
-        }
-    }
-
-    
-
-    function GenerarNotaDebitoInterna(e) {
-        if (confirm('Esta seguro de generar una Nota de Debito?')) {
-            e.preventDefault();
-            debugger;
-            var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
-            var dataObject = {
-                DebitNoteId: dataItem.DebitNoteId,
-                interna:1
-            };
-
-            $.ajax({
-                url: '@Url.Action("Generar", "DebitNote")',
-                method: 'POST',
-                datatype: "json",
-                contentType: 'application/json',
-                async: false,
-                data: JSON.stringify(dataObject),
-                success: function (result) {
-                    MostrarMensaje('Nota de Debito Interna Generada!', "success", "Satisfactorio", 6000);
+                    MostrarMensaje('Nota de Debito Generada!', "success", "Satisfactorio", 6000);
                     RefreshCotizaciones();
                     return;
                 },
@@ -257,23 +137,20 @@
 
     function dataBound(e) {
         $.each(this.dataSource.data(), function () {
-            
-
-             if (this.Estado != "Revisado") {
+            if (this.Estado != "Revisado") {
                 $('[data-uid=' + this.uid + ']').find('.k-grid-Aprobar').hide();
 
             }
-            if (this.Estado != "Aprobado") {
+            if (this.Estado != "Borrador") {
                 $('[data-uid=' + this.uid + ']').find('.k-grid-GenerarNotaDebito').hide();
-                $('[data-uid=' + this.uid + ']').find('.k-grid-GenerarNotaInterna').hide();
             }
-
             if (this.Estado != "Revisión") {
                 $('[data-uid=' + this.uid + ']').find('.k-grid-Revisar').hide();
             }
             if (this.Estado != "Emitido") {
                 $('[data-uid=' + this.uid + ']').find('.k-grid-Imprimir').hide();
-                 $('[data-uid=' + this.uid + ']').find('.k-grid-Anular').hide();
+                $('[data-uid=' + this.uid + ']').find('.k-grid-Anular').hide();
+
             }
 
 
@@ -328,44 +205,30 @@
 
 <h3 class="text-themecolor">Nota Débito</h3>
 
-@(Html.Kendo().Grid<ERPMVC.Models.DebitNote>()
+@(
+Html.Kendo().Grid<ERPMVC.Models.DebitNote>()
                                       .Name("gridDebitNotes")
                                       .Columns(columns =>
                                       {
-                                          
-                                              columns.Command(command =>
-                                              {
-                                                  
-                                                  command.Custom("Imprimir").Text(" ").IconClass("fa fa-print").Click("ImprimirCotizacion");
-                                                  command.Custom("Editar").Text(" ").IconClass("far fa-eye").Click("EditCotizacion");
-                                                 
 
-                                              if (User.HasClaim("Cuentas por Cobrar.Nota de Debito.Generar", "true"))
+                                          columns.Command(command =>
+                              {
+                                                if (permisos.HasClaim("Cuentas por Cobrar.Nota de Debito.Ver Detalle", "true"))
                                                   {
-
                                                       command.Custom("GenerarNotaDebito").Text(" ").IconClass("fa fa-file-invoice").Click("GenerarNotaDebito");
-                                                      command.Custom("GenerarNotaInterna").Text(" ").IconClass("fa fa-file-invoice").Click("GenerarNotaDebitoInterna");
+
+                                                    if (permisos.HasClaim("Cuentas por Cobrar.Nota de Debito.Imprimir", "true"))
+                                                  {
+                                                      command.Custom("Imprimir").Text(" ").IconClass("fa fa-print").Click("ImprimirCotizacion");
+                                                  }
+                                                      command.Custom("Editar").Text(" ").IconClass("far fa-list-alt").Click("EditCotizacion");
                                                       command.Custom("Anular").Text(" ").IconClass("fa fa-ban").Click("Anular");
-                                                  }
-
-
-                                              if (User.HasClaim("Cuentas por Cobrar.Nota de Debito.Aprobar", "true"))
-                                                  {
-                                                      
-                                                        command.Custom("Aprobar").Text(" ").IconClass("fa fa-thumbs-up").Click("Aprobar");
-                                                  }
-                                              if (User.HasClaim("Cuentas por Cobrar.Nota de Debito.Revisar", "true"))
-                                                  {
-                                                      command.Custom("Revisar").Text(" ").IconClass("fa fa-check").Click("Revisar");
-                                                  }
-
-                                                  
-                                              }).Title("Acciones").Width(160);
+                                                }      
+                                          }).Title("Acciones").Width(160);
                                           
                                           columns.Bound(p => p.DebitNoteId).Title("No Ref.").Width(100).Visible(true);
                                           columns.Bound(p => p.DebitNoteDate).Format("{0:dd/MM/yyyy}").Title("Fecha").Width(150);
-                                          columns.Bound(p => p.NumeroDEI).Title("Numeración SAR").Width(200);
-                                          columns.Bound(p => p.NumeroDEIString).Title("Doc Asociado No.").Width(200);
+                                          columns.Bound(p => p.NumeroDEI).Title("Numeración SAR").Width(150);
                                           columns.Bound(p => p.CustomerName).Title("Cliente").Width(250);
                                           columns.Bound(p => p.Amount).Title("Monto").Width(150).Format("{0:N2}")
                                           .HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" });
@@ -415,8 +278,7 @@
                                                                                  .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddCotizacion();" });
                                               tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
                                               tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
-                                          tools.Custom().Text("Reporte Nota de Débito").IconClass("k-icon k-i-print")
-                                                                 .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "ImprimirReportND();" });
+                                          
 
                                       })
                                        .Editable(e => e.Mode(GridEditMode.PopUp))
@@ -470,13 +332,7 @@
 
 
 <script>
-    function ImprimirReportND(e) {
-        debugger;
-        var url = '@Url.Action("SFReporteND", "DebitNote")/';
-        var win = window.open(url, '_blank');
-        win.focus();
-    }
-	
+
     function setToolbarTooltip(btn_cl, btn_tooltip) {
         $("#gridDebitNotes").kendoTooltip({
             filter: btn_cl,
@@ -493,13 +349,10 @@
 
     setToolbarTooltip(".k-grid-Agregar", "Agregar nuevo registro");
     //setRowButtonTooltip(".k-grid-edit", "Tooltip for Edit button");
-    setRowButtonTooltip(".k-grid-GenerarNotaDebito", "Generar Nota de Debito Fiscal"); 
-    setRowButtonTooltip(".k-grid-GenerarNotaInterna", "Generar Nota de Debito Interna");
+    setRowButtonTooltip(".k-grid-GenerarNotaDebito", "Generar Nota de Debito Fiscal!");
     setRowButtonTooltip(".k-grid-Imprimir", "Imprimir");
     setRowButtonTooltip(".k-grid-Editar", "Ver Detalle");
      setRowButtonTooltip(".k-grid-Anular", "Anular");
-    setRowButtonTooltip(".k-grid-Aprobar", "Aprobar");
-    setRowButtonTooltip(".k-grid-Revisar", "Revisar");
 
 </script>
 

@@ -5,9 +5,10 @@
     <DataSource Name="ERP">
       <ConnectionProperties>
         <DataProvider>SQL</DataProvider>
-        <ConnectString>Data Source=192.168.0.3;Initial Catalog=ERP-Produccion</ConnectString>
+        <ConnectString>Data Source=192.168.0.5;Initial Catalog=ERP-Produccion</ConnectString>
+        <IntegratedSecurity>true</IntegratedSecurity>
       </ConnectionProperties>
-      <rd:SecurityType>DataBase</rd:SecurityType>
+      <rd:SecurityType>Integrated</rd:SecurityType>
       <rd:DataSourceID>49745f74-0977-4e9a-a681-e323019e2e70</rd:DataSourceID>
     </DataSource>
   </DataSources>
@@ -50,6 +51,8 @@ rml.QuantitySacos as sacos,
 rml.WareHouseId as IdBodega,
 rml.WareHouseName as Bodega,
 rml.SaldoporCertificar,
+pr.Merma/100 as Merma,
+pr.Merma as Merma1,
 Sum(rml.Quantity) as Cantidad
 FROM GoodsReceivedLine rml 
 INNER JOIN GoodsReceived rm on rm.GoodsReceivedId = rml.GoodsReceivedId
@@ -72,7 +75,8 @@ rml.UnitofMeasureName,
 rml.QuantitySacos,
 rml.WareHouseId,
 rml.WareHouseName,
-rml.SaldoporCertificar</CommandText>
+rml.SaldoporCertificar,
+pr.Merma</CommandText>
       </Query>
       <Fields>
         <Field Name="CustomerId">
@@ -129,6 +133,14 @@ rml.SaldoporCertificar</CommandText>
         </Field>
         <Field Name="SaldoporCertificar">
           <DataField>SaldoporCertificar</DataField>
+          <rd:TypeName>System.Decimal</rd:TypeName>
+        </Field>
+        <Field Name="Merma">
+          <DataField>Merma</DataField>
+          <rd:TypeName>System.Decimal</rd:TypeName>
+        </Field>
+        <Field Name="Merma1">
+          <DataField>Merma1</DataField>
           <rd:TypeName>System.Decimal</rd:TypeName>
         </Field>
         <Field Name="Cantidad">
@@ -484,7 +496,7 @@ Where idestado = 1</CommandText>
               </TablixColumns>
               <TablixRows>
                 <TablixRow>
-                  <Height>0.39792in</Height>
+                  <Height>0.31459in</Height>
                   <TablixCells>
                     <TablixCell>
                       <CellContents>
@@ -1047,7 +1059,7 @@ Where idestado = 1</CommandText>
                   </TablixCells>
                 </TablixRow>
                 <TablixRow>
-                  <Height>0.47708in</Height>
+                  <Height>0.4in</Height>
                   <TablixCells>
                     <TablixCell>
                       <CellContents>
@@ -1058,14 +1070,7 @@ Where idestado = 1</CommandText>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>Total Ingreso en </Value>
-                                  <Style>
-                                    <FontSize>9pt</FontSize>
-                                    <FontWeight>Bold</FontWeight>
-                                  </Style>
-                                </TextRun>
-                                <TextRun>
-                                  <Value>="("&amp; Count(Fields!GoodsReceivedId.Value) &amp;" RM)"</Value>
+                                  <Value>Total Ingreso Cliente</Value>
                                   <Style>
                                     <FontSize>9pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
@@ -1320,7 +1325,7 @@ Where idestado = 1</CommandText>
                                   </Style>
                                 </TextRun>
                                 <TextRun>
-                                  <Value>=First(Fields!MERMA.Value, "Productos")  &amp;" %"</Value>
+                                  <Value>=Fields!Merma1.Value  &amp;" %"</Value>
                                   <Style>
                                     <FontSize>9pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
@@ -1358,7 +1363,7 @@ Where idestado = 1</CommandText>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Sum(Fields!SaldoporCertificar.Value)*(First(Fields!MERMA.Value, "Productos")/100)</Value>
+                                  <Value>=Round(Sum(Fields!SaldoporCertificar.Value)*(Fields!Merma.Value),2)</Value>
                                   <Style>
                                     <FontSize>9pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
@@ -1575,7 +1580,7 @@ Where idestado = 1</CommandText>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Sum(Fields!SaldoporCertificar.Value)-(Sum(Fields!SaldoporCertificar.Value)*(First(Fields!MERMA.Value, "Productos")/100))</Value>
+                                  <Value>=Sum(Fields!SaldoporCertificar.Value)-Round((Sum(Fields!SaldoporCertificar.Value)*(Fields!Merma.Value)),2)</Value>
                                   <Style>
                                     <FontSize>9pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
@@ -1764,24 +1769,24 @@ Where idestado = 1</CommandText>
                 <TablixMember>
                   <Group Name="Cliente1">
                     <GroupExpressions>
-                      <GroupExpression>=Fields!Cliente.Value</GroupExpression>
+                      <GroupExpression>=Fields!CustomerId.Value</GroupExpression>
                     </GroupExpressions>
                   </Group>
                   <SortExpressions>
                     <SortExpression>
-                      <Value>=Fields!Cliente.Value</Value>
+                      <Value>=Fields!CustomerId.Value</Value>
                     </SortExpression>
                   </SortExpressions>
                   <TablixMembers>
                     <TablixMember>
                       <Group Name="Cliente">
                         <GroupExpressions>
-                          <GroupExpression>=Fields!Cliente.Value</GroupExpression>
+                          <GroupExpression>=Fields!CustomerId.Value</GroupExpression>
                         </GroupExpressions>
                       </Group>
                       <SortExpressions>
                         <SortExpression>
-                          <Value>=Fields!Cliente.Value</Value>
+                          <Value>=Fields!CustomerId.Value</Value>
                         </SortExpression>
                       </SortExpressions>
                       <TablixMembers>
@@ -1809,7 +1814,7 @@ Where idestado = 1</CommandText>
             <DataSetName>RMDetalle</DataSetName>
             <Top>0.06125in</Top>
             <Left>0.11333in</Left>
-            <Height>1.6875in</Height>
+            <Height>1.52709in</Height>
             <Width>8.14305in</Width>
             <Style>
               <Border>
@@ -1892,7 +1897,7 @@ Where idestado = 1</CommandText>
             </Style>
           </Textbox>
         </ReportItems>
-        <Height>2.19244in</Height>
+        <Height>2.11952in</Height>
         <Style>
           <Border />
           <BackgroundColor>White</BackgroundColor>
@@ -2004,7 +2009,7 @@ Where idestado = 1</CommandText>
                 </Paragraph>
               </Paragraphs>
               <rd:DefaultName>Textbox26</rd:DefaultName>
-              <Top>0.66862in</Top>
+              <Top>0.69362in</Top>
               <Left>3.02715in</Left>
               <Height>0.2in</Height>
               <Width>0.37026in</Width>
@@ -2041,7 +2046,7 @@ Where idestado = 1</CommandText>
                 </Paragraph>
               </Paragraphs>
               <rd:DefaultName>ExecutionTime</rd:DefaultName>
-              <Top>0.67557in</Top>
+              <Top>0.70057in</Top>
               <Left>3.41686in</Left>
               <Height>0.2in</Height>
               <Width>0.8471in</Width>
@@ -2075,7 +2080,7 @@ Where idestado = 1</CommandText>
                 </Paragraph>
               </Paragraphs>
               <rd:DefaultName>Textbox26</rd:DefaultName>
-              <Top>0.66862in</Top>
+              <Top>0.69362in</Top>
               <Left>4.25007in</Left>
               <Height>0.2in</Height>
               <Width>0.33901in</Width>
@@ -2113,7 +2118,7 @@ Where idestado = 1</CommandText>
                 </Paragraph>
               </Paragraphs>
               <rd:DefaultName>ExecutionTime</rd:DefaultName>
-              <Top>0.66862in</Top>
+              <Top>0.69362in</Top>
               <Left>4.60076in</Left>
               <Height>0.2in</Height>
               <Width>0.86041in</Width>
@@ -2320,6 +2325,16 @@ Where idestado = 1</CommandText>
             </Border>
           </Style>
         </PageHeader>
+        <PageFooter>
+          <Height>0.26042in</Height>
+          <PrintOnFirstPage>true</PrintOnFirstPage>
+          <PrintOnLastPage>true</PrintOnLastPage>
+          <Style>
+            <Border>
+              <Style>None</Style>
+            </Border>
+          </Style>
+        </PageFooter>
         <LeftMargin>0in</LeftMargin>
         <RightMargin>0in</RightMargin>
         <TopMargin>0.25in</TopMargin>
