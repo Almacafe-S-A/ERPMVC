@@ -130,7 +130,7 @@ namespace ERPMVC.Controllers
                 string valorrespuesta = "";
                 if (!result.IsSuccessStatusCode)
                 {
-                    return await Task.Run(() => BadRequest("No se Aprobo el documento!"));
+                    return await Task.Run(() => BadRequest(result.Content.ReadAsStringAsync().Result));
                 }
 
                 return await Task.Run(() => Json(_listSubServicesWareHouse));
