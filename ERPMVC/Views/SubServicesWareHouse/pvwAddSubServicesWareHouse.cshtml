@@ -1,10 +1,13 @@
 ﻿@model ERPMVC.DTO.SubServicesWareHouseDTO
 
-@{ Layout = null;
+@{
+    Layout = null;
     var messages = new Dictionary<string, string>() { { "custom", "Ingrese un valor correcto." },
     // {"required","Valor requerido" }
 };
     var rules = new Dictionary<string, string>() { { "custom", "customFunction" } };
+
+    bool permisoCalculoManual = User.HasClaim("Inventarios.Servicios Utilizados.Calculo Manual", "true");
 }
 
 <script>
@@ -191,7 +194,7 @@
                                             <div class="col-md-3">
                                                 <div class="form-group">
                                                     <label class="control-label" style="min-width:100%">Cobro Por Tiempo</label>
-                                                    <kendo-switch name="CobroPorTiempo"   for="CobroPorTiempo" checked="@Model.CobroPorTiempo" enabled="false"  >
+                                                    <kendo-switch name="CobroPorTiempo" for="CobroPorTiempo" checked="@Model.CobroPorTiempo" enabled="permisoCalculoManual" on-change="calculateTotalHours">
                                                         <messages checked="Si" unchecked="No"  />
                                                     </kendo-switch>
                                                 </div>
@@ -242,6 +245,7 @@
                                                                           value="Model.StartTime"
                                                                           format="HH:mm:ss"
                                                                           style="width:100%;"
+                                                                          on-change="calculateTotalHours"
                                                                           data-val-required="La hora inicio es requerida" />
                                                     <span asp-validation-for="DocumentDate" class="text-danger"></span>
                                                         <span asp-validation-for="StartTime" class="text-danger"></span>
@@ -266,6 +270,7 @@
                                                          <kendo-datetimepicker name="EndTime" for="EndTime"
                                                                           value="Model.EndTime"
                                                                           format="HH:mm:ss"
+                                                                          on-change="calculateTotalHours"
                                                                           style="width:100%;"
                                                                           data-val-required="La hora fin es requerida" />
                                                         <span asp-validation-for="EndTime" class="text-danger"></span>
@@ -273,7 +278,7 @@
                                                 </div>
                                                 <div class=" col-md-3">
                                                     <div class="form-group">
-                                                        <label asp-for="QuantityHours" class="control-label" style="width: 100%;">Cantidad</label>
+                                                        <label asp-for="QuantityHours" class="control-label" style="width: 100%;" readonly>Cantidad</label>
                                                     <input id="QuantityHours" required class="k-textbox" style="min-width:100%;" asp-for="QuantityHours" min="0"/>
                                                 </div>
                                                 </div>
@@ -336,6 +341,10 @@
         var dataObject = {
             SubProductId: subservicio,
         }
+
+        var cobro = $("#CobroPorTiempo").data("kendoSwitch");
+        var cobroportiempo = cobro.check();
+
         $.ajax({
             url: '@Url.Action("GetProductoById", "SubProduct")',
             method: 'GET',
@@ -344,13 +353,18 @@
             async: false,
             data: dataObject,
             success: function (subproducto) {
+                cobro.check(subproducto.CobroPorTiempo);
+                
                 debugger;
                 if(subproducto.CobroPorTiempo){
+                    $("#QuantityHours").attr("readonly", true);
+                    calculateTotalHours();
+                    //CalcularTiempo();
 
 
-                
                 }else{
-                
+                    $("#QuantityHours").attr("readonly", false);
+                    $("#QuantityHours").value(0);
                 
                 }      
              
@@ -360,6 +374,35 @@
             }
         });
     
+    }
+
+
+    function calculateTotalHours() {
+
+       
+            
+
+        
+        var cobro = $("#CobroPorTiempo").data("kendoSwitch");
+        var cobroportiempo = cobro.check();
+        $("#QuantityHours").attr("readonly", cobroportiempo);
+        if(!cobroportiempo){
+            
+            return;
+        }
+        var startTimePicker = $("#StartTime").data("kendoDateTimePicker");
+        var endTimePicker = $("#EndTime").data("kendoDateTimePicker");
+
+
+        var startTime = startTimePicker.value();
+        var endTime = endTimePicker.value();
+
+        if (startTime && endTime) {
+            var timeDiff = endTime - startTime;
+            var hours = timeDiff / (1000 * 60 * 60);
+
+            $("#QuantityHours").val(hours.toFixed(2));
+        }
     }
 
 
@@ -408,13 +451,13 @@
         //  console.log($("#StartTime").getKendoTimePicker().value().toJSON());
           var today = new Date();
           let fechaactual = String(today.getDate()).padStart(2, '0') + "/" + String(today.getMonth() + 1).padStart(2, '0') + "/" + today.getFullYear();
-        let sttime = $("#StartTime").getKendoTimePicker().value().toJSON();  // fechaactual + " "+$("#StartTime").getKendoTimePicker().value().toJSON();
-        let ettime = $("#EndTime").getKendoTimePicker().value().toJSON();    // fechaactual + " " + $("#EndTime").getKendoTimePicker().value().toJSON();
+        let sttime = $("#StartTime").getKendoDateTimePicker().value().toJSON();  // fechaactual + " "+$("#StartTime").getKendoTimePicker().value().toJSON();
+        let ettime = $("#EndTime").getKendoDateTimePicker().value().toJSON();    // fechaactual + " " + $("#EndTime").getKendoTimePicker().value().toJSON();
         let hours = $("#QuantityHours").val();
         var cobro = $("#CobroPorTiempo").data("kendoSwitch");
         var cobroportiempo = cobro.check();
-        if (hours <=0 && !cobroportiempo){
-            MostrarMensaje( "Error: La cantidad de horas no puede ser cero " , "Error", "Error", 600000);
+        if (hours <=0 ){
+            MostrarMensaje( "Error: La cantidad no puede ser menor o igual a cero " , "Error", "Error", 600000);
             return;
         }
         
