@@ -32,46 +32,13 @@ namespace ERPMVC.Controllers
             _principal = httpContextAccessor.HttpContext.User;
         }
 
-        [Authorize(Policy = "Ventas.Nota de Debito")]
+        [Authorize(Policy = "Cuentas por Cobrar.Nota de Debito")]
         public IActionResult Index()
         {
             ViewData["permisos"] = _principal;
             return View();
         }
 
-        //public async Task<ActionResult> pvwDebitNote(Int64 Id = 0)
-        //{
-        //    DebitNote _DebitNote = new DebitNote();
-        //    try
-        //    {
-        //        string baseadress = config.Value.urlbase;
-        //        HttpClient _client = new HttpClient();
-        //        _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-        //        var result = await _client.GetAsync(baseadress + "api/DebitNote/GetDebitNoteById/" + Id);
-        //        string valorrespuesta = "";
-        //        if (result.IsSuccessStatusCode)
-        //        {
-        //            valorrespuesta = await (result.Content.ReadAsStringAsync());
-        //            _DebitNote = JsonConvert.DeserializeObject<DebitNote>(valorrespuesta);
-
-        //        }
-
-        //        if (_DebitNote == null)
-        //        {
-        //            _DebitNote = new DebitNote();
-        //        }
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        _logger.LogError($"Ocurrio un error: { ex.ToString() }");
-        //        throw ex;
-        //    }
-
-
-
-        //    return PartialView(_DebitNote);
-
-        //}
         [HttpPost]
         public async Task<ActionResult> pvwDebitNote([FromBody]DebitNote _DebitNotep)
         {
@@ -88,21 +55,16 @@ namespace ERPMVC.Controllers
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _DebitNote = JsonConvert.DeserializeObject<DebitNoteDTO>(valorrespuesta);
 
-                }
-                if (_DebitNote == null)
+                }if(_DebitNote == null)
                 {
-                    _DebitNote = new DebitNoteDTO { OrderDate = DateTime.Now, DeliveryDate = DateTime.Now, ExpirationDate = DateTime.Now.AddDays(30), editar = 1, BranchId = Convert.ToInt32(HttpContext.Session.GetString("BranchId")) };
-                }
-                else
-                {
-                    Branch _branch = new Branch();
-                    string valorrespuestaBranch = "";
-                    var resultBranch = await _client.GetAsync(baseadress + "api/Branch/GetBranchById/" + _DebitNote.BranchId);
-                    valorrespuestaBranch = await (resultBranch.Content.ReadAsStringAsync());
-                    _branch = JsonConvert.DeserializeObject<Branch>(valorrespuestaBranch);
+                    _DebitNote = new DebitNoteDTO { 
+                        DebitNoteDate = DateTime.Now, 
+                        DebitNoteDueDate= null,
+                        editar = 1, 
+                        BranchId = Convert.ToInt32(HttpContext.Session.GetString("BranchId")) ,
+                        Amount = 0,
 
-                    _DebitNote.NumeroDEIString = $"{_branch.BranchCode}-{_DebitNote.Caja}-{_DebitNote.TipoDocumento}-{_DebitNote.NúmeroDEI.ToString().PadLeft(8, '0')} ";
-                    //var resultado = new BranchController().FileUploadMsgView(_DebitNote.BranchId);
+                    };
                 }
                 ViewData["permisos"] = _principal;
             }
@@ -115,7 +77,44 @@ namespace ERPMVC.Controllers
             return PartialView(_DebitNote);
 
         }
-        
+
+        public async Task<ActionResult> Anular([FromBody] DebitNote invoice)
+        //public async Task<ActionResult> GetGoodsDeliveredById([FromBody]dynamic dto)
+        {
+            DebitNote _Invoice = new DebitNote();
+            try
+            {
+
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + $"api/DebitNote/Anular/{invoice.DebitNoteId}");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _Invoice = JsonConvert.DeserializeObject<DebitNote>(valorrespuesta);
+
+                }
+                else
+                {
+                    throw new Exception(await (result.Content.ReadAsStringAsync()));
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: {ex.ToString()}");
+                return BadRequest(ex.Message);
+            }
+
+            return Json(_Invoice);
+        }
+
+        public ActionResult SFReporteND()
+        {
+            return View();
+        }
+
         [HttpGet]
         public async Task<DataSourceResult> Get([DataSourceRequest]DataSourceRequest request)
         {
@@ -132,10 +131,6 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _DebitNote = JsonConvert.DeserializeObject<List<DebitNote>>(valorrespuesta);
-                    foreach (var item in _DebitNote)
-                    {
-                        item.NoSAG = $"{item.Sucursal}-{item.Caja}-{item.TipoDocumento}-{item.NúmeroDEI.ToString().PadLeft(8, '0')} ";
-                    }
                 }
 
 
@@ -150,6 +145,106 @@ namespace ERPMVC.Controllers
             return _DebitNote.ToDataSourceResult(request);
 
         }
+
+
+
+        public async Task<ActionResult> Generar([FromBody] DebitNoteDTO creditnote)
+        //public async Task<ActionResult> GetGoodsDeliveredById([FromBody]dynamic dto)
+        {
+            DebitNote _Invoice = new DebitNote();
+            try
+            {
+
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + $"api/DebitNote/GenerarNotaDebito/{creditnote.DebitNoteId}/{creditnote.interna}");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _Invoice = JsonConvert.DeserializeObject<DebitNote>(valorrespuesta);
+
+                }
+                else
+                {
+                    throw new Exception(await (result.Content.ReadAsStringAsync()));
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: {ex.ToString()}");
+                return BadRequest(ex.Message);
+            }
+
+            return Json(_Invoice);
+        }
+
+        public async Task<ActionResult<DebitNote>> Aprobar([FromBody] DebitNote creditnote)
+        {
+            try
+            {
+                if (creditnote == null)
+                {
+                    return await Task.Run(() => BadRequest("No llego correctamente el modelo!"));
+                }
+
+                GoodsDeliveryAuthorization goodsDeliveryAuthorization = new GoodsDeliveryAuthorization();
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + $"api/DebitNote/ChangeStatus/{creditnote.DebitNoteId}/{2}");
+                string valorrespuesta = "";
+                if (!result.IsSuccessStatusCode)
+                {
+                    return await Task.Run(() => BadRequest("No se Aprobo el documento!"));
+                }
+
+                return await Task.Run(() => Json(goodsDeliveryAuthorization));
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: {ex.ToString()}");
+                throw ex;
+            }
+
+
+        }
+
+        public async Task<ActionResult<DebitNote>> Revisar([FromBody] DebitNote creditnote)
+        {
+            try
+            {
+                if (creditnote == null)
+                {
+                    return await Task.Run(() => BadRequest("No llego correctamente el modelo!"));
+                }
+
+                GoodsDeliveryAuthorization goodsDeliveryAuthorization = new GoodsDeliveryAuthorization();
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + $"api/DebitNote/ChangeStatus/{creditnote.DebitNoteId}/{1}");
+                string valorrespuesta = "";
+                if (!result.IsSuccessStatusCode)
+                {
+                    return await Task.Run(() => BadRequest("No se Aprobo el documento!"));
+                }
+
+                return await Task.Run(() => Json(goodsDeliveryAuthorization));
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: {ex.ToString()}");
+                throw ex;
+            }
+
+
+        }
+
+
 
         [HttpPost("[action]")]
         public async Task<ActionResult<DebitNote>> SaveDebitNote([FromBody]DebitNote _DebitNote)
@@ -171,9 +266,10 @@ namespace ERPMVC.Controllers
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _listDebitNote = JsonConvert.DeserializeObject<DebitNote>(valorrespuesta);
                 }
-
-                if (_listDebitNote == null) { _listDebitNote = new DebitNote(); }
-
+                if(_listDebitNote == null)
+                {
+                    _listDebitNote = _DebitNote;
+                }
                 if (_listDebitNote.DebitNoteId == 0)
                 {
                     _DebitNote.TipoDocumento = "07";
@@ -181,16 +277,13 @@ namespace ERPMVC.Controllers
                     _DebitNote.UsuarioCreacion = HttpContext.Session.GetString("user");
                     var insertresult = await Insert(_DebitNote);
                     var value = (insertresult.Result as ObjectResult).Value;
+                    if ((insertresult.Result is BadRequestObjectResult))
+                    {
+                        return await Task.Run(() => BadRequest(insertresult.Result));
+                    }
 
                     DebitNote resultado = ((DebitNote)(value));
-                    if (resultado.Fiscal is false)
-                    {
-                        if (resultado.CAI == "" || resultado.CAI == null)
-                        {
-                            string error = await result.Content.ReadAsStringAsync();
-                            return await Task.Run(() => BadRequest($" No existe un CAI activo para el punto de emisión."));
-                        }
-                    }
+                    
                 }
                 else
                 {

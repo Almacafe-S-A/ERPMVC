@@ -14,7 +14,7 @@ namespace ERPMVC.Models
 
         public int LiquidacionId { get; set; }
         [ForeignKey("LiquidacionId")]
-        public Liquidacion Liqudacion { get; set; }
+        public Liquidacion Liquidacion { get; set; }
 
         public Int64? GoodsReceivedLineId { get; set; }
 
@@ -46,28 +46,40 @@ namespace ERPMVC.Models
         [Column(TypeName = "decimal(18,2)")]
         public decimal TotalCIFLPS { get; set; }
 
+        [Column(TypeName = "decimal(18,2)")]
         public decimal ValorDerechosImportacion { get; set; }
 
+        [Column(TypeName = "decimal(18,2)")]
         public decimal TotalCIFDerechosImp { get; set; }
 
+        [Column(TypeName = "decimal(18,2)")]
         public decimal ValorSelectivoConsumo { get; set; }
 
+        [Column(TypeName = "decimal(18,2)")]
         public decimal? ValorUnitarioDerechos { get; set; }
 
+        [Column(TypeName = "decimal(18,2)")]
         public decimal TotalDerechos { get; set; }
 
+        [Column(TypeName = "decimal(18,2)")]
         public decimal OtrosImpuestos { get; set; }
 
+        [Column(TypeName = "decimal(18,2)")]
         public decimal TotalImpuestoVentas { get; set; }
 
+        [Column(TypeName = "decimal(18,2)")]
         public decimal TotalDerechosmasImpuestos { get; set; }
 
+        [Column(TypeName = "decimal(18,2)")]
         public decimal TotalFinal { get; set; }
 
+        [Column(TypeName = "decimal(18,2)")]
         public decimal? PrecioUnitarioCIF { get; set; }
 
+        [Column(TypeName = "decimal(18,2)")]
         public decimal? ValorTotalDerechos { get; set; }
 
+        [Column(TypeName = "decimal(18,2)")]
         public decimal? ValorTotalCIF { get; set; }
 
 

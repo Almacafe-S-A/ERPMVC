@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore.Metadata.Internal;
+﻿using ERPMVC.DTO;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -18,7 +19,7 @@ namespace ERPMVC.Models
 
         public DateTime FechaPago { get; set; }
 
-        public int InvoivceId { get; set; }
+        public int? InvoivceId { get; set; }
 
         [ForeignKey("InvoivceId")]
         public Invoice Invoice { get; set; }
@@ -53,7 +54,7 @@ namespace ERPMVC.Models
 
         public int TipoPago { get; set; }
 
-        public Int64 JournalId { get; set; }
+        public Int64? JournalId { get; set; }
 
         [ForeignKey("JournalId ")]
         public JournalEntry journalEntry { get; set; }
@@ -91,7 +92,7 @@ namespace ERPMVC.Models
 
 
     public class InvoicePaymentsDTO {
-        public int[] Facturas { get; set; }
+        public List<Identificador> Facturas { get; set; }
 
         public int Id { get; set; }
 

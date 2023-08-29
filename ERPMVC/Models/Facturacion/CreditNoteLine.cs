@@ -57,6 +57,11 @@ namespace ERPMVC.Models
         public double Quantity { get; set; }
         [Display(Name = "Precio")]
         public double Price { get; set; }
+
+        public double CreditValue { get; set; }
+        public decimal SaldoPendiente { get; set; }
+
+
         [Display(Name = "Monto")]
         public double Amount { get; set; }
 

@@ -157,14 +157,16 @@ namespace ERPMVC.Controllers
         public async Task<ActionResult> GenerarCertificados([FromBody]dynamic dto)
         {
             int cliente = dto.cliente==""  ? 0 : dto.cliente;
+            int servicio = dto.servicio=="" ? 0 : dto.servicio;
             DateTime Fechames = dto.Fecha;
+
             List<InsuranceCertificate> insuranceCertificates = new List<InsuranceCertificate>();
             try
             {
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.PostAsJsonAsync(baseadress + "api/InsuranceCertificate/GenerateInsuranceCertificates", new { IdCliente = cliente , Fecha = Fechames} );
+                var result = await _client.PostAsJsonAsync(baseadress + "api/InsuranceCertificate/GenerateInsuranceCertificates", new { IdCliente = cliente , IdServicio = servicio, Fecha = Fechames} );
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {

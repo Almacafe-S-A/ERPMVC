@@ -188,19 +188,32 @@ namespace ERPMVC.Controllers
                     string jsonresult = "";                 
                     jsonresult = JsonConvert.SerializeObject(_JournalEntry);
                     string valorrespuesta = "";
-                    if (result.IsSuccessStatusCode)
+                    if (!result.IsSuccessStatusCode)
                     {
-                        valorrespuesta = await (result.Content.ReadAsStringAsync());
-                        _so = JsonConvert.DeserializeObject<JournalEntryDTO>(valorrespuesta);
-                        _so.EstadoId = 6;
-                        _so.EstadoName = "Aprobado";
-                        _so.ApprovedBy = HttpContext.Session.GetString("user");
-                        _so.ApprovedDate = DateTime.Now;
-                        var resultsalesorder = await Update(_so.JournalEntryId, _so);
-
-                        var value = (resultsalesorder.Result as ObjectResult).Value;
-                        JournalEntry resultado = ((JournalEntry)(value));
+                        throw new Exception("No se encontro el asiento contable a aprobar");
+                        
                     }
+
+                    
+
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _so = JsonConvert.DeserializeObject<JournalEntryDTO>(valorrespuesta);
+
+                    if (_so.TotalCredit != _so.TotalDebit)
+                    {
+                        throw new Exception("El total débito y el crédito del asiento no coinciden, no se puede aprobar. Rechace el asiento y modifiquelo para corregir el error.");
+
+                    }
+
+                    _so.EstadoId = 6;
+                    _so.EstadoName = "Aprobado";
+                    _so.ApprovedBy = HttpContext.Session.GetString("user");
+                    _so.ApprovedDate = DateTime.Now;
+
+                    var resultsalesorder = await Update(_so.JournalEntryId, _so);
+
+                    var value = (resultsalesorder.Result as ObjectResult).Value;
+                    JournalEntry resultado = ((JournalEntry)(value));
                 }
                 catch (Exception ex)
                 {

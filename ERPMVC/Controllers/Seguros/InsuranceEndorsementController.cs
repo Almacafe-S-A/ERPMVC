@@ -15,6 +15,8 @@ using System.Net.Http;
 using Kendo.Mvc.Extensions;
 using ERPMVC.DTO;
 using System.Security.Claims;
+using System.IO;
+using Microsoft.AspNetCore.Hosting;
 
 namespace ERPMVC.Controllers
 {
@@ -24,11 +26,14 @@ namespace ERPMVC.Controllers
     {
         private readonly IOptions<MyConfig> config;
         private readonly ILogger _logger;
+        private IHostingEnvironment _hostingEnvironment;
         private readonly ClaimsPrincipal _principal;
-        public InsuranceEndorsementController(ILogger<InsuranceEndorsementController> logger, IOptions<MyConfig> config, IHttpContextAccessor httpContextAccessor)
+        public InsuranceEndorsementController(IHostingEnvironment hostingEnvironment
+            , ILogger<InsuranceEndorsementController> logger, IOptions<MyConfig> config, IHttpContextAccessor httpContextAccessor)
         {
             this.config = config;
             this._logger = logger;
+            _hostingEnvironment = hostingEnvironment;
             _principal = httpContextAccessor.HttpContext.User;
         }
 
@@ -204,7 +209,7 @@ namespace ERPMVC.Controllers
         }
 
         [HttpPost("[action]")]
-        public async Task<ActionResult<InsuranceEndorsementDTO>> SaveInsuranceEndorsement([FromBody]InsuranceEndorsement _InsuranceEndorsement)
+        public async Task<ActionResult<InsuranceEndorsementDTO>> SaveInsuranceEndorsement(IEnumerable<IFormFile> files, InsuranceEndorsement _InsuranceEndorsement)
         {
 
             try
@@ -215,6 +220,7 @@ namespace ERPMVC.Controllers
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
                 var result = await _client.GetAsync(baseadress + "api/InsuranceEndorsement/GetInsuranceEndorsementById/" + _InsuranceEndorsement.InsuranceEndorsementId);
                 string valorrespuesta = "";
+                IFormFile file = files.FirstOrDefault();
                 _InsuranceEndorsement.FechaModificacion = DateTime.Now;
                 _InsuranceEndorsement.UsuarioModificacion = HttpContext.Session.GetString("user");
                 if (result.IsSuccessStatusCode)
@@ -246,6 +252,21 @@ namespace ERPMVC.Controllers
                 else
                 {
                     var updateresult = await Update(_InsuranceEndorsement.InsuranceEndorsementId, _InsuranceEndorsement);
+                }
+                if (file != null)
+                {
+                    FileInfo info = new FileInfo(file.FileName);
+                    var filePath = _hostingEnvironment.WebRootPath + "\\InsuranceEndorsement\\Endoso_" + _InsuranceEndorsement.InsuranceEndorsementId + info.Extension;
+
+                    using (var stream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await file.CopyToAsync(stream);
+                    }
+
+                    _InsuranceEndorsement.AttachmentURL = filePath;
+                    _InsuranceEndorsement.AttachementFileName = file.FileName;
+                    _listInsuranceEndorsement = _InsuranceEndorsement;
+                    var updateresult2 = await Update(_InsuranceEndorsement.InsuranceEndorsementId, _InsuranceEndorsement);
                 }
 
             }

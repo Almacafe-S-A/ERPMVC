@@ -206,7 +206,7 @@ namespace ERPMVC.Controllers
                                             select new VendorInvoice
                                             {
                                                 VendorInvoiceId = c.VendorInvoiceId,
-                                                VendorInvoiceName = "Id:" + c.VendorInvoiceId + " || Número de Factura:" + c.NumeroDEI  + "|| Fecha:" + c.FechaCreacion + "|| Total:" + c.Total,
+                                                VendorInvoiceName = $"Fecha:{c.FechaCreacion} || No: {c.NumeroDEI} ||  CAI:{ c.CAI } || Total:{c.Total}",
                                                 VendorId = c.VendorId,
                                             }).ToList();
                 }

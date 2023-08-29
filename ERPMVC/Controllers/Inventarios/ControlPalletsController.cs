@@ -412,7 +412,7 @@ namespace ERPMVC.Controllers
                      select new ControlPallets
                      {
                          ControlPalletsId = c.ControlPalletsId,
-                         CustomerName = $"Control {IngresoSalida} No.:{c.ControlPalletsId}|| Placa: {c.Placa}  || Motorista: { c.Motorista } || Fecha: { c.DocumentDate.ToString("dd/MM/yyyy") } || Total Sacos: {c.TotalSacos}",
+                         CustomerName = $"Control {IngresoSalida} No.:{c.ControlPalletsId}|| Total: {c.Total} || Placa: {c.Placa}  || Motorista: { c.Motorista } || Fecha: { c.DocumentDate.ToString("dd/MM/yyyy") } ",
                          DocumentDate = c.DocumentDate,
                      }
                                       ).ToList();
@@ -461,6 +461,7 @@ namespace ERPMVC.Controllers
                         editar = 1,
                         EsIngreso = _ControlPalletsId.EsIngreso,
                         EsSalida = _ControlPalletsId.EsSalida,
+
                         ProductoPesado = true,
                         FechaCreacion = DateTime.Now,
                         BranchId = Convert.ToInt64(HttpContext.Session.GetString("BranchId"))

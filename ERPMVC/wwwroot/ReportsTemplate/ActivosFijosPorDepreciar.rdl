@@ -5,7 +5,7 @@
     <DataSource Name="ERP">
       <ConnectionProperties>
         <DataProvider>SQL</DataProvider>
-        <ConnectString>Data Source=(local);Initial Catalog=ERP-PRODUCCION</ConnectString>
+        <ConnectString>Data Source=192.168.0.5;Initial Catalog=ERP-PRODUCCION</ConnectString>
         <IntegratedSecurity>true</IntegratedSecurity>
       </ConnectionProperties>
       <rd:SecurityType>Integrated</rd:SecurityType>
@@ -49,24 +49,32 @@ WHERE IdEstado = 1</CommandText>
           <QueryParameter Name="@SUCURSAL">
             <Value>=Parameters!SUCURSAL.Value</Value>
           </QueryParameter>
+          <QueryParameter Name="@GRUPO">
+            <Value>=Parameters!GRUPO.Value</Value>
+          </QueryParameter>
           <QueryParameter Name="@ESTADO">
             <Value>=Parameters!ESTADO.Value</Value>
           </QueryParameter>
         </QueryParameters>
-        <CommandText>
-SELECT T1.FixedAssetGroupName
-, T0.FixedAssetId
-, T0.FixedAssetCode
+        <CommandText>select *  from (
+
+SELECT 
+ROW_NUMBER() OVER(PARTITION BY T0.FIXEDASSETID ORDER BY T2.YEAR DESC) AS NUMEROFILA
+ ,T0.FixedAssetId
+, T0.Codigo
 , T0.AssetDate
 , T0.FixedAssetName
 , T0.BranchName
+, T0.Estado
 , T0.Amount
 , T0.Cost
 , T0.ActiveTotalCost
 , T0.ResidualValue
 , T0.ToDepreciate
 , T0.FixedActiveLife
+,T0.FechaBaja
 , T0.Ubicacion
+, T1.FixedAssetGroupName
 , T2.Year
 , isnull((Select t3.TotalDepreciated from DepreciationFixedAsset t3 where FixedAssetId = T0.FixedAssetId and t3.Year = @ANIO - 1),0 )  depreciaAnioAnterior
 , CASE WHEN @MES  &gt;= 1 OR @MES = 0 THEN T2.January ELSE 0 END January
@@ -81,29 +89,45 @@ SELECT T1.FixedAssetGroupName
 ,  CASE WHEN @MES  &gt;= 10 OR @MES = 0 THEN T2.October ELSE 0 END October
 ,  CASE WHEN @MES  &gt;= 11 OR @MES = 0 THEN T2.November ELSE 0 END November
 ,  CASE WHEN @MES  &gt;= 12 OR @MES = 0 THEN T2.December ELSE 0 END December
-, T2.TotalDepreciated + isnull((Select t3.TotalDepreciated from DepreciationFixedAsset t3 where FixedAssetId = T0.FixedAssetId and t3.Year = @ANIO - 1),0)  DepreciacionAnual 
-,T0.ToDepreciate - ( T2.TotalDepreciated + isnull((Select t3.TotalDepreciated from DepreciationFixedAsset t3 where FixedAssetId = T0.FixedAssetId and t3.Year = @ANIO - 1),0))
+
+, CASE WHEN @MES  = 1 THEN T2.January 
+		WHEN @MES  = 2  THEN T2.January + T2.February 
+		 WHEN @MES  = 3 THEN T2.January + T2.February + T2.March 
+		 WHEN @MES  = 4  THEN T2.January + T2.February + T2.March + T2.April 
+		 WHEN @MES  = 5  THEN T2.January + T2.February + T2.March + T2.April + T2.May 
+		 WHEN @MES  = 6  THEN T2.January + T2.February + T2.March + T2.April + T2.May + T2.June 
+		 WHEN @MES  = 7  THEN T2.January + T2.February + T2.March + T2.April + T2.May + T2.June+T2.July  
+		 WHEN @MES  = 8  THEN T2.January + T2.February + T2.March + T2.April + T2.May + T2.June+T2.July+T2.August 
+		 WHEN @MES  = 9  THEN T2.January + T2.February + T2.March + T2.April + T2.May + T2.June+T2.July+T2.August +T2.September 
+		 WHEN @MES  = 10  THEN T2.January + T2.February + T2.March + T2.April + T2.May + T2.June+T2.July+T2.August +T2.September +T2.October  
+		 WHEN @MES  = 11  THEN T2.January + T2.February + T2.March + T2.April + T2.May + T2.June+T2.July+T2.August +T2.September +T2.October  +T2.November 
+		 WHEN @MES  = 12 OR @MES = 0 THEN T2.January + T2.February + T2.March + T2.April + T2.May + T2.June+T2.July+T2.August +T2.September +T2.October  +T2.November +T2.December ELSE 0 END   DepreciacionAnual 
+,T0.ToDepreciate + (isnull((Select SUM(t3.TotalDepreciated) from DepreciationFixedAsset t3 where FixedAssetId = T0.FixedAssetId and t3.Year &lt; @ANIO ),0 ) )
 AS 'PorDepreciar'
 FROM FixedAsset T0
 Left JOIN FixedAssetGroup T1 ON T0.FixedAssetGroupId = T1.FixedAssetGroupId
 LEFT JOIN DepreciationFixedAsset T2 ON T2.FixedAssetId = T0.FixedAssetId
-WHERE T2.Year = @ANIO 
-AND (T0.CenterCostId = @CENTROCOSTO OR @CENTROCOSTO = 0)
+WHERE 
+
+( T2.Year = @ANIO OR T0.Estado ='Depreciado' or T0.Estado ='Importe Original'  ) AND
+ (T0.CenterCostId = @CENTROCOSTO OR @CENTROCOSTO = 0)
 AND (T0.BranchId = @SUCURSAL OR @SUCURSAL = 0)
-AND (T0.Estado = @ESTADO OR @ESTADO = 'TODOS' OR (@ESTADO = 'N' AND  (T0.Estado = 'Depreciandose' OR T0.Estado  = 'Depreciado')))
-order by t0.FixedAssetId</CommandText>
+AND (T1.FixedAssetGroupId = @GRUPO OR @GRUPO = 0)
+AND ((T0.Estado = 'Depreciado' AND @ESTADO = 1 ) OR (T0.Estado = 'Depreciandose' AND @ESTADO = 2 ) OR (T0.Estado = 'Importe Original' AND @ESTADO = 3 ) OR (T0.Estado = 'Dado de Baja' AND @ESTADO = 4 ) OR  (T0.Estado &lt;&gt; 'Dado de Baja' AND @ESTADO = 0 ) )
+) as tabla WHERE NUMEROFILA = 1</CommandText>
+        <Timeout>2</Timeout>
       </Query>
       <Fields>
-        <Field Name="FixedAssetGroupName">
-          <DataField>FixedAssetGroupName</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
+        <Field Name="NUMEROFILA">
+          <DataField>NUMEROFILA</DataField>
+          <rd:TypeName>System.Int64</rd:TypeName>
         </Field>
         <Field Name="FixedAssetId">
           <DataField>FixedAssetId</DataField>
           <rd:TypeName>System.Int64</rd:TypeName>
         </Field>
-        <Field Name="FixedAssetCode">
-          <DataField>FixedAssetCode</DataField>
+        <Field Name="Codigo">
+          <DataField>Codigo</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
         <Field Name="AssetDate">
@@ -116,6 +140,10 @@ order by t0.FixedAssetId</CommandText>
         </Field>
         <Field Name="BranchName">
           <DataField>BranchName</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="Estado">
+          <DataField>Estado</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
         <Field Name="Amount">
@@ -142,8 +170,16 @@ order by t0.FixedAssetId</CommandText>
           <DataField>FixedActiveLife</DataField>
           <rd:TypeName>System.Decimal</rd:TypeName>
         </Field>
+        <Field Name="FechaBaja">
+          <DataField>FechaBaja</DataField>
+          <rd:TypeName>System.DateTime</rd:TypeName>
+        </Field>
         <Field Name="Ubicacion">
           <DataField>Ubicacion</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="FixedAssetGroupName">
+          <DataField>FixedAssetGroupName</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
         <Field Name="Year">
@@ -281,6 +317,35 @@ union select 0, 'TODOS' </CommandText>
         </Field>
       </Fields>
     </DataSet>
+    <DataSet Name="AssetGroup">
+      <Query>
+        <DataSourceName>ERP</DataSourceName>
+        <CommandText>SELECT
+  FixedAssetGroup.FixedAssetGroupId
+  ,FixedAssetGroup.FixedAssetGroupName
+FROM
+  FixedAssetGroup
+union select 0, 'TODOS' </CommandText>
+        <rd:DesignerState>
+          <QueryDefinition xmlns="http://schemas.microsoft.com/ReportingServices/QueryDefinition/Relational">
+            <SelectedColumns>
+              <ColumnExpression ColumnOwner="FixedAssetGroup" ColumnName="FixedAssetGroupId" />
+              <ColumnExpression ColumnOwner="FixedAssetGroup" ColumnName="FixedAssetGroupName" />
+            </SelectedColumns>
+          </QueryDefinition>
+        </rd:DesignerState>
+      </Query>
+      <Fields>
+        <Field Name="FixedAssetGroupId">
+          <DataField>FixedAssetGroupId</DataField>
+          <rd:TypeName>System.Int64</rd:TypeName>
+        </Field>
+        <Field Name="FixedAssetGroupName">
+          <DataField>FixedAssetGroupName</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+      </Fields>
+    </DataSet>
   </DataSets>
   <ReportSections>
     <ReportSection>
@@ -333,7 +398,22 @@ union select 0, 'TODOS' </CommandText>
             <TablixBody>
               <TablixColumns>
                 <TablixColumn>
+                  <Width>0.54792in</Width>
+                </TablixColumn>
+                <TablixColumn>
                   <Width>1in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>1in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>1in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>1in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>2.525in</Width>
                 </TablixColumn>
                 <TablixColumn>
                   <Width>1in</Width>
@@ -393,22 +473,51 @@ union select 0, 'TODOS' </CommandText>
                   <Width>1in</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>1in</Width>
+                  <Width>1.16667in</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>1in</Width>
-                </TablixColumn>
-                <TablixColumn>
-                  <Width>1in</Width>
-                </TablixColumn>
-                <TablixColumn>
-                  <Width>1in</Width>
+                  <Width>1.3in</Width>
                 </TablixColumn>
               </TablixColumns>
               <TablixRows>
                 <TablixRow>
                   <Height>0.25in</Height>
                   <TablixCells>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox20">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>Id</Value>
+                                  <Style>
+                                    <FontWeight>Bold</FontWeight>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox20</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>Gray</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <VerticalAlign>Middle</VerticalAlign>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
                     <TablixCell>
                       <CellContents>
                         <Textbox Name="TextBox104">
@@ -435,6 +544,7 @@ union select 0, 'TODOS' </CommandText>
                               <Color>Gray</Color>
                               <Style>Solid</Style>
                             </Border>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -469,6 +579,77 @@ union select 0, 'TODOS' </CommandText>
                               <Color>Gray</Color>
                               <Style>Solid</Style>
                             </Border>
+                            <VerticalAlign>Middle</VerticalAlign>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox6">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>Fecha Baja</Value>
+                                  <Style>
+                                    <FontWeight>Bold</FontWeight>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox6</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>Gray</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <VerticalAlign>Middle</VerticalAlign>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox9">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>Estado</Value>
+                                  <Style>
+                                    <FontWeight>Bold</FontWeight>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox9</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>Gray</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -503,6 +684,7 @@ union select 0, 'TODOS' </CommandText>
                               <Color>Gray</Color>
                               <Style>Solid</Style>
                             </Border>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -537,6 +719,7 @@ union select 0, 'TODOS' </CommandText>
                               <Color>Gray</Color>
                               <Style>Solid</Style>
                             </Border>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -571,6 +754,7 @@ union select 0, 'TODOS' </CommandText>
                               <Color>Gray</Color>
                               <Style>Solid</Style>
                             </Border>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -605,6 +789,7 @@ union select 0, 'TODOS' </CommandText>
                               <Color>Gray</Color>
                               <Style>Solid</Style>
                             </Border>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -639,6 +824,7 @@ union select 0, 'TODOS' </CommandText>
                               <Color>Gray</Color>
                               <Style>Solid</Style>
                             </Border>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -673,6 +859,7 @@ union select 0, 'TODOS' </CommandText>
                               <Color>Gray</Color>
                               <Style>Solid</Style>
                             </Border>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -707,6 +894,7 @@ union select 0, 'TODOS' </CommandText>
                               <Color>Gray</Color>
                               <Style>Solid</Style>
                             </Border>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -741,6 +929,7 @@ union select 0, 'TODOS' </CommandText>
                               <Color>Gray</Color>
                               <Style>Solid</Style>
                             </Border>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -775,6 +964,7 @@ union select 0, 'TODOS' </CommandText>
                               <Color>Gray</Color>
                               <Style>Solid</Style>
                             </Border>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -809,6 +999,7 @@ union select 0, 'TODOS' </CommandText>
                               <Color>Gray</Color>
                               <Style>Solid</Style>
                             </Border>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -843,6 +1034,7 @@ union select 0, 'TODOS' </CommandText>
                               <Color>Gray</Color>
                               <Style>Solid</Style>
                             </Border>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -877,6 +1069,7 @@ union select 0, 'TODOS' </CommandText>
                               <Color>Gray</Color>
                               <Style>Solid</Style>
                             </Border>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -911,6 +1104,7 @@ union select 0, 'TODOS' </CommandText>
                               <Color>Gray</Color>
                               <Style>Solid</Style>
                             </Border>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -945,6 +1139,7 @@ union select 0, 'TODOS' </CommandText>
                               <Color>Gray</Color>
                               <Style>Solid</Style>
                             </Border>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -979,6 +1174,7 @@ union select 0, 'TODOS' </CommandText>
                               <Color>Gray</Color>
                               <Style>Solid</Style>
                             </Border>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -1013,6 +1209,7 @@ union select 0, 'TODOS' </CommandText>
                               <Color>Gray</Color>
                               <Style>Solid</Style>
                             </Border>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -1047,6 +1244,7 @@ union select 0, 'TODOS' </CommandText>
                               <Color>Gray</Color>
                               <Style>Solid</Style>
                             </Border>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -1081,6 +1279,7 @@ union select 0, 'TODOS' </CommandText>
                               <Color>Gray</Color>
                               <Style>Solid</Style>
                             </Border>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -1115,6 +1314,7 @@ union select 0, 'TODOS' </CommandText>
                               <Color>Gray</Color>
                               <Style>Solid</Style>
                             </Border>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -1149,6 +1349,7 @@ union select 0, 'TODOS' </CommandText>
                               <Color>Gray</Color>
                               <Style>Solid</Style>
                             </Border>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -1166,7 +1367,7 @@ union select 0, 'TODOS' </CommandText>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>Depreciado</Value>
+                                  <Value>Total Depreciado</Value>
                                   <Style>
                                     <FontWeight>Bold</FontWeight>
                                   </Style>
@@ -1183,6 +1384,7 @@ union select 0, 'TODOS' </CommandText>
                               <Color>Gray</Color>
                               <Style>Solid</Style>
                             </Border>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -1193,14 +1395,14 @@ union select 0, 'TODOS' </CommandText>
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="TextBox126">
+                        <Textbox Name="Textbox12">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>Por Depreciar</Value>
+                                  <Value>Valor en Libros</Value>
                                   <Style>
                                     <FontWeight>Bold</FontWeight>
                                   </Style>
@@ -1208,15 +1410,16 @@ union select 0, 'TODOS' </CommandText>
                               </TextRuns>
                               <Style>
                                 <TextAlign>Center</TextAlign>
-                                <LineHeight>10pt</LineHeight>
                               </Style>
                             </Paragraph>
                           </Paragraphs>
+                          <rd:DefaultName>Textbox12</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>Gray</Color>
                               <Style>Solid</Style>
                             </Border>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -1230,6 +1433,40 @@ union select 0, 'TODOS' </CommandText>
                 <TablixRow>
                   <Height>0.25in</Height>
                   <TablixCells>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="FixedAssetId">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Fields!FixedAssetId.Value</Value>
+                                  <Style />
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>FixedAssetId</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>Gray</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <VerticalAlign>Middle</VerticalAlign>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                        <rd:Selected>true</rd:Selected>
+                      </CellContents>
+                    </TablixCell>
                     <TablixCell>
                       <CellContents>
                         <Textbox Name="TextBox127">
@@ -1246,6 +1483,7 @@ union select 0, 'TODOS' </CommandText>
                                 </TextRun>
                               </TextRuns>
                               <Style>
+                                <TextAlign>Center</TextAlign>
                                 <LineHeight>10pt</LineHeight>
                               </Style>
                             </Paragraph>
@@ -1255,6 +1493,7 @@ union select 0, 'TODOS' </CommandText>
                               <Color>Gray</Color>
                               <Style>Solid</Style>
                             </Border>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -1272,7 +1511,7 @@ union select 0, 'TODOS' </CommandText>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Fields!FixedAssetCode.Value</Value>
+                                  <Value>=Fields!Codigo.Value</Value>
                                   <Style />
                                 </TextRun>
                               </TextRuns>
@@ -1286,6 +1525,69 @@ union select 0, 'TODOS' </CommandText>
                               <Color>Gray</Color>
                               <Style>Solid</Style>
                             </Border>
+                            <VerticalAlign>Middle</VerticalAlign>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="FechaBaja">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Fields!FechaBaja.Value</Value>
+                                  <Style />
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>FechaBaja</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>Gray</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <VerticalAlign>Middle</VerticalAlign>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Estado">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Fields!Estado.Value</Value>
+                                  <Style />
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Estado</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>Gray</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -1317,6 +1619,7 @@ union select 0, 'TODOS' </CommandText>
                               <Color>Gray</Color>
                               <Style>Solid</Style>
                             </Border>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -1347,6 +1650,7 @@ union select 0, 'TODOS' </CommandText>
                               <Color>Gray</Color>
                               <Style>Solid</Style>
                             </Border>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -1378,6 +1682,7 @@ union select 0, 'TODOS' </CommandText>
                               <Color>Gray</Color>
                               <Style>Solid</Style>
                             </Border>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -1411,6 +1716,7 @@ union select 0, 'TODOS' </CommandText>
                               <Color>Gray</Color>
                               <Style>Solid</Style>
                             </Border>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -1444,6 +1750,7 @@ union select 0, 'TODOS' </CommandText>
                               <Color>Gray</Color>
                               <Style>Solid</Style>
                             </Border>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -1477,6 +1784,7 @@ union select 0, 'TODOS' </CommandText>
                               <Color>Gray</Color>
                               <Style>Solid</Style>
                             </Border>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -1508,6 +1816,7 @@ union select 0, 'TODOS' </CommandText>
                               <Color>Gray</Color>
                               <Style>Solid</Style>
                             </Border>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -1540,6 +1849,7 @@ union select 0, 'TODOS' </CommandText>
                               <Color>Gray</Color>
                               <Style>Solid</Style>
                             </Border>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -1573,6 +1883,7 @@ union select 0, 'TODOS' </CommandText>
                               <Color>Gray</Color>
                               <Style>Solid</Style>
                             </Border>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -1606,6 +1917,7 @@ union select 0, 'TODOS' </CommandText>
                               <Color>Gray</Color>
                               <Style>Solid</Style>
                             </Border>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -1639,6 +1951,7 @@ union select 0, 'TODOS' </CommandText>
                               <Color>Gray</Color>
                               <Style>Solid</Style>
                             </Border>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -1672,6 +1985,7 @@ union select 0, 'TODOS' </CommandText>
                               <Color>Gray</Color>
                               <Style>Solid</Style>
                             </Border>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -1705,6 +2019,7 @@ union select 0, 'TODOS' </CommandText>
                               <Color>Gray</Color>
                               <Style>Solid</Style>
                             </Border>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -1738,6 +2053,7 @@ union select 0, 'TODOS' </CommandText>
                               <Color>Gray</Color>
                               <Style>Solid</Style>
                             </Border>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -1771,6 +2087,7 @@ union select 0, 'TODOS' </CommandText>
                               <Color>Gray</Color>
                               <Style>Solid</Style>
                             </Border>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -1804,6 +2121,7 @@ union select 0, 'TODOS' </CommandText>
                               <Color>Gray</Color>
                               <Style>Solid</Style>
                             </Border>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -1837,6 +2155,7 @@ union select 0, 'TODOS' </CommandText>
                               <Color>Gray</Color>
                               <Style>Solid</Style>
                             </Border>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -1870,6 +2189,7 @@ union select 0, 'TODOS' </CommandText>
                               <Color>Gray</Color>
                               <Style>Solid</Style>
                             </Border>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -1903,6 +2223,7 @@ union select 0, 'TODOS' </CommandText>
                               <Color>Gray</Color>
                               <Style>Solid</Style>
                             </Border>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -1936,6 +2257,7 @@ union select 0, 'TODOS' </CommandText>
                               <Color>Gray</Color>
                               <Style>Solid</Style>
                             </Border>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -1953,7 +2275,7 @@ union select 0, 'TODOS' </CommandText>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Fields!DepreciacionAnual.Value</Value>
+                                  <Value>=Fields!DepreciacionAnual.Value+Fields!depreciaAnioAnterior.Value</Value>
                                   <Style>
                                     <Format>n2</Format>
                                   </Style>
@@ -1969,6 +2291,7 @@ union select 0, 'TODOS' </CommandText>
                               <Color>Gray</Color>
                               <Style>Solid</Style>
                             </Border>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -1979,29 +2302,29 @@ union select 0, 'TODOS' </CommandText>
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="TextBox149">
+                        <Textbox Name="Cost">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Sum(Fields!PorDepreciar.Value)</Value>
+                                  <Value>=Fields!Amount.Value-Fields!depreciaAnioAnterior.Value-Fields!DepreciacionAnual.Value</Value>
                                   <Style>
-                                    <Format>n2</Format>
+                                    <Format>#,0.00;(#,0.00)</Format>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
-                              <Style>
-                                <LineHeight>10pt</LineHeight>
-                              </Style>
+                              <Style />
                             </Paragraph>
                           </Paragraphs>
+                          <rd:DefaultName>Cost</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>Gray</Color>
                               <Style>Solid</Style>
                             </Border>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -2015,6 +2338,41 @@ union select 0, 'TODOS' </CommandText>
                 <TablixRow>
                   <Height>0.25in</Height>
                   <TablixCells>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox22">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Sum(Fields!FixedAssetId.Value)</Value>
+                                  <Style>
+                                    <FontWeight>Bold</FontWeight>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox22</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>Gray</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <VerticalAlign>Middle</VerticalAlign>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
                     <TablixCell>
                       <CellContents>
                         <Textbox Name="TextBox150">
@@ -2040,6 +2398,7 @@ union select 0, 'TODOS' </CommandText>
                               <Color>Gray</Color>
                               <Style>Solid</Style>
                             </Border>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -2073,6 +2432,73 @@ union select 0, 'TODOS' </CommandText>
                               <Color>Gray</Color>
                               <Style>Solid</Style>
                             </Border>
+                            <VerticalAlign>Middle</VerticalAlign>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox10">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value />
+                                  <Style>
+                                    <FontWeight>Bold</FontWeight>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox10</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>Gray</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <VerticalAlign>Middle</VerticalAlign>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox13">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value />
+                                  <Style>
+                                    <FontWeight>Bold</FontWeight>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox13</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>Gray</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -2106,6 +2532,7 @@ union select 0, 'TODOS' </CommandText>
                               <Color>Gray</Color>
                               <Style>Solid</Style>
                             </Border>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -2138,6 +2565,7 @@ union select 0, 'TODOS' </CommandText>
                               <Color>Gray</Color>
                               <Style>Solid</Style>
                             </Border>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -2171,6 +2599,7 @@ union select 0, 'TODOS' </CommandText>
                               <Color>Gray</Color>
                               <Style>Solid</Style>
                             </Border>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -2205,6 +2634,7 @@ union select 0, 'TODOS' </CommandText>
                               <Color>Gray</Color>
                               <Style>Solid</Style>
                             </Border>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -2239,6 +2669,7 @@ union select 0, 'TODOS' </CommandText>
                               <Color>Gray</Color>
                               <Style>Solid</Style>
                             </Border>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -2273,6 +2704,7 @@ union select 0, 'TODOS' </CommandText>
                               <Color>Gray</Color>
                               <Style>Solid</Style>
                             </Border>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -2306,6 +2738,7 @@ union select 0, 'TODOS' </CommandText>
                               <Color>Gray</Color>
                               <Style>Solid</Style>
                             </Border>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -2339,6 +2772,7 @@ union select 0, 'TODOS' </CommandText>
                               <Color>Gray</Color>
                               <Style>Solid</Style>
                             </Border>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -2373,6 +2807,7 @@ union select 0, 'TODOS' </CommandText>
                               <Color>Gray</Color>
                               <Style>Solid</Style>
                             </Border>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -2407,6 +2842,7 @@ union select 0, 'TODOS' </CommandText>
                               <Color>Gray</Color>
                               <Style>Solid</Style>
                             </Border>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -2441,6 +2877,7 @@ union select 0, 'TODOS' </CommandText>
                               <Color>Gray</Color>
                               <Style>Solid</Style>
                             </Border>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -2475,6 +2912,7 @@ union select 0, 'TODOS' </CommandText>
                               <Color>Gray</Color>
                               <Style>Solid</Style>
                             </Border>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -2509,6 +2947,7 @@ union select 0, 'TODOS' </CommandText>
                               <Color>Gray</Color>
                               <Style>Solid</Style>
                             </Border>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -2543,6 +2982,7 @@ union select 0, 'TODOS' </CommandText>
                               <Color>Gray</Color>
                               <Style>Solid</Style>
                             </Border>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -2577,6 +3017,7 @@ union select 0, 'TODOS' </CommandText>
                               <Color>Gray</Color>
                               <Style>Solid</Style>
                             </Border>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -2611,6 +3052,7 @@ union select 0, 'TODOS' </CommandText>
                               <Color>Gray</Color>
                               <Style>Solid</Style>
                             </Border>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -2645,6 +3087,7 @@ union select 0, 'TODOS' </CommandText>
                               <Color>Gray</Color>
                               <Style>Solid</Style>
                             </Border>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -2679,6 +3122,7 @@ union select 0, 'TODOS' </CommandText>
                               <Color>Gray</Color>
                               <Style>Solid</Style>
                             </Border>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -2713,6 +3157,7 @@ union select 0, 'TODOS' </CommandText>
                               <Color>Gray</Color>
                               <Style>Solid</Style>
                             </Border>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -2747,6 +3192,7 @@ union select 0, 'TODOS' </CommandText>
                               <Color>Gray</Color>
                               <Style>Solid</Style>
                             </Border>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -2764,7 +3210,7 @@ union select 0, 'TODOS' </CommandText>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Sum(Fields!DepreciacionAnual.Value)</Value>
+                                  <Value>=Sum(Fields!DepreciacionAnual.Value+Fields!depreciaAnioAnterior.Value)</Value>
                                   <Style>
                                     <FontWeight>Bold</FontWeight>
                                     <Format>n2</Format>
@@ -2781,6 +3227,7 @@ union select 0, 'TODOS' </CommandText>
                               <Color>Gray</Color>
                               <Style>Solid</Style>
                             </Border>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -2791,30 +3238,30 @@ union select 0, 'TODOS' </CommandText>
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="TextBox172">
+                        <Textbox Name="Textbox19">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Sum(Fields!PorDepreciar.Value)</Value>
+                                  <Value>=Fields!Amount.Value-Fields!depreciaAnioAnterior.Value-Fields!DepreciacionAnual.Value</Value>
                                   <Style>
                                     <FontWeight>Bold</FontWeight>
-                                    <Format>n2</Format>
+                                    <Format>#,0.00;(#,0.00)</Format>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
-                              <Style>
-                                <LineHeight>10pt</LineHeight>
-                              </Style>
+                              <Style />
                             </Paragraph>
                           </Paragraphs>
+                          <rd:DefaultName>Textbox19</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>Gray</Color>
                               <Style>Solid</Style>
                             </Border>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -2828,6 +3275,39 @@ union select 0, 'TODOS' </CommandText>
                 <TablixRow>
                   <Height>0.25in</Height>
                   <TablixCells>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox23">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Sum(Fields!FixedAssetId.Value)</Value>
+                                  <Style />
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox23</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>Gray</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <VerticalAlign>Middle</VerticalAlign>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
                     <TablixCell>
                       <CellContents>
                         <Textbox Name="TextBox173">
@@ -2851,6 +3331,7 @@ union select 0, 'TODOS' </CommandText>
                               <Color>Gray</Color>
                               <Style>Solid</Style>
                             </Border>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -2882,6 +3363,69 @@ union select 0, 'TODOS' </CommandText>
                               <Color>Gray</Color>
                               <Style>Solid</Style>
                             </Border>
+                            <VerticalAlign>Middle</VerticalAlign>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox11">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value />
+                                  <Style />
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox11</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>Gray</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <VerticalAlign>Middle</VerticalAlign>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox14">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value />
+                                  <Style />
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox14</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>Gray</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -2913,6 +3457,7 @@ union select 0, 'TODOS' </CommandText>
                               <Color>Gray</Color>
                               <Style>Solid</Style>
                             </Border>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -2943,6 +3488,7 @@ union select 0, 'TODOS' </CommandText>
                               <Color>Gray</Color>
                               <Style>Solid</Style>
                             </Border>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -2974,6 +3520,7 @@ union select 0, 'TODOS' </CommandText>
                               <Color>Gray</Color>
                               <Style>Solid</Style>
                             </Border>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -3008,6 +3555,7 @@ union select 0, 'TODOS' </CommandText>
                               <Color>Gray</Color>
                               <Style>Solid</Style>
                             </Border>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -3042,6 +3590,7 @@ union select 0, 'TODOS' </CommandText>
                               <Color>Gray</Color>
                               <Style>Solid</Style>
                             </Border>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -3076,6 +3625,7 @@ union select 0, 'TODOS' </CommandText>
                               <Color>Gray</Color>
                               <Style>Solid</Style>
                             </Border>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -3107,6 +3657,7 @@ union select 0, 'TODOS' </CommandText>
                               <Color>Gray</Color>
                               <Style>Solid</Style>
                             </Border>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -3126,6 +3677,7 @@ union select 0, 'TODOS' </CommandText>
                                 <TextRun>
                                   <Value>=Sum(Fields!depreciaAnioAnterior.Value)</Value>
                                   <Style>
+                                    <FontWeight>Bold</FontWeight>
                                     <Format>#,0.00</Format>
                                   </Style>
                                 </TextRun>
@@ -3139,6 +3691,7 @@ union select 0, 'TODOS' </CommandText>
                               <Color>Gray</Color>
                               <Style>Solid</Style>
                             </Border>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -3173,6 +3726,7 @@ union select 0, 'TODOS' </CommandText>
                               <Color>Gray</Color>
                               <Style>Solid</Style>
                             </Border>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -3207,6 +3761,7 @@ union select 0, 'TODOS' </CommandText>
                               <Color>Gray</Color>
                               <Style>Solid</Style>
                             </Border>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -3241,6 +3796,7 @@ union select 0, 'TODOS' </CommandText>
                               <Color>Gray</Color>
                               <Style>Solid</Style>
                             </Border>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -3275,6 +3831,7 @@ union select 0, 'TODOS' </CommandText>
                               <Color>Gray</Color>
                               <Style>Solid</Style>
                             </Border>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -3309,6 +3866,7 @@ union select 0, 'TODOS' </CommandText>
                               <Color>Gray</Color>
                               <Style>Solid</Style>
                             </Border>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -3343,6 +3901,7 @@ union select 0, 'TODOS' </CommandText>
                               <Color>Gray</Color>
                               <Style>Solid</Style>
                             </Border>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -3377,6 +3936,7 @@ union select 0, 'TODOS' </CommandText>
                               <Color>Gray</Color>
                               <Style>Solid</Style>
                             </Border>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -3411,6 +3971,7 @@ union select 0, 'TODOS' </CommandText>
                               <Color>Gray</Color>
                               <Style>Solid</Style>
                             </Border>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -3445,6 +4006,7 @@ union select 0, 'TODOS' </CommandText>
                               <Color>Gray</Color>
                               <Style>Solid</Style>
                             </Border>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -3479,6 +4041,7 @@ union select 0, 'TODOS' </CommandText>
                               <Color>Gray</Color>
                               <Style>Solid</Style>
                             </Border>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -3513,6 +4076,7 @@ union select 0, 'TODOS' </CommandText>
                               <Color>Gray</Color>
                               <Style>Solid</Style>
                             </Border>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -3547,6 +4111,7 @@ union select 0, 'TODOS' </CommandText>
                               <Color>Gray</Color>
                               <Style>Solid</Style>
                             </Border>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -3564,7 +4129,7 @@ union select 0, 'TODOS' </CommandText>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Sum(Fields!DepreciacionAnual.Value)</Value>
+                                  <Value>=Sum(Fields!DepreciacionAnual.Value+Fields!depreciaAnioAnterior.Value)</Value>
                                   <Style>
                                     <FontWeight>Bold</FontWeight>
                                     <Format>n2</Format>
@@ -3581,6 +4146,7 @@ union select 0, 'TODOS' </CommandText>
                               <Color>Gray</Color>
                               <Style>Solid</Style>
                             </Border>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -3591,30 +4157,30 @@ union select 0, 'TODOS' </CommandText>
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="TextBox195">
+                        <Textbox Name="Textbox17">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Sum(Fields!PorDepreciar.Value)</Value>
+                                  <Value>=Fields!Amount.Value-Fields!depreciaAnioAnterior.Value-Fields!DepreciacionAnual.Value</Value>
                                   <Style>
                                     <FontWeight>Bold</FontWeight>
-                                    <Format>n2</Format>
+                                    <Format>#,0.00;(#,0.00)</Format>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
-                              <Style>
-                                <LineHeight>10pt</LineHeight>
-                              </Style>
+                              <Style />
                             </Paragraph>
                           </Paragraphs>
+                          <rd:DefaultName>Textbox17</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>Gray</Color>
                               <Style>Solid</Style>
                             </Border>
+                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -3629,6 +4195,9 @@ union select 0, 'TODOS' </CommandText>
             </TablixBody>
             <TablixColumnHierarchy>
               <TablixMembers>
+                <TablixMember />
+                <TablixMember />
+                <TablixMember />
                 <TablixMember />
                 <TablixMember />
                 <TablixMember />
@@ -3685,6 +4254,7 @@ union select 0, 'TODOS' </CommandText>
                             <Color>#808080</Color>
                             <Style>Solid</Style>
                           </Border>
+                          <VerticalAlign>Middle</VerticalAlign>
                           <PaddingLeft>2pt</PaddingLeft>
                           <PaddingRight>2pt</PaddingRight>
                           <PaddingTop>2pt</PaddingTop>
@@ -3694,9 +4264,13 @@ union select 0, 'TODOS' </CommandText>
                     </CellContents>
                   </TablixHeader>
                   <TablixMembers>
-                    <TablixMember />
+                    <TablixMember>
+                      <KeepWithGroup>After</KeepWithGroup>
+                      <RepeatOnNewPage>true</RepeatOnNewPage>
+                    </TablixMember>
                   </TablixMembers>
                   <KeepWithGroup>After</KeepWithGroup>
+                  <RepeatOnNewPage>true</RepeatOnNewPage>
                 </TablixMember>
                 <TablixMember>
                   <Group Name="FixedAssetGroupName0">
@@ -3733,6 +4307,7 @@ union select 0, 'TODOS' </CommandText>
                             <Color>Gray</Color>
                             <Style>Solid</Style>
                           </Border>
+                          <VerticalAlign>Middle</VerticalAlign>
                           <PaddingLeft>2pt</PaddingLeft>
                           <PaddingRight>2pt</PaddingRight>
                           <PaddingTop>2pt</PaddingTop>
@@ -3744,6 +4319,11 @@ union select 0, 'TODOS' </CommandText>
                   <TablixMembers>
                     <TablixMember>
                       <Group Name="Detalis1" />
+                      <SortExpressions>
+                        <SortExpression>
+                          <Value>=Fields!AssetDate.Value</Value>
+                        </SortExpression>
+                      </SortExpressions>
                     </TablixMember>
                     <TablixMember>
                       <KeepWithGroup>Before</KeepWithGroup>
@@ -3777,6 +4357,7 @@ union select 0, 'TODOS' </CommandText>
                             <Color>Gray</Color>
                             <Style>Solid</Style>
                           </Border>
+                          <VerticalAlign>Middle</VerticalAlign>
                           <PaddingLeft>2pt</PaddingLeft>
                           <PaddingRight>2pt</PaddingRight>
                           <PaddingTop>2pt</PaddingTop>
@@ -3796,43 +4377,27 @@ union select 0, 'TODOS' </CommandText>
             <Top>0.125in</Top>
             <Left>0.125in</Left>
             <Height>1in</Height>
-            <Width>25in</Width>
+            <Width>29.53959in</Width>
             <ZIndex>2</ZIndex>
             <Style />
           </Tablix>
         </ReportItems>
-        <Height>1.876in</Height>
+        <Height>1.74058in</Height>
         <Style>
           <Border />
           <BackgroundColor>White</BackgroundColor>
         </Style>
       </Body>
-      <Width>25.29167in</Width>
+      <Width>30.11667in</Width>
       <Page>
         <PageHeader>
-          <Height>1.7336in</Height>
+          <Height>1.65027in</Height>
           <PrintOnFirstPage>true</PrintOnFirstPage>
           <PrintOnLastPage>true</PrintOnLastPage>
           <ReportItems>
             <Textbox Name="TextBox2">
               <KeepTogether>true</KeepTogether>
               <Paragraphs>
-                <Paragraph>
-                  <TextRuns>
-                    <TextRun>
-                      <Value>MAYOR DE PROPIEDAD</Value>
-                      <Style>
-                        <FontSize>12pt</FontSize>
-                        <FontWeight>Bold</FontWeight>
-                      </Style>
-                    </TextRun>
-                  </TextRuns>
-                  <SpaceBefore>3.6pt</SpaceBefore>
-                  <Style>
-                    <TextAlign>Center</TextAlign>
-                    <LineHeight>10pt</LineHeight>
-                  </Style>
-                </Paragraph>
                 <Paragraph>
                   <TextRuns>
                     <TextRun>
@@ -3852,7 +4417,60 @@ union select 0, 'TODOS' </CommandText>
                 <Paragraph>
                   <TextRuns>
                     <TextRun>
+                      <Value>MAYOR DE PROPIEDAD</Value>
+                      <Style>
+                        <FontSize>12pt</FontSize>
+                        <FontWeight>Bold</FontWeight>
+                      </Style>
+                    </TextRun>
+                  </TextRuns>
+                  <SpaceBefore>3.6pt</SpaceBefore>
+                  <Style>
+                    <TextAlign>Center</TextAlign>
+                    <LineHeight>10pt</LineHeight>
+                  </Style>
+                </Paragraph>
+                <Paragraph>
+                  <TextRuns>
+                    <TextRun>
                       <Value>="Centro de Costo: " + Parameters!CENTROCOSTO.Label</Value>
+                      <Style>
+                        <FontSize>12pt</FontSize>
+                        <FontWeight>Bold</FontWeight>
+                      </Style>
+                    </TextRun>
+                  </TextRuns>
+                  <SpaceBefore>3.6pt</SpaceBefore>
+                  <Style>
+                    <TextAlign>Center</TextAlign>
+                    <LineHeight>10pt</LineHeight>
+                  </Style>
+                </Paragraph>
+                <Paragraph>
+                  <TextRuns>
+                    <TextRun>
+                      <Value>a </Value>
+                      <Style>
+                        <FontSize>12pt</FontSize>
+                        <FontWeight>Bold</FontWeight>
+                      </Style>
+                    </TextRun>
+                    <TextRun>
+                      <Value>=Parameters!MES.Label</Value>
+                      <Style>
+                        <FontSize>12pt</FontSize>
+                        <FontWeight>Bold</FontWeight>
+                      </Style>
+                    </TextRun>
+                    <TextRun>
+                      <Value>-</Value>
+                      <Style>
+                        <FontSize>12pt</FontSize>
+                        <FontWeight>Bold</FontWeight>
+                      </Style>
+                    </TextRun>
+                    <TextRun>
+                      <Value>=Parameters!ANIO.Label</Value>
                       <Style>
                         <FontSize>12pt</FontSize>
                         <FontWeight>Bold</FontWeight>
@@ -3904,9 +4522,9 @@ union select 0, 'TODOS' </CommandText>
                   </Style>
                 </Paragraph>
               </Paragraphs>
-              <Top>0.16602in</Top>
-              <Left>14.125in</Left>
-              <Height>1.3937in</Height>
+              <Top>0.4681in</Top>
+              <Left>16.09375in</Left>
+              <Height>0.6437in</Height>
               <Width>2in</Width>
               <ZIndex>1</ZIndex>
               <Style>
@@ -3938,7 +4556,9 @@ union select 0, 'TODOS' </CommandText>
           </Style>
         </PageHeader>
         <PageHeight>8.5in</PageHeight>
-        <PageWidth>14in</PageWidth>
+        <PageWidth>28in</PageWidth>
+        <LeftMargin>0in</LeftMargin>
+        <RightMargin>0in</RightMargin>
         <TopMargin>0.5in</TopMargin>
         <BottomMargin>0.5in</BottomMargin>
         <Style>
@@ -3962,13 +4582,9 @@ union select 0, 'TODOS' </CommandText>
     </ReportParameter>
     <ReportParameter Name="MES">
       <DataType>Integer</DataType>
-      <Prompt>Mes</Prompt>
+      <Prompt>Al Mes</Prompt>
       <ValidValues>
         <ParameterValues>
-          <ParameterValue>
-            <Value>0</Value>
-            <Label>TODOS</Label>
-          </ParameterValue>
           <ParameterValue>
             <Value>1</Value>
             <Label>ENERO</Label>
@@ -4043,27 +4659,42 @@ union select 0, 'TODOS' </CommandText>
       </ValidValues>
     </ReportParameter>
     <ReportParameter Name="ESTADO">
-      <DataType>String</DataType>
+      <DataType>Integer</DataType>
       <Prompt>Estado</Prompt>
       <ValidValues>
         <ParameterValues>
           <ParameterValue>
-            <Value>TODOS</Value>
-            <Label>TODOS</Label>
+            <Value>0</Value>
+            <Label>Consolidado</Label>
           </ParameterValue>
           <ParameterValue>
-            <Value>Importe Original</Value>
-            <Label>Importe Original</Label>
+            <Value>1</Value>
+            <Label>Depreciado</Label>
           </ParameterValue>
           <ParameterValue>
-            <Value>N</Value>
+            <Value>2</Value>
             <Label>Depreciandose</Label>
           </ParameterValue>
           <ParameterValue>
-            <Value>Dado de Baja</Value>
+            <Value>3</Value>
+            <Label>Importe Original</Label>
+          </ParameterValue>
+          <ParameterValue>
+            <Value>4</Value>
             <Label>Dado de Baja</Label>
           </ParameterValue>
         </ParameterValues>
+      </ValidValues>
+    </ReportParameter>
+    <ReportParameter Name="GRUPO">
+      <DataType>String</DataType>
+      <Prompt>Grupo</Prompt>
+      <ValidValues>
+        <DataSetReference>
+          <DataSetName>AssetGroup</DataSetName>
+          <ValueField>FixedAssetGroupId</ValueField>
+          <LabelField>FixedAssetGroupName</LabelField>
+        </DataSetReference>
       </ValidValues>
     </ReportParameter>
   </ReportParameters>
@@ -4096,6 +4727,11 @@ union select 0, 'TODOS' </CommandText>
           <ColumnIndex>1</ColumnIndex>
           <RowIndex>0</RowIndex>
           <ParameterName>MES</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>2</ColumnIndex>
+          <RowIndex>1</RowIndex>
+          <ParameterName>GRUPO</ParameterName>
         </CellDefinition>
       </CellDefinitions>
     </GridLayoutDefinition>

@@ -135,31 +135,35 @@
                                                                                 datasource.remove(item);
                                                                             }
                                                                             console.log(data);
-                                                                            datasource.insert({
-                                                                                GoodsReceiveLinedId: 1, GoodsReceivedId: 0
-                                                                                , UnitOfMeasureName: $("#CustomerUnitOfMeasureId").data("kendoDropDownList").text()
-                                                                                , UnitOfMeasureId: data.UnitOfMeasureId
-                                                                                , SubProductId: data.SubProductId
-                                                                                , SubProductName: data.SubProductName
-                                                                                , Quantity: data.pesoneto2
-                                                                                , QuantitySacos: data.TotalSacos
-                                                                                , WareHouseId: data.WarehouseId
-                                                                                , WareHouseName: data.WarehouseName
-                                                                                , ControlPalletsId: data.PalletId
+                                                                            if(data.ProductoPesado){
+                                                                                datasource.insert({
+                                                                                    GoodsReceiveLinedId: 1, GoodsReceivedId: 0
+                                                                                    //, UnitOfMeasureName: $("#CustomerUnitOfMeasureId").data("kendoDropDownList").text()
+                                                                                    , UnitOfMeasureName: $("#CustomerUnitOfMeasureId").data("kendoDropDownList").text()
+                                                                                    , UnitOfMeasureId: data.UnitOfMeasureId
+                                                                                    , SubProductId: data.SubProductId
+                                                                                    , SubProductName: data.SubProductName
+                                                                                    , Quantity: data.pesoneto2
+                                                                                    , QuantitySacos: data.TotalSacos
+                                                                                    , WareHouseId: data.WarehouseId
+                                                                                    , WareHouseName: data.WarehouseName
+                                                                                    , ControlPalletsId: data.PalletId
 
-                                                                            });
+                                                                                });
+                                                                            }
                                                                             GetBoletaPeso();
                                                                         } else {
                                                                             console.log(data);
                                                                             let lineas = data._ControlPalletsLine.map((item) => {
                                                                                 return {
                                                                                     GoodsReceiveLinedId: 1, GoodsReceivedId: 0
-                                                                                    , UnitOfMeasureName: $("#CustomerUnitOfMeasureId").data("kendoDropDownList").text()
-                                                                                    , UnitOfMeasureId: data.UnitOfMeasureId
+                                                                                     , UnitOfMeasureName: item.UnitofMeasureName
+                                                                                    , UnitOfMeasureId: item.UnitofMeasureId
+                                                                                    //, UnitOfMeasureId: data.UnitOfMeasureId
                                                                                     , SubProductId: item.SubProductId
                                                                                     , SubProductName: item.SubProductName
                                                                                     , Quantity: item.Qty
-                                                                                    , QuantitySacos: 0
+                                                                                    , QuantitySacos: 0//
                                                                                     , WareHouseId: item.WarehouseId
                                                                                     , WareHouseName: item.WarehouseName
                                                                                     , ControlPalletsId: item.PalletId
@@ -838,6 +842,7 @@
     }
 
     function SaveGoodsReceived(e) {
+        try{
         var notification = $("#notification").data("kendoNotification");
         $("#btnSaveControlEstiba").hide();
         $("#btnSaveControlEstiba").prop("disabled", true);
@@ -912,20 +917,23 @@
                         async: false,
                         data: JSON.stringify(dataObject),
                         success: function (data) {
-
-                            $("#GoodsReceivedId").data("kendoNumericTextBox").value(data.GoodsReceivedId);
-                            $("#BoletaSalidaId").data("kendoNumericTextBox").value(data.BoletaSalidaId);
-                            ImprimirGoodsReceived(null, data.GoodsReceivedId);
-                            ImprimirBoletaDeSalida(null, data.BoletaSalidaId);
-                             MostrarMensaje('Datos guardados correctamente.', 'success', 'Satisfactorio', 3000);
+                            debugger;
+                            console.log(data);
+                            $("#GoodsReceivedId").data("kendoNumericTextBox").value(data.model.GoodsReceivedId);
+                               $("#BoletaSalidaId").data("kendoNumericTextBox").value(data.model.BoletaSalidaId);
+                                ImprimirGoodsReceived(null, data.model.GoodsReceivedId);
+                               if(data.model.BoletaSalidaId !=0 ) ImprimirBoletaDeSalida(null, data.model.BoletaSalidaId);
+                             MostrarMensaje('Datos guardados correctamente.', 'success', 'Satisfactorio', 8000);
                             RefreshGridGoodsReceived();
-
+                            data.alerts.forEach(alert =>
+                                MostrarMensaje(alert.Description, 'warning', 'Precaución', 8000));
+                            closesGoodsReceived();
                         },
                         error: function (XMLHttpRequest, textStatus, errorThrown) {
                             $("#btnSaveControlEstiba").show();
                             $("#btnSaveControlEstiba").prop("disabled", false);
                             $("#btngenerarfactura").show();
-                             MostrarMensaje(textStatus + ": " + XMLHttpRequest.responseText, 'Error', 'Error', 6000);
+                             MostrarMensaje(textStatus + ": " + XMLHttpRequest.responseText, 'Error', 'Error', 8000);
                         }
                     });
 
@@ -950,6 +958,15 @@
             $("#btnSaveControlEstiba").show();
             $("#btnSaveControlEstiba").prop("disabled", false);
         }
-
     }
+
+
+         catch (ex) {
+                console.log(ex);
+         }
+         finally{
+            $("#btnSaveControlEstiba").show();
+            $("#btnSaveControlEstiba").prop("disabled", false);
+         }
+     }
 </script>

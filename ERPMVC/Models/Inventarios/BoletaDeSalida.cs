@@ -67,7 +67,7 @@ namespace ERPMVC.Models
 
         [Display(Name = "Boleta de peso")]
         [Required(AllowEmptyStrings = false, ErrorMessage = "El campo {0} es requerido")]
-        public Int64 WeightBallot { get; set; }
+        public Int64? WeightBallot { get; set; }
 
         public Int64? Producto { get; set; }
         [ForeignKey("Producto")]

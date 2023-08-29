@@ -1,8 +1,6 @@
 ﻿@using System.Security.Claims
 @{
     ViewData["Title"] = "Factura de Proveedores";
-    bool permiso;
-    permiso = (bool)ViewData["permisoActualizarRecibido"];
     ClaimsPrincipal permisos = (ClaimsPrincipal)ViewData["permisos"];
 }
 <script>
@@ -26,34 +24,16 @@
                     async: false,
                     data: JSON.stringify(dataObject),
                     success: function (result) {
-                        //$.toast({
-                        //    heading: 'Satisfactorio',
-                        //    text: 'Se actualizo correctamente.',
-                        //    position: 'top-right',
-                        //    loaderBg: '#ff6849',
-                        //    icon: 'success',
-                        //    hideAfter: 7000,
-                        //    stack: 6
-                        //});
                          MostrarMensaje("Se actualizó correctamente.", "success", "Satisfactorio", 6000);
                         RefrescarGrid();
                     },
                     error: function (XMLHttpRequest, textStatus, errorThrown) {
-                        //notification.show({
-                        //    title: "Validación",
-                        //    message: textStatus + ": " + XMLHttpRequest.responseText
-                        //}, "error");
-                        //alert(textStatus + ": " + XMLHttpRequest.responseText);
                          MostrarMensaje(textStatus + ": " + XMLHttpRequest.responseText, "Error", "Error", 6000);
                     }
                 });
             }
         }
         else {
-            //notification.show({
-            //    title: "Validación",
-            //    message: "No se actualizo"
-            //}, "error");
              MostrarMensaje("No se actualizó correctamente.", "Error", "Error", 6000);
         }
     }
@@ -62,7 +42,7 @@
         $.each(this.dataSource.data(), function () {
             //console.log(Date.parse(this.OrderDate), Date.parse(this.ReceivedDate));
             if (Date.parse(this.OrderDate) != Date.parse(this.ReceivedDate)) {
-                $('[data-uid=' + this.uid + ']').find('.k-grid-Recibido').hide();
+                //$('[data-uid=' + this.uid + ']').find('.k-grid-Recibido').hide();
             }
         })
     }
@@ -118,7 +98,6 @@
                     mask: "(999) 0000-0000"
                 });
                 $("#TefonoAlert").hide();
-                RefreshInvoiceDetail();
                 //$("#BranchId").data("kendoDropDownList").value(0);
                 $("#btnSaveVendorInvoice").show();
                 $("#btnSaveVendorInvoice").prop("disabled", false);
@@ -160,7 +139,6 @@
                 $("#TefonoAlert").hide();
                 var txt = $(result);
 
-                 RefreshInvoiceDetail();
                  $("#btnSaveVendorInvoice").hide();
                  $('#myModalSalesOrder').modal('show');
             },
@@ -229,40 +207,21 @@
 </script>
 
 <h3 class="text-themecolor">Facturas de Proveedores</h3>
-@{
-    bool Gerente = false;
-    if (await HasPolicyAsync(Politicas.GG))
-    {
-        Gerente = true;
-    }
 
-}
 @(Html.Kendo().Grid<ERPMVC.Models.VendorInvoice>()
                                   .Name("gridInvoices")
                                   .Columns(columns =>
                                   {
-                                      if (permisos.HasClaim("Proveedores.Factura Proveedores.Ver Detalle", "true")
-                                          || permisos.HasClaim("Proveedores.Factura Proveedores.Imprimir", "true")
-                                          || permisos.HasClaim("Proveedores.Factura Proveedores.Pagar", "true"))
-                                      {
+                                     
                                           columns.Command(command =>
                                           {
-                                              if (permisos.HasClaim("Proveedores.Factura Proveedores.Ver Detalle", "true"))
-                                              {
-                                                  command.Custom("Detalles").Text(" ").IconClass("far fa-list-alt").Click("EditCotizacion");
-                                              }
-                                              if (permisos.HasClaim("Proveedores.Factura Proveedores.Imprimir", "true"))
-                                              {
-                                                  command.Custom("Imprimir").Text(" ").IconClass("fa fa-print").Click("ImprimirCotizacion");
-                                              }
-                                              //command.Custom("GenerarFactura").Text(" ").IconClass("fa fa-file-import").Click("GenerarFactura");
-                                              if (permisos.HasClaim("Proveedores.Factura Proveedores.Pagar", "true"))
-                                              {
-                                                  command.Custom("Recibido").Text(" ").IconClass("fa fa-thumbs-up").Click("ActualizarRecibido");
-                                              }
-                                              //  command.Edit(); command.Destroy();
+
+                                          command.Custom("Detalles").Text(" ").IconClass("far fa-list-alt").Click("EditCotizacion");
+                                          command.Custom("Imprimir").Text(" ").IconClass("fa fa-print").Click("ImprimirCotizacion");
+                                          command.Custom("Recibido").Text(" ").IconClass("fa fa-thumbs-up").Click("ActualizarRecibido");
+                                             
                                           }).Width(150).Title("Acciones");
-                                      }
+                                      
                                       columns.Bound(p => p.VendorInvoiceId).Title("Id").Width(125);
 
                                       columns.Bound(p => p.OrderDate).Format("{0:dd/MM/yyyy}").Title("Fecha Factura").Width(250);
@@ -319,7 +278,7 @@
                                       }
                                       if (permisos.HasClaim("Proveedores.Factura Proveedores.Reporte Libro de Compras", "true"))
                                       {
-                                          tools.Custom().Text("Reporte").IconClass("")
+                                          tools.Custom().Text("Libro de Compras").IconClass("k-icon k-i-print")
                                                      .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "ImprimirLibroCompras();" });
                                       }
                                       tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });

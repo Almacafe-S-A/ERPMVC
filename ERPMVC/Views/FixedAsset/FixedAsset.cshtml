@@ -35,6 +35,16 @@
 
 	}
 
+    function hideBajaButton() {
+        $(".baja-button").each(function () {
+            var row = $(this).closest("tr");
+            var dataItem = $("#gridFixedAsset").data("kendoGrid").dataItem(row);
+
+            if (dataItem.IdEstado === 110) {
+                $(this).hide();
+            }
+        });
+    }
 
 
     function EditFixedAsset(e) {
@@ -160,17 +170,21 @@
                                         }
                                         if (permisos.HasClaim("Contabilidad.Activos.Activos Fijos.Eliminar", "true"))
                                         {
-                                            //cmd.Destroy().Text(" ").IconClass("fa fa-trash-alt");
-                                            cmd.Custom("Baja").Text(" ").IconClass("fa fa-arrow-down").Click("ModalMotivo");
+                                            // cmd.Destroy().Text(" ").IconClass("fa fa-trash-alt");
+                                            cmd.Custom("Baja").Text(" ").IconClass("fa fa-arrow-down").Click("ModalMotivo").HtmlAttributes(new { @class = "baja-button" });
                                         }
                                     }).Title("Acciones").Width(110);
                                 }
                                 c.Bound(p => p.FixedAssetId).Width(135);
+                                c.Bound(p => p.Codigo).Title("Codigo").Width(135);
                                 //c.Bound(p => p.FixedAssetGroupId).Width(150).Title("Nombre");
                                 c.Bound(p => p.FixedAssetName).Width(150).Title("Nombre");
                                 c.Bound(p => p.Estado).Width(130).Title("Estado");
                                 //c.Bound(p => p.FixedAssetDescription).Width(160).Title("Descripción");
-                                c.Bound(p => p.AssetDate).ClientTemplate("#= kendo.toString(AssetDate, \"dd/MM/yyyy\") #").Width(210).Title("Fecha de Adquisición");
+                                c.Bound(p => p.AssetDate).ClientTemplate("#= kendo.toString(AssetDate, \"dd/MM/yyyy\") #")
+                                .Width(210).Title("Fecha de Adquisición");
+                                c.Bound(p => p.FechaBaja).Format("{0:dd/MM/yyyy}")
+                                .Width(210).Title("Fecha de Baja");
                                 //c.Bound(p => p.FixedAssetCode).Width(130).Title("Código");
                                 c.Bound(p => p.BranchName).Width(130).Title("Sucursal");
                                 //c.Bound(p => p.CenterCostName).Width(150).Title("Centro Costo");
@@ -253,6 +267,7 @@
                         .Events(e =>
                         {
                             e.Save("OnSave");
+                            e.DataBound("hideBajaButton");
                         })
                         .Resizable(conf => conf.Columns(true))
 )
@@ -342,7 +357,7 @@
         });
     }
 
-
+ 
 
     function setRowButtonTooltip(btn_cl, btn_tooltip) {
         $("#gridFixedAsset").kendoTooltip({

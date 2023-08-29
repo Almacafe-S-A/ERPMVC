@@ -115,7 +115,8 @@
                                     <form id="frmSalesOrder" kendo-validator="true" kendo-messages="messages" kendo-rules="rules"
                                           data-ajax="true"
                                           data-ajax-method="post"
-                                          method="post" class="validation-wizard wizard-circle">
+                                          method="post" class="validation-wizard wizard-circle"
+                                    >
                                         <div class="row">
                                             <div class="col-md-3">
                                                 <div class="form-group">
@@ -335,6 +336,7 @@
                                                             </transport>
                                                         </datasource>
                                                     </kendo-dropdownlist>
+                                                    <span asp-validation-for="CustomerId" class="text-danger"></span>
                                                 </div>
                                             </div>
                                             <div class="col-md-3">
@@ -388,54 +390,80 @@
                                             </div>
                                             
                                         </div>  
-                                        <div class="row" id="datosExonerado" >
+                                        <div class="row">
                                             <div class="col-md-3">
                                                 <div class="form-group">
                                                 <label class="control-label" style="min-width:100%">Exonerado</label>
-                                                <kendo-switch name="Exonerado"  for="Exonerado" checked="@Model.Exonerado" >
+                                            <kendo-switch name="Exonerado" for="Exonerado" checked="@Model.Exonerado" on-change="onChangeExonerado">
                                                         <messages checked="Si" unchecked="No" />
                                                     </kendo-switch>
                                                 </div>
                                             </div>
-                                            <div class="col-md-3">
+
+                                    <div class="col-md-3">
+                                        <div class="form-group">
+                                            <label class="control-label" style="min-width:100%">Exento</label>
+                                            <kendo-switch name="Exento" for="Exento" checked="@Model.Exento" on-change="onChangeExonerado">
+                                                <messages checked="Si" unchecked="No" />
+                                            </kendo-switch>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-md-6">
+                                        <label asp-for="Sinopsis" class="control-label"></label>
+
+                                        <textarea asp-for="Sinopsis" class="form-control required " style="min-width: 100%;"></textarea>
+
+                                        <span asp-validation-for="Sinopsis" class="text-danger"></span>
+                                    </div>
+                                           
+                                            
+                                        </div>
+                                         <div id="datosexonerado" class="row" >
+                                                <div class="col-md-3">
                                                 <div class="form-group">
                                                     <label asp-for="NoOCExenta" class="control-label">No. OC Exenta</label>
                                                    
                                                         <input type="text" asp-for="NoOCExenta" class="k-textbox" style="min-width: 100%" maxlength="50" />
                                                     
                                                 </div>
-                                            </div>
-                                            <div class="col-md-3">
-                                                <div class="form-group">
-                                                    <label asp-for="NoConstanciadeRegistro" class="control-label">No. Constancia Registro Exoneracion</label>
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <div class="form-group">
+                                                        <label asp-for="NoConstanciadeRegistro" class="control-label">No. Constancia Registro Exoneracion</label>
                                                     
-                                                        <input type="text" asp-for="NoConstanciadeRegistro" class="k-textbox" style="min-width: 100%" maxlength="50" />
+                                                            <input type="text" asp-for="NoConstanciadeRegistro" class="k-textbox" style="min-width: 100%" maxlength="50" />
                                                     
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <div class="form-group">
+                                                        <label asp-for="NoSAG" class="control-label">No Registro SAG</label>
+                                                    
+                                                            <input type="text" asp-for="NoSAG" class="k-textbox" style="min-width: 100%" maxlength="50" />
+                                                        <input type="text" asp-for="Estado" hidden class="k-textbox" style="min-width: 100%" maxlength="50" />
+                                                    </div>
                                                 </div>
                                             </div>
-                                            <div class="col-md-3">
-                                                <div class="form-group">
-                                                    <label asp-for="NoSAG" class="control-label">No Registro SAG</label>
-                                                    
-                                                        <input type="text" asp-for="NoSAG" class="k-textbox" style="min-width: 100%" maxlength="50" />
-                                            <input type="text" asp-for="Estado" hidden class="k-textbox" style="min-width: 100%" maxlength="50" />
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-12">
-                                            <label asp-for="Remarks" class="control-label"></label>
-
-                                            <textarea asp-for="Remarks" class="form-control required " style="min-width: 100%;" ></textarea>
-
-                                            <span asp-validation-for="Remarks" class="text-danger"></span>
-                                        </div>
+                               
+                                       
                                     </form>
+
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <label asp-for="Remarks" class="control-label"></label>
+
+                                        <textarea asp-for="Remarks" class="form-control required " style="min-width: 100%;"></textarea>
+
+                                        <span asp-validation-for="Remarks" class="text-danger"></span>
+                                    </div>
+                                </div>
                                 
 
                                 <div id="salesorderdetail">
                                     @await Html.PartialAsync("pvwInvoiceDetail", Model, new ViewDataDictionary(ViewData) { { "permisosInvoice", permisos } })
                                 </div>
-                                <div class="row">
+                                <div class="row" style="display:none">
 
 
                                     <div class="col-md-2">
@@ -472,7 +500,7 @@
 
 
                                 <div class="row">
-                                    @if (Model.InvoiceId == 0 || Model.Estado == "Aprobado")
+                                    @if (Model.InvoiceId == 0 || ( Model.Estado != "Emitido" && Model.Estado != "Anulado" ) )
                                     {
                                         <button id="btnSaveInvoice" type="submit" class="form-control btn-miboton " onclick="SaveCotizacion(this);">Guardar</button>
                                     }
@@ -498,6 +526,13 @@
 </script>
 
 <script>
+
+    function GetClienteService() {
+        return {
+            CustomerId: $("#CustomerId").val(),
+            Service: $("#ProductId").val(),
+        };
+    }
     function Numeros(e) {
         var key = window.Event ? e.which : e.keyCode
         return (key >= 48 && key <= 57)
@@ -523,6 +558,9 @@
             $("#datosExonerado").show();
             $("#datosfiscales").show();
         }
+        var exo = $("#Exonerado").data("kendoSwitch");
+        var exonerado = exo.check();
+        
     });
     function SoloNumeros(e) {
         key = e.keyCode || e.which;
@@ -574,13 +612,19 @@
                 MostrarMensaje('Datos incorrectos en el formulario!', "Error", "Validación", 6000);
                 $("#btnSaveInvoice").show();
                 $("#btnSaveInvoice").prop("disabled", false);
+                return;
             }
+
+            var exo = $("#Exonerado").data("kendoSwitch");
+            var exonerado =  exo.check();
+
+            var exe = $("#Exento").data("kendoSwitch");
+            var exento =  exe.check();
 
             var dataObject = {
                 'InvoiceId': $("#InvoiceId").val() === "" ? "0" : $("#InvoiceId").val(),
                 'InvoiceName': $("#InvoiceName").val(),
                 'BranchId': $("#BranchId").val(),
-
                 'CustomerContractId': $("#CustomerContractId").val(),
                 'BranchName': $("#BranchId").data("kendoDropDownList").text(),
                 'CustomerId': $("#CustomerId").val(),
@@ -604,12 +648,14 @@
                 'TotalExonerado': $("#TotalExonerado").val(),
                 'NumeroDEI': $('#NumeroDEI').val(),
                 'CAI': $('#CAI').val(),
+                'Sinopsis': $('#Sinopsis').val(),
                 'NoInicio': $('#NoInicio').val(),
                 'NoFin': $('#NoFin').val(),
                 'FechaLimiteEmision': $("#FechaLimiteEmision").getKendoDateTimePicker().value().toJSON(),
                 'Rango': $('#Rango').val(),
                 'DiasVencimiento': $('#DiasVencimiento').val(),
-                'Exonerado': $('#Exonerado').val(),
+                'Exonerado': exonerado,
+                'Exento': exento,
                 'InvoiceLine': displayedData,
 
             };
@@ -631,7 +677,7 @@
 
                 },
                 error: function (XMLHttpRequest, textStatus, errorThrown) {
-                    MostrarMensaje(textStatus + ": " + XMLHttpRequest.responseText, "Error", "Error", 6000);
+                    MostrarMensaje(textStatus + ": " + XMLHttpRequest.responseJSON.Value, "Error", "Error", 6000);
                     $("#btnSaveInvoice").show();
                     $("#btnSaveInvoice").prop("disabled", false);
                 }

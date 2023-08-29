@@ -78,7 +78,7 @@
                 BranchId = $(found).val();
                 console.log(BranchId);
                 $("#BranchId").data("kendoDropDownList").value(BranchId);
-                $("#IdEstado").data("kendoDropDownList").value(0);
+                $("#IdEstado").data("kendoDropDownList").value(1);
 
                 //$("#btnCAI").hide();
                 $('#ModalScheduleSubservice').modal('show');
@@ -89,6 +89,48 @@
         });
     }
 
+    function dataBound(e) {
+        $.each(this.dataSource.data(), function () {
+            if (this.IdEstado == 6 ) {
+                $('[data-uid=' + this.uid + ']').find('.k-grid-Aprobar').hide();
+                
+            }
+        })
+    }
+
+    function Aprobar(e) {
+        debugger;
+        if (!confirm('Esta seguro de Aprobar?')) return;
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        var dataObject = {
+            SubServicesWareHouseId: dataItem.SubServicesWareHouseId
+        };
+
+        $.ajax({
+            url: '@Url.Action("Aprobar","SubServicesWareHouse")',
+            method: 'POST',
+            datatype: "json",
+            contentType: 'application/json',
+            async: false,
+            data: JSON.stringify(dataObject),
+            success: function (result) {
+                $.toast({
+                    heading: 'Satisfactorio',
+                    text: 'Se ha aprobado correctamente.',
+                    position: 'top-right',
+                    loaderBg: '#ff6849',
+                    icon: 'success',
+                    hideAfter: 7000,
+                    stack: 6
+                });
+                RefrescarGrid();
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                
+                alert(textStatus + ": " + XMLHttpRequest.responseText);
+            }
+        });
+    }
 
     function EditSubServicesWareHouse(e) {
         e.preventDefault();
@@ -150,14 +192,23 @@
 
                                     .Columns(columns =>
                                     {
-                                        if (User.HasClaim("Inventarios.Servicios Utilizados.Editar", "true"))
-                                        {
+                                        
                                             columns.Command(command =>
                                             {
+                                            if (User.HasClaim("Inventarios.Servicios Utilizados.Editar", "true"))
+                                            {
                                                 command.Custom("Editar").Click("EditSubServicesWareHouse").Text(" ").IconClass("fa fa-edit");
+                                            }
+
+                                            if (User.HasClaim("Inventarios.Servicios Utilizados.Aprobar", "true"))
+                                            {
+                                                command.Custom("Aprobar").Text(" ").IconClass("fa fa-thumbs-up").Click("Aprobar");
+                                            }
+
+                                                
 
                                             }).Width(150).Title("Acciones");
-                                        }
+                                        
                                         columns.Bound(p => p.SubServicesWareHouseId).Width(100).Title("No.");
                                         columns.Bound(p => p.DocumentDate).Format("{0:dd/MM/yyyy}").Width(150).Title("Fecha");
                                         columns.Bound(p => p.CustomerName).Width(150);
@@ -166,7 +217,8 @@
                                         columns.Bound(p => p.BranchName).Width(150);
                                         columns.Bound(p => p.StartTime).Format("{0:HH:mm:ss}").Width(150);
                                         columns.Bound(p => p.EndTime).Format("{0:HH:mm:ss}").Width(150);
-                                        columns.Bound(p => p.QuantityHours).Width(120).Title("Cantidad").Format("{0:N2}")
+                                        columns.Bound(p => p.QuantityHours).Width(120).Title("Cantidad").Format("{0:N2}");
+                                        columns.Bound(p => p.Estado).Width(120).Title("Estado")
                 .HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" }); 
                                     })
                                     .ToolBar(tools =>
@@ -217,7 +269,7 @@
                                     {
                                         e.Save("onsave");
 
-                                    })
+                                    }).Events(e => e.DataBound("dataBound"))
 )
 
 <div id="numEmployees">
@@ -242,4 +294,6 @@
     setToolbarTooltip(".k-grid-Agregar", "Agregar nuevo registro");
     //setRowButtonTooltip(".k-grid-delete", "Eliminar registro");
     setRowButtonTooltip(".k-grid-Editar", "Editar registro");
+    setRowButtonTooltip(".k-grid-Aprobar", "Aprobar registro");
+
 </script>

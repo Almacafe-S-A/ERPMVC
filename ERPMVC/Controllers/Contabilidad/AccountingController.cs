@@ -55,6 +55,20 @@ namespace ERPMVC.Controllers
 
         }
 
+        public async Task<IActionResult> SFLibroDiario()
+        {
+            return await Task.Run(() => View());
+
+        }
+
+
+
+        public async Task<IActionResult> SFLibroMayor()
+        {
+            return await Task.Run(() => View());
+
+        }
+
         [Authorize(Policy = "Contabilidad.Reportes.Movimientos Historicos")]
         public async Task<IActionResult> SFMovimientosHistoricos()
         {

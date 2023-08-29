@@ -32,6 +32,12 @@ namespace ERPMVC.Controllers
 
         }
 
+        public async Task<IActionResult> BalanceDeSaldosMensual()
+        {
+            return await Task.Run(() => View());
+
+        }
+
         [Authorize(Policy = "Contabilidad.Reportes.Historico de movimientos por cuenta")]
         public async Task<IActionResult> SFAuxiliarMovimientos()
         {

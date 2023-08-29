@@ -103,7 +103,7 @@ namespace ERPMVC.Controllers
 
 
         [HttpPost("[action]")]
-        public async Task<DataSourceResult> GetEndososCertificadosLineByEndososCertificadosId([DataSourceRequest]DataSourceRequest request, int idCD,int endosoId)
+        public async Task<DataSourceResult> GetEndososCertificadosLineByEndososCertificadosId([DataSourceRequest]DataSourceRequest request, int idCD,int endosoId,int editar)
         {
             List<EndososCertificadosLine> _EndososCertificadosLine = new List<EndososCertificadosLine>();
             try
@@ -141,6 +141,14 @@ namespace ERPMVC.Controllers
                                                     
                                                 
                                                 }).ToList();
+                }
+                if (editar == 1)
+                {
+                    foreach (var item in _EndososCertificadosLine)
+                    {
+                        item.CantidadLiberacion = 0;
+                        item.ValorLiberado = 0;
+                    }
                 }
 
 

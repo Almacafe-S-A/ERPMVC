@@ -62,8 +62,8 @@ namespace ERPMVC.Controllers
                 {
                     _SubServicesWareHouse = new SubServicesWareHouseDTO { 
                         SubServicesWareHouseId = 0, 
-                        StartTime = DateTime.Now, 
-                        EndTime = new DateTime() , 
+                        StartTime = DateTime.Now.Date,
+                        EndTime = DateTime.Now.Date , 
                         BranchId = _SubServicesWareHousep.BranchId , 
                         DocumentDate = DateTime.Now };
                 }
@@ -113,6 +113,38 @@ namespace ERPMVC.Controllers
 
         }
 
+        public async Task<ActionResult<SubServicesWareHouse>> Aprobar([FromBody] SubServicesWareHouse autorizacion)
+        {
+            try
+            {
+                if (autorizacion == null)
+                {
+                    return await Task.Run(() => BadRequest("No llego correctamente el modelo!"));
+                }
+
+                SubServicesWareHouse _listSubServicesWareHouse = new SubServicesWareHouse();
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + $"api/SubServicesWareHouse/Aprobar/{autorizacion.SubServicesWareHouseId}");
+                string valorrespuesta = "";
+                if (!result.IsSuccessStatusCode)
+                {
+                    return await Task.Run(() => BadRequest(result.Content.ReadAsStringAsync().Result));
+                }
+
+                return await Task.Run(() => Json(_listSubServicesWareHouse));
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: {ex.ToString()}");
+                throw ex;
+            }
+
+
+        }
+
         [HttpPost("[action]")]
         public async Task<ActionResult<SubServicesWareHouse>> SaveSubServicesWareHouse([FromBody]SubServicesWareHouse _SubServicesWareHouse)
         {
@@ -123,8 +155,8 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                TimeSpan t = _SubServicesWareHouse.EndTime.Subtract(_SubServicesWareHouse.StartTime);
-                _SubServicesWareHouse.QuantityHours = t.TotalHours;
+                //TimeSpan t = _SubServicesWareHouse.EndTime.Subtract(_SubServicesWareHouse.StartTime);
+                //_SubServicesWareHouse.QuantityHours = t.TotalHours;
                 var result = await _client.GetAsync(baseadress + "api/SubServicesWareHouse/GetSubServicesWareHouseById/" + _SubServicesWareHouse.SubServicesWareHouseId);
                 string valorrespuesta = "";
                 _SubServicesWareHouse.FechaModificacion = DateTime.Now;

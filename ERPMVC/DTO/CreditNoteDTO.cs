@@ -9,8 +9,8 @@ namespace ERPMVC.DTO
 {
     public class CreditNoteDTO : CreditNote
     {
-        [Display(Name = "Número SAR")]
-        public string NumeroDEIString { get; set; }
         public int editar { get; set; } = 1;
+
+        public int interna { get; set; }
     }
 }

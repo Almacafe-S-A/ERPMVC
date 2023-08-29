@@ -149,8 +149,9 @@
             if (this.Estado != "Revisión"){
                 $('[data-uid=' + this.uid + ']').find('.k-grid-Revisar').hide();
             }
-            if (this.Estado != "Emitido") {
-                //$('[data-uid=' + this.uid + ']').find('.k-grid-Imprimir').hide();
+            if (this.Estado != "Aprobado") {
+                $('[data-uid=' + this.uid + ']').find('.k-grid-Imprimir').hide();
+                $('[data-uid=' + this.uid + ']').find('.k-grid-AnularRecibo').hide();
             }
 
 
@@ -256,40 +257,74 @@
 
 
 
+    function AnularRecibo(e) {
+        
+            e.preventDefault();
+            debugger;
+            var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+            var dataObject = {
+                Id: dataItem.Id,
+            };
+
+            if (!confirm('Esta seguro de anular el Recibo de Pago No '+dataObject.Id+'?')) {
+            return;
+            }
+
+            $.ajax({
+            url: '@Url.Action("AnularRecibo", "InvoicePayments")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (result) {
+                    MostrarMensaje('Recibo de Pago Anulado!', "success", "Satisfactorio", 6000);
+                    RefreshCotizaciones();
+                    return;
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    MostrarMensaje(textStatus + ": " + XMLHttpRequest.responseText, "Error", "Error", 6000);
+                }
+            });
+        
+    }
+
+
 </script>
 
 <h3 class="text-themecolor">Recibos de Pago</h3>
 
-@(Html.Kendo().Grid<ERPMVC.Models.InvoicePayments>()
+@(
+Html.Kendo().Grid<ERPMVC.Models.InvoicePayments>()
                               .Name("gridInvoices")
                               .Columns(columns =>
                               {
                                   if (User.HasClaim("Ventas.Factura.Ver", "true")
                                       || User.HasClaim("Ventas.Factura.Imprimir", "true"))
                                   {
-                                      
+
                                   }
                                   columns.Command(command =>
                                       {
+                                          if (User.HasClaim("Cuentas por Cobrar.Recibos de Pago.Ver Detalle", "true"))
+                                          {
+                                              command.Custom("Detalles").Text(" ").IconClass("far fa-list-alt").Click("EditCotizacion");
+                                          }
+                                          if (User.HasClaim("Cuentas por Cobrar.Recibos de Pago.Aprobar", "true"))
+                                          {
+                                              command.Custom("AnularRecibo").Text(" ").IconClass("fa fa-ban").Click("AnularRecibo");
+                                          }
+                                          if (User.HasClaim("Cuentas por Cobrar.Recibos de Pago.Imprimir", "true"))
+                                          {
+                                              command.Custom("Imprimir").Text(" ").IconClass("fa fa-print").Click("ImprimirFactura");
+                                          }                                      
 
-                                          command.Custom("Detalles").Text(" ").IconClass("far fa-list-alt").Click("EditCotizacion");
-                                          command.Custom("GenerarFactura").Text(" ").IconClass("fa fa-file-invoice").Click("GenerarFactura");
-                                          command.Custom("Imprimir").Text(" ").IconClass("fa fa-print").Click("ImprimirFactura");
-                                          if (User.HasClaim("Ventas.Factura", "true"))
-                                                  {
-                                                      command.Custom("Aprobar").Text(" ").IconClass("fa fa-thumbs-up").Click("Aprobar");
-                                                  }
-
-                                          if (User.HasClaim("Ventas.Factura", "true"))
-                                                  {
-                                                      command.Custom("Revisar").Text(" ").IconClass("fa fa-check").Click("Revisar");
-                                                  }
-                                      
                                       }).Title("Acciones").Width(150);
 
-                                  columns.Bound(p => p.Id).Title("No. Recibo de Pago").Width(150);
+                                  columns.Bound(p => p.Id).Title("No. Recibo de Pago").Width(120);
                                   columns.Bound(p => p.FechaPago).Format("{0:dd/MM/yyyy}").Title("Fecha").Width(120);
-                                  columns.Bound(p => p.NoDocumentos).Title("No Documentos").Width(120);
+                                  columns.Bound(p => p.Branch.BranchName).Title("Sucursal").Width(120);
+                                  columns.Bound(p => p.NoDocumentos).Title("No Documentos").Width(280);
                                   columns.Bound(p => p.CustomerName).Title("Cliente").Width(170);
                                   columns.Bound(p => p.MontoPagado).Format("{0:n2}").Title("Monto Pagado").Width(120);
                                   columns.Bound(p => p.Estado).Title("Estado").Width(200);
@@ -326,22 +361,20 @@
                                    ))
                               .ToolBar(tools =>
                               {
-                                  // tools.Create();
-                                  if (User.HasClaim("Ventas.Factura.Agregar", "true"))
+                                  if (User.HasClaim("Cuentas por Cobrar.Recibos de Pago.Ver Detalle", "true"))
                                   {
                                       tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
-                                                 .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddCotizacion();" });
+                                                     .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddCotizacion();" });
                                   }
-                                  if (User.HasClaim("Ventas.Factura.Reporte Libro de Ventas", "true"))
+                                  if (User.HasClaim("Cuentas por Cobrar.Recibos de Pago.Imprimir", "true"))
                                   {
                                       tools.Custom().Text("Reporte").IconClass("")
-                                     .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "ImprimirLibroVentas();" });
-                                  }
-                                    
+                                    .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "ImprimirLibroVentas();" });
                                       tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
                                       tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
-
-
+                                      tools.Custom().Text("Reporte Nota de Credito").IconClass("k-icon k-i-print")
+                                             .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "ImprimirReportIP();" });
+                                  }
                               })
                                .Editable(e => e.Mode(GridEditMode.PopUp))
                                 .Sortable()
@@ -349,6 +382,7 @@
                                 .Pageable()
                                 .Filterable()
                                 .Scrollable()
+                                .Resizable(s => s.Columns(true))
                                 // .ClientDetailTemplateId("template")
                                 .Pdf(pdf => pdf.FileName("FacturaReporte_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
                                 + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
@@ -388,6 +422,12 @@
 
 
 <script>
+    function ImprimirReportIP(e) {
+        debugger;
+        var url = '@Url.Action("SFReporteIP", "InvoicePayments")/';
+        var win = window.open(url, '_blank');
+        win.focus();
+    }
 
     function setToolbarTooltip(btn_cl, btn_tooltip) {
         $("#gridInvoices").kendoTooltip({
@@ -403,13 +443,11 @@
         });
     }
 
-    setToolbarTooltip(".k-button k-button-icontext k-grid-Agregar k-i-plus-sm", "Agregar un nuevo registro");
-    //setRowButtonTooltip(".k-grid-edit", "Tooltip for Edit button");
-    setRowButtonTooltip(".k-grid-GenerarFactura", "Generar Factura");
-    setRowButtonTooltip(".k-grid-Imprimir", "Imprimir Factura"); 
-    setRowButtonTooltip(".k-grid-ImprimirProforma", "Imprimir Proforma");
+    setToolbarTooltip(".k-button k-button-icontext k-grid-Agregar k-i-plus-sm", "Agregar Registrar un nuevo Pago");
+    setRowButtonTooltip(".k-grid-Imprimir", "Imprimir Recibo"); 
     setRowButtonTooltip(".k-grid-Detalles", "Ver Detalle");
-    setRowButtonTooltip(".k-grid-Agregar", "Nueva Factura Proforma");
+    setRowButtonTooltip(".k-grid-Agregar", "Agregar Registrar un nuevo Pago"); 
+    setRowButtonTooltip(".k-grid-AnularRecibo", "Anular Recibo");
 </script>
 
 

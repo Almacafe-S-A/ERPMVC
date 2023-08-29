@@ -759,6 +759,15 @@ namespace ERPMVC.Controllers
             }
         }
 
+        [HttpGet]
+        public ActionResult SFAutorizacionRetiroEmitido()
+        {
+
+            return View();
+
+
+        }
+
         [HttpGet("[controller]/[action]/{id}")]
         public ActionResult SFAutorizacionRetiro(Int64 id)
         {
@@ -802,6 +811,17 @@ namespace ERPMVC.Controllers
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 throw ex;
             }
+        }
+
+        [HttpGet]
+        public ActionResult SFKardexAR(int id)
+        
+        {
+            GoodsDeliveryAuthorization goodsDeliveryAuthorization = 
+                new GoodsDeliveryAuthorization {GoodsDeliveryAuthorizationId = id };
+            return View(goodsDeliveryAuthorization);
+
+
         }
 
 
