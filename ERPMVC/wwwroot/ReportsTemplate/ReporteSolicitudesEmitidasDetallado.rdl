@@ -5,9 +5,10 @@
     <DataSource Name="ERP">
       <ConnectionProperties>
         <DataProvider>SQL</DataProvider>
-        <ConnectString>Data Source=192.168.0.5\MSSQLSERVER2017;Initial Catalog=ERP-Produccion</ConnectString>
+        <ConnectString>Data Source=192.168.0.5;Initial Catalog=ERP-PRODUCCION</ConnectString>
+        <IntegratedSecurity>true</IntegratedSecurity>
       </ConnectionProperties>
-      <rd:SecurityType>DataBase</rd:SecurityType>
+      <rd:SecurityType>Integrated</rd:SecurityType>
       <rd:DataSourceID>49745f74-0977-4e9a-a681-e323019e2e70</rd:DataSourceID>
     </DataSource>
   </DataSources>
@@ -27,6 +28,9 @@
           </QueryParameter>
           <QueryParameter Name="@Sucursal">
             <Value>=Parameters!Sucursal.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@Servicio">
+            <Value>=Parameters!Servicio.Value</Value>
           </QueryParameter>
           <QueryParameter Name="@Producto">
             <Value>=Parameters!Producto.Value</Value>
@@ -52,8 +56,7 @@ sl.Pda
 FROM SolicitudCertificadoLine sl 
 INNER JOIN SolicitudCertificadoDeposito sd on sd.IdSCD = sl.IdSCD
 INNER JOIN CertificadoDeposito cd on cd.IdCD = sd.NoCD and cd.SolicitudCertificadoId=sd.IdSCD
-Where sd.FechaCertificado Between @FechaInicio and @FechaFin
-and (sd.CustomerId = @CustomerId or  @CustomerId = 0) and cd.branchId = @Sucursal and (sl.SubProductId = @Producto or  @Producto = 0) 
+Where sd.FechaCertificado Between @FechaInicio and dateadd(day,1,@FechaFin) and (sd.CustomerId = @CustomerId or  @CustomerId = 0) and cd.branchId = @Sucursal and sd.ServicioId = @Servicio and (sl.SubProductId = @Producto or  @Producto = 0) 
 group by sl.Pda, 
 	 sd.CustomerId,
                  sl.SubProductName, 
@@ -203,6 +206,24 @@ UNION SELECT 0 , 'TODOS'</CommandText>
         </Field>
       </Fields>
     </DataSet>
+    <DataSet Name="Servicio">
+      <Query>
+        <DataSourceName>ERP</DataSourceName>
+        <CommandText>SELECT ProductId, ProductName 
+From Product
+Where IdEstado =1</CommandText>
+      </Query>
+      <Fields>
+        <Field Name="ProductId">
+          <DataField>ProductId</DataField>
+          <rd:TypeName>System.Int64</rd:TypeName>
+        </Field>
+        <Field Name="ProductName">
+          <DataField>ProductName</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+      </Fields>
+    </DataSet>
   </DataSets>
   <ReportSections>
     <ReportSection>
@@ -215,7 +236,7 @@ UNION SELECT 0 , 'TODOS'</CommandText>
                   <Width>0.69791in</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>1in</Width>
+                  <Width>0.69791in</Width>
                 </TablixColumn>
                 <TablixColumn>
                   <Width>0.83333in</Width>
@@ -227,7 +248,7 @@ UNION SELECT 0 , 'TODOS'</CommandText>
                   <Width>0.88542in</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>1.67708in</Width>
+                  <Width>1.92917in</Width>
                 </TablixColumn>
                 <TablixColumn>
                   <Width>1in</Width>
@@ -271,7 +292,6 @@ UNION SELECT 0 , 'TODOS'</CommandText>
                               <Style>Solid</Style>
                               <Width>1pt</Width>
                             </TopBorder>
-                            <VerticalAlign>Bottom</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -311,7 +331,6 @@ UNION SELECT 0 , 'TODOS'</CommandText>
                               <Style>Solid</Style>
                               <Width>1pt</Width>
                             </TopBorder>
-                            <VerticalAlign>Bottom</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -351,7 +370,6 @@ UNION SELECT 0 , 'TODOS'</CommandText>
                               <Style>Solid</Style>
                               <Width>1pt</Width>
                             </TopBorder>
-                            <VerticalAlign>Bottom</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -391,7 +409,6 @@ UNION SELECT 0 , 'TODOS'</CommandText>
                               <Style>Solid</Style>
                               <Width>1pt</Width>
                             </TopBorder>
-                            <VerticalAlign>Bottom</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -412,7 +429,7 @@ UNION SELECT 0 , 'TODOS'</CommandText>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value />
+                                  <Value>Poliza No.</Value>
                                   <Style>
                                     <FontSize>9pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
@@ -434,7 +451,6 @@ UNION SELECT 0 , 'TODOS'</CommandText>
                               <Style>Solid</Style>
                               <Width>1pt</Width>
                             </TopBorder>
-                            <VerticalAlign>Bottom</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -474,7 +490,6 @@ UNION SELECT 0 , 'TODOS'</CommandText>
                               <Style>Solid</Style>
                               <Width>1pt</Width>
                             </TopBorder>
-                            <VerticalAlign>Bottom</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -519,7 +534,6 @@ UNION SELECT 0 , 'TODOS'</CommandText>
                               <Style>Solid</Style>
                               <Width>1pt</Width>
                             </BottomBorder>
-                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -559,7 +573,6 @@ UNION SELECT 0 , 'TODOS'</CommandText>
                               <Style>Solid</Style>
                               <Width>1pt</Width>
                             </BottomBorder>
-                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -577,7 +590,7 @@ UNION SELECT 0 , 'TODOS'</CommandText>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>Pda No.</Value>
+                                  <Value>Pda.</Value>
                                   <Style>
                                     <FontSize>9pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
@@ -599,7 +612,6 @@ UNION SELECT 0 , 'TODOS'</CommandText>
                               <Style>Solid</Style>
                               <Width>1pt</Width>
                             </BottomBorder>
-                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -639,7 +651,6 @@ UNION SELECT 0 , 'TODOS'</CommandText>
                               <Style>Solid</Style>
                               <Width>1pt</Width>
                             </BottomBorder>
-                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -668,18 +679,6 @@ UNION SELECT 0 , 'TODOS'</CommandText>
                                 <TextAlign>Center</TextAlign>
                               </Style>
                             </Paragraph>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value />
-                                  <Style>
-                                    <FontSize>9pt</FontSize>
-                                    <FontWeight>Bold</FontWeight>
-                                  </Style>
-                                </TextRun>
-                              </TextRuns>
-                              <Style />
-                            </Paragraph>
                           </Paragraphs>
                           <rd:DefaultName>Textbox119</rd:DefaultName>
                           <Style>
@@ -691,7 +690,6 @@ UNION SELECT 0 , 'TODOS'</CommandText>
                               <Style>Solid</Style>
                               <Width>1pt</Width>
                             </BottomBorder>
-                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -731,7 +729,6 @@ UNION SELECT 0 , 'TODOS'</CommandText>
                               <Style>Solid</Style>
                               <Width>1pt</Width>
                             </BottomBorder>
-                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -771,7 +768,6 @@ UNION SELECT 0 , 'TODOS'</CommandText>
                               <Style>Solid</Style>
                               <Width>1pt</Width>
                             </BottomBorder>
-                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -811,7 +807,6 @@ UNION SELECT 0 , 'TODOS'</CommandText>
                               <Style>Solid</Style>
                               <Width>1pt</Width>
                             </BottomBorder>
-                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -850,7 +845,6 @@ UNION SELECT 0 , 'TODOS'</CommandText>
                             <Border>
                               <Style>None</Style>
                             </Border>
-                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -884,7 +878,6 @@ UNION SELECT 0 , 'TODOS'</CommandText>
                             <Border>
                               <Style>None</Style>
                             </Border>
-                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -909,7 +902,9 @@ UNION SELECT 0 , 'TODOS'</CommandText>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
-                              <Style />
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
                             </Paragraph>
                           </Paragraphs>
                           <rd:DefaultName>FechaCertificado</rd:DefaultName>
@@ -917,7 +912,6 @@ UNION SELECT 0 , 'TODOS'</CommandText>
                             <Border>
                               <Style>None</Style>
                             </Border>
-                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -949,7 +943,6 @@ UNION SELECT 0 , 'TODOS'</CommandText>
                             <Border>
                               <Style>None</Style>
                             </Border>
-                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -963,14 +956,14 @@ UNION SELECT 0 , 'TODOS'</CommandText>
                     <TablixCell />
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="Textbox8">
+                        <Textbox Name="NoPoliza">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value />
+                                  <Value>=Fields!NoPoliza.Value</Value>
                                   <Style>
                                     <FontSize>8pt</FontSize>
                                   </Style>
@@ -979,52 +972,21 @@ UNION SELECT 0 , 'TODOS'</CommandText>
                               <Style />
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>Textbox8</rd:DefaultName>
+                          <rd:DefaultName>NoPoliza</rd:DefaultName>
                           <Style>
                             <Border>
                               <Style>None</Style>
                             </Border>
-                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
                             <PaddingBottom>2pt</PaddingBottom>
                           </Style>
                         </Textbox>
+                        <ColSpan>2</ColSpan>
                       </CellContents>
                     </TablixCell>
-                    <TablixCell>
-                      <CellContents>
-                        <Textbox Name="Textbox9">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value />
-                                  <Style>
-                                    <FontSize>8pt</FontSize>
-                                  </Style>
-                                </TextRun>
-                              </TextRuns>
-                              <Style />
-                            </Paragraph>
-                          </Paragraphs>
-                          <rd:DefaultName>Textbox9</rd:DefaultName>
-                          <Style>
-                            <Border>
-                              <Style>None</Style>
-                            </Border>
-                            <VerticalAlign>Middle</VerticalAlign>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
+                    <TablixCell />
                   </TablixCells>
                 </TablixRow>
                 <TablixRow>
@@ -1053,7 +1015,6 @@ UNION SELECT 0 , 'TODOS'</CommandText>
                             <Border>
                               <Style>None</Style>
                             </Border>
-                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -1087,7 +1048,6 @@ UNION SELECT 0 , 'TODOS'</CommandText>
                             <Border>
                               <Style>None</Style>
                             </Border>
-                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -1121,7 +1081,6 @@ UNION SELECT 0 , 'TODOS'</CommandText>
                             <Border>
                               <Style>None</Style>
                             </Border>
-                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -1156,7 +1115,6 @@ UNION SELECT 0 , 'TODOS'</CommandText>
                             <Border>
                               <Style>None</Style>
                             </Border>
-                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -1181,7 +1139,7 @@ UNION SELECT 0 , 'TODOS'</CommandText>
                                 </TextRun>
                               </TextRuns>
                               <Style>
-                                <TextAlign>Center</TextAlign>
+                                <TextAlign>Left</TextAlign>
                               </Style>
                             </Paragraph>
                           </Paragraphs>
@@ -1190,7 +1148,6 @@ UNION SELECT 0 , 'TODOS'</CommandText>
                             <Border>
                               <Style>None</Style>
                             </Border>
-                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -1214,7 +1171,9 @@ UNION SELECT 0 , 'TODOS'</CommandText>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
-                              <Style />
+                              <Style>
+                                <TextAlign>Left</TextAlign>
+                              </Style>
                             </Paragraph>
                           </Paragraphs>
                           <rd:DefaultName>Producto</rd:DefaultName>
@@ -1222,7 +1181,6 @@ UNION SELECT 0 , 'TODOS'</CommandText>
                             <Border>
                               <Style>None</Style>
                             </Border>
-                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -1257,7 +1215,6 @@ UNION SELECT 0 , 'TODOS'</CommandText>
                             <Border>
                               <Style>None</Style>
                             </Border>
-                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -1292,7 +1249,6 @@ UNION SELECT 0 , 'TODOS'</CommandText>
                             <Border>
                               <Style>None</Style>
                             </Border>
-                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -1318,6 +1274,7 @@ UNION SELECT 0 , 'TODOS'</CommandText>
                                   <Value>Total SD</Value>
                                   <Style>
                                     <FontSize>8pt</FontSize>
+                                    <FontWeight>Bold</FontWeight>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -1331,7 +1288,6 @@ UNION SELECT 0 , 'TODOS'</CommandText>
                             <Border>
                               <Style>None</Style>
                             </Border>
-                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -1355,6 +1311,7 @@ UNION SELECT 0 , 'TODOS'</CommandText>
                                   <Value>=Fields!Cantidad.Value</Value>
                                   <Style>
                                     <FontSize>8pt</FontSize>
+                                    <FontWeight>Bold</FontWeight>
                                     <Format>#,0.00;(#,0.00)</Format>
                                   </Style>
                                 </TextRun>
@@ -1369,7 +1326,6 @@ UNION SELECT 0 , 'TODOS'</CommandText>
                             <Border>
                               <Style>None</Style>
                             </Border>
-                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -1403,7 +1359,6 @@ UNION SELECT 0 , 'TODOS'</CommandText>
                             <Border>
                               <Style>None</Style>
                             </Border>
-                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -1435,7 +1390,6 @@ UNION SELECT 0 , 'TODOS'</CommandText>
                             <Border>
                               <Style>None</Style>
                             </Border>
-                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -1469,7 +1423,6 @@ UNION SELECT 0 , 'TODOS'</CommandText>
                             <Border>
                               <Style>None</Style>
                             </Border>
-                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -1490,6 +1443,7 @@ UNION SELECT 0 , 'TODOS'</CommandText>
                                   <Value>=Fields!Valor.Value</Value>
                                   <Style>
                                     <FontSize>8pt</FontSize>
+                                    <FontWeight>Bold</FontWeight>
                                     <Format>#,0.00;(#,0.00)</Format>
                                   </Style>
                                 </TextRun>
@@ -1504,7 +1458,6 @@ UNION SELECT 0 , 'TODOS'</CommandText>
                             <Border>
                               <Style>None</Style>
                             </Border>
-                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -1516,277 +1469,7 @@ UNION SELECT 0 , 'TODOS'</CommandText>
                   </TablixCells>
                 </TablixRow>
                 <TablixRow>
-                  <Height>0.3in</Height>
-                  <TablixCells>
-                    <TablixCell>
-                      <CellContents>
-                        <Textbox Name="Textbox144">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value>Total  </Value>
-                                  <Style>
-                                    <FontSize>8pt</FontSize>
-                                    <FontWeight>Bold</FontWeight>
-                                  </Style>
-                                </TextRun>
-                                <TextRun>
-                                  <Value>=Fields!Cliente.Value</Value>
-                                  <Style>
-                                    <FontSize>8pt</FontSize>
-                                    <FontWeight>Bold</FontWeight>
-                                  </Style>
-                                </TextRun>
-                                <TextRun>
-                                  <Value xml:space="preserve"> </Value>
-                                  <Style>
-                                    <FontSize>8pt</FontSize>
-                                    <FontWeight>Bold</FontWeight>
-                                  </Style>
-                                </TextRun>
-                                <TextRun>
-                                  <Value>="("&amp; Count(Fields!Pda.Value) &amp;" SD)"</Value>
-                                  <Style>
-                                    <FontSize>8pt</FontSize>
-                                    <FontWeight>Bold</FontWeight>
-                                  </Style>
-                                </TextRun>
-                              </TextRuns>
-                              <Style>
-                                <TextAlign>Center</TextAlign>
-                              </Style>
-                            </Paragraph>
-                          </Paragraphs>
-                          <rd:DefaultName>Textbox144</rd:DefaultName>
-                          <Style>
-                            <Border>
-                              <Style>None</Style>
-                            </Border>
-                            <TopBorder>
-                              <Color>Black</Color>
-                              <Style>Solid</Style>
-                              <Width>1pt</Width>
-                            </TopBorder>
-                            <VerticalAlign>Middle</VerticalAlign>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                        <ColSpan>3</ColSpan>
-                      </CellContents>
-                    </TablixCell>
-                    <TablixCell />
-                    <TablixCell />
-                    <TablixCell>
-                      <CellContents>
-                        <Textbox Name="Cantidad1">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value>=Sum(Fields!Cantidad.Value)</Value>
-                                  <Style>
-                                    <FontSize>8pt</FontSize>
-                                    <FontWeight>Bold</FontWeight>
-                                    <Format>#,0.00;(#,0.00)</Format>
-                                  </Style>
-                                </TextRun>
-                              </TextRuns>
-                              <Style>
-                                <TextAlign>Right</TextAlign>
-                              </Style>
-                            </Paragraph>
-                          </Paragraphs>
-                          <rd:DefaultName>Cantidad1</rd:DefaultName>
-                          <Style>
-                            <Border>
-                              <Style>None</Style>
-                            </Border>
-                            <TopBorder>
-                              <Color>Black</Color>
-                              <Style>Solid</Style>
-                              <Width>1pt</Width>
-                            </TopBorder>
-                            <VerticalAlign>Middle</VerticalAlign>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
-                    <TablixCell>
-                      <CellContents>
-                        <Textbox Name="Textbox147">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value />
-                                  <Style>
-                                    <FontSize>8pt</FontSize>
-                                    <FontWeight>Bold</FontWeight>
-                                  </Style>
-                                </TextRun>
-                              </TextRuns>
-                              <Style>
-                                <TextAlign>Center</TextAlign>
-                              </Style>
-                            </Paragraph>
-                          </Paragraphs>
-                          <rd:DefaultName>Textbox147</rd:DefaultName>
-                          <Style>
-                            <Border>
-                              <Style>None</Style>
-                            </Border>
-                            <TopBorder>
-                              <Color>Black</Color>
-                              <Style>Solid</Style>
-                              <Width>1pt</Width>
-                            </TopBorder>
-                            <VerticalAlign>Middle</VerticalAlign>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
-                    <TablixCell>
-                      <CellContents>
-                        <Textbox Name="Textbox148">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value />
-                                  <Style>
-                                    <FontSize>8pt</FontSize>
-                                    <FontWeight>Bold</FontWeight>
-                                  </Style>
-                                </TextRun>
-                              </TextRuns>
-                              <Style />
-                            </Paragraph>
-                          </Paragraphs>
-                          <rd:DefaultName>Textbox148</rd:DefaultName>
-                          <Style>
-                            <Border>
-                              <Style>None</Style>
-                            </Border>
-                            <TopBorder>
-                              <Color>Black</Color>
-                              <Style>Solid</Style>
-                              <Width>1pt</Width>
-                            </TopBorder>
-                            <VerticalAlign>Middle</VerticalAlign>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
-                    <TablixCell>
-                      <CellContents>
-                        <Textbox Name="Precio1">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value>=Sum(Fields!Precio.Value)</Value>
-                                  <Style>
-                                    <FontSize>8pt</FontSize>
-                                    <FontWeight>Bold</FontWeight>
-                                    <Format>#,0.00;(#,0.00)</Format>
-                                  </Style>
-                                </TextRun>
-                              </TextRuns>
-                              <Style>
-                                <TextAlign>Right</TextAlign>
-                              </Style>
-                            </Paragraph>
-                          </Paragraphs>
-                          <rd:DefaultName>Precio1</rd:DefaultName>
-                          <Style>
-                            <Border>
-                              <Style>None</Style>
-                            </Border>
-                            <TopBorder>
-                              <Color>Black</Color>
-                              <Style>Solid</Style>
-                              <Width>1pt</Width>
-                            </TopBorder>
-                            <VerticalAlign>Middle</VerticalAlign>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
-                    <TablixCell>
-                      <CellContents>
-                        <Textbox Name="Valor1">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value>=Sum(Fields!Valor.Value)</Value>
-                                  <Style>
-                                    <FontSize>8pt</FontSize>
-                                    <FontWeight>Bold</FontWeight>
-                                    <Format>#,0.00;(#,0.00)</Format>
-                                  </Style>
-                                </TextRun>
-                              </TextRuns>
-                              <Style>
-                                <TextAlign>Right</TextAlign>
-                              </Style>
-                            </Paragraph>
-                          </Paragraphs>
-                          <rd:DefaultName>Valor1</rd:DefaultName>
-                          <Style>
-                            <Border>
-                              <Style>None</Style>
-                            </Border>
-                            <TopBorder>
-                              <Color>Black</Color>
-                              <Style>Solid</Style>
-                              <Width>1pt</Width>
-                            </TopBorder>
-                            <VerticalAlign>Middle</VerticalAlign>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
-                  </TablixCells>
-                </TablixRow>
-                <TablixRow>
-                  <Height>0.3in</Height>
+                  <Height>0.25in</Height>
                   <TablixCells>
                     <TablixCell>
                       <CellContents>
@@ -1797,14 +1480,7 @@ UNION SELECT 0 , 'TODOS'</CommandText>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>Total </Value>
-                                  <Style>
-                                    <FontSize>8pt</FontSize>
-                                    <FontWeight>Bold</FontWeight>
-                                  </Style>
-                                </TextRun>
-                                <TextRun>
-                                  <Value>=" ("&amp; Count(Fields!Pda.Value) &amp;" SD)"</Value>
+                                  <Value>Total Solicitudes de Deposito</Value>
                                   <Style>
                                     <FontSize>8pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
@@ -1821,7 +1497,11 @@ UNION SELECT 0 , 'TODOS'</CommandText>
                             <Border>
                               <Style>None</Style>
                             </Border>
-                            <VerticalAlign>Middle</VerticalAlign>
+                            <TopBorder>
+                              <Color>Black</Color>
+                              <Style>Solid</Style>
+                              <Width>1pt</Width>
+                            </TopBorder>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -1860,7 +1540,11 @@ UNION SELECT 0 , 'TODOS'</CommandText>
                             <Border>
                               <Style>None</Style>
                             </Border>
-                            <VerticalAlign>Middle</VerticalAlign>
+                            <TopBorder>
+                              <Color>Black</Color>
+                              <Style>Solid</Style>
+                              <Width>1pt</Width>
+                            </TopBorder>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -1895,7 +1579,11 @@ UNION SELECT 0 , 'TODOS'</CommandText>
                             <Border>
                               <Style>None</Style>
                             </Border>
-                            <VerticalAlign>Middle</VerticalAlign>
+                            <TopBorder>
+                              <Color>Black</Color>
+                              <Style>Solid</Style>
+                              <Width>1pt</Width>
+                            </TopBorder>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -1928,7 +1616,11 @@ UNION SELECT 0 , 'TODOS'</CommandText>
                             <Border>
                               <Style>None</Style>
                             </Border>
-                            <VerticalAlign>Middle</VerticalAlign>
+                            <TopBorder>
+                              <Color>Black</Color>
+                              <Style>Solid</Style>
+                              <Width>1pt</Width>
+                            </TopBorder>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -1939,18 +1631,17 @@ UNION SELECT 0 , 'TODOS'</CommandText>
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="Textbox76">
+                        <Textbox Name="Textbox2">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Sum(Fields!Precio.Value)</Value>
+                                  <Value />
                                   <Style>
                                     <FontSize>8pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
-                                    <Format>#,0.00;(#,0.00)</Format>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -1959,12 +1650,16 @@ UNION SELECT 0 , 'TODOS'</CommandText>
                               </Style>
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>Textbox76</rd:DefaultName>
+                          <rd:DefaultName>Textbox2</rd:DefaultName>
                           <Style>
                             <Border>
                               <Style>None</Style>
                             </Border>
-                            <VerticalAlign>Middle</VerticalAlign>
+                            <TopBorder>
+                              <Color>Black</Color>
+                              <Style>Solid</Style>
+                              <Width>1pt</Width>
+                            </TopBorder>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -2000,7 +1695,11 @@ UNION SELECT 0 , 'TODOS'</CommandText>
                             <Border>
                               <Style>None</Style>
                             </Border>
-                            <VerticalAlign>Middle</VerticalAlign>
+                            <TopBorder>
+                              <Color>Black</Color>
+                              <Style>Solid</Style>
+                              <Width>1pt</Width>
+                            </TopBorder>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -2061,6 +1760,11 @@ UNION SELECT 0 , 'TODOS'</CommandText>
                       <TablixMembers>
                         <TablixMember>
                           <Group Name="Details" />
+                          <SortExpressions>
+                            <SortExpression>
+                              <Value>=Fields!IdSCD.Value</Value>
+                            </SortExpression>
+                          </SortExpressions>
                           <TablixMembers>
                             <TablixMember />
                             <TablixMember />
@@ -2068,9 +1772,6 @@ UNION SELECT 0 , 'TODOS'</CommandText>
                           </TablixMembers>
                         </TablixMember>
                       </TablixMembers>
-                    </TablixMember>
-                    <TablixMember>
-                      <KeepWithGroup>Before</KeepWithGroup>
                     </TablixMember>
                   </TablixMembers>
                 </TablixMember>
@@ -2084,8 +1785,8 @@ UNION SELECT 0 , 'TODOS'</CommandText>
             <DataSetName>SDDetalle</DataSetName>
             <Top>0.06125in</Top>
             <Left>0.11333in</Left>
-            <Height>1.6in</Height>
-            <Width>8.26041in</Width>
+            <Height>1.25in</Height>
+            <Width>8.21041in</Width>
             <Style>
               <Border>
                 <Style>None</Style>
@@ -2093,21 +1794,20 @@ UNION SELECT 0 , 'TODOS'</CommandText>
             </Style>
           </Tablix>
         </ReportItems>
-        <Height>2.25493in</Height>
+        <Height>1.64034in</Height>
         <Style>
           <Border />
           <BackgroundColor>White</BackgroundColor>
         </Style>
       </Body>
-      <Width>8.49874in</Width>
+      <Width>8.45707in</Width>
       <Page>
         <PageHeader>
-          <Height>1.08334in</Height>
+          <Height>1.14584in</Height>
           <PrintOnFirstPage>true</PrintOnFirstPage>
           <PrintOnLastPage>true</PrintOnLastPage>
           <ReportItems>
             <Textbox Name="ExecutionTime">
-              <CanGrow>true</CanGrow>
               <KeepTogether>true</KeepTogether>
               <Paragraphs>
                 <Paragraph>
@@ -2140,7 +1840,6 @@ UNION SELECT 0 , 'TODOS'</CommandText>
               </Style>
             </Textbox>
             <Textbox Name="ExecutionTime3">
-              <CanGrow>true</CanGrow>
               <KeepTogether>true</KeepTogether>
               <Paragraphs>
                 <Paragraph>
@@ -2187,7 +1886,6 @@ UNION SELECT 0 , 'TODOS'</CommandText>
               </Style>
             </Image>
             <Textbox Name="Textbox26">
-              <CanGrow>true</CanGrow>
               <KeepTogether>true</KeepTogether>
               <Paragraphs>
                 <Paragraph>
@@ -2205,15 +1903,16 @@ UNION SELECT 0 , 'TODOS'</CommandText>
                 </Paragraph>
               </Paragraphs>
               <rd:DefaultName>Textbox26</rd:DefaultName>
-              <Top>0.66862in</Top>
+              <Top>0.84362in</Top>
               <Left>3.02715in</Left>
-              <Height>0.2in</Height>
+              <Height>0.24in</Height>
               <Width>0.37026in</Width>
               <ZIndex>3</ZIndex>
               <Style>
                 <Border>
                   <Style>None</Style>
                 </Border>
+                <VerticalAlign>Middle</VerticalAlign>
                 <PaddingLeft>2pt</PaddingLeft>
                 <PaddingRight>2pt</PaddingRight>
                 <PaddingTop>2pt</PaddingTop>
@@ -2221,7 +1920,6 @@ UNION SELECT 0 , 'TODOS'</CommandText>
               </Style>
             </Textbox>
             <Textbox Name="ExecutionTime2">
-              <CanGrow>true</CanGrow>
               <KeepTogether>true</KeepTogether>
               <Paragraphs>
                 <Paragraph>
@@ -2242,15 +1940,16 @@ UNION SELECT 0 , 'TODOS'</CommandText>
                 </Paragraph>
               </Paragraphs>
               <rd:DefaultName>ExecutionTime</rd:DefaultName>
-              <Top>0.67557in</Top>
+              <Top>0.84362in</Top>
               <Left>3.41686in</Left>
-              <Height>0.2in</Height>
+              <Height>0.24in</Height>
               <Width>0.8471in</Width>
               <ZIndex>4</ZIndex>
               <Style>
                 <Border>
                   <Style>None</Style>
                 </Border>
+                <VerticalAlign>Middle</VerticalAlign>
                 <PaddingLeft>2pt</PaddingLeft>
                 <PaddingRight>2pt</PaddingRight>
                 <PaddingTop>2pt</PaddingTop>
@@ -2258,7 +1957,6 @@ UNION SELECT 0 , 'TODOS'</CommandText>
               </Style>
             </Textbox>
             <Textbox Name="Textbox28">
-              <CanGrow>true</CanGrow>
               <KeepTogether>true</KeepTogether>
               <Paragraphs>
                 <Paragraph>
@@ -2276,16 +1974,16 @@ UNION SELECT 0 , 'TODOS'</CommandText>
                 </Paragraph>
               </Paragraphs>
               <rd:DefaultName>Textbox26</rd:DefaultName>
-              <Top>0.66862in</Top>
+              <Top>0.84362in</Top>
               <Left>4.25007in</Left>
-              <Height>0.2in</Height>
+              <Height>0.24in</Height>
               <Width>0.33901in</Width>
               <ZIndex>5</ZIndex>
               <Style>
                 <Border>
                   <Style>None</Style>
                 </Border>
-                <VerticalAlign>Top</VerticalAlign>
+                <VerticalAlign>Middle</VerticalAlign>
                 <PaddingLeft>2pt</PaddingLeft>
                 <PaddingRight>2pt</PaddingRight>
                 <PaddingTop>2pt</PaddingTop>
@@ -2293,7 +1991,6 @@ UNION SELECT 0 , 'TODOS'</CommandText>
               </Style>
             </Textbox>
             <Textbox Name="ExecutionTime4">
-              <CanGrow>true</CanGrow>
               <KeepTogether>true</KeepTogether>
               <Paragraphs>
                 <Paragraph>
@@ -2314,15 +2011,16 @@ UNION SELECT 0 , 'TODOS'</CommandText>
                 </Paragraph>
               </Paragraphs>
               <rd:DefaultName>ExecutionTime</rd:DefaultName>
-              <Top>0.66862in</Top>
+              <Top>0.84362in</Top>
               <Left>4.60076in</Left>
-              <Height>0.2in</Height>
+              <Height>0.24in</Height>
               <Width>0.80833in</Width>
               <ZIndex>6</ZIndex>
               <Style>
                 <Border>
                   <Style>None</Style>
                 </Border>
+                <VerticalAlign>Middle</VerticalAlign>
                 <PaddingLeft>2pt</PaddingLeft>
                 <PaddingRight>2pt</PaddingRight>
                 <PaddingTop>2pt</PaddingTop>
@@ -2330,7 +2028,6 @@ UNION SELECT 0 , 'TODOS'</CommandText>
               </Style>
             </Textbox>
             <Textbox Name="ReportTitle">
-              <CanGrow>true</CanGrow>
               <KeepTogether>true</KeepTogether>
               <Paragraphs>
                 <Paragraph>
@@ -2339,7 +2036,7 @@ UNION SELECT 0 , 'TODOS'</CommandText>
                       <Value>Listado de Solicitudes de Deposito Emitidas</Value>
                       <Style>
                         <FontFamily>Segoe UI Light</FontFamily>
-                        <FontSize>11pt</FontSize>
+                        <FontSize>12pt</FontSize>
                         <FontWeight>Bold</FontWeight>
                       </Style>
                     </TextRun>
@@ -2351,9 +2048,9 @@ UNION SELECT 0 , 'TODOS'</CommandText>
               </Paragraphs>
               <rd:WatermarkTextbox>Title</rd:WatermarkTextbox>
               <rd:DefaultName>ReportTitle</rd:DefaultName>
-              <Top>0.77524cm</Top>
+              <Top>0.83874cm</Top>
               <Left>2.12958in</Left>
-              <Height>0.2in</Height>
+              <Height>0.26in</Height>
               <Width>4.23958in</Width>
               <ZIndex>7</ZIndex>
               <Style>
@@ -2368,7 +2065,6 @@ UNION SELECT 0 , 'TODOS'</CommandText>
               </Style>
             </Textbox>
             <Textbox Name="ReportTitle2">
-              <CanGrow>true</CanGrow>
               <KeepTogether>true</KeepTogether>
               <Paragraphs>
                 <Paragraph>
@@ -2377,7 +2073,7 @@ UNION SELECT 0 , 'TODOS'</CommandText>
                       <Value>ALMACAFE, S.A.</Value>
                       <Style>
                         <FontFamily>Segoe UI Light</FontFamily>
-                        <FontSize>14pt</FontSize>
+                        <FontSize>12pt</FontSize>
                         <FontWeight>Bold</FontWeight>
                       </Style>
                     </TextRun>
@@ -2389,9 +2085,9 @@ UNION SELECT 0 , 'TODOS'</CommandText>
               </Paragraphs>
               <rd:WatermarkTextbox>Title</rd:WatermarkTextbox>
               <rd:DefaultName>ReportTitle</rd:DefaultName>
-              <Top>0.26724cm</Top>
+              <Top>0.17199cm</Top>
               <Left>2.12958in</Left>
-              <Height>0.21249in</Height>
+              <Height>0.24in</Height>
               <Width>4.23958in</Width>
               <ZIndex>8</ZIndex>
               <Style>
@@ -2406,7 +2102,6 @@ UNION SELECT 0 , 'TODOS'</CommandText>
               </Style>
             </Textbox>
             <Textbox Name="ReportTitle3">
-              <CanGrow>true</CanGrow>
               <KeepTogether>true</KeepTogether>
               <Paragraphs>
                 <Paragraph>
@@ -2427,9 +2122,9 @@ UNION SELECT 0 , 'TODOS'</CommandText>
               </Paragraphs>
               <rd:WatermarkTextbox>Title</rd:WatermarkTextbox>
               <rd:DefaultName>ReportTitle</rd:DefaultName>
-              <Top>1.2515cm</Top>
+              <Top>1.5055cm</Top>
               <Left>2.12958in</Left>
-              <Height>0.2in</Height>
+              <Height>0.23in</Height>
               <Width>4.23958in</Width>
               <ZIndex>9</ZIndex>
               <Style>
@@ -2450,10 +2145,20 @@ UNION SELECT 0 , 'TODOS'</CommandText>
             </Border>
           </Style>
         </PageHeader>
+        <PageFooter>
+          <Height>0.30208in</Height>
+          <PrintOnFirstPage>true</PrintOnFirstPage>
+          <PrintOnLastPage>true</PrintOnLastPage>
+          <Style>
+            <Border>
+              <Style>None</Style>
+            </Border>
+          </Style>
+        </PageFooter>
         <LeftMargin>0in</LeftMargin>
         <RightMargin>0in</RightMargin>
-        <TopMargin>0.25in</TopMargin>
-        <BottomMargin>0.25in</BottomMargin>
+        <TopMargin>0.15in</TopMargin>
+        <BottomMargin>0.15in</BottomMargin>
         <Style>
           <Border />
           <BackgroundColor>White</BackgroundColor>
@@ -2470,6 +2175,28 @@ UNION SELECT 0 , 'TODOS'</CommandText>
       <DataType>DateTime</DataType>
       <Prompt>Fecha Fin</Prompt>
     </ReportParameter>
+    <ReportParameter Name="Sucursal">
+      <DataType>Integer</DataType>
+      <Prompt>Sucursal</Prompt>
+      <ValidValues>
+        <DataSetReference>
+          <DataSetName>Sucursal</DataSetName>
+          <ValueField>BranchId</ValueField>
+          <LabelField>BranchName</LabelField>
+        </DataSetReference>
+      </ValidValues>
+    </ReportParameter>
+    <ReportParameter Name="Servicio">
+      <DataType>Integer</DataType>
+      <Prompt>Servicio</Prompt>
+      <ValidValues>
+        <DataSetReference>
+          <DataSetName>Servicio</DataSetName>
+          <ValueField>ProductId</ValueField>
+          <LabelField>ProductName</LabelField>
+        </DataSetReference>
+      </ValidValues>
+    </ReportParameter>
     <ReportParameter Name="CustomerId">
       <DataType>Integer</DataType>
       <DefaultValue>
@@ -2483,17 +2210,6 @@ UNION SELECT 0 , 'TODOS'</CommandText>
           <DataSetName>Clientes</DataSetName>
           <ValueField>CustomerId</ValueField>
           <LabelField>CustomerName</LabelField>
-        </DataSetReference>
-      </ValidValues>
-    </ReportParameter>
-    <ReportParameter Name="Sucursal">
-      <DataType>Integer</DataType>
-      <Prompt>Sucursal</Prompt>
-      <ValidValues>
-        <DataSetReference>
-          <DataSetName>Sucursal</DataSetName>
-          <ValueField>BranchId</ValueField>
-          <LabelField>BranchName</LabelField>
         </DataSetReference>
       </ValidValues>
     </ReportParameter>
@@ -2516,8 +2232,8 @@ UNION SELECT 0 , 'TODOS'</CommandText>
   </ReportParameters>
   <ReportParametersLayout>
     <GridLayoutDefinition>
-      <NumberOfColumns>2</NumberOfColumns>
-      <NumberOfRows>3</NumberOfRows>
+      <NumberOfColumns>3</NumberOfColumns>
+      <NumberOfRows>2</NumberOfRows>
       <CellDefinitions>
         <CellDefinition>
           <ColumnIndex>0</ColumnIndex>
@@ -2530,19 +2246,24 @@ UNION SELECT 0 , 'TODOS'</CommandText>
           <ParameterName>FechaFin</ParameterName>
         </CellDefinition>
         <CellDefinition>
-          <ColumnIndex>0</ColumnIndex>
+          <ColumnIndex>1</ColumnIndex>
           <RowIndex>1</RowIndex>
           <ParameterName>CustomerId</ParameterName>
         </CellDefinition>
         <CellDefinition>
-          <ColumnIndex>0</ColumnIndex>
-          <RowIndex>2</RowIndex>
+          <ColumnIndex>2</ColumnIndex>
+          <RowIndex>1</RowIndex>
           <ParameterName>Producto</ParameterName>
         </CellDefinition>
         <CellDefinition>
-          <ColumnIndex>1</ColumnIndex>
-          <RowIndex>1</RowIndex>
+          <ColumnIndex>2</ColumnIndex>
+          <RowIndex>0</RowIndex>
           <ParameterName>Sucursal</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>0</ColumnIndex>
+          <RowIndex>1</RowIndex>
+          <ParameterName>Servicio</ParameterName>
         </CellDefinition>
       </CellDefinitions>
     </GridLayoutDefinition>
