@@ -63,7 +63,8 @@
              totalInventario.html(e.model.InventarioFisicoCantidad);
              
         }
-        
+		$("#gridInventarioFisicoLine").data("kendoGrid").refresh();
+
     }
 
     var record = 0;
@@ -128,26 +129,38 @@
 				.ClientTemplate("#=typeof UnitOfMeasure === 'undefined'||UnitOfMeasure===null?UnitOfMeasureName:UnitOfMeasure.UnitOfMeasureName#")
 				.HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" });
 
-				columns.Bound(p => p.NSacos).Title("Cantidad").Width(120)
+				columns.Bound(p => p.NSacos).Title("Inventario Físico").Width(120)
 				.HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" })
+
+				.ClientFooterTemplate("<div style='text-align: right'>#=totalColumnasIF(1,0)#</div>")
+
 				.Format("{0:N6}");
 
 				columns.Bound(p => p.FactorSacos).Title("Factor Peso").Width(140)
 				.HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" })
 				.Format("{0:N6}");
 
-				columns.Bound(p => p.InventarioFisicoCantidad).Title("Inventario Fisico")
+				columns.Bound(p => p.InventarioFisicoCantidad).Title("Saldo Físico")
 				.ClientTemplate("<div style='text-align: right'><span class='totalInventario'>#= kendo.toString(NSacos * FactorSacos, 'n6') #</span></div>")
 				.Width(180)
+
+				.ClientFooterTemplate("<div style='text-align: right'>#=totalColumnasIF(2,0)#</div>")
+
 				.HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" });
 
 				columns.Bound(p => p.SaldoLibros).Title("Saldo Libros").Width(140)
 				.HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" })
+
+				.ClientFooterTemplate("<div style='text-align: right'>#=totalColumnasIF(3,1)#</div>")
+
 				.Format("{0:C2}");
 
 				columns.Bound(p => p.Diferencia).Title("Diferencia")
 				.ClientTemplate("<div style='text-align: right'><span class='totalSpan'>#= kendo.toString(InventarioFisicoCantidad - SaldoLibros, 'c2') #</span></div>")
 				.HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" })
+
+				.ClientFooterTemplate("<div style='text-align: right'>#=totalColumnasIF(4,1)#</div>")
+
 				.Width(120);
 
 				columns.Bound(p => p.Estiba).Width(100)
@@ -241,3 +254,67 @@
 
 	</div>
 </div>
+<script>
+	function totalColumnasIF(tiporesultado, moneda) {
+		debugger;
+
+		var data = $("#gridInventarioFisicoLine").getKendoGrid().dataSource.data();
+		var total = 0;
+
+		console.log("Cantidad de elementos en data:", data.length); // Verifica la cantidad de elementos en los datos
+
+		switch (tiporesultado) {
+			case 1: ///////Calcular el Total
+				data.forEach(r => {
+					total += r.NSacos;
+					console.log("Valor de Inventario Fisico:", r.NSacos);
+				});
+				break;
+			case 2:
+				data.forEach(r => {
+					total += r.InventarioFisicoCantidad;
+					console.log("Valor de Saldo Fisico:", r.InventarioFisicoCantidad);
+				});
+				break;
+			case 3:
+				data.forEach(r => {
+					total += r.SaldoLibros;
+					console.log("Valor de Saldo Fisico:", r.SaldoLibros);
+				});
+				break;
+			case 4:
+				data.forEach(r => {
+					total += r.Diferencia;
+					console.log("Valor de Saldo Fisico:", r.Diferencia);
+				});
+				break;
+			default:
+				break;
+		}
+		var formatter = new Intl.NumberFormat('es-HN', {
+			style: 'currency',
+			currency: 'LPS',
+			minimumFractionDigits: 2
+		});
+		if (moneda == 1) {
+			return formatter.format(total);
+		}
+		if (moneda == 2) {
+			formatter = new Intl.NumberFormat('en-US', {
+				style: 'currency',
+				currency: 'USD',
+				minimumFractionDigits: 2
+			});
+			return formatter.format(total);
+		}
+		if (moneda == 0) {
+			formatter = new Intl.NumberFormat('en-US', {
+				style: 'currency',
+				currency: 'LPS',
+				minimumFractionDigits: 2
+			});
+			return formatter.format(total).replace(/[a-z]{3}/i, "").trim();
+		}
+		return total;
+	}
+</script>
