@@ -2,204 +2,249 @@
 @using System.Security.Claims
 
 @{
-    ClaimsPrincipal permisos = (ClaimsPrincipal)ViewData["permisosCertificadoDeposito"];
-    bool editable = Model.Id == 0;
+	ClaimsPrincipal permisos = (ClaimsPrincipal)ViewData["permisosCertificadoDeposito"];
+	bool editable = Model.Id == 0;
 }
 
 
 
 <script>
+	function DeleteBH(e) {
 
+		e.preventDefault();
+		if (confirm('Esta seguro que desea eliminar la fila?')) {
+			var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
 
-       function DeleteBH(e) {
+			var grid = $("#gridInventarioBodegaHabilitadaLine").data("kendoGrid");
 
-        e.preventDefault();
-        if (confirm('Esta seguro que desea eliminar la fila?')) {
-            var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+			grid.dataSource.remove(dataItem);
 
-            var grid = $("#gridInventarioBodegaHabilitadaLine").data("kendoGrid");
-            
-            grid.dataSource.remove(dataItem);
+		}
+	}
 
-        }
-       }
+	function setearvalor(nombrenumerico, valor) {
+		var numeric = $("#" + nombrenumerico).data("kendoNumericTextBox");
+		numeric.value(valor);
+		numeric.trigger('change');
+		numeric = null;
+	}
 
-    function setearvalor(nombrenumerico, valor) {
-        var numeric = $("#" + nombrenumerico).data("kendoNumericTextBox");
-        numeric.value(valor);
-        numeric.trigger('change');
-        numeric = null;
-    }
+	function CalcularValor(e) {
+		recordbh = 0;
+		if (e.container) {
+			e.model.Valor = parseFloat(e.model.Cantidad * e.model.Factor).toFixed(2);
 
+			var totalPergamino = e.container.closest("TR").find(".totalPergamino");
 
+			e.model.ValorPergamino = parseFloat(e.model.Valor * e.model.FactorPergamino).toFixed(2);
+			totalPergamino.html(e.model.ValorPergamino);
+		}
+		$("#gridInventarioBodegaHabilitadaLine").data("kendoGrid").refresh();
 
-    function CalcularValor(e) {
-        debugger;
-        recordbh = 0;
-        if (e.container) {            
-            var totalSpan = e.container.closest("TR").find(".totalSpan");
-            
-            e.model.Valor = parseFloat( e.model.Cantidad * e.model.Factor).toFixed(2);
-             totalSpan.html(e.model.Valor);
+	}
 
+	var recordbh = 0;
 
-            var totalPergamino = e.container.closest("TR").find(".totalPergamino");
-            
-            e.model.ValorPergamino = parseFloat( e.model.Valor * e.model.FactorPergamino).toFixed(2);
-             totalPergamino.html(e.model.ValorPergamino);
+	function RowNumBH() {
 
-        }
-        
-    }
+		return ++recordbh;
+	}
 
-    var recordbh = 0;
-
-    function RowNumBH() {
-
-        return ++recordbh;
-    }
-
-    function numeracionbh(){
-        recordbh = 0;
-    }
-
-
+	function numeracionbh() {
+		recordbh = 0;
+	}
 </script>
 
 <style>
-    .numbers {
-        text-align: right;
-    }
+	.numbers {
+		text-align: right;
+	}
 </style>
 
 
 
 <div class="box">
-    <div class="box-body">
+	<div class="box-body">
 
-        @(Html.Kendo().Grid<ERPMVC.Models.InventarioBodegaHabilitada>
-    ()
-    .Name("gridInventarioBodegaHabilitadaLine")
-    .Events(e =>
+		@(
+			Html.Kendo().Grid<ERPMVC.Models.InventarioBodegaHabilitada>
+			()
+			.Name("gridInventarioBodegaHabilitadaLine")
+			.Events(e =>
     e.CellClose("CalcularValor").Change("numeracionbh").DataBound("numeracionbh")
 
-    )
-    .Columns(columns =>
-    {
+			)
+			.Columns(columns =>
+			{
 
-        columns.Command(command =>
-        {
-            command.Custom("Eliminar").Text(" ").IconClass("fa fa-trash-alt").Click("DeleteBH");
-        }).Width(80).Visible(Model.FechaCompletado==null);
-        columns.Bound(c =>c.No).Width(80).Title("No.").ClientTemplate("#=RowNumBH()#");
-        //columns.Bound(p => p.PdaNo).Title("Pda No").ClientTemplate("#= RowNum()#").Width(110);
-        columns.Bound(p => p.Id).Title("Id").Width(110).Visible(false);
-        columns.Bound(p => p.InventarioFisicoId).Title("Id").Width(110).Visible(false);
-         columns.Bound(p => p.Warehouse).Title("Bodega")
-        .ClientTemplate("#=typeof Warehouse === 'undefined'||Warehouse===null?WarehouseName:Warehouse.WarehouseName#").Width(120);
-        columns.Bound(p => p.Product).Title("Producto")
-        .ClientTemplate("#=typeof Product === 'undefined'||Product===null?ProductoNombre:Product.SubProductName#").Width(120);  
-        columns.Bound(p => p.Descripcion).Title("Descripcion").Width(150).Visible(true);
-         columns.Bound(p => p.UnitOfMeasure).Title("Unidad de Medida")
-        .ClientTemplate("#=typeof UnitOfMeasure === 'undefined'||UnitOfMeasure===null?UnitOfMeasureName:UnitOfMeasure.UnitOfMeasureName#").Width(120);
-        columns.Bound(p => p.Cantidad).Title("Cantidad").Width(120).Format("{0:N2}")
-        .ClientTemplate("<div style='text-align: right'>#= parseFloat(Cantidad).toFixed(2) #</div>");     
-        columns.Bound(p => p.Factor).Title("Factor Peso").Width(120)
-        .ClientTemplate("<div style='text-align: right'>#= parseFloat(Factor).toFixed(2) #</div>");
-        columns.Bound(p => p.Valor).Title("Peso/Cantidad").Format("{0:N2}")
-        .ClientTemplate("<div style='text-align: right'><span class='totalSpan'>#= parseFloat(Cantidad * Factor).toFixed(2) #</span></div>")        
-        .Width(120);
-        columns.Bound(p => p.FactorPergamino).Title("Factor Pergamino").Width(120)
-        .ClientTemplate("<div style='text-align: right'>#= parseFloat(FactorPergamino).toFixed(2) #</div>");
-        columns.Bound(p => p.ValorPergamino).Title("Total").Format("{0:N2}")
-        .ClientTemplate("<div style='text-align: right'><span class='totalPergamino'>#=parseFloat( Valor * FactorPergamino).toFixed(2) #</span></div>")        
-        .Width(120);
-        columns.Bound(p => p.Estiba).Width(100)
-         .ClientTemplate("<div style='text-align: right'>#= Estiba #</div>");
-      
-    })
-    .Editable(e => e.Mode(GridEditMode.InCell))
-    .Filterable(f => f.Operators(o => o.ForString(s => s
-    .Clear()
-    
-    .Contains("Contiene")
-    .DoesNotContain("No contiene")
-    .EndsWith("Termina con")
-    .IsEqualTo("Es igual a")
-    .IsNotEqualTo("No es igual a")
-    .IsNull("Es nulo")
-    .StartsWith("Inicia con")
+				columns.Command(command =>
+				{
+					command.Custom("Eliminar").Text(" ").IconClass("fa fa-trash-alt").Click("DeleteBH");
+				}).Width(80).Visible(Model.FechaCompletado == null);
+				columns.Bound(c => c.No).Width(80).Title("No.").ClientTemplate("#=RowNumBH()#");
+				//columns.Bound(p => p.PdaNo).Title("Pda No").ClientTemplate("#= RowNum()#").Width(110);
+				columns.Bound(p => p.Id).Title("Id").Width(110).Visible(false);
+				columns.Bound(p => p.InventarioFisicoId).Title("Id").Width(110).Visible(false);
+				columns.Bound(p => p.Warehouse).Title("Bodega")
+				.ClientTemplate("#=typeof Warehouse === 'undefined'||Warehouse===null?WarehouseName:Warehouse.WarehouseName#").Width(120);
+				columns.Bound(p => p.Product).Title("Producto")
+				.ClientTemplate("#=typeof Product === 'undefined'||Product===null?ProductoNombre:Product.SubProductName#").Width(120);
+				columns.Bound(p => p.Descripcion).Title("Descripcion").Width(150).Visible(true);
+				columns.Bound(p => p.UnitOfMeasure).Title("Unidad de Medida")
+				.ClientTemplate("#=typeof UnitOfMeasure === 'undefined'||UnitOfMeasure===null?UnitOfMeasureName:UnitOfMeasure.UnitOfMeasureName#").Width(120);
+				columns.Bound(p => p.Cantidad).Title("Cantidad").Width(120).Format("{0:N2}")
+				.ClientFooterTemplate("<div style='text-align: right'>#=totalColumnasbh(1,0)#</div>")
+				.ClientTemplate("<div style='text-align: right'>#= parseFloat(Cantidad).toFixed(2) #</div>");
+				columns.Bound(p => p.Factor).Title("Factor Peso").Width(120)
+				.ClientTemplate("<div style='text-align: right'>#= parseFloat(Factor).toFixed(2) #</div>");
+				columns.Bound(p => p.Valor).Title("Peso/Cantidad").Format("{0:N2}")
+				.ClientTemplate("<div style='text-align: right'><span class='totalSpan'>#= parseFloat(Cantidad * Factor).toFixed(2) #</span></div>")
+				.Width(120);
+				columns.Bound(p => p.FactorPergamino).Title("Factor Pergamino").Width(120)
+				.ClientTemplate("<div style='text-align: right'>#= parseFloat(FactorPergamino).toFixed(2) #</div>");
+				columns.Bound(p => p.ValorPergamino).Title("Total").Format("{0:N2}")
+				.ClientTemplate("<div style='text-align: right'><span class='totalPergamino'>#=parseFloat( Valor * FactorPergamino).toFixed(2) #</span></div>")
+				.ClientFooterTemplate("<div style='text-align: right'><span class='total'>#= totalColumnasbh(2,1)#</span></div>")
+				.Width(120);
+				columns.Bound(p => p.Estiba).Width(100)
+				.ClientTemplate("<div style='text-align: right'>#= Estiba #</div>");
 
+			})
+			.Editable(e => e.Mode(GridEditMode.InCell))
+			.Filterable(f => f.Operators(o => o.ForString(s => s
+			.Clear()
 
-    )
-    .ForNumber(n => n
-    .Clear()
-    .IsEqualTo("Es igual a")
-    .IsGreaterThan("Es mayor que")
-    .IsLessThan("Es menor que")
-    .IsNull("Es nulo")
-    .IsLessThanOrEqualTo("Es menor o igual que")
-    .IsGreaterThanOrEqualTo("Es mayor o igual que")
-    )
-    .ForDate(d => d
-    .Clear()
-    .IsEqualTo("Es igual que")
-    .IsGreaterThan("Es mayor que")
-    .IsLessThan("Es menor que")
-    .IsLessThanOrEqualTo("Es menor o igual que")
-    .IsGreaterThanOrEqualTo("Es mayor o igual que")
-    .IsNotEqualTo("No es igual que")
-    )
-    ))
-     .ToolBar(tools =>
-        {
-            tools.Create().Text("Agregar Producto");
-            tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" }).Text("Exportar a excel");
-        })
+			.Contains("Contiene")
+			.DoesNotContain("No contiene")
+			.EndsWith("Termina con")
+			.IsEqualTo("Es igual a")
+			.IsNotEqualTo("No es igual a")
+			.IsNull("Es nulo")
+			.StartsWith("Inicia con")
 
 
-    .Sortable()
-    
-    .AutoBind(true)
-    //.Pageable()
-    .Filterable()
-    .Scrollable()
-    .Resizable(s => s.Columns(true))
-    .Pdf(pdf => pdf.FileName("CertificadoDepositoDetalleReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-    + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
-    .ProxyURL(Url.Action("Export", "Home")).AllPages())
-    .Excel(excel => excel.FileName("CertificadoDepositoDetalleReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-    + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
-    .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
-    .DataSource(dataSource =>
-
-    dataSource
-    //.Ajax()
-    .WebApi()
-    .Batch(true)
-
-    .ServerOperation(false)
-    .Model(model =>
-    {
-        model.Id(p => p.Id);
-        model.Field(p => p.No).Editable(false);
-        model.Field(p => p.Id).Editable(false);
-       // model.Field(p => p.InventarioFisicoId).DefaultValue(Model.InventarioFisicoId);
-        model.Field(p => p.ProductoNombre).Editable(false);
-        model.Field(p => p.Cantidad).Editable(true);
-       
-
-    })
-    .Sort(s => s.Add(a => a.Id).Ascending())
-    .Events(events =>
-    {
-        events.Error("error_handler");
+			)
+			.ForNumber(n => n
+			.Clear()
+			.IsEqualTo("Es igual a")
+			.IsGreaterThan("Es mayor que")
+			.IsLessThan("Es menor que")
+			.IsNull("Es nulo")
+			.IsLessThanOrEqualTo("Es menor o igual que")
+			.IsGreaterThanOrEqualTo("Es mayor o igual que")
+			)
+			.ForDate(d => d
+			.Clear()
+			.IsEqualTo("Es igual que")
+			.IsGreaterThan("Es mayor que")
+			.IsLessThan("Es menor que")
+			.IsLessThanOrEqualTo("Es menor o igual que")
+			.IsGreaterThanOrEqualTo("Es mayor o igual que")
+			.IsNotEqualTo("No es igual que")
+			)
+			))
+			.ToolBar(tools =>
+			{
+				tools.Create().Text("Agregar Producto");
+				tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" }).Text("Exportar a excel");
+			})
 
 
-    })
-    .Read(read => read.Action("GetInventarioBodegaHabilitadaLines", "InventarioFisicoLine").Data("GetparamDetalle"))
-    )
-    )
+			.Sortable()
 
+			.AutoBind(true)
+			//.Pageable()
+			.Filterable()
+			.Scrollable()
+			.Resizable(s => s.Columns(true))
+			.Pdf(pdf => pdf.FileName("CertificadoDepositoDetalleReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+			+ DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+			.ProxyURL(Url.Action("Export", "Home")).AllPages())
+			.Excel(excel => excel.FileName("CertificadoDepositoDetalleReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+			+ DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+			.ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+			.DataSource(dataSource =>
+
+			dataSource
+			//.Ajax()
+			.WebApi()
+			.Batch(true)
+
+			.ServerOperation(false)
+			.Model(model =>
+			{
+				model.Id(p => p.Id);
+				model.Field(p => p.No).Editable(false);
+				model.Field(p => p.Id).Editable(false);
+				// model.Field(p => p.InventarioFisicoId).DefaultValue(Model.InventarioFisicoId);
+				model.Field(p => p.ProductoNombre).Editable(false);
+				model.Field(p => p.Cantidad).Editable(true);
+				model.Field(p => p.Valor).Editable(false);
+				model.Field(p => p.ValorPergamino).Editable(false);
+
+			})
+			.Sort(s => s.Add(a => a.Id).Ascending())
+			.Events(events =>
+			{
+				events.Error("error_handler");
+
+
+			})
+			.Read(read => read.Action("GetInventarioBodegaHabilitadaLines", "InventarioFisicoLine").Data("GetparamDetalle"))
+			)
+			)
+
+	</div>
 </div>
-</div>
+<script>
+	function totalColumnasbh(tiporesultado, moneda) {
+		debugger;
+
+		var data = $("#gridInventarioBodegaHabilitadaLine").getKendoGrid().dataSource.data();
+		var total = 0;
+
+		console.log("Cantidad de elementos en data:", data.length); // Verifica la cantidad de elementos en los datos
+
+		switch (tiporesultado) {
+			case 1: ///////Calcular el Total
+				data.forEach(r => {
+					total += r.Cantidad;
+					console.log("Valor de Cantidad:", r.Cantidad); // Imprime el valor de Cantidad en cada iteración
+				});
+				break;
+			case 2: /// Calcular la cantidad
+				data.forEach(r => {
+					total += r.ValorPergamino;
+					console.log("Valor de ValorPergamino:", r.ValorPergamino); // Imprime el valor de ValorPergamino en cada iteración
+				});
+				break;
+			default:
+				break;
+		}
+		var formatter = new Intl.NumberFormat('es-HN', {
+			style: 'currency',
+			currency: 'LPS',
+			minimumFractionDigits: 2
+		});
+		if (moneda == 1) {
+			return formatter.format(total);
+		}
+		if (moneda == 2) {
+			formatter = new Intl.NumberFormat('en-US', {
+				style: 'currency',
+				currency: 'USD',
+				minimumFractionDigits: 2
+			});
+			return formatter.format(total);
+		}
+		if (moneda == 0) {
+			formatter = new Intl.NumberFormat('en-US', {
+				style: 'currency',
+				currency: 'LPS',
+				minimumFractionDigits: 2
+			});
+			return formatter.format(total).replace(/[a-z]{3}/i, "").trim();
+		}
+		return total;
+	}
+</script>
