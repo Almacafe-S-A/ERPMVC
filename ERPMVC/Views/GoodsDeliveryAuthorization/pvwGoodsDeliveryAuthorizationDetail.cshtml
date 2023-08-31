@@ -119,8 +119,12 @@
                                                                           columns.Bound(p => p.Product).Title("Producto").HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" })
                                                                                                                                   .ClientTemplate("#=typeof Product === 'undefined'||Product===null?SubProductName:Product.SubProductName#").Width(150)
                                                                                                                                   .ClientFooterTemplate("<div>Total a Retirar</div>");
-                                                                          columns.Bound(p => p.UnitOfMeasureName).Title("Unidad de medida").Width(170).HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" });
-                                                                          columns.Bound(p => p.SaldoProducto).Title("Saldo").Width(170).Format("{0:N2}")
+                                                                          columns.Bound(p => p.UnitOfMeasureName).Title("Unidad de medida").Width(170).HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" }).Visible(false);
+                                                                            columns.Bound(p => p.UnitOfMeasure).Title("Unidad de Medida")
+                                                                            .Width(180)
+                                                                            .ClientTemplate("#=typeof UnitOfMeasure === 'undefined'||UnitOfMeasure===null?UnitOfMeasureName:UnitOfMeasure.UnitOfMeasureName#")
+                                                                            .HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" });
+                                                                              columns.Bound(p => p.SaldoProducto).Title("Saldo").Width(170).Format("{0:N2}")
                                                                                     .ClientFooterTemplate("<div style='text-align: right'>#=totalColumnas(11,0)#</div>")
                                                                                     .HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" })
                                                                                      ;
@@ -242,7 +246,7 @@
     function calculateField(e) {
         debugger;
         if (e.container) {
-            if (e.model.Quantity > e.model.SaldoProducto) {
+            if (e.model.NoCertificadoDeposito > 0 && e.model.Quantity > e.model.SaldoProducto) {
                  MostrarMensaje('La cantidad a Autorizar no puede ser mayor al Disponible', "Error", "Error", 30000);
                 e.model.Quantity = e.model.SaldoProducto;
             }
@@ -250,27 +254,31 @@
             e.model.valorcertificado = e.model.Price * e.model.Quantity;
             e.model.DerechosFiscales = e.model.Quantity * e.model.ValorUnitarioDerechos;
 
-            var totalautSpan = e.container.closest("TR").find(".totalautSpan");            
-            var totalautorizado = formattear.format(e.model.valorcertificado).replace(/[a-z]{3}/i, "").trim();
-            totalautSpan.html(totalautorizado);
 
-            var totalSpan = e.container.closest("TR").find(".totalSpan");
-            var totalderechos = formattear.format(e.model.DerechosFiscales).replace(/[a-z]{3}/i, "").trim();
-            totalSpan.html(totalderechos);
+            $("#gridGoodsDeliveredAuthorizationLine").data("kendoGrid").refresh();
+            //RefreshGoodsDeliveredDetail();
+
+            //var totalautSpan = e.container.closest("TR").find(".totalautSpan");            
+            //var totalautorizado = formattear.format(e.model.valorcertificado).replace(/[a-z]{3}/i, "").trim();
+            //totalautSpan.html(totalautorizado);
+
+            //var totalSpan = e.container.closest("TR").find(".totalSpan");
+            //var totalderechos = formattear.format(e.model.DerechosFiscales).replace(/[a-z]{3}/i, "").trim();
+            //totalSpan.html(totalderechos);
 
 
-            //Actualizar Saldo
-            var footer = $('tr.k-footer-template'),
-                idx = 6, // replace 3 with the column index you want to aggregate
-                aggregate = $(footer).children('td')[6];
+            ////Actualizar Saldo
+            //var footer = $('tr.k-footer-template'),
+            //    idx = 6, // replace 3 with the column index you want to aggregate
+            //    aggregate = $(footer).children('td')[6];
 
-            $(aggregate).text(totalColumnas(12,0)).css('text-align', 'right');
+            //$(aggregate).text(totalColumnas(12,0)).css('text-align', 'right');
 
-            var footer = $('tr.k-footer-template'),
-                idx = 8, // replace 3 with the column index you want to aggregate
-                aggregate = $(footer).children('td')[8];
+            //var footer = $('tr.k-footer-template'),
+            //    idx = 8, // replace 3 with the column index you want to aggregate
+            //    aggregate = $(footer).children('td')[8];
 
-            $(aggregate).text(totalColumnas(14, 0)).css('text-align', 'right');
+            //$(aggregate).text(totalColumnas(14, 0)).css('text-align', 'right');
 
            /* var footer2 = $('tr.k-footer-template'),
                 idx2 = 8, // replace 3 with the column index you want to aggregate
