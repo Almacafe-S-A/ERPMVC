@@ -36,6 +36,8 @@ namespace ERPMVC.Models
 
         [Display(Name = "Unidad de medida")]
         public string UnitOfMeasureName { get; set; }
+        [UIHint("UOM")]
+        public UnitOfMeasure UnitOfMeasure { get; set; }
 
         [Display(Name = "Bodega")]
         public Int64 WarehouseId { get; set; }
