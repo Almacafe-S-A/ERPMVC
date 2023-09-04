@@ -74,7 +74,7 @@ namespace ERPMVC.Controllers
 
         }
 
-        [Authorize(Policy = "Inventarios.Reportes.Movimientos Diarios")]
+        [Authorize(Policy = "Inventarios.Reportes.Movimientos Boletas de Peso")]
         public async Task<IActionResult> SFMovimientosBoletasPeso()
         {
 
@@ -82,7 +82,7 @@ namespace ERPMVC.Controllers
 
         }
 
-        [Authorize(Policy = "Inventarios.Reportes.Movimientos Diarios")]
+        [Authorize(Policy = "Inventarios.Reportes.Movimientos Detalle Boletas de Peso")]
         public async Task<IActionResult> SFMovimientosDetalleBoletasPeso()
         {
 
@@ -90,7 +90,7 @@ namespace ERPMVC.Controllers
 
         }
         
-        [Authorize(Policy = "Inventarios.Reportes.Movimientos Diarios")]
+        [Authorize(Policy = "Inventarios.Reportes.Recibos de Mercadería Emitidos Detallado")]
         public async Task<IActionResult> SFRecibosMercaderiaDetallado()
         {
 
@@ -98,7 +98,7 @@ namespace ERPMVC.Controllers
 
         }
         
-        [Authorize(Policy = "Inventarios.Reportes.Movimientos Diarios")]
+        [Authorize(Policy = "Inventarios.Reportes.Recibos de Mercadería por Certificar")]
         public async Task<IActionResult> SFRecibosMercaderiaCertificar()
         {
 
@@ -106,7 +106,7 @@ namespace ERPMVC.Controllers
 
         }
         
-        [Authorize(Policy = "Inventarios.Reportes.Movimientos Diarios")]
+        [Authorize(Policy = "Inventarios.Reportes.Solicitudes de Deposito Emitidas Detallado")]
         public async Task<IActionResult> SFSolicitudesDepositoDetallado()
         {
 
@@ -114,7 +114,7 @@ namespace ERPMVC.Controllers
 
         }
 
-        [Authorize(Policy = "Inventarios.Reportes.Movimientos Diarios")]
+        [Authorize(Policy = "Inventarios.Reportes.Certificados de Deposito Emitidos Detallado")]
         public async Task<IActionResult> SFCertificadosDepositoDetallado()
         {
 
@@ -122,7 +122,7 @@ namespace ERPMVC.Controllers
 
         }
 
-        [Authorize(Policy = "Inventarios.Reportes.Movimientos Diarios")]
+        [Authorize(Policy = "Inventarios.Reportes.Endosos Registrados por Cliente")]
         public async Task<IActionResult> SFEndososRegistradosxCliente()
         {
 
@@ -130,7 +130,7 @@ namespace ERPMVC.Controllers
 
         }
 
-        [Authorize(Policy = "Inventarios.Reportes.Movimientos Diarios")]
+        [Authorize(Policy = "Inventarios.Reportes.Endosos Registrados por Banco")]
         public async Task<IActionResult> SFEndososRegistradosxBanco()
         {
 
@@ -138,7 +138,7 @@ namespace ERPMVC.Controllers
 
         }
 
-        [Authorize(Policy = "Inventarios.Reportes.Movimientos Diarios")]
+        [Authorize(Policy = "Inventarios.Reportes.Autorizaciones de Retiro Emitidas Detallado")]
         public async Task<IActionResult> SFAutorizacionRetiroDetallado()
         {
 
@@ -146,7 +146,7 @@ namespace ERPMVC.Controllers
 
         }
 
-        [Authorize(Policy = "Inventarios.Reportes.Movimientos Diarios")]
+        [Authorize(Policy = "Inventarios.Reportes.Comprobante de Entrega Emitidos Detallado")]
         public async Task<IActionResult> SFComprobanteEntregaDetallado()
         {
 
@@ -154,7 +154,7 @@ namespace ERPMVC.Controllers
 
         }
 
-        [Authorize(Policy = "Inventarios.Reportes.Movimientos Diarios")]
+        [Authorize(Policy = "Inventarios.Reportes.Boletas de Salida Emitidas Detallado")]
         public async Task<IActionResult> SFBoletasSalidaDetallado()
         {
 
@@ -162,7 +162,7 @@ namespace ERPMVC.Controllers
 
         }
 
-        [Authorize(Policy = "Inventarios.Reportes.Movimientos Diarios")]
+        [Authorize(Policy = "Inventarios.Reportes.Saldos de Certificados de Deposito")]
         public async Task<IActionResult> SFSaldosCD()
         {
 
@@ -170,7 +170,7 @@ namespace ERPMVC.Controllers
 
         }
 
-        [Authorize(Policy = "Inventarios.Reportes.Movimientos Diarios")]
+        [Authorize(Policy = "Inventarios.Reportes.Saldos de Autorizaciones de Retiro")]
         public async Task<IActionResult> SFSaldosAR()
         {
 
@@ -178,7 +178,7 @@ namespace ERPMVC.Controllers
 
         }
 
-        [Authorize(Policy = "Inventarios.Reportes.Movimientos Diarios")]
+        [Authorize(Policy = "Inventarios.Reportes.Kardex de Producto x Bodega")]
         public async Task<IActionResult> SFKardexProductoxBodega()
         {
 
@@ -186,7 +186,7 @@ namespace ERPMVC.Controllers
 
         }
 
-        [Authorize(Policy = "Inventarios.Reportes.Movimientos Diarios")]
+        [Authorize(Policy = "Inventarios.Reportes.Kardex de Producto x Estiba")]
         public async Task<IActionResult> SFKardexBodegaxEstiba()
         {
 
@@ -194,7 +194,7 @@ namespace ERPMVC.Controllers
 
         }
 
-        [Authorize(Policy = "Inventarios.Reportes.Movimientos Diarios")]
+        [Authorize(Policy = "Inventarios.Reportes.Kardex Detallado x Producto")]
         public async Task<IActionResult> SFKardexDetalladoxProducto()
         {
 
@@ -202,7 +202,7 @@ namespace ERPMVC.Controllers
 
         }
 
-        [Authorize(Policy = "Inventarios.Reportes.Movimientos Diarios")]
+        [Authorize(Policy = "Inventarios.Reportes.Kardex x CD")]
         public async Task<IActionResult> SFKardexCD()
         {
 
@@ -210,7 +210,7 @@ namespace ERPMVC.Controllers
 
         }
 
-        [Authorize(Policy = "Inventarios.Reportes.Movimientos Diarios")]
+        [Authorize(Policy = "Inventarios.Reportes.Kardex x AR")]
         public async Task<IActionResult> SFKardexAR()
         {
 
@@ -234,7 +234,7 @@ namespace ERPMVC.Controllers
         }
 
 
-        [Authorize(Policy = "Inventarios.Reportes.Movimientos Diarios")]
+        [Authorize(Policy = "Inventarios.Reportes.Servicios de Bodega")]
         public async Task<IActionResult> SFServicioBodega()
         {
 
