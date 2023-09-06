@@ -582,6 +582,36 @@ namespace ERPMVC.Controllers
             try
             {
                 InvoiceDTO _invoicedto = new InvoiceDTO { InvoiceId = id, };
+                string baseadress = config.Value.urlbase;
+                Invoice _Invoice = new Invoice();
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/Invoice/GetInvoiceById/" + id);
+                string valorrespuesta = "";
+
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _Invoice = JsonConvert.DeserializeObject<Invoice>(valorrespuesta);
+                    if (_Invoice.Impreso == null)
+                    {
+                        _Invoice.Impreso = "0";
+                    }
+                    else if (_Invoice.Impreso == "0")
+                    {
+                        _Invoice.Impreso = "1";
+                    }
+
+                    var updateresult = await Update(_Invoice.InvoiceId, _Invoice);
+                    
+                }
+
+                
+
+                
+
+
+
                 return await Task.Run(()=> View(_invoicedto));
             }
             catch (Exception)
