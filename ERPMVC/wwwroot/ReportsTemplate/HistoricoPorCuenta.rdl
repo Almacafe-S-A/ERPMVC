@@ -5,7 +5,7 @@
     <DataSource Name="ERP">
       <ConnectionProperties>
         <DataProvider>SQL</DataProvider>
-        <ConnectString>Data Source=JVASQUEZ-F15\SQLEXPRESS;Initial Catalog=ERP;Integrated Security=True;</ConnectString>
+        <ConnectString>Data Source=192.168.0.5;Initial Catalog=ERP-PRODUCCION</ConnectString>
         <IntegratedSecurity>true</IntegratedSecurity>
       </ConnectionProperties>
       <rd:SecurityType>Integrated</rd:SecurityType>
@@ -53,6 +53,9 @@ GROUP BY Act.DeudoraAcreedora</CommandText>
           <QueryParameter Name="@AccountID">
             <Value>=Parameters!AccountID.Value</Value>
           </QueryParameter>
+          <QueryParameter Name="@CentrodeCosto">
+            <Value>=Parameters!CentrodeCosto.Value</Value>
+          </QueryParameter>
         </QueryParameters>
         <CommandText>
 SELECT 
@@ -88,12 +91,12 @@ SELECT
 
 WHERE
              JE.[DatePosted] &gt;= @FechaInicio AND JE.[DatePosted] &lt;= @FechaFinal + CAST('23:59:59.000' AS datetime) AND [JournalEntryLine].[AccountId] = @AccountID AND  JE.[EstadoId] = 6
-     AND not exists (select * from JournalEntryCanceled where ReverseJournalEntryId = je.JournalEntryId or CanceledJournalentryId = je.JournalEntryId)</CommandText>
+     AND not exists (select * from JournalEntryCanceled where ReverseJournalEntryId = je.JournalEntryId or CanceledJournalentryId = je.JournalEntryId) AND ([JournalEntryLine].[CostCenterId] = @CentrodeCosto OR @CentrodeCosto = 0)</CommandText>
       </Query>
       <Fields>
         <Field Name="AccountId">
           <DataField>AccountId</DataField>
-          <rd:TypeName>System.Int32</rd:TypeName>
+          <rd:TypeName>System.Int64</rd:TypeName>
         </Field>
         <Field Name="AccountName">
           <DataField>AccountName</DataField>
@@ -117,27 +120,27 @@ WHERE
         </Field>
         <Field Name="Credit">
           <DataField>Credit</DataField>
-          <rd:TypeName>System.Double</rd:TypeName>
+          <rd:TypeName>System.Decimal</rd:TypeName>
         </Field>
         <Field Name="CreditME">
           <DataField>CreditME</DataField>
-          <rd:TypeName>System.Double</rd:TypeName>
+          <rd:TypeName>System.Decimal</rd:TypeName>
         </Field>
         <Field Name="CreditSy">
           <DataField>CreditSy</DataField>
-          <rd:TypeName>System.Double</rd:TypeName>
+          <rd:TypeName>System.Decimal</rd:TypeName>
         </Field>
         <Field Name="Debit">
           <DataField>Debit</DataField>
-          <rd:TypeName>System.Double</rd:TypeName>
+          <rd:TypeName>System.Decimal</rd:TypeName>
         </Field>
         <Field Name="DebitME">
           <DataField>DebitME</DataField>
-          <rd:TypeName>System.Double</rd:TypeName>
+          <rd:TypeName>System.Decimal</rd:TypeName>
         </Field>
         <Field Name="DebitSy">
           <DataField>DebitSy</DataField>
-          <rd:TypeName>System.Double</rd:TypeName>
+          <rd:TypeName>System.Decimal</rd:TypeName>
         </Field>
         <Field Name="Description">
           <DataField>Description</DataField>
@@ -163,36 +166,36 @@ WHERE
           <DataField>ModifiedUser</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
+        <Field Name="DatePosted">
+          <DataField>DatePosted</DataField>
+          <rd:TypeName>System.DateTime</rd:TypeName>
+        </Field>
+        <Field Name="PartyName">
+          <DataField>PartyName</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="Date">
+          <DataField>Date</DataField>
+          <rd:TypeName>System.DateTime</rd:TypeName>
+        </Field>
+        <Field Name="Sinopsis">
+          <DataField>Sinopsis</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
         <Field Name="AccountCode">
           <DataField>AccountCode</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="NombreCuenta">
+          <DataField>NombreCuenta</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
         <Field Name="DocumentId">
           <DataField>DocumentId</DataField>
           <rd:TypeName>System.Int64</rd:TypeName>
         </Field>
-        <Field Name="NombreCuenta">
-          <DataField>NombreCuenta</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
-        </Field>
-        <Field Name="DatePosted">
-          <DataField>DatePosted</DataField>
-          <rd:TypeName>System.DateTime</rd:TypeName>
-        </Field>
-        <Field Name="Date">
-          <DataField>Date</DataField>
-          <rd:TypeName>System.DateTime</rd:TypeName>
-        </Field>
         <Field Name="DeudoraAcreedora">
           <DataField>DeudoraAcreedora</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
-        </Field>
-        <Field Name="Sinopsis">
-          <DataField>Sinopsis</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
-        </Field>
-        <Field Name="PartyName">
-          <DataField>PartyName</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
       </Fields>
@@ -230,6 +233,25 @@ WHERE
         </Field>
       </Fields>
     </DataSet>
+    <DataSet Name="CentrodeCosto">
+      <Query>
+        <DataSourceName>ERP</DataSourceName>
+        <CommandText>SELECT CostCenterId, CostCenterName
+From CostCenter
+Where IdEstado =1
+UNION SELECT 0 , 'TODOS'</CommandText>
+      </Query>
+      <Fields>
+        <Field Name="CostCenterId">
+          <DataField>CostCenterId</DataField>
+          <rd:TypeName>System.Int64</rd:TypeName>
+        </Field>
+        <Field Name="CostCenterName">
+          <DataField>CostCenterName</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+      </Fields>
+    </DataSet>
   </DataSets>
   <ReportSections>
     <ReportSection>
@@ -239,30 +261,30 @@ WHERE
             <TablixBody>
               <TablixColumns>
                 <TablixColumn>
-                  <Width>0.87177in</Width>
+                  <Width>0.6in</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>0.83432in</Width>
+                  <Width>0.8in</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>1.12234in</Width>
+                  <Width>1.1in</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>1.22675in</Width>
+                  <Width>1.1in</Width>
                 </TablixColumn>
                 <TablixColumn>
                   <Width>1.05241in</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>1.23094in</Width>
+                  <Width>1.65in</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>1.79997in</Width>
+                  <Width>1.92497in</Width>
                 </TablixColumn>
               </TablixColumns>
               <TablixRows>
                 <TablixRow>
-                  <Height>0.25898in</Height>
+                  <Height>0.3944in</Height>
                   <TablixCells>
                     <TablixCell>
                       <CellContents>
@@ -273,9 +295,10 @@ WHERE
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>DOCUMENTO</Value>
+                                  <Value>ASIENTO CONT.</Value>
                                   <Style>
                                     <FontSize>9pt</FontSize>
+                                    <FontWeight>Bold</FontWeight>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -290,7 +313,6 @@ WHERE
                               <Color>#808080</Color>
                               <Style>Solid</Style>
                             </Border>
-                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -310,7 +332,8 @@ WHERE
                                 <TextRun>
                                   <Value>FECHA</Value>
                                   <Style>
-                                    <FontSize>9.75pt</FontSize>
+                                    <FontSize>9pt</FontSize>
+                                    <FontWeight>Bold</FontWeight>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -325,7 +348,6 @@ WHERE
                               <Color>#808080</Color>
                               <Style>Solid</Style>
                             </Border>
-                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -343,15 +365,10 @@ WHERE
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>DÉ</Value>
+                                  <Value>DÉBITO</Value>
                                   <Style>
-                                    <FontSize>9.75pt</FontSize>
-                                  </Style>
-                                </TextRun>
-                                <TextRun>
-                                  <Value>BITO</Value>
-                                  <Style>
-                                    <FontSize>9.75pt</FontSize>
+                                    <FontSize>9pt</FontSize>
+                                    <FontWeight>Bold</FontWeight>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -366,7 +383,6 @@ WHERE
                               <Color>#808080</Color>
                               <Style>Solid</Style>
                             </Border>
-                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -384,15 +400,10 @@ WHERE
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>CRÉ</Value>
+                                  <Value>CRÉDITO</Value>
                                   <Style>
-                                    <FontSize>9.75pt</FontSize>
-                                  </Style>
-                                </TextRun>
-                                <TextRun>
-                                  <Value>DITO</Value>
-                                  <Style>
-                                    <FontSize>9.75pt</FontSize>
+                                    <FontSize>9pt</FontSize>
+                                    <FontWeight>Bold</FontWeight>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -407,7 +418,6 @@ WHERE
                               <Color>Gray</Color>
                               <Style>Solid</Style>
                             </Border>
-                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -425,11 +435,15 @@ WHERE
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>CENTRO COSTO</Value>
-                                  <Style />
+                                  <Value>CENTRO DE COSTO</Value>
+                                  <Style>
+                                    <FontSize>9pt</FontSize>
+                                    <FontWeight>Bold</FontWeight>
+                                  </Style>
                                 </TextRun>
                               </TextRuns>
                               <Style>
+                                <TextAlign>Center</TextAlign>
                                 <LineHeight>10pt</LineHeight>
                               </Style>
                             </Paragraph>
@@ -439,7 +453,6 @@ WHERE
                               <Color>#808080</Color>
                               <Style>Solid</Style>
                             </Border>
-                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -458,10 +471,14 @@ WHERE
                               <TextRuns>
                                 <TextRun>
                                   <Value>BENEFICIARIO</Value>
-                                  <Style />
+                                  <Style>
+                                    <FontSize>9pt</FontSize>
+                                    <FontWeight>Bold</FontWeight>
+                                  </Style>
                                 </TextRun>
                               </TextRuns>
                               <Style>
+                                <TextAlign>Center</TextAlign>
                                 <LineHeight>10pt</LineHeight>
                               </Style>
                             </Paragraph>
@@ -471,7 +488,6 @@ WHERE
                               <Color>#808080</Color>
                               <Style>Solid</Style>
                             </Border>
-                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -491,11 +507,13 @@ WHERE
                                 <TextRun>
                                   <Value>SINOPSIS</Value>
                                   <Style>
-                                    <FontSize>9.75pt</FontSize>
+                                    <FontSize>9pt</FontSize>
+                                    <FontWeight>Bold</FontWeight>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
                               <Style>
+                                <TextAlign>Center</TextAlign>
                                 <LineHeight>10pt</LineHeight>
                               </Style>
                             </Paragraph>
@@ -505,7 +523,6 @@ WHERE
                               <Color>#808080</Color>
                               <Style>Solid</Style>
                             </Border>
-                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -517,7 +534,7 @@ WHERE
                   </TablixCells>
                 </TablixRow>
                 <TablixRow>
-                  <Height>0.31394in</Height>
+                  <Height>0.24in</Height>
                   <TablixCells>
                     <TablixCell>
                       <CellContents>
@@ -530,12 +547,12 @@ WHERE
                                 <TextRun>
                                   <Value>=Fields!DocumentId.Value</Value>
                                   <Style>
-                                    <FontSize>9.75pt</FontSize>
+                                    <FontSize>9pt</FontSize>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
                               <Style>
-                                <TextAlign>Left</TextAlign>
+                                <TextAlign>Right</TextAlign>
                                 <LineHeight>10pt</LineHeight>
                               </Style>
                             </Paragraph>
@@ -564,7 +581,7 @@ WHERE
                                 <TextRun>
                                   <Value>=Fields!DatePosted.Value</Value>
                                   <Style>
-                                    <FontSize>9.75pt</FontSize>
+                                    <FontSize>9pt</FontSize>
                                     <Format>d</Format>
                                   </Style>
                                 </TextRun>
@@ -599,7 +616,7 @@ WHERE
                                 <TextRun>
                                   <Value>=Fields!Debit.Value</Value>
                                   <Style>
-                                    <FontSize>9.75pt</FontSize>
+                                    <FontSize>9pt</FontSize>
                                     <Format>'L'#,0.00;('L'#,0.00)</Format>
                                   </Style>
                                 </TextRun>
@@ -634,7 +651,7 @@ WHERE
                                 <TextRun>
                                   <Value>=Fields!Credit.Value</Value>
                                   <Style>
-                                    <FontSize>9.75pt</FontSize>
+                                    <FontSize>9pt</FontSize>
                                     <Format>'L'#,0.00;('L'#,0.00)</Format>
                                   </Style>
                                 </TextRun>
@@ -668,10 +685,13 @@ WHERE
                               <TextRuns>
                                 <TextRun>
                                   <Value>=Fields!CostCenterName.Value</Value>
-                                  <Style />
+                                  <Style>
+                                    <FontSize>9pt</FontSize>
+                                  </Style>
                                 </TextRun>
                               </TextRuns>
                               <Style>
+                                <TextAlign>Left</TextAlign>
                                 <LineHeight>10pt</LineHeight>
                               </Style>
                             </Paragraph>
@@ -699,10 +719,13 @@ WHERE
                               <TextRuns>
                                 <TextRun>
                                   <Value>=Fields!PartyName.Value</Value>
-                                  <Style />
+                                  <Style>
+                                    <FontSize>9pt</FontSize>
+                                  </Style>
                                 </TextRun>
                               </TextRuns>
                               <Style>
+                                <TextAlign>Left</TextAlign>
                                 <LineHeight>10pt</LineHeight>
                               </Style>
                             </Paragraph>
@@ -731,11 +754,12 @@ WHERE
                                 <TextRun>
                                   <Value>=Fields!Sinopsis.Value</Value>
                                   <Style>
-                                    <FontSize>9.75pt</FontSize>
+                                    <FontSize>9pt</FontSize>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
                               <Style>
+                                <TextAlign>Left</TextAlign>
                                 <LineHeight>10pt</LineHeight>
                               </Style>
                             </Paragraph>
@@ -772,6 +796,7 @@ WHERE
               <TablixMembers>
                 <TablixMember>
                   <KeepWithGroup>After</KeepWithGroup>
+                  <RepeatOnNewPage>true</RepeatOnNewPage>
                 </TablixMember>
                 <TablixMember>
                   <Group Name="Details1010101245" />
@@ -779,9 +804,10 @@ WHERE
               </TablixMembers>
             </TablixRowHierarchy>
             <DataSetName>MovimientoHistorico</DataSetName>
-            <Left>0.17397in</Left>
-            <Height>0.57292in</Height>
-            <Width>8.1385in</Width>
+            <Top>0.1905cm</Top>
+            <Left>0.03647in</Left>
+            <Height>0.6344in</Height>
+            <Width>8.22738in</Width>
             <Style />
           </Tablix>
           <Textbox Name="TextBox19">
@@ -792,7 +818,10 @@ WHERE
                 <TextRuns>
                   <TextRun>
                     <Value>SUBTOTAL:</Value>
-                    <Style />
+                    <Style>
+                      <FontSize>9pt</FontSize>
+                      <FontWeight>Bold</FontWeight>
+                    </Style>
                   </TextRun>
                 </TextRuns>
                 <Style>
@@ -800,10 +829,10 @@ WHERE
                 </Style>
               </Paragraph>
             </Paragraphs>
-            <Top>0.63542in</Top>
-            <Left>0.21142in</Left>
-            <Height>0.25in</Height>
-            <Width>1.201in</Width>
+            <Top>0.78542in</Top>
+            <Left>0.04897in</Left>
+            <Height>0.22in</Height>
+            <Width>1.3875in</Width>
             <ZIndex>1</ZIndex>
             <Style>
               <Border />
@@ -823,6 +852,8 @@ WHERE
                   <TextRun>
                     <Value>=Sum(Fields!Debit.Value, "MovimientoHistorico")</Value>
                     <Style>
+                      <FontSize>9pt</FontSize>
+                      <FontWeight>Bold</FontWeight>
                       <Format>'L'#,0.00;('L'#,0.00)</Format>
                     </Style>
                   </TextRun>
@@ -833,10 +864,10 @@ WHERE
                 </Style>
               </Paragraph>
             </Paragraphs>
-            <Top>0.63542in</Top>
-            <Left>1.21142in</Left>
-            <Height>0.25in</Height>
-            <Width>1.75in</Width>
+            <Top>0.78542in</Top>
+            <Left>1.43647in</Left>
+            <Height>0.22in</Height>
+            <Width>1.1in</Width>
             <ZIndex>2</ZIndex>
             <Style>
               <Border />
@@ -856,6 +887,8 @@ WHERE
                   <TextRun>
                     <Value>=Sum(Fields!Credit.Value, "MovimientoHistorico")</Value>
                     <Style>
+                      <FontSize>9pt</FontSize>
+                      <FontWeight>Bold</FontWeight>
                       <Format>'L'#,0.00;('L'#,0.00)</Format>
                     </Style>
                   </TextRun>
@@ -866,10 +899,10 @@ WHERE
                 </Style>
               </Paragraph>
             </Paragraphs>
-            <Top>0.63542in</Top>
-            <Left>2.96142in</Left>
-            <Height>0.25in</Height>
-            <Width>1.25in</Width>
+            <Top>0.78542in</Top>
+            <Left>2.53647in</Left>
+            <Height>0.22in</Height>
+            <Width>1.1in</Width>
             <ZIndex>3</ZIndex>
             <Style>
               <Border />
@@ -888,7 +921,10 @@ WHERE
                 <TextRuns>
                   <TextRun>
                     <Value>SALDO ACTUAL:</Value>
-                    <Style />
+                    <Style>
+                      <FontSize>9pt</FontSize>
+                      <FontWeight>Bold</FontWeight>
+                    </Style>
                   </TextRun>
                 </TextRuns>
                 <Style>
@@ -897,14 +933,13 @@ WHERE
                 </Style>
               </Paragraph>
             </Paragraphs>
-            <Top>1.02081in</Top>
-            <Left>0.23959in</Left>
-            <Height>0.3125in</Height>
-            <Width>1.9271in</Width>
+            <Top>1.27081in</Top>
+            <Left>0.01146in</Left>
+            <Height>0.19792in</Height>
+            <Width>1.42501in</Width>
             <ZIndex>4</ZIndex>
             <Style>
               <Border />
-              <VerticalAlign>Middle</VerticalAlign>
               <PaddingLeft>2pt</PaddingLeft>
               <PaddingRight>2pt</PaddingRight>
               <PaddingTop>2pt</PaddingTop>
@@ -920,6 +955,8 @@ WHERE
                   <TextRun>
                     <Value>= IIF(First(Fields!DeudoraAcreedora.Value, "MovimientoHistorico") ="D",IIF(Sum(Fields!SaldoAnterior.Value, "SaldoAnterior")="", 0,Sum(Fields!SaldoAnterior.Value, "SaldoAnterior")) +Sum(Fields!Debit.Value, "MovimientoHistorico") - Sum(Fields!Credit.Value, "MovimientoHistorico") ,IIF(Sum(Fields!SaldoAnterior.Value, "SaldoAnterior")="", 0,Sum(Fields!SaldoAnterior.Value, "SaldoAnterior")) - Sum(Fields!Debit.Value, "MovimientoHistorico") + Sum(Fields!Credit.Value, "MovimientoHistorico"))</Value>
                     <Style>
+                      <FontSize>9pt</FontSize>
+                      <FontWeight>Bold</FontWeight>
                       <Format>'L'#,0.00;('L'#,0.00)</Format>
                     </Style>
                   </TextRun>
@@ -930,14 +967,15 @@ WHERE
                 </Style>
               </Paragraph>
             </Paragraphs>
-            <Top>1.02085in</Top>
-            <Left>1.96872in</Left>
-            <Height>0.3125in</Height>
-            <Width>2.2396in</Width>
+            <Top>1.27085in</Top>
+            <Left>1.43647in</Left>
+            <Height>0.19788in</Height>
+            <Width>1.1in</Width>
             <ZIndex>5</ZIndex>
             <Style>
-              <Border />
-              <VerticalAlign>Middle</VerticalAlign>
+              <Border>
+                <Style>None</Style>
+              </Border>
               <PaddingLeft>2pt</PaddingLeft>
               <PaddingRight>2pt</PaddingRight>
               <PaddingTop>2pt</PaddingTop>
@@ -945,10 +983,10 @@ WHERE
             </Style>
           </Textbox>
           <Line Name="Line3">
-            <Top>0.94792in</Top>
-            <Left>0.25in</Left>
+            <Top>1.09792in</Top>
+            <Left>0.01147in</Left>
             <Height>0in</Height>
-            <Width>7.875in</Width>
+            <Width>8.25238in</Width>
             <ZIndex>6</ZIndex>
             <Style>
               <Border>
@@ -957,48 +995,40 @@ WHERE
             </Style>
           </Line>
         </ReportItems>
-        <Height>2.3854in</Height>
+        <Height>1.99998in</Height>
         <Style>
           <Border />
           <BackgroundColor>White</BackgroundColor>
         </Style>
       </Body>
-      <Width>8.3853in</Width>
+      <Width>8.30309in</Width>
       <Page>
         <PageHeader>
-          <Height>2.3919in</Height>
+          <Height>1.94824in</Height>
           <PrintOnFirstPage>true</PrintOnFirstPage>
           <PrintOnLastPage>true</PrintOnLastPage>
           <ReportItems>
             <Textbox Name="TextBox1">
-              <CanGrow>true</CanGrow>
               <KeepTogether>true</KeepTogether>
               <Paragraphs>
                 <Paragraph>
                   <TextRuns>
                     <TextRun>
-                      <Value />
-                      <Style />
-                    </TextRun>
-                    <TextRun>
                       <Value>REPORTE AUXILIAR DE MOVIMIENTOS</Value>
                       <Style>
-                        <FontSize>12pt</FontSize>
+                        <FontWeight>Bold</FontWeight>
                       </Style>
-                    </TextRun>
-                    <TextRun>
-                      <Value />
-                      <Style />
                     </TextRun>
                   </TextRuns>
                   <Style>
+                    <TextAlign>Center</TextAlign>
                     <LineHeight>10pt</LineHeight>
                   </Style>
                 </Paragraph>
               </Paragraphs>
-              <Top>0.45528in</Top>
+              <Top>0.38028in</Top>
               <Left>2.59062in</Left>
-              <Height>0.2843in</Height>
+              <Height>0.22in</Height>
               <Width>3.2292in</Width>
               <Style>
                 <Border />
@@ -1009,33 +1039,27 @@ WHERE
               </Style>
             </Textbox>
             <Textbox Name="TextBox2">
-              <CanGrow>true</CanGrow>
               <KeepTogether>true</KeepTogether>
               <Paragraphs>
                 <Paragraph>
                   <TextRuns>
                     <TextRun>
-                      <Value />
-                      <Style />
-                    </TextRun>
-                    <TextRun>
-                      <Value>SAN PEDRO SULA, CORTES</Value>
-                      <Style />
-                    </TextRun>
-                    <TextRun>
-                      <Value />
-                      <Style />
+                      <Value>="Centro de Costo: " &amp; UCase(Parameters!CentrodeCosto.Label)</Value>
+                      <Style>
+                        <FontWeight>Bold</FontWeight>
+                      </Style>
                     </TextRun>
                   </TextRuns>
                   <Style>
+                    <TextAlign>Center</TextAlign>
                     <LineHeight>10pt</LineHeight>
                   </Style>
                 </Paragraph>
               </Paragraphs>
-              <Top>0.71572in</Top>
-              <Left>3.21562in</Left>
-              <Height>0.2739in</Height>
-              <Width>1.9792in</Width>
+              <Top>0.62822in</Top>
+              <Left>2.59384in</Left>
+              <Height>0.22in</Height>
+              <Width>3.22598in</Width>
               <ZIndex>1</ZIndex>
               <Style>
                 <Border />
@@ -1046,37 +1070,45 @@ WHERE
               </Style>
             </Textbox>
             <Textbox Name="TextBox3">
-              <CanGrow>true</CanGrow>
               <KeepTogether>true</KeepTogether>
               <Paragraphs>
                 <Paragraph>
                   <TextRuns>
                     <TextRun>
-                      <Value />
-                      <Style />
-                    </TextRun>
-                    <TextRun>
-                      <Value>DEL:</Value>
-                      <Style />
-                    </TextRun>
-                    <TextRun>
-                      <Value />
-                      <Style />
+                      <Value>DEL: </Value>
+                      <Style>
+                        <FontWeight>Bold</FontWeight>
+                      </Style>
                     </TextRun>
                     <TextRun>
                       <Value>=Format(Parameters!FechaInicio.Value, "dd/MM/yyyy")</Value>
-                      <Style />
+                      <Style>
+                        <FontWeight>Bold</FontWeight>
+                      </Style>
+                    </TextRun>
+                    <TextRun>
+                      <Value>   AL: </Value>
+                      <Style>
+                        <FontWeight>Bold</FontWeight>
+                      </Style>
+                    </TextRun>
+                    <TextRun>
+                      <Value>=Format(Parameters!FechaFinal.Value, "dd/MM/yyyy")</Value>
+                      <Style>
+                        <FontWeight>Bold</FontWeight>
+                      </Style>
                     </TextRun>
                   </TextRuns>
                   <Style>
+                    <TextAlign>Center</TextAlign>
                     <LineHeight>10pt</LineHeight>
                   </Style>
                 </Paragraph>
               </Paragraphs>
-              <Top>0.94489in</Top>
-              <Left>2.86146in</Left>
-              <Height>0.3125in</Height>
-              <Width>1.66667in</Width>
+              <Top>0.86989in</Top>
+              <Left>2.59062in</Left>
+              <Height>0.22in</Height>
+              <Width>3.2292in</Width>
               <ZIndex>2</ZIndex>
               <Style>
                 <Border />
@@ -1086,57 +1118,7 @@ WHERE
                 <PaddingBottom>2pt</PaddingBottom>
               </Style>
             </Textbox>
-            <Textbox Name="TextBox4">
-              <CanGrow>true</CanGrow>
-              <KeepTogether>true</KeepTogether>
-              <Paragraphs>
-                <Paragraph>
-                  <TextRuns>
-                    <TextRun>
-                      <Value />
-                      <Style />
-                    </TextRun>
-                    <TextRun>
-                      <Value>AL</Value>
-                      <Style />
-                    </TextRun>
-                    <TextRun>
-                      <Value>:</Value>
-                      <Style />
-                    </TextRun>
-                    <TextRun>
-                      <Value />
-                      <Style />
-                    </TextRun>
-                    <TextRun>
-                      <Value>=Format(Parameters!FechaFinal.Value, "dd/MM/yyyy")</Value>
-                      <Style />
-                    </TextRun>
-                    <TextRun>
-                      <Value />
-                      <Style />
-                    </TextRun>
-                  </TextRuns>
-                  <Style>
-                    <LineHeight>10pt</LineHeight>
-                  </Style>
-                </Paragraph>
-              </Paragraphs>
-              <Top>0.95531in</Top>
-              <Left>4.38229in</Left>
-              <Height>0.3125in</Height>
-              <Width>1.51041in</Width>
-              <ZIndex>3</ZIndex>
-              <Style>
-                <Border />
-                <PaddingLeft>2pt</PaddingLeft>
-                <PaddingRight>2pt</PaddingRight>
-                <PaddingTop>2pt</PaddingTop>
-                <PaddingBottom>2pt</PaddingBottom>
-              </Style>
-            </Textbox>
             <Textbox Name="ExecutionTime">
-              <CanGrow>true</CanGrow>
               <KeepTogether>true</KeepTogether>
               <Paragraphs>
                 <Paragraph>
@@ -1144,7 +1126,7 @@ WHERE
                     <TextRun>
                       <Value>=Globals!ExecutionTime</Value>
                       <Style>
-                        <Format>hh:mm:ss tt</Format>
+                        <FontSize>8pt</FontSize>
                       </Style>
                     </TextRun>
                   </TextRuns>
@@ -1154,11 +1136,11 @@ WHERE
                   </Style>
                 </Paragraph>
               </Paragraphs>
-              <Top>0.70532in</Top>
-              <Left>7.17396in</Left>
+              <Top>0.33032in</Top>
+              <Left>6.84275in</Left>
               <Height>0.21181in</Height>
-              <Width>1.0833in</Width>
-              <ZIndex>4</ZIndex>
+              <Width>1.30201in</Width>
+              <ZIndex>3</ZIndex>
               <Style>
                 <Border />
                 <VerticalAlign>Middle</VerticalAlign>
@@ -1176,7 +1158,10 @@ WHERE
                   <TextRuns>
                     <TextRun>
                       <Value>CUENTA No:</Value>
-                      <Style />
+                      <Style>
+                        <FontSize>9pt</FontSize>
+                        <FontWeight>Bold</FontWeight>
+                      </Style>
                     </TextRun>
                   </TextRuns>
                   <Style>
@@ -1184,11 +1169,11 @@ WHERE
                   </Style>
                 </Paragraph>
               </Paragraphs>
-              <Top>1.43448in</Top>
-              <Left>0.17396in</Left>
-              <Height>0.3125in</Height>
-              <Width>1.04167in</Width>
-              <ZIndex>5</ZIndex>
+              <Top>1.32198in</Top>
+              <Left>0.04896in</Left>
+              <Height>0.22in</Height>
+              <Width>1.38751in</Width>
+              <ZIndex>4</ZIndex>
               <Style>
                 <Border />
                 <PaddingLeft>2pt</PaddingLeft>
@@ -1205,7 +1190,9 @@ WHERE
                   <TextRuns>
                     <TextRun>
                       <Value>=First(Fields!AccountCode.Value, "MovimientoHistorico") &amp; "-" &amp; First(Fields!NombreCuenta.Value, "MovimientoHistorico")</Value>
-                      <Style />
+                      <Style>
+                        <FontSize>9pt</FontSize>
+                      </Style>
                     </TextRun>
                   </TextRuns>
                   <Style>
@@ -1213,13 +1200,15 @@ WHERE
                   </Style>
                 </Paragraph>
               </Paragraphs>
-              <Top>1.43447in</Top>
-              <Left>1.20521in</Left>
-              <Height>0.3125in</Height>
-              <Width>5.52084in</Width>
-              <ZIndex>6</ZIndex>
+              <Top>1.33255in</Top>
+              <Left>1.43647in</Left>
+              <Height>0.21999in</Height>
+              <Width>5.08959in</Width>
+              <ZIndex>5</ZIndex>
               <Style>
-                <Border />
+                <Border>
+                  <Style>None</Style>
+                </Border>
                 <PaddingLeft>2pt</PaddingLeft>
                 <PaddingRight>2pt</PaddingRight>
                 <PaddingTop>2pt</PaddingTop>
@@ -1234,7 +1223,10 @@ WHERE
                   <TextRuns>
                     <TextRun>
                       <Value>SALDO ANTERIOR:</Value>
-                      <Style />
+                      <Style>
+                        <FontSize>9pt</FontSize>
+                        <FontWeight>Bold</FontWeight>
+                      </Style>
                     </TextRun>
                   </TextRuns>
                   <Style>
@@ -1242,11 +1234,11 @@ WHERE
                   </Style>
                 </Paragraph>
               </Paragraphs>
-              <Top>1.89282in</Top>
-              <Left>0.17397in</Left>
-              <Height>0.3125in</Height>
-              <Width>1.40625in</Width>
-              <ZIndex>7</ZIndex>
+              <Top>1.59282in</Top>
+              <Left>0.04897in</Left>
+              <Height>0.22in</Height>
+              <Width>1.3875in</Width>
+              <ZIndex>6</ZIndex>
               <Style>
                 <Border />
                 <PaddingLeft>2pt</PaddingLeft>
@@ -1259,25 +1251,24 @@ WHERE
               <Source>External</Source>
               <Value>=First(Fields!imageDir.Value,"CompanyInfo")</Value>
               <Sizing>FitProportional</Sizing>
-              <Top>0.33032in</Top>
-              <Left>0.20521in</Left>
-              <Height>0.88542in</Height>
-              <Width>1.40625in</Width>
-              <ZIndex>8</ZIndex>
+              <Top>0.08032in</Top>
+              <Left>0.08021in</Left>
+              <Height>1.01999in</Height>
+              <Width>1.53125in</Width>
+              <ZIndex>7</ZIndex>
               <Style>
                 <Border />
               </Style>
             </Image>
             <Textbox Name="TextBox24">
-              <CanGrow>true</CanGrow>
               <KeepTogether>true</KeepTogether>
               <Paragraphs>
                 <Paragraph>
                   <TextRuns>
                     <TextRun>
-                      <Value>=Globals!ExecutionTime</Value>
+                      <Value>="Pagina "&amp;Globals!PageNumber &amp;" de "&amp;Globals!TotalPages</Value>
                       <Style>
-                        <Format>dd/MM/yyyy</Format>
+                        <FontSize>8pt</FontSize>
                       </Style>
                     </TextRun>
                   </TextRuns>
@@ -1287,11 +1278,11 @@ WHERE
                   </Style>
                 </Paragraph>
               </Paragraphs>
-              <Top>0.46573in</Top>
-              <Left>7.174in</Left>
+              <Top>0.09073in</Top>
+              <Left>6.84275in</Left>
               <Height>0.21181in</Height>
-              <Width>1.0833in</Width>
-              <ZIndex>9</ZIndex>
+              <Width>1.30205in</Width>
+              <ZIndex>8</ZIndex>
               <Style>
                 <Border />
                 <VerticalAlign>Middle</VerticalAlign>
@@ -1310,20 +1301,56 @@ WHERE
                     <TextRun>
                       <Value>=IIF(Sum(Fields!SaldoAnterior.Value, "SaldoAnterior")="", 0,Sum(Fields!SaldoAnterior.Value, "SaldoAnterior"))</Value>
                       <Style>
+                        <FontSize>9pt</FontSize>
+                        <FontWeight>Bold</FontWeight>
                         <Format>'L'#,0.00;('L'#,0.00)</Format>
                       </Style>
                     </TextRun>
                   </TextRuns>
                   <Style>
-                    <TextAlign>Left</TextAlign>
+                    <TextAlign>Right</TextAlign>
                     <LineHeight>10pt</LineHeight>
                   </Style>
                 </Paragraph>
               </Paragraphs>
-              <Top>1.875in</Top>
-              <Left>1.75in</Left>
-              <Height>0.375in</Height>
-              <Width>1.5in</Width>
+              <Top>1.59282in</Top>
+              <Left>1.43647in</Left>
+              <Height>0.22in</Height>
+              <Width>1.1in</Width>
+              <ZIndex>9</ZIndex>
+              <Style>
+                <Border>
+                  <Style>None</Style>
+                </Border>
+                <PaddingLeft>2pt</PaddingLeft>
+                <PaddingRight>2pt</PaddingRight>
+                <PaddingTop>2pt</PaddingTop>
+                <PaddingBottom>2pt</PaddingBottom>
+              </Style>
+            </Textbox>
+            <Textbox Name="TextBox8">
+              <KeepTogether>true</KeepTogether>
+              <Paragraphs>
+                <Paragraph>
+                  <TextRuns>
+                    <TextRun>
+                      <Value>ALMACAFE,S.A.</Value>
+                      <Style>
+                        <FontSize>12pt</FontSize>
+                        <FontWeight>Bold</FontWeight>
+                      </Style>
+                    </TextRun>
+                  </TextRuns>
+                  <Style>
+                    <TextAlign>Center</TextAlign>
+                    <LineHeight>10pt</LineHeight>
+                  </Style>
+                </Paragraph>
+              </Paragraphs>
+              <Top>0.1163in</Top>
+              <Left>2.59384in</Left>
+              <Height>0.25in</Height>
+              <Width>3.2292in</Width>
               <ZIndex>10</ZIndex>
               <Style>
                 <Border />
@@ -1339,6 +1366,20 @@ WHERE
             <BackgroundColor>White</BackgroundColor>
           </Style>
         </PageHeader>
+        <PageFooter>
+          <Height>0.40625in</Height>
+          <PrintOnFirstPage>true</PrintOnFirstPage>
+          <PrintOnLastPage>true</PrintOnLastPage>
+          <Style>
+            <Border>
+              <Style>None</Style>
+            </Border>
+          </Style>
+        </PageFooter>
+        <LeftMargin>0in</LeftMargin>
+        <RightMargin>0in</RightMargin>
+        <TopMargin>0.25in</TopMargin>
+        <BottomMargin>0.25in</BottomMargin>
         <Style>
           <Border />
           <BackgroundColor>White</BackgroundColor>
@@ -1370,10 +1411,26 @@ WHERE
       <DataType>DateTime</DataType>
       <Prompt>Hasta</Prompt>
     </ReportParameter>
+    <ReportParameter Name="CentrodeCosto">
+      <DataType>Integer</DataType>
+      <DefaultValue>
+        <Values>
+          <Value>0</Value>
+        </Values>
+      </DefaultValue>
+      <Prompt>Centro de Costo</Prompt>
+      <ValidValues>
+        <DataSetReference>
+          <DataSetName>CentrodeCosto</DataSetName>
+          <ValueField>CostCenterId</ValueField>
+          <LabelField>CostCenterName</LabelField>
+        </DataSetReference>
+      </ValidValues>
+    </ReportParameter>
   </ReportParameters>
   <ReportParametersLayout>
     <GridLayoutDefinition>
-      <NumberOfColumns>2</NumberOfColumns>
+      <NumberOfColumns>3</NumberOfColumns>
       <NumberOfRows>2</NumberOfRows>
       <CellDefinitions>
         <CellDefinition>
@@ -1390,6 +1447,11 @@ WHERE
           <ColumnIndex>1</ColumnIndex>
           <RowIndex>1</RowIndex>
           <ParameterName>FechaFinal</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>2</ColumnIndex>
+          <RowIndex>1</RowIndex>
+          <ParameterName>CentrodeCosto</ParameterName>
         </CellDefinition>
       </CellDefinitions>
     </GridLayoutDefinition>
