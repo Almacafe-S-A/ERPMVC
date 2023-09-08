@@ -219,6 +219,39 @@ namespace ERPMVC.Controllers
             return _VendorInvoice.ToDataSourceResult(request);
         }
 
+        public async Task<DataSourceResult> GetVendorInvoiceByVendorPendienteRetencion([DataSourceRequest] DataSourceRequest request, Int64 VendorId)
+        {
+            List<VendorInvoice> _VendorInvoice = new List<VendorInvoice>();
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/VendorInvoice/GetVendorInvoicePendienteRetencion");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _VendorInvoice = JsonConvert.DeserializeObject<List<VendorInvoice>>(valorrespuesta);
+                    _VendorInvoice = (from c in _VendorInvoice
+                                           .Where(q => q.VendorId == VendorId)
+                                      select new VendorInvoice
+                                      {
+                                          VendorInvoiceId = c.VendorInvoiceId,
+                                          VendorInvoiceName = $"Fecha:{c.FechaCreacion} || No: {c.NumeroDEI} ||  CAI:{c.CAI} || Total:{c.Total}",
+                                          VendorId = c.VendorId,
+                                      }).ToList();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: {ex.ToString()}");
+                throw ex;
+            }
+            return _VendorInvoice.ToDataSourceResult(request);
+        }
+
+
         [HttpPost/*("[action]")*/]
         public async Task<ActionResult<VendorInvoiceDTO>> SaveVendorInvoice([FromBody]VendorInvoiceDTO _VendorInvoice)
         {
