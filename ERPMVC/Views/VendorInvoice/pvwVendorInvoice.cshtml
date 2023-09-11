@@ -330,7 +330,7 @@
 
                                <div class="row">                                                
                                                 <div class="col-md-3">
-                                                     <label asp-for="TotalGravado" class="control-label"></label>
+                                                     <label asp-for="TotalGravado" class="control-label">Importe Gravado</label>
                                                             <kendo-numerictextbox name="TotalGravado"
                                                                                   format="n2" spinners="false"
                                                           min="0" enable="editable"
@@ -343,7 +343,7 @@
                                                             <span asp-validation-for="TotalGravado" class="text-danger"></span>
                                                 </div>
                                                 <div class="col-md-3">
-                                                     <label asp-for="TotalExento" class="control-label"></label>
+                                                     <label asp-for="TotalExento" class="control-label">Importe Exento</label>
                                                             <kendo-numerictextbox name="TotalExento"
                                                                                   format="n2" spinners="false"
                                                                                     min="0" enable="editable"
@@ -356,7 +356,7 @@
                                                             <span asp-validation-for="TotalExento" class="text-danger"></span>
                                                 </div>
                                                 <div class="col-md-3">
-                                                     <label asp-for="Tax" class="control-label"></label>
+                                                     <label asp-for="Tax" class="control-label">Impuesto</label>
                                                             <kendo-numerictextbox name="Tax"
                                                                                   format="n2" spinners="false"
                                                                                     min="0" enable="editable"
@@ -370,7 +370,7 @@
                                                 </div>
 
                                                 <div class="col-md-3">
-                                                     <label asp-for="Total" class="control-label"></label>
+                                                     <label asp-for="Total" class="control-label">Total Factura</label>
                                                             <kendo-numerictextbox name="Total"
                                                                                   format="n2" spinners="false"
                                                                                   min="0"  enable="false"
@@ -445,10 +445,22 @@
             var ret = $("#AplicaRetencion").data("kendoSwitch");
             var retencion =  ret.check();
             var validator = $("#frmSalesOrder").data("kendoValidator");
-            if (!validator.validate()) {
-                MostrarMensaje('Datos incorrectos en el formulario!', "Error", "Validación", 6000);
+            var total = $("#Total").val();
+            var cai = $("#CAI").val();
+            if(retencion && (cai == null || cai == "")){
+                MostrarMensaje('El CAI es obligatorio.', "Error", "Validación", 6000);
                 $("#btnSaveInvoice").show();
                 $("#btnSaveInvoice").prop("disabled", false);
+                return;
+            }
+            if(total<=0){
+                MostrarMensaje('El valor total de la factura no puede ser 0', "Error", "Validación", 6000);
+                $("#btnSaveInvoice").show();
+                $("#btnSaveInvoice").prop("disabled", false);
+                return;
+            }
+            if (!validator.validate()) {
+                MostrarMensaje('Datos incorrectos en el formulario!', "Error", "Validación", 6000);
                 return;
             }
 
@@ -494,22 +506,8 @@
                 async: false,
                 data: JSON.stringify(dataObject),
                 success: function (data) {
-                    $("#VendorInvoiceId").val(data.VendorInvoiceId);
-                    //$("#NumeroDEIString").val(data.NumeroDEIString);
-
-                    $.toast({
-                        heading: 'Satisfactorio',
-                        text: 'Datos guardados correctamente.',
-                        position: 'top-right',
-                        loaderBg: '#ff6849',
-                        icon: 'success',
-                        hideAfter: 7000,
-                        stack: 6
-                    });
+                    
                     MostrarMensaje("Datos guardados correctamente", "success", "Satisfactorio", 6000);
-                    //notification.show({
-                    //    message: "Guardado correctamente!"
-                    //}, "upload-success");
                     RefreshCotizaciones();
                     $('#myModalSalesOrder').modal('hide');
 
@@ -518,10 +516,6 @@
 
                     $("#btnSaveVendorInvoice").show();
                     $("#btnSaveVendorInvoice").prop("", false);
-                    //notification.show({
-                    //    title: "Validación",
-                    //    message: textStatus + ": " + XMLHttpRequest.responseText
-                    //}, "error");
                     MostrarMensaje(textStatus + ": " + XMLHttpRequest.responseText, "Error", "Error", 6000);
                 }
             });
