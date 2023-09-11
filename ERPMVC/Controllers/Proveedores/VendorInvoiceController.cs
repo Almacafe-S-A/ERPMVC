@@ -35,8 +35,7 @@ namespace ERPMVC.Controllers
         [Authorize(Policy = "Proveedores.Factura Proveedores")]
         public IActionResult Index()
         {
-            ViewData["permisoActualizarRecibido"] = _principal.HasClaim("Compras.Factura Proveedores.Actualizar a Recibido", "true");
-            ViewData["permisos"] = _principal;
+            
             return View();
         }
 
@@ -62,10 +61,6 @@ namespace ERPMVC.Controllers
                 {
                     _VendorInvoice = new VendorInvoiceDTO { VendorInvoiceDate = DateTime.Now, ReceivedDate = DateTime.Now, ExpirationDate = DateTime.Now.AddDays(30), BranchId = Convert.ToInt32(HttpContext.Session.GetString("BranchId")), editar = 1 };
                 }
-                else
-                {
-                   // _VendorInvoice.NumeroDEIString = $"{_VendorInvoice.Sucursal}-{_VendorInvoice.Caja}-01-{_VendorInvoice.NumeroDEI.ToString().PadLeft(8, '0')} ";
-                }
 
                 ViewData["permisos"] = _principal;
             }
@@ -83,49 +78,6 @@ namespace ERPMVC.Controllers
 
 
 
-        //COMIENZA APROVACIÓN
-        [HttpPost("[controller]/[action]")]
-        public async Task<ActionResult<VendorInvoiceDTO>> Recibido([FromBody]VendorInvoiceDTO _VendorInvoice)
-        {
-            VendorInvoiceDTO _so = new VendorInvoiceDTO();
-            if (_VendorInvoice != null)
-            {
-                try
-                {
-                    string baseadress = config.Value.urlbase;
-                    HttpClient _client = new HttpClient();
-                    _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                    var result = await _client.GetAsync(baseadress + "api/VendorInvoice/GetVendorInvoiceById/" + _VendorInvoice.VendorInvoiceId);
-                    string jsonresult = "";
-                    jsonresult = JsonConvert.SerializeObject(_VendorInvoice);
-                    string valorrespuesta = "";
-                    if (result.IsSuccessStatusCode)
-                    {
-                        valorrespuesta = await (result.Content.ReadAsStringAsync());
-                        _so = JsonConvert.DeserializeObject<VendorInvoiceDTO>(valorrespuesta);
-                        _so.ReceivedDate = DateTime.Now;
-
-                        var resultsalesorder = await Update(_so.VendorInvoiceId, _so);
-
-                        var value = (resultsalesorder.Result as ObjectResult).Value;
-                        VendorInvoice resultado = ((VendorInvoice)(value));
-                    }
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError($"Ocurrio un error: { ex.ToString() }");
-                    throw ex;
-                }
-            }
-            else
-            {
-                return await Task.Run(() => BadRequest("No llego correctamente el modelo!"));
-            }
-
-            return await Task.Run(() => Ok(_so));
-        }
-
-        //TERMINA
 
         [HttpGet]
         public async Task<DataSourceResult> Get([DataSourceRequest]DataSourceRequest request)
@@ -182,6 +134,34 @@ namespace ERPMVC.Controllers
             catch (Exception ex)
             {
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+            return await Task.Run(() => Ok(_VendorInvoice));
+        }
+
+        public async Task<ActionResult> Aprobar([FromBody] VendorInvoiceDTO _sarpara)
+        {
+            VendorInvoiceDTO _VendorInvoice = new VendorInvoiceDTO();
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/VendorInvoice/Aprobar/" + _sarpara.VendorInvoiceId);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _VendorInvoice = JsonConvert.DeserializeObject<VendorInvoiceDTO>(valorrespuesta);
+                }
+                else
+                {
+                    return BadRequest(result.Content.ReadAsStringAsync());
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: {ex.ToString()}");
                 throw ex;
             }
             return await Task.Run(() => Ok(_VendorInvoice));

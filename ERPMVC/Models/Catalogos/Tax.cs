@@ -37,6 +37,11 @@ namespace ERPMVC.Models
         [ForeignKey("CuentaImpuestoporPagarId")]
         public Accounting CuentaContablePorCobrar { get; set; }
 
+        public Int64? CuentaImpuestoPagadoId { get; set; }
+        public string CuentaImpuestoPagadoNombre { get; set; }
+        [ForeignKey("CuentaImpuestoPagadoId")]
+        public Accounting CuentaImpuestoPagado { get; set; }
+
         [Display(Name = "Fecha de creación")]
         public DateTime FechaCreacion { get; set; }
         [Display(Name = "Fecha de modificación")]
