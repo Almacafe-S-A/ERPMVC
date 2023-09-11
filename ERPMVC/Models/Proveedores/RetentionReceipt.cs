@@ -92,6 +92,9 @@ namespace ERPMVC.Models
         [ForeignKey("TaxId")]
         public Tax Tax { get; set; }
         public string TaxDescription { get; set; }
+
+        public string VendorInvoice { get; set; }
+
         public DateTime FechaCreacion { get; set; }
         public DateTime FechaModificacion { get; set; }
         public string UsuarioCreacion { get; set; }
