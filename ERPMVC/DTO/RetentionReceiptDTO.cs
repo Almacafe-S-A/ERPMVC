@@ -10,6 +10,8 @@ namespace ERPMVC.DTO
     {
         public List<RetentionReceipt> _RetentionReceipt { get; set; }
 
+        public bool RetecionPendiente { get; set; }
+
         public int editar { get; set; } = 1;
 
         public string token { get; set; }
