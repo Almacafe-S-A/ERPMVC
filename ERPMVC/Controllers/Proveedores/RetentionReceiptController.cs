@@ -324,7 +324,31 @@ namespace ERPMVC.Controllers
             try
             {
                 RetentionReceiptDTO _RetentionReceipt = new RetentionReceiptDTO { RetentionReceiptId = id, };
-                return await Task.Run(() => View(_RetentionReceipt));
+                
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/RetentionReceipt/GetRetentionReceiptById/" + id);
+                string valorrespuesta = "";
+
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _Invoice = JsonConvert.DeserializeObject<Invoice>(valorrespuesta);
+                    if (_Invoice.Impreso == null)
+                    {
+                        _Invoice.Impreso = "0";
+                    }
+                    else if (_Invoice.Impreso == "0")
+                    {
+                        _Invoice.Impreso = "1";
+                    }
+
+                    var updateresult = await Update(_Invoice.InvoiceId, _Invoice);
+
+                    return await Task.Run(() => View(_RetentionReceipt));
+
+                }
             }
             catch (Exception)
             {

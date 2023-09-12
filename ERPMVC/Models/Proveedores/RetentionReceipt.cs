@@ -61,6 +61,8 @@ namespace ERPMVC.Models
 
         public bool RetecionPendiente { get; set; }
         public string CantidadLetras { get; set; }
+        public int? Impreso { get; set; }
+
 
         [ForeignKey("BranchId")]
         [Display(Name = "Sucursal")]
