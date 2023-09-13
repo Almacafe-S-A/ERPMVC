@@ -207,11 +207,10 @@ namespace ERPMVC.Controllers
                     _RetentionReceiptP.UsuarioModificacion = HttpContext.Session.GetString("user");
                     var insertresult = await Insert(_RetentionReceiptP);
 
-                    if (insertresult is BadRequestObjectResult)
+                    if (insertresult.Result is BadRequestObjectResult)
                     {
-                        string d = await (result.Content.ReadAsStringAsync());
-                        //throw  new Exception(d);
-                        return await Task.Run(() => BadRequest($"{d}"));
+                        
+                        return await Task.Run(() => BadRequest(insertresult.Result));
                     }
                 }
                 else
@@ -239,7 +238,7 @@ namespace ERPMVC.Controllers
         //--------------------------------------------------------------------------------------
 
         [HttpPost]
-        public async Task<ActionResult> Insert(RetentionReceipt _RetentionReceiptS)
+        public async Task<ActionResult<RetentionReceipt>> Insert(RetentionReceipt _RetentionReceiptS)
         {
             RetentionReceipt _RetentionReceipt = _RetentionReceiptS;
             try
@@ -260,7 +259,7 @@ namespace ERPMVC.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest($"Ocurrio un error{ex.Message}");
+                return BadRequest($"{ex.Message}");
             }
             return new ObjectResult(new DataSourceResult { Data = new[] { _RetentionReceiptS }, Total = 1 });
         }
