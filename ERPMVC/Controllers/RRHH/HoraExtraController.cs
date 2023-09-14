@@ -6,6 +6,8 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using ERPMVC.Helpers;
 using ERPMVC.Models;
+using Kendo.Mvc.Extensions;
+using Kendo.Mvc.UI;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -34,43 +36,30 @@ namespace ERPMVC.Controllers
             return View();
         }
 
-        [HttpPost]
-        public async Task<IActionResult> PostFecha([FromForm] string Fecha, bool Todos)
-        {
-            try
-            {
-                DateTime fecha = DateTime.ParseExact(Fecha, "dd/MM/yyyy", CultureInfo.InvariantCulture);
-                TempData["Fecha"] = fecha;
-                TempData["Todos"] = Todos;
-                return RedirectToAction("Index");
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "Error con formato de fecha");
-                TempData["Error"] = ex.Message;
-                return RedirectToAction("Index");
-            }
-        }
+    
+
 [HttpGet("[action]")]
-        public async Task<ActionResult> GetHorasExtra(DateTime fecha, bool todos)
+        public async Task<DataSourceResult> GetHorasExtra([DataSourceRequest] DataSourceRequest request, DateTime Fecha, bool Todos)
         {
+            List<HoraExtra> horasExtra = new List<HoraExtra>();
             try
             {
                 var respuesta = await Utils.HttpGetAsync(HttpContext.Session.GetString("token"),
-                    config.Value.urlbase + $"api/HorasExtra/GetHorasExtrasFecha/{fecha.ToString("yyyy-MM-dd")}/" + (todos ? 1 : 0));
+                    config.Value.urlbase + $"api/HorasExtra/GetHorasExtrasFecha/{Fecha.ToString("yyyy-MM-dd")}/" + (Todos ? 1 : 0));
+                string valorrespuesta = "";
                 if (respuesta.IsSuccessStatusCode)
                 {
-                    var contenido = await respuesta.Content.ReadAsStringAsync();
-                    var resultado = JsonConvert.DeserializeObject<List<HoraExtra>>(contenido);
-                    return Ok(resultado);
+                    valorrespuesta = await respuesta.Content.ReadAsStringAsync();
+                    horasExtra = JsonConvert.DeserializeObject<List<HoraExtra>>(valorrespuesta);
+                    horasExtra = horasExtra.OrderByDescending(x => x.Id).ToList();
                 }
-                return BadRequest(await respuesta.Content.ReadAsStringAsync());
             }
             catch (Exception ex)
             {
                 logger.LogError(ex, "Error al cargar las horas extra");
-                return BadRequest(ex.Message);
+                throw ex;
             }
+            return horasExtra.ToDataSourceResult(request);
         }
 
         [HttpPost("[action]")]
