@@ -167,6 +167,34 @@ namespace ERPMVC.Controllers
             return await Task.Run(() => Ok(_VendorInvoice));
         }
 
+
+        public async Task<ActionResult> Anular([FromBody] VendorInvoiceDTO _sarpara)
+        {
+            VendorInvoiceDTO _VendorInvoice = new VendorInvoiceDTO();
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/VendorInvoice/Anular/" + _sarpara.VendorInvoiceId);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _VendorInvoice = JsonConvert.DeserializeObject<VendorInvoiceDTO>(valorrespuesta);
+                }
+                else
+                {
+                    return BadRequest(result.Content.ReadAsStringAsync());
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: {ex.ToString()}");
+                throw ex;
+            }
+            return await Task.Run(() => Ok(_VendorInvoice));
+        }
         public async Task<DataSourceResult> GetVendorInvoiceByVendorId([DataSourceRequest]DataSourceRequest request, Int64 VendorId)
         {
             List<VendorInvoice> _VendorInvoice = new List<VendorInvoice>();
@@ -256,27 +284,24 @@ namespace ERPMVC.Controllers
 
                 if (_listVendorInvoice.VendorInvoiceId == 0)
                 {
-                    _VendorInvoice.FechaCreacion = DateTime.Now;
-                    _VendorInvoice.UsuarioCreacion = HttpContext.Session.GetString("user");
-                    _VendorInvoice.IdEstado = 86;
-                    _VendorInvoice.Estado = "Pendiente de pago";
                     var insertresult = await Insert(_VendorInvoice);
-                    var value = (insertresult.Result as ObjectResult).Value;
-                    
-                    VendorInvoiceDTO resultado = ((VendorInvoiceDTO)(value));
-                    if (resultado.VendorInvoiceId <= 0)
+
+                    if (insertresult.Result is BadRequestObjectResult)
                     {
-                        return await Task.Run(() => BadRequest("No se genero la factura!"));
-                    }
-                    else
-                    {
-                       // _VendorInvoice.NumeroDEIString = $"{resultado.Sucursal}-01-{resultado.NumeroDEI.ToString().PadLeft(8, '0')} ";
+
+                        return await Task.Run(() => BadRequest(insertresult.Result));
                     }
 
                 }
                 else
                 {
                     var updateresult = await Update(_VendorInvoice.VendorInvoiceId, _VendorInvoice);
+
+                    if (updateresult.Result is BadRequestObjectResult)
+                    {
+
+                        return await Task.Run(() => BadRequest(updateresult.Result));
+                    }
                 }
 
             }
@@ -345,12 +370,17 @@ namespace ERPMVC.Controllers
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _VendorInvoice = JsonConvert.DeserializeObject<VendorInvoice>(valorrespuesta);
                 }
+                else
+                {
+                    string d = await (result.Content.ReadAsStringAsync());
+                    throw new Exception(d);
+                }
 
             }
             catch (Exception ex)
             {
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
-                return await Task.Run(()=> BadRequest($"Ocurrio un error{ex.Message}"));
+                return await Task.Run(()=> BadRequest($"{ex.Message}"));
             }
 
             return await Task.Run(() => Ok(_VendorInvoice));
