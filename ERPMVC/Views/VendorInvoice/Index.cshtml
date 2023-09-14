@@ -7,34 +7,58 @@
     function Aprobar(e) {
         
         var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
-        if (dataItem.ReceivedDate != Date.now) {
-            if (confirm('Esta seguro de aprobar esta compra?, esta accion genera un asiento contable aprobado')) {
-                e.preventDefault();
+        if (confirm('Esta seguro de aprobar esta compra?, esta accion genera un asiento contable aprobado')) {
+            e.preventDefault();
 
-                var dataObject = {
-                    VendorInvoiceId: dataItem.VendorInvoiceId,
-                    editar: 0
-                };
+            var dataObject = {
+                VendorInvoiceId: dataItem.VendorInvoiceId,
+                editar: 0
+            };
 
-                $.ajax({
-                    url: '@Url.Action("Aprobar","VendorInvoice")',
-                    method: 'POST',
-                    datatype: "json",
-                    contentType: 'application/json',
-                    async: false,
-                    data: JSON.stringify(dataObject),
-                    success: function (result) {
-                         MostrarMensaje("Se aprobo correctamente.", "success", "Satisfactorio", 6000);
-                        RefrescarGrid();
-                    },
-                    error: function (XMLHttpRequest, textStatus, errorThrown) {
-                         MostrarMensaje(textStatus + ": " + XMLHttpRequest.responseText, "Error", "Error", 6000);
-                    }
-                });
-            }
+            $.ajax({
+                url: '@Url.Action("Aprobar","VendorInvoice")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (result) {
+                    MostrarMensaje("Se aprobo correctamente.", "success", "Satisfactorio", 6000);
+                    RefrescarGrid();
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    MostrarMensaje(textStatus + ": " + XMLHttpRequest.responseText, "Error", "Error", 6000);
+                }
+            });
         }
-        else {
-             MostrarMensaje("No se actualizó correctamente.", "Error", "Error", 6000);
+    }
+
+    function Anular(e) {
+
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        if (confirm('Esta seguro de anular esta factura de compras?, esta accion genera un efecto contable')) {
+            e.preventDefault();
+
+            var dataObject = {
+                VendorInvoiceId: dataItem.VendorInvoiceId,
+                editar: 0
+            };
+
+            $.ajax({
+                url: '@Url.Action("Anular","VendorInvoice")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (result) {
+                    MostrarMensaje("Se anulo correctamente.", "success", "Satisfactorio", 6000);
+                    RefrescarGrid();
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    MostrarMensaje(textStatus + ": " + XMLHttpRequest.responseText, "Error", "Error", 6000);
+                }
+            });
         }
     }
 
@@ -42,6 +66,9 @@
         $.each(this.dataSource.data(), function () {
             if (Number(this.IdEstado) != 5) {
                 $('[data-uid=' + this.uid + ']').find('.k-grid-Aprobar').hide();
+            }
+            if (Number(this.IdEstado) != 6) {
+                $('[data-uid=' + this.uid + ']').find('.k-grid-Anular').hide();
             }
         })
     }
@@ -132,13 +159,6 @@
             success: function (result) {
                 $("#divVendorInvoice").html('');
                 $("#divVendorInvoice").html(result);
-                $("#Tefono").kendoMaskedTextBox({
-                    mask: "(999) 0000-0000"
-                });
-                $("#TefonoAlert").hide();
-                var txt = $(result);
-
-                 $("#btnSaveVendorInvoice").hide();
                  $('#myModalSalesOrder').modal('show');
             },
              error: function (XMLHttpRequest, textStatus, errorThrown) {
@@ -221,6 +241,7 @@
                                           if (User.HasClaim("Proveedores.Factura Proveedores.Aprobar", "true"))
                                           {
                                               command.Custom("Aprobar").Text(" ").IconClass("fa fa-thumbs-up").Click("Aprobar");
+                                              command.Custom("Anular").Text(" ").IconClass("fa fa-close").Click("Anular");
                                           }
                                          
                                              
@@ -295,7 +316,7 @@
 
                                   })
                                    .Editable(e => e.Mode(GridEditMode.PopUp))
-                                    .Sortable()
+                                    .Sortable( )
                                     .AutoBind(true)
                                     .Pageable(s => s
                                     .Messages(m => m.Display("Elementos mostrados {0} - {1} de {2}")
@@ -325,7 +346,7 @@
 
 
                                     })
-                                    .Sort(s => s.Add(m => m.FechaCreacion).Descending())
+                                    .Sort(s => s.Add(m => m.VendorInvoiceId).Descending())
                                     .Events(events =>
                                     {
                                         events.Error("error_handler");
@@ -363,7 +384,7 @@
     setToolbarTooltip(".k-grid-Agregar", "Agregar nuevo registro");
     setToolbarTooltip(".k-grid-Reporte", "Reporte de Libro de Compra");
     setRowButtonTooltip(".k-grid-Aprobar", "Aprobar");
-    //setRowButtonTooltip(".k-grid-GenerarFactura", "Generar una factura fiscal!");
+    setRowButtonTooltip(".k-grid-Anular", "Anular");
     setRowButtonTooltip(".k-grid-Imprimir", "Imprimir registro");
     setRowButtonTooltip(".k-grid-Detalles", "Ver Detalles");
 
