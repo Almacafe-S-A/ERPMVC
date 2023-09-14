@@ -5,9 +5,10 @@
     <DataSource Name="ERP">
       <ConnectionProperties>
         <DataProvider>SQL</DataProvider>
-        <ConnectString>Data Source=192.168.0.3;Initial Catalog=ERP-PRODUCCION</ConnectString>
+        <ConnectString>Data Source=192.168.0.5;Initial Catalog=ERP-PRODUCCION</ConnectString>
+        <IntegratedSecurity>true</IntegratedSecurity>
       </ConnectionProperties>
-      <rd:SecurityType>DataBase</rd:SecurityType>
+      <rd:SecurityType>Integrated</rd:SecurityType>
       <rd:DataSourceID>c9340644-bc73-4487-8bf8-31f53a48aadb</rd:DataSourceID>
     </DataSource>
   </DataSources>
@@ -16,51 +17,27 @@
       <Query>
         <DataSourceName>ERP</DataSourceName>
         <QueryParameters>
-          <QueryParameter Name="@Cuenta">
-            <Value>=Parameters!Cuenta.Value</Value>
-          </QueryParameter>
           <QueryParameter Name="@Desde">
             <Value>=Parameters!Desde.Value</Value>
           </QueryParameter>
           <QueryParameter Name="@Hasta">
             <Value>=Parameters!Hasta.Value</Value>
           </QueryParameter>
-          <QueryParameter Name="@Centrocosto">
-            <Value>=Parameters!Centrocosto.Value</Value>
+          <QueryParameter Name="@CentroCosto">
+            <Value>=Parameters!CentroCosto.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@Cuenta">
+            <Value>=Parameters!Cuenta.Value</Value>
           </QueryParameter>
         </QueryParameters>
-        <CommandText>select  je.JournalEntryId NoAsiento
-		,je.DatePosted FechaTransaccion
-                                ,DateName(Month,je.DatePosted) as Mes
-                                ,YEAR(je.DatePosted) Anio
-		,a.AccountId Codigo
-                                ,a.AccountCode
-		,a.AccountName CuentaNombre
-                                ,je.Memo
-                                ,jl.Description
-		,jl.Debit Debito
-		,jl.Credit Credito
-		,jl.PartyName Beneficiario
-                                ,jl.CostcenterName
- --,SUM(SUM( jl.Debit - jl.Credit )) OVER (ORDER BY jl.JournalEntryId ASC) AS Saldo
-
- ,CASE WHEN a.TypeAccountId &lt;=6 THEN 'Cuentas Corrientes' ELSE 'Cuentas de Orden' END AS TIPO
-
-from JournalEntryLine jl 
-inner join JournalEntry je on jl.JournalEntryId = je.JournalEntryId
-inner join Accounting a  on a.AccountId = jl.AccountId
-where a.AccountId = @Cuenta and je.DatePosted  Between @Desde and dateadd(Day,1, @Hasta) and (jl.CostCenterId = @Centrocosto Or @Centrocosto = 0) AND je.EstadoId = 6
-Order by jl.JournalEntryId, jl.JournalEntryLineId, je.DatePosted asc</CommandText>
+        <CommandType>StoredProcedure</CommandType>
+        <CommandText>LibroMayor</CommandText>
         <rd:UseGenericDesigner>true</rd:UseGenericDesigner>
       </Query>
       <Fields>
-        <Field Name="NoAsiento">
-          <DataField>NoAsiento</DataField>
-          <rd:TypeName>System.Int64</rd:TypeName>
-        </Field>
-        <Field Name="FechaTransaccion">
-          <DataField>FechaTransaccion</DataField>
-          <rd:TypeName>System.DateTime</rd:TypeName>
+        <Field Name="NumeroMes">
+          <DataField>NumeroMes</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
         </Field>
         <Field Name="Mes">
           <DataField>Mes</DataField>
@@ -72,43 +49,35 @@ Order by jl.JournalEntryId, jl.JournalEntryLineId, je.DatePosted asc</CommandTex
         </Field>
         <Field Name="Codigo">
           <DataField>Codigo</DataField>
-          <rd:TypeName>System.Int64</rd:TypeName>
+          <rd:TypeName>System.Int32</rd:TypeName>
         </Field>
         <Field Name="AccountCode">
           <DataField>AccountCode</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
-        <Field Name="CuentaNombre">
-          <DataField>CuentaNombre</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
-        </Field>
-        <Field Name="Memo">
-          <DataField>Memo</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
-        </Field>
-        <Field Name="Description">
-          <DataField>Description</DataField>
+        <Field Name="AccountName">
+          <DataField>AccountName</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
         <Field Name="Debito">
           <DataField>Debito</DataField>
-          <rd:TypeName>System.Decimal</rd:TypeName>
+          <rd:TypeName>System.Double</rd:TypeName>
         </Field>
         <Field Name="Credito">
           <DataField>Credito</DataField>
-          <rd:TypeName>System.Decimal</rd:TypeName>
+          <rd:TypeName>System.Double</rd:TypeName>
         </Field>
-        <Field Name="Beneficiario">
-          <DataField>Beneficiario</DataField>
+        <Field Name="Saldo">
+          <DataField>Saldo</DataField>
+          <rd:TypeName>System.Double</rd:TypeName>
+        </Field>
+        <Field Name="DeudoraAcreedora">
+          <DataField>DeudoraAcreedora</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
-        <Field Name="CostcenterName">
-          <DataField>CostcenterName</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
-        </Field>
-        <Field Name="TIPO">
-          <DataField>TIPO</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
+        <Field Name="SaldoAnterior">
+          <DataField>SaldoAnterior</DataField>
+          <rd:TypeName>System.Double</rd:TypeName>
         </Field>
       </Fields>
     </DataSet>
@@ -244,15 +213,20 @@ Order by jl.JournalEntryId, jl.JournalEntryLineId, je.DatePosted asc</CommandTex
           </QueryParameter>
         </QueryParameters>
         <CommandText>SELECT 
+Act.AccountCode,
 CASE WHEN Act.DeudoraAcreedora = 'D' THEN SUM(jel.Debit) - SUM(jel.Credit) 
 ELSE SUM(jel.Credit) - SUM(jel.Debit) END AS 'SaldoAnterior'
 FROM JournalEntryLine jel
 INNER JOIN JournalEntry je ON je.JournalentryId = jel.JournalentryId
 JOIN Accounting Act ON Act.AccountId = jel.AccountId
 WHERE je.DatePosted &lt; @Desde AND jel.AccountId = @Cuenta AND je.EstadoId = 6
-GROUP BY Act.DeudoraAcreedora</CommandText>
+GROUP BY Act.DeudoraAcreedora, Act.AccountCode</CommandText>
       </Query>
       <Fields>
+        <Field Name="AccountCode">
+          <DataField>AccountCode</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
         <Field Name="SaldoAnterior">
           <DataField>SaldoAnterior</DataField>
           <rd:TypeName>System.Decimal</rd:TypeName>
@@ -268,10 +242,7 @@ GROUP BY Act.DeudoraAcreedora</CommandText>
             <TablixBody>
               <TablixColumns>
                 <TablixColumn>
-                  <Width>0.03125in</Width>
-                </TablixColumn>
-                <TablixColumn>
-                  <Width>4.20437in</Width>
+                  <Width>4.16739in</Width>
                 </TablixColumn>
                 <TablixColumn>
                   <Width>1.1in</Width>
@@ -280,59 +251,13 @@ GROUP BY Act.DeudoraAcreedora</CommandText>
                   <Width>1.1in</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>1.1in</Width>
+                  <Width>1.23603in</Width>
                 </TablixColumn>
               </TablixColumns>
               <TablixRows>
                 <TablixRow>
                   <Height>0.25in</Height>
                   <TablixCells>
-                    <TablixCell>
-                      <CellContents>
-                        <Textbox Name="Textbox7">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value>Cuenta No.</Value>
-                                  <Style>
-                                    <FontSize>9pt</FontSize>
-                                    <FontWeight>Bold</FontWeight>
-                                  </Style>
-                                </TextRun>
-                              </TextRuns>
-                              <Style>
-                                <TextAlign>Center</TextAlign>
-                              </Style>
-                            </Paragraph>
-                          </Paragraphs>
-                          <rd:DefaultName>Textbox7</rd:DefaultName>
-                          <Style>
-                            <Border>
-                              <Style>None</Style>
-                            </Border>
-                            <TopBorder>
-                              <Color>Black</Color>
-                              <Style>Solid</Style>
-                              <Width>1pt</Width>
-                            </TopBorder>
-                            <BottomBorder>
-                              <Color>Black</Color>
-                              <Style>Solid</Style>
-                              <Width>1pt</Width>
-                            </BottomBorder>
-                            <BackgroundColor>White</BackgroundColor>
-                            <VerticalAlign>Middle</VerticalAlign>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
                     <TablixCell>
                       <CellContents>
                         <Textbox Name="Textbox9">
@@ -370,7 +295,6 @@ GROUP BY Act.DeudoraAcreedora</CommandText>
                               <Width>1pt</Width>
                             </BottomBorder>
                             <BackgroundColor>White</BackgroundColor>
-                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -416,7 +340,6 @@ GROUP BY Act.DeudoraAcreedora</CommandText>
                               <Width>1pt</Width>
                             </BottomBorder>
                             <BackgroundColor>White</BackgroundColor>
-                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -462,7 +385,6 @@ GROUP BY Act.DeudoraAcreedora</CommandText>
                               <Width>1pt</Width>
                             </BottomBorder>
                             <BackgroundColor>White</BackgroundColor>
-                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -508,7 +430,6 @@ GROUP BY Act.DeudoraAcreedora</CommandText>
                               <Width>1pt</Width>
                             </BottomBorder>
                             <BackgroundColor>White</BackgroundColor>
-                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -522,41 +443,6 @@ GROUP BY Act.DeudoraAcreedora</CommandText>
                 <TablixRow>
                   <Height>0.23in</Height>
                   <TablixCells>
-                    <TablixCell>
-                      <CellContents>
-                        <Textbox Name="Textbox69">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value>No Asiento</Value>
-                                  <Style>
-                                    <FontSize>9pt</FontSize>
-                                    <FontWeight>Normal</FontWeight>
-                                    <Color>#333333</Color>
-                                  </Style>
-                                </TextRun>
-                              </TextRuns>
-                              <Style />
-                            </Paragraph>
-                          </Paragraphs>
-                          <rd:DefaultName>Textbox69</rd:DefaultName>
-                          <Style>
-                            <Border>
-                              <Style>None</Style>
-                            </Border>
-                            <BackgroundColor>White</BackgroundColor>
-                            <VerticalAlign>Middle</VerticalAlign>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
                     <TablixCell>
                       <CellContents>
                         <Textbox Name="Textbox70">
@@ -573,7 +459,9 @@ GROUP BY Act.DeudoraAcreedora</CommandText>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
-                              <Style />
+                              <Style>
+                                <TextAlign>Left</TextAlign>
+                              </Style>
                             </Paragraph>
                           </Paragraphs>
                           <rd:DefaultName>Textbox70</rd:DefaultName>
@@ -582,7 +470,6 @@ GROUP BY Act.DeudoraAcreedora</CommandText>
                               <Style>None</Style>
                             </Border>
                             <BackgroundColor>White</BackgroundColor>
-                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -593,7 +480,7 @@ GROUP BY Act.DeudoraAcreedora</CommandText>
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="Textbox71">
+                        <Textbox Name="Textbox2">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
@@ -613,13 +500,12 @@ GROUP BY Act.DeudoraAcreedora</CommandText>
                               </Style>
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>Textbox71</rd:DefaultName>
+                          <rd:DefaultName>Textbox2</rd:DefaultName>
                           <Style>
                             <Border>
                               <Style>None</Style>
                             </Border>
                             <BackgroundColor>White</BackgroundColor>
-                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -630,7 +516,7 @@ GROUP BY Act.DeudoraAcreedora</CommandText>
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="Textbox72">
+                        <Textbox Name="Textbox1">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
@@ -650,13 +536,12 @@ GROUP BY Act.DeudoraAcreedora</CommandText>
                               </Style>
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>Textbox72</rd:DefaultName>
+                          <rd:DefaultName>Textbox1</rd:DefaultName>
                           <Style>
                             <Border>
                               <Style>None</Style>
                             </Border>
                             <BackgroundColor>White</BackgroundColor>
-                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -667,14 +552,15 @@ GROUP BY Act.DeudoraAcreedora</CommandText>
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="Textbox73">
+                        <Textbox Name="SaldoAnterior">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Sum(Fields!SaldoAnterior.Value, "SaldoAnterior")</Value>
+                                  <Label>SaldoAnterior</Label>
+                                  <Value>=Lookup(Fields!AccountCode.Value, Fields!AccountCode.Value, Fields!SaldoAnterior.Value, "SaldoAnterior")</Value>
                                   <Style>
                                     <FontSize>9pt</FontSize>
                                     <FontWeight>Normal</FontWeight>
@@ -689,13 +575,11 @@ GROUP BY Act.DeudoraAcreedora</CommandText>
                               </Style>
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>Textbox73</rd:DefaultName>
                           <Style>
                             <Border>
                               <Style>None</Style>
                             </Border>
                             <BackgroundColor>White</BackgroundColor>
-                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -711,42 +595,7 @@ GROUP BY Act.DeudoraAcreedora</CommandText>
                   <TablixCells>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="NoAsiento">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value>=Sum(Fields!NoAsiento.Value)</Value>
-                                  <Style>
-                                    <FontSize>9pt</FontSize>
-                                    <FontWeight>Normal</FontWeight>
-                                    <Color>#333333</Color>
-                                  </Style>
-                                </TextRun>
-                              </TextRuns>
-                              <Style />
-                            </Paragraph>
-                          </Paragraphs>
-                          <rd:DefaultName>NoAsiento</rd:DefaultName>
-                          <Style>
-                            <Border>
-                              <Style>None</Style>
-                            </Border>
-                            <BackgroundColor>White</BackgroundColor>
-                            <VerticalAlign>Middle</VerticalAlign>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
-                    <TablixCell>
-                      <CellContents>
-                        <Textbox Name="CuentaNombre">
+                        <Textbox Name="Sinopsis">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
@@ -760,17 +609,50 @@ GROUP BY Act.DeudoraAcreedora</CommandText>
                                   </Style>
                                 </TextRun>
                                 <TextRun>
-                                  <Value>=Fields!Mes.Value</Value>
+                                  <Value>=Switch(
+(Fields!NumeroMes.Value)=1,"Enero", 
+
+
+
+(Fields!NumeroMes.Value)=2,"Febrero", 
+
+(Fields!NumeroMes.Value)=3,"Marzo",
+
+
+
+(Fields!NumeroMes.Value)=4, "Abril", 
+
+
+
+(Fields!NumeroMes.Value)=5,"Mayo", 
+
+
+
+(Fields!NumeroMes.Value)=6,"Junio", 
+
+
+
+(Fields!NumeroMes.Value)=7,"Julio",
+
+(Fields!NumeroMes.Value)=8, "Agosto", 
+
+
+
+(Fields!NumeroMes.Value)=9,"Septiembre", 
+
+
+
+(Fields!NumeroMes.Value)=10,"Octubre",
+
+(Fields!NumeroMes.Value)=11,"Noviembre",
+(Fields!NumeroMes.Value)=12,"Diciembre")</Value>
                                   <Style>
-                                    <FontFamily>Segoe UI Light</FontFamily>
                                     <FontSize>9pt</FontSize>
-                                    <Format>d</Format>
                                   </Style>
                                 </TextRun>
                                 <TextRun>
                                   <Value xml:space="preserve"> </Value>
                                   <Style>
-                                    <FontFamily>Segoe UI Light</FontFamily>
                                     <FontSize>9pt</FontSize>
                                     <Format>d</Format>
                                   </Style>
@@ -778,22 +660,20 @@ GROUP BY Act.DeudoraAcreedora</CommandText>
                                 <TextRun>
                                   <Value>=Fields!Anio.Value</Value>
                                   <Style>
-                                    <FontFamily>Segoe UI Light</FontFamily>
                                     <FontSize>9pt</FontSize>
-                                    <Format>d</Format>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
-                              <Style />
+                              <Style>
+                                <TextAlign>Left</TextAlign>
+                              </Style>
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>CuentaNombre</rd:DefaultName>
                           <Style>
                             <Border>
                               <Style>None</Style>
                             </Border>
                             <BackgroundColor>White</BackgroundColor>
-                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -832,7 +712,6 @@ GROUP BY Act.DeudoraAcreedora</CommandText>
                               <Style>None</Style>
                             </Border>
                             <BackgroundColor>White</BackgroundColor>
-                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -872,7 +751,6 @@ GROUP BY Act.DeudoraAcreedora</CommandText>
                               <Style>None</Style>
                             </Border>
                             <BackgroundColor>White</BackgroundColor>
-                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -884,18 +762,20 @@ GROUP BY Act.DeudoraAcreedora</CommandText>
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="Textbox10">
+                        <Textbox Name="Saldo">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value />
+                                  <Value>=Sum(Fields!Saldo.Value)</Value>
                                   <Style>
                                     <FontSize>9pt</FontSize>
                                     <FontWeight>Normal</FontWeight>
+                                    <Format>'L'#,0.00;('L'#,0.00)</Format>
                                     <Color>#333333</Color>
+                                    <rd:FormatSymbolCulture>es-HN</rd:FormatSymbolCulture>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -904,13 +784,12 @@ GROUP BY Act.DeudoraAcreedora</CommandText>
                               </Style>
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>Textbox10</rd:DefaultName>
+                          <rd:DefaultName>Saldo</rd:DefaultName>
                           <Style>
                             <Border>
                               <Style>None</Style>
                             </Border>
                             <BackgroundColor>White</BackgroundColor>
-                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -929,14 +808,13 @@ GROUP BY Act.DeudoraAcreedora</CommandText>
                 <TablixMember />
                 <TablixMember />
                 <TablixMember />
-                <TablixMember />
               </TablixMembers>
             </TablixColumnHierarchy>
             <TablixRowHierarchy>
               <TablixMembers>
                 <TablixMember>
                   <TablixHeader>
-                    <Size>0.64488in</Size>
+                    <Size>0.65in</Size>
                     <CellContents>
                       <Textbox Name="Textbox35">
                         <CanGrow>true</CanGrow>
@@ -973,7 +851,6 @@ GROUP BY Act.DeudoraAcreedora</CommandText>
                             <Width>1pt</Width>
                           </BottomBorder>
                           <BackgroundColor>White</BackgroundColor>
-                          <VerticalAlign>Middle</VerticalAlign>
                           <PaddingLeft>2pt</PaddingLeft>
                           <PaddingRight>2pt</PaddingRight>
                           <PaddingTop>2pt</PaddingTop>
@@ -990,7 +867,7 @@ GROUP BY Act.DeudoraAcreedora</CommandText>
                 </TablixMember>
                 <TablixMember>
                   <TablixHeader>
-                    <Size>0.64488in</Size>
+                    <Size>0.65in</Size>
                     <CellContents>
                       <Textbox Name="Textbox68">
                         <CanGrow>true</CanGrow>
@@ -1008,7 +885,7 @@ GROUP BY Act.DeudoraAcreedora</CommandText>
                               </TextRun>
                             </TextRuns>
                             <Style>
-                              <TextAlign>Center</TextAlign>
+                              <TextAlign>Left</TextAlign>
                             </Style>
                           </Paragraph>
                         </Paragraphs>
@@ -1018,7 +895,6 @@ GROUP BY Act.DeudoraAcreedora</CommandText>
                             <Style>None</Style>
                           </Border>
                           <BackgroundColor>White</BackgroundColor>
-                          <VerticalAlign>Middle</VerticalAlign>
                           <PaddingLeft>2pt</PaddingLeft>
                           <PaddingRight>2pt</PaddingRight>
                           <PaddingTop>2pt</PaddingTop>
@@ -1034,7 +910,6 @@ GROUP BY Act.DeudoraAcreedora</CommandText>
                   <Group Name="NoAsiento">
                     <GroupExpressions>
                       <GroupExpression>=Fields!Mes.Value</GroupExpression>
-                      <GroupExpression>=Fields!Anio.Value</GroupExpression>
                     </GroupExpressions>
                   </Group>
                   <SortExpressions>
@@ -1043,36 +918,34 @@ GROUP BY Act.DeudoraAcreedora</CommandText>
                     </SortExpression>
                   </SortExpressions>
                   <TablixHeader>
-                    <Size>0.64488in</Size>
+                    <Size>0.65in</Size>
                     <CellContents>
-                      <Textbox Name="TIPO">
+                      <Textbox Name="Codigo">
                         <CanGrow>true</CanGrow>
                         <KeepTogether>true</KeepTogether>
                         <Paragraphs>
                           <Paragraph>
                             <TextRuns>
                               <TextRun>
-                                <Value>=FORMAT(First(Fields!FechaTransaccion.Value),"MM/yyyy")</Value>
+                                <Value>=Fields!NumeroMes.Value &amp;"/"&amp; Fields!Anio.Value</Value>
                                 <Style>
                                   <FontSize>9pt</FontSize>
                                   <FontWeight>Normal</FontWeight>
-                                  <Format>d/M/yyyy</Format>
                                   <Color>#333333</Color>
                                 </Style>
                               </TextRun>
                             </TextRuns>
                             <Style>
-                              <TextAlign>Center</TextAlign>
+                              <TextAlign>Left</TextAlign>
                             </Style>
                           </Paragraph>
                         </Paragraphs>
-                        <rd:DefaultName>TIPO</rd:DefaultName>
+                        <rd:DefaultName>Codigo</rd:DefaultName>
                         <Style>
                           <Border>
                             <Style>None</Style>
                           </Border>
                           <BackgroundColor>White</BackgroundColor>
-                          <VerticalAlign>Middle</VerticalAlign>
                           <PaddingLeft>2pt</PaddingLeft>
                           <PaddingRight>2pt</PaddingRight>
                           <PaddingTop>2pt</PaddingTop>
@@ -1105,7 +978,7 @@ GROUP BY Act.DeudoraAcreedora</CommandText>
             <Top>0.06458in</Top>
             <Left>0.0353in</Left>
             <Height>0.71in</Height>
-            <Width>8.1805in</Width>
+            <Width>8.25342in</Width>
             <Style>
               <Border>
                 <Style>None</Style>
@@ -1130,7 +1003,7 @@ GROUP BY Act.DeudoraAcreedora</CommandText>
           </RightBorder>
         </Style>
       </Body>
-      <Width>8.25747in</Width>
+      <Width>8.28872in</Width>
       <Page>
         <PageHeader>
           <Height>0.90268in</Height>
@@ -1155,7 +1028,7 @@ GROUP BY Act.DeudoraAcreedora</CommandText>
                 <Paragraph>
                   <TextRuns>
                     <TextRun>
-                      <Value>Cuent No.:  </Value>
+                      <Value>Cuenta No.:  </Value>
                       <Style>
                         <FontFamily>Segoe UI Light</FontFamily>
                         <FontSize>11pt</FontSize>
@@ -1169,7 +1042,6 @@ GROUP BY Act.DeudoraAcreedora</CommandText>
                         <FontFamily>Segoe UI Light</FontFamily>
                         <FontSize>11pt</FontSize>
                         <FontWeight>Bold</FontWeight>
-                        <Format>d</Format>
                       </Style>
                     </TextRun>
                     <TextRun>
@@ -1182,12 +1054,11 @@ GROUP BY Act.DeudoraAcreedora</CommandText>
                       </Style>
                     </TextRun>
                     <TextRun>
-                      <Value>=First(Fields!CuentaNombre.Value, "JournalEntryLine")</Value>
+                      <Value>=First(Fields!AccountName.Value, "JournalEntryLine")</Value>
                       <Style>
                         <FontFamily>Segoe UI Light</FontFamily>
                         <FontSize>11pt</FontSize>
                         <FontWeight>Bold</FontWeight>
-                        <Format>d</Format>
                       </Style>
                     </TextRun>
                   </TextRuns>
@@ -1197,7 +1068,7 @@ GROUP BY Act.DeudoraAcreedora</CommandText>
                   </Style>
                 </Paragraph>
               </Paragraphs>
-              <Top>0.42634in</Top>
+              <Top>0.38884in</Top>
               <Left>1.71837in</Left>
               <Height>0.25in</Height>
               <Width>5.5723in</Width>
@@ -1214,7 +1085,7 @@ GROUP BY Act.DeudoraAcreedora</CommandText>
           </Style>
         </PageHeader>
         <PageFooter>
-          <Height>0.20833in</Height>
+          <Height>0.375in</Height>
           <PrintOnFirstPage>true</PrintOnFirstPage>
           <PrintOnLastPage>true</PrintOnLastPage>
           <Style>
@@ -1242,7 +1113,7 @@ GROUP BY Act.DeudoraAcreedora</CommandText>
       <DataType>DateTime</DataType>
       <Prompt>Hasta</Prompt>
     </ReportParameter>
-    <ReportParameter Name="Centrocosto">
+    <ReportParameter Name="CentroCosto">
       <DataType>Integer</DataType>
       <DefaultValue>
         <Values>
@@ -1288,7 +1159,7 @@ GROUP BY Act.DeudoraAcreedora</CommandText>
         <CellDefinition>
           <ColumnIndex>0</ColumnIndex>
           <RowIndex>1</RowIndex>
-          <ParameterName>Centrocosto</ParameterName>
+          <ParameterName>CentroCosto</ParameterName>
         </CellDefinition>
         <CellDefinition>
           <ColumnIndex>1</ColumnIndex>
