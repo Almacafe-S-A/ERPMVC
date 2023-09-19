@@ -16,6 +16,7 @@ using Newtonsoft.Json;
 using NPOI.SS.UserModel;
 using NPOI.XSSF.UserModel;
 using System.Security.Claims;
+using Kendo.Mvc.UI;
 
 namespace ERPMVC.Controllers
 {
@@ -48,25 +49,28 @@ namespace ERPMVC.Controllers
         }
 
         [HttpGet("[action]")]
-        public async Task<ActionResult> GetBiometricos()
+        public async Task<DataSourceResult> GetBiometricos([DataSourceRequest] DataSourceRequest request)
         {
+            List<Biometrico> biometricos = new List<Biometrico>();
+
             try
             {
                 var respuesta = await Utils.HttpGetAsync(HttpContext.Session.GetString("token"),
                     config.Value.urlbase + "api/Biometrico/GetBiometricos");
+                string valorrespuesta = "";
                 if (respuesta.IsSuccessStatusCode)
                 {
-                    var contenido = await respuesta.Content.ReadAsStringAsync();
-                    var resultado = JsonConvert.DeserializeObject<List<Biometrico>>(contenido);
-                    return Ok(resultado);
+                    valorrespuesta = await respuesta.Content.ReadAsStringAsync();
+                    biometricos = JsonConvert.DeserializeObject<List<Biometrico>>(valorrespuesta);
+                    biometricos = biometricos.OrderByDescending(x => x.Id).ToList();
                 }
-                return BadRequest();
             }
             catch (Exception ex)
             {
                 logger.LogError(ex,"Error al cargar los archivos biometricos");
-                return BadRequest(ex);
+                throw ex;
             }
+            return biometricos.ToDataSourceResult(request);
         }
 
         [HttpGet("[action]")]
