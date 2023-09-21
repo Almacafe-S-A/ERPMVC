@@ -65,8 +65,8 @@ namespace ERPMVC.Controllers
 
         }
 
-
-        [Authorize(Policy = "Inventarios.Reportes.Guias Emision Emitidas")]
+        
+        [Authorize(Policy = "Inventarios.Reportes.Guias Remision Emitidas")]
         public async Task<IActionResult> SFGuiasRemisionEmitidas()
         {
 
