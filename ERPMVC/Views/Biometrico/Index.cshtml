@@ -68,58 +68,16 @@
 
 <script>
 
-
-    function CrearGrid() {
-        $("#grdConfiguracion").kendoGrid({
-            dataSource: {
-                transport: {
-                    read: "@Url.Action("GetBiometricos", "Biometrico")"
-                },
-                schema: {
-                    model: {
-                        id:"Id",
-                        fields: {
-                            Id: { type: "number", editable: false },
-                            Fecha: { type: "date", editable: false },
-                            Observacion: { type:"string", editable: false },
-                            IdEstado: { type: "number", editable: false },
-                            Estado: { defaultValue: {IdEstado:0,NombreEstado:""}, editable: false }
-                        }
-                    }
-                }
-            },
-            columns: [
-                {
-                    command: [
-                        PermisoVerDetalle(),
-                        PermisoAprobar(),
-                        PermisoRechazar()
-                    ],
-                    width:150
-                },
-                { field: "Id", title: "Id. ", width: 80 },
-                { field: "Fecha", title: "Fecha", width: 150, template: '#= kendo.toString(Fecha,"dd/MM/yyyy")#' },
-                { field: "Observacion", title: "Observacion",widh : 150},
-                { field: "Estado", title: "Estado", width: 100, template: "#= Estado.NombreEstado #"}
-            ],
-            noRecords: {
-                template:"No archivos biometricos cargados"
-            },
-            //height: 400,
-            scrollable: true,
-            editable: false
-        });
+    function dataBound(e) {
+        $.each(this.dataSource.data(), function () {
+            if (this.Estado.NombreEstado != 'Cargado') {
+                $('[data-uid=' + this.uid + ']').find('.k-grid-Aprobar').hide();
+                $('[data-uid=' + this.uid + ']').find('.k-grid-Rechazar').hide();
+                $('[data-uid=' + this.uid + ']').find('.k-grid-Detalle').hide();
+            }
+        })
     }
 
-    //function EditorFecha() {
-    //    $("#Fecha").kendoDatePicker({ dateInput: true, format: "dd/MM/yyyy" });
-    //}
-
-    function EditorArchivo() {
-        $("#Archivo").kendoUpload({
-            multiple:false
-        });
-    }
 
     function VerDetalle(e) {
         e.preventDefault();
@@ -147,6 +105,7 @@
 
     function Aprobar(e) {
         e.preventDefault();
+        if (!confirm('Esta seguro de aprobar este biometrico?')) return;
         var registro = this.dataItem($(e.currentTarget).closest('tr'));
         var parametros = {
             IdBiometrico: registro.Id
@@ -188,6 +147,7 @@
 
     function Rechazar(e) {
         e.preventDefault();
+        if (!confirm('Esta seguro de rechazar este biometrico?')) return;
         var registro = this.dataItem($(e.currentTarget).closest('tr'));
         var parametros = {
             IdBiometrico: registro.Id
@@ -228,52 +188,94 @@
     }
 
     function RefreshBiometrico() {
-        $("#grdConfiguracion").getKendoGrid().dataSource.read();
+        var grid = $("#grdConfiguracion").getKendoGrid();
+        grid.dataSource.read();
     }
-
-    $(document).ready(function () {
-        // debugger;
-        if ('@errores' !== '') {
-            $.toast({
-                heading: 'Error',
-                text: ' @errores',
-                position: 'top-right',
-                loaderBg: '#ff6849',
-                icon: 'error',
-                hideAfter: 3000,
-                stack: 6
-            });
-        }
-        //EditorFecha();
-        CrearGrid();
-    });
 </script>
-<script type="text/javascript">
-    function PermisoVerDetalle() {
-        var permisos = '@ViewData["permisos"]';
 
-            Detalle = {
-                name: "ver", iconClass: "fa fa-eye", text: "", click: VerDetalle
-            }
-            return Detalle
+@(Html.Kendo().Grid<ERPMVC.Models.Biometrico>()
+                                      .Name("grdConfiguracion").NoRecords()
 
+                                      .Columns(columns =>
+                                      {
+                                          {
+                                              columns.Command(command =>
+                                              {
+                                                  command.Custom("Detalle").Text(" ").IconClass("fa fa-eye").Click("VerDetalle");
+                                                  command.Custom("Aprobar").Text(" ").IconClass("fa fa-thumbs-up").Click("Aprobar");
+                                                  command.Custom("Rechazar").Text(" ").IconClass("fa fa-thumbs-down").Click("Rechazar");
+                                              }).Width(200).Title("Acciones");
+                                          }
+                                          columns.Bound(p => p.Id).Title("No.").Width(80);
+                                          columns.Bound(p => p.Fecha)
+                                              .Title("Fecha")
+                                              .Width(130)
+                                              .Format("{0:dd/MM/yyyy}");
+                                          columns.Bound(p => p.Observacion).Title("Observación").Width(130);
+                                          columns.Bound(p => p.Estado.NombreEstado).Title("Estado").Width(150);
+                                      }).Filterable(f => f.Operators(o => o.ForString(s => s
+                                                             .Clear()
+                                                             .Contains("Contiene")
+                                                             .DoesNotContain("No contiene")
+                                                             .EndsWith("Termina con")
+                                                             .IsEqualTo("Es igual a")
+                                                             .IsNotEqualTo("No es igual a")
+                                                             .IsNull("Es nulo")
+                                                             .StartsWith("Inicia con")
+                                                       )
+                                                         .ForNumber(n => n
+                                                         .Clear()
+                                                         .IsEqualTo("Es igual a")
+                                                         .IsGreaterThan("Es mayor que")
+                                                         .IsLessThan("Es menor que")
+                                                         .IsNull("Es nulo")
+                                                         .IsLessThanOrEqualTo("Es menor o igual que")
+                                                         .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                                       )
+                                                       .ForDate(d => d
+                                                       .Clear()
+                                                       .IsEqualTo("Es igual que")
+                                                       .IsGreaterThan("Es mayor que")
+                                                       .IsLessThan("Es menor que")
+                                                       .IsLessThanOrEqualTo("Es menor o igual que")
+                                                       .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                                       .IsNotEqualTo("No es igual que")
+                                                        )
+                                                     ))
+
+                                        .Editable(e => e.Mode(GridEditMode.PopUp))
+                                        .Sortable()
+                                        .AutoBind(true)
+                                        .Pageable(p => p.Input(true))
+                                        .Resizable(s => s.Columns(true))
+                                        .Filterable()
+                                        .Scrollable()
+                                        .DataSource(dataSource =>
+                                       dataSource
+                                       //.Ajax()
+                                       .WebApi()
+                                        .ServerOperation(true)
+                                        .Model(model =>
+                                        {
+                                            model.Id(p => p.Id);
+                                        })
+                                        .Events(events =>
+                                        {
+                                            events.Error("error_handler");
+                                        })
+                                        .Read(read => read.Action("GetBiometricos", "Biometrico"))
+                                  ).Events(e => e.DataBound("dataBound"))
+)
+
+<script>
+    function setRowButtonTooltip(btn_cl, btn_tooltip) {
+        $("#grdConfiguracion").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
     }
-    function PermisoAprobar() {
-        var permisos = '@ViewData["permisos"]';
 
-            AprobarArchivoBiometrico = {
-                name: "aprobar", iconClass: "fa fa-thumbs-up", text: "", click: Aprobar, visible: function (dataItem) { return dataItem.Estado.IdEstado === 60 }
-            }
-            return AprobarArchivoBiometrico
-
-    }
-    function PermisoRechazar() {
-        var permisos = '@ViewData["permisos"]';
-
-            RechazarArchivoBiometrico = {
-                name: "rechazar", iconClass: "fa fa-thumbs-down", text: "", click: Rechazar, visible: function (dataItem) { return dataItem.Estado.IdEstado === 60 }
-            }
-            return RechazarArchivoBiometrico
-
-    }
+    setRowButtonTooltip(".k-grid-Aprobar", "Aprobar");
+    setRowButtonTooltip(".k-grid-Rechazar", "Rechazar");
+    setRowButtonTooltip(".k-grid-Detalle", "Ver Detalle");
 </script>
