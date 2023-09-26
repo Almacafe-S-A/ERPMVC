@@ -267,5 +267,33 @@ namespace ERPMVC.Controllers
         }
 
 
+        public async Task<ActionResult> GetHorarioV2()
+        {
+            List<Horario> _Horario = new List<Horario>();
+            try
+            {
+
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/Horario/GetHorarios");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _Horario = JsonConvert.DeserializeObject<List<Horario>>(valorrespuesta).Where(w => w.IdEstado == 1).ToList();
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.LogError($"Ocurrio un error: {ex.ToString()}");
+                throw ex;
+            }
+
+            return Ok(_Horario);
+
+        }
+
+
     }
 }
