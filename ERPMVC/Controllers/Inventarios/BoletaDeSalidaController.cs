@@ -68,6 +68,7 @@ namespace ERPMVC.Controllers
                     _BoletaDeSalida.PesoBruto= 0;
                     _BoletaDeSalida.QQInglesas= 0;
                     _BoletaDeSalida.PNInglesas= 0;
+                    _BoletaDeSalida.WeightBallot= 0;
                 }
             }
             catch (Exception ex)
