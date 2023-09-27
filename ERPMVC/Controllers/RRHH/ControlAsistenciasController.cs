@@ -152,13 +152,13 @@ namespace ERPMVC.Controllers
                     
                     NuevaControlAsistencia.Dia1 = l1;
 
-                    NuevaControlAsistencia.LlegadasTarde = asistencias.Where(q => q.TipoAsistencia == 77).Count();
+                    NuevaControlAsistencia.LlegadasTarde = asistenciaempleado.Where(q => q.TipoAsistencia == 77).Count();
 
-                    int DomigosyLibres = asistencias.Where(q => q.TipoAsistencia == 78).Count(); 
+                    int DomigosyLibres = asistenciaempleado.Where(q => q.TipoAsistencia == 78).Count(); 
                    
-                    int PermisosH = asistencias.Where(q => q.TipoAsistencia == 79).Count();
+                    int PermisosH = asistenciaempleado.Where(q => q.TipoAsistencia == 79).Count();
                     
-                    int Presentes = asistencias.Where(q => q.TipoAsistencia == 83).Count();  
+                    int Presentes = asistenciaempleado.Where(q => q.TipoAsistencia == 83).Count();  
 
                     int DiasLaborales = (NuevaControlAsistencia.LlegadasTarde + DomigosyLibres + PermisosH + Presentes);
                     NuevaControlAsistencia.DiasLaborales = DiasLaborales;
@@ -176,7 +176,7 @@ namespace ERPMVC.Controllers
                     }
 
 
-                    List<ControlAsistencias> LSCA = ((List<ControlAsistencias>)asistencias);
+                    List<ControlAsistencias> LSCA = ((List<ControlAsistencias>)asistenciaempleado);
                    
                     foreach (var _Listardias in LSCA)
                     {
