@@ -136,7 +136,8 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _ListEmpleados = JsonConvert.DeserializeObject<List<Employees>>(valorrespuesta);
-                    _ListEmpleados = _ListEmpleados.OrderBy(q => q.NombreEmpleado).Where(q => q.IdEstado == 1).ToList();
+                    _ListEmpleados = _ListEmpleados.OrderBy(q => q.NombreEmpleado).Where(q => q.IdEstado == 1)
+                        .OrderBy(o => o.IdEmpleado).ToList();
                 }
 
                 List<ControlAsistencias> asistencias = await GetControlAsistenciasByEmplActivos( primero, actuals);
