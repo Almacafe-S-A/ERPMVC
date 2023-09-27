@@ -37,21 +37,12 @@ namespace ERPMVC.Controllers
 
         }
 
-        //public IActionResult ControlAsistencia()
-        //{
-        //    return View();
-        //}
-
-
-
         public IActionResult DiasMes()
         {
             return View();
         }
 
 
-        //[Authorize(Policy = "Admin")]
-        //[Authorize(Policy = "RRHH.Control Asistencias")]
         public async Task<IActionResult> ControlAsistencia()
         {
             ViewData["ElementoConfiguracion"] = await ObtenerTiposControlAsistencias();
@@ -59,42 +50,6 @@ namespace ERPMVC.Controllers
             return View();
         }
 
-        /// <summary>
-        /// Obitiene el listado de los estados!
-        /// </summary>
-        /// <param name="request"></param>
-        /// <returns></returns>
-        [HttpGet]
-        public async Task<DataSourceResult> GetControlAsistencias([DataSourceRequest]DataSourceRequest request)
-        {
-            List<ControlAsistencias> _ControlAsistencias = new List<ControlAsistencias>();
-            try
-            {
-
-                string baseadress = _config.Value.urlbase;
-                HttpClient _client = new HttpClient();
-                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/ControlAsistencias/GetControlAsistencias");
-                string valorrespuesta = "";
-                if (result.IsSuccessStatusCode)
-                {
-                    valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _ControlAsistencias = JsonConvert.DeserializeObject<List<ControlAsistencias>>(valorrespuesta);
-                    _ControlAsistencias = _ControlAsistencias.OrderByDescending(q => q.Id).ToList();
-                }
-
-
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
-                throw ex;
-            }
-
-
-            return _ControlAsistencias.ToDataSourceResult(request);
-
-        }
 
         async Task<IEnumerable<ElementoConfiguracion>> ObtenerTiposControlAsistencias()
         {
@@ -127,11 +82,6 @@ namespace ERPMVC.Controllers
 
 
        
-
-
-
-
-
         [HttpGet]
         public async Task<DataSourceResult> GetGetControlAsistencias([DataSourceRequest]DataSourceRequest request, string datepikerselect)
         {
@@ -145,11 +95,6 @@ namespace ERPMVC.Controllers
             if (diactual == null)
             {
                 actuals = DateTime.Now;                
-                //int mesa = actual.Month;
-                //int anoa = actual.Year;
-                //string fechaactual = 1 + "-" + mesa + "-" + anoa;
-                //string fechaactual = 1 + "-" + actual.Month + "-" + actual.Year;
-                //primero = Convert.ToDateTime(fechaactual);
                 primero = Convert.ToDateTime(1 + "-" + actuals.Month + "-" + actuals.Year);
             }
             else if (primero.Month == DateTime.Now.Month)
@@ -158,10 +103,6 @@ namespace ERPMVC.Controllers
             }
             else
             {
-                //int me = primero.Month;
-                //int ao = primero.Year;
-                //int diass = DateTime.DaysInMonth(primero.Year, primero.Month);
-                //string fechavieja = diass + "-" + primero.Month + "-" + primero.Year;
                 actuals = Convert.ToDateTime(DateTime.DaysInMonth(primero.Year, primero.Month) + "-" + primero.Month + "-" + primero.Year);
             }
 
@@ -169,36 +110,6 @@ namespace ERPMVC.Controllers
 
             //int letras = DateTime.DaysInMonth(actuals.Year, actuals.Month);
             var l1 = Convert.ToDateTime(actuals.Month + "-" + 1 + "-" + actuals.Year);
-            //var l2 = Convert.ToDateTime(2 + "-" + actuals.Month + "-" + actuals.Year);
-            //var l3 = Convert.ToDateTime(3 + "-" + actuals.Month + "-" + actuals.Year);
-            //var l4 = Convert.ToDateTime(4 + "-" + actuals.Month + "-" + actuals.Year);
-            //var l5 = Convert.ToDateTime(5 + "-" + actuals.Month + "-" + actuals.Year);
-            //var l6 = Convert.ToDateTime(6 + "-" + actuals.Month + "-" + actuals.Year);
-            //var l7 = Convert.ToDateTime(7 + "-" + actuals.Month + "-" + actuals.Year);
-            //var l8 = Convert.ToDateTime(8 + "-" + actuals.Month + "-" + actuals.Year);
-            //var l9 = Convert.ToDateTime(9 + "-" + actuals.Month + "-" + actuals.Year);
-            //var l10 = Convert.ToDateTime(10 + "-" + actuals.Month + "-" + actuals.Year);
-            //var l11 = Convert.ToDateTime(11 + "-" + actuals.Month + "-" + actuals.Year);
-            //var l12 = Convert.ToDateTime(12 + "-" + actuals.Month + "-" + actuals.Year);
-            //var l13 = Convert.ToDateTime(13 + "-" + actuals.Month + "-" + actuals.Year);
-            //var l14 = Convert.ToDateTime(14 + "-" + actuals.Month + "-" + actuals.Year);
-            //var l15 = Convert.ToDateTime(15 + "-" + actuals.Month + "-" + actuals.Year);
-            //var l16 = Convert.ToDateTime(16 + "-" + actuals.Month + "-" + actuals.Year);
-            //var l17 = Convert.ToDateTime(17 + "-" + actuals.Month + "-" + actuals.Year);
-            //var l18 = Convert.ToDateTime(18 + "-" + actuals.Month + "-" + actuals.Year);
-            //var l19 = Convert.ToDateTime(19 + "-" + actuals.Month + "-" + actuals.Year);
-            //var l20 = Convert.ToDateTime(20 + "-" + actuals.Month + "-" + actuals.Year);
-            //var l21 = Convert.ToDateTime(21 + "-" + actuals.Month + "-" + actuals.Year);
-            //var l22 = Convert.ToDateTime(22 + "-" + actuals.Month + "-" + actuals.Year);
-            //var l23 = Convert.ToDateTime(23 + "-" + actuals.Month + "-" + actuals.Year);
-            //var l24 = Convert.ToDateTime(24 + "-" + actuals.Month + "-" + actuals.Year);
-            //var l25 = Convert.ToDateTime(25 + "-" + actuals.Month + "-" + actuals.Year);
-            //var l26 = Convert.ToDateTime(26 + "-" + actuals.Month + "-" + actuals.Year);
-            //var l27 = Convert.ToDateTime(27 + "-" + actuals.Month + "-" + actuals.Year);
-            //var l28 = Convert.ToDateTime(28 + "-" + actuals.Month + "-" + actuals.Year);
-            //var l29 = Convert.ToDateTime(29 + "-" + actuals.Month + "-" + actuals.Year);
-            //var l30 = Convert.ToDateTime(30 + "-" + actuals.Month + "-" + actuals.Year);
-            //var l31 = Convert.ToDateTime(31 + "-" + actuals.Month + "-" + actuals.Year);
 
             //int LlegadaTarde = 77;
             //int Domingodiaslibres = 78;
@@ -225,149 +136,31 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _ListEmpleados = JsonConvert.DeserializeObject<List<Employees>>(valorrespuesta);
-                    _ListEmpleados = _ListEmpleados.OrderBy(q => q.NombreEmpleado).ToList();
+                    _ListEmpleados = _ListEmpleados.OrderBy(q => q.NombreEmpleado).Where(q => q.IdEstado == 1).ToList();
                 }
 
-               
+                List<ControlAsistencias> asistencias = await GetControlAsistenciasByEmplActivos( primero, actuals);
 
-                foreach (var _ListEmpleadosLis in _ListEmpleados)
+
+                foreach (var empleado in _ListEmpleados)
                 {
                     ControlAsistenciasDTO NuevaControlAsistencia = new ControlAsistenciasDTO();
-                    NuevaControlAsistencia.Empleado = _ListEmpleadosLis;                
-                    NuevaControlAsistencia.EmployeesId = _ListEmpleadosLis.IdEmpleado;
+                    NuevaControlAsistencia.Empleado = empleado;                
+                    NuevaControlAsistencia.EmployeesId = empleado.IdEmpleado;
 
-                    var fechas = await GetControlAsistenciasByEmpl(NuevaControlAsistencia, primero, actuals);                  
-
-                   
-                    //NuevaControlAsistencia.LetraD1 = l1.ToString("dddd").Substring(0, 1).ToUpper();
+                    List<ControlAsistencias> asistenciaempleado = asistencias.Where(q => q.IdEmpleado == empleado.IdEmpleado).ToList();                  
+                    
                     NuevaControlAsistencia.Dia1 = l1;
 
-                    //NuevaControlAsistencia.LetraD2 = l2.ToString("dddd").Substring(0, 1).ToUpper();
-                    //NuevaControlAsistencia.Dia2 = l2;
-                    
-                    //NuevaControlAsistencia.LetraD3 = l3.ToString("dddd").Substring(0, 1).ToUpper();
-                    //NuevaControlAsistencia.Dia3 = l3;
-                    
-                    //NuevaControlAsistencia.LetraD4 = l4.ToString("dddd").Substring(0, 1).ToUpper();
-                    //NuevaControlAsistencia.Dia4 = l4;
-                   
-                    //NuevaControlAsistencia.LetraD5 = l5.ToString("dddd").Substring(0, 1).ToUpper();
-                    //NuevaControlAsistencia.Dia5 = l5;
-                    
-                    //NuevaControlAsistencia.LetraD6 = l6.ToString("dddd").Substring(0, 1).ToUpper();
-                    //NuevaControlAsistencia.Dia6 = l6;
-                    
-                    //NuevaControlAsistencia.LetraD7 = l7.ToString("dddd").Substring(0, 1).ToUpper();
-                    //NuevaControlAsistencia.Dia7 = l7;
-                    
-                    //NuevaControlAsistencia.LetraD8 = l8.ToString("dddd").Substring(0, 1).ToUpper();
-                    //NuevaControlAsistencia.Dia8 = l8;
-                    
-                    //NuevaControlAsistencia.LetraD9 = l9.ToString("dddd").Substring(0, 1).ToUpper();
-                    //NuevaControlAsistencia.Dia9 = l9;
-                    
-                    //NuevaControlAsistencia.LetraD10 = l10.ToString("dddd").Substring(0, 1).ToUpper();
-                    //NuevaControlAsistencia.Dia11 = l10;
-                   
-                    //NuevaControlAsistencia.LetraD11 = l11.ToString("dddd").Substring(0, 1).ToUpper();
-                    //NuevaControlAsistencia.Dia11 = l11;
-                    
-                    //NuevaControlAsistencia.LetraD12 = l12.ToString("dddd").Substring(0, 1).ToUpper();
-                    //NuevaControlAsistencia.Dia12 = l12;
-                   
-                    //NuevaControlAsistencia.LetraD13 = l13.ToString("dddd").Substring(0, 1).ToUpper();
-                    //NuevaControlAsistencia.Dia13 = l13;
-                   
-                    //NuevaControlAsistencia.LetraD14 = l14.ToString("dddd").Substring(0, 1).ToUpper();
-                    //NuevaControlAsistencia.Dia14 = l14;
-                   
-                    //NuevaControlAsistencia.LetraD15 = l15.ToString("dddd").Substring(0, 1).ToUpper();
-                    //NuevaControlAsistencia.Dia15 = l15;
-                    
-                    //NuevaControlAsistencia.LetraD16 = l16.ToString("dddd").Substring(0, 1).ToUpper();
-                    //NuevaControlAsistencia.Dia16 = l16;
-                   
-                    //NuevaControlAsistencia.LetraD17 = l17.ToString("dddd").Substring(0, 1).ToUpper();
-                    //NuevaControlAsistencia.Dia17 = l17;
-                    
-                    //NuevaControlAsistencia.LetraD18 = l18.ToString("dddd").Substring(0, 1).ToUpper();
-                    //NuevaControlAsistencia.Dia18 = l18;
-                    
-                    //NuevaControlAsistencia.LetraD19 = l19.ToString("dddd").Substring(0, 1).ToUpper();
-                    //NuevaControlAsistencia.Dia19 = l19;
-                    
-                    //NuevaControlAsistencia.LetraD20 = l20.ToString("dddd").Substring(0, 1).ToUpper();
-                    //NuevaControlAsistencia.Dia20 = l20;
-                    
-                    //NuevaControlAsistencia.LetraD21 = l21.ToString("dddd").Substring(0, 1).ToUpper();
-                    //NuevaControlAsistencia.Dia21 = l21;
-                    
-                    //NuevaControlAsistencia.LetraD22 = l22.ToString("dddd").Substring(0, 1).ToUpper();
-                    //NuevaControlAsistencia.Dia22 = l22;
-                    
-                    //NuevaControlAsistencia.LetraD23 = l23.ToString("dddd").Substring(0, 1).ToUpper();
-                    //NuevaControlAsistencia.Dia23 = l23;
-                    
-                    //NuevaControlAsistencia.LetraD24 = l24.ToString("dddd").Substring(0, 1).ToUpper();
-                    //NuevaControlAsistencia.Dia24 = l24;
-                    
-                    //NuevaControlAsistencia.LetraD25 = l25.ToString("dddd").Substring(0, 1).ToUpper();
-                    //NuevaControlAsistencia.Dia25 = l25;
-                    
-                    //NuevaControlAsistencia.LetraD26 = l26.ToString("dddd").Substring(0, 1).ToUpper();
-                    //NuevaControlAsistencia.Dia26 = l26;
-                    
-                    //NuevaControlAsistencia.LetraD27 = l27.ToString("dddd").Substring(0, 1).ToUpper();
-                    //NuevaControlAsistencia.Dia27 = l27;
-                    
-                    //NuevaControlAsistencia.LetraD28 = l28.ToString("dddd").Substring(0, 1).ToUpper();
-                    //NuevaControlAsistencia.Dia28 = l28;
+                    NuevaControlAsistencia.LlegadasTarde = asistencias.Where(q => q.TipoAsistencia == 77).Count();
 
-                    
-                    //NuevaControlAsistencia.LetraD29 = l29.ToString("dddd").Substring(0, 1).ToUpper();
-                    //NuevaControlAsistencia.Dia29 = l29;
-                    
-                    //NuevaControlAsistencia.LetraD30 = l30.ToString("dddd").Substring(0, 1).ToUpper();
-                    //NuevaControlAsistencia.Dia30 = l30;
-                    
-                    //NuevaControlAsistencia.LetraD31 = l31.ToString("dddd").Substring(0, 1).ToUpper();
-                    //NuevaControlAsistencia.Dia31 = l31;
-
-
+                    int DomigosyLibres = asistencias.Where(q => q.TipoAsistencia == 78).Count(); 
                    
+                    int PermisosH = asistencias.Where(q => q.TipoAsistencia == 79).Count();
+                    
+                    int Presentes = asistencias.Where(q => q.TipoAsistencia == 83).Count();  
 
-
-                    var Llegatarde = await CantidadTipoAsietnciaByEmpleado(NuevaControlAsistencia, primero, actuals, 77);
-                    NuevaControlAsistencia.LlegadasTarde = Convert.ToInt32(Llegatarde.Value);
-                    //int cLLegadasTarde = Convert.ToInt32(Llegatarde.Value);
-                    //----------------------------------------------------------------------------------------------------
-
-                    
-                    var DomigosyLibres = await CantidadTipoAsietnciaByEmpleado(NuevaControlAsistencia, primero, actuals, 78);
-                    //int cDomingosandLibres = Convert.ToInt32(DomigosyLibres.Value);
-                    //----------------------------------------------------------------------------------------------------
-                   
-                    var PermisosH = await CantidadTipoAsietnciaByEmpleado(NuevaControlAsistencia, primero, actuals, 79);
-                    //int cPermisoshora = Convert.ToInt32(PermisosH.Value);
-                    //----------------------------------------------------------------------------------------------------
-                    
-                    //var Incapacidades = await CantidadTipoAsietnciaByEmpleado(NuevaControlAsistencia, primero, actual, 80);
-                    //int cIncapacidades = Convert.ToInt32(Incapacidades.Value);
-                    //----------------------------------------------------------------------------------------------------
-                    
-                    //var Vacaciones = await CantidadTipoAsietnciaByEmpleado(NuevaControlAsistencia, primero, actual, 81);
-                    //int cVacaiones = Convert.ToInt32(Vacaciones.Value);
-                    //----------------------------------------------------------------------------------------------------
-                    
-                    //var Permisos = await CantidadTipoAsietnciaByEmpleado(NuevaControlAsistencia, primero, actual, 82);
-                    //int cPermisos = Convert.ToInt32(Permisos.Value);
-                    //----------------------------------------------------------------------------------------------------
-                    
-                    var Presentes = await CantidadTipoAsietnciaByEmpleado(NuevaControlAsistencia, primero, actuals, 83);
-                    //int cPrecente = Convert.ToInt32(Presentes.Value);
-
-                    //int DiasLaborales = (cLLegadasTarde + cDomingosandLibres + cPermisoshora + cPrecente);
-                    int DiasLaborales = (NuevaControlAsistencia.LlegadasTarde + Convert.ToInt32(DomigosyLibres.Value) + Convert.ToInt32(PermisosH.Value) + Convert.ToInt32(Presentes.Value));
+                    int DiasLaborales = (NuevaControlAsistencia.LlegadasTarde + DomigosyLibres + PermisosH + Presentes);
                     NuevaControlAsistencia.DiasLaborales = DiasLaborales;
 
                     //double porcentajellegadastarde = ((double)cLLegadasTarde / (double)DiasLaborales) * 100;
@@ -383,14 +176,10 @@ namespace ERPMVC.Controllers
                     }
 
 
-                    List<ControlAsistencias> LSCA = ((List<ControlAsistencias>)fechas.Value);
+                    List<ControlAsistencias> LSCA = ((List<ControlAsistencias>)asistencias);
                    
                     foreach (var _Listardias in LSCA)
                     {
-
-                        //int c = fe++;
-                        //var fechasdia = Convert.ToDateTime(c + "-" + actuals.Month + "-" + actuals.Year);
-                        //var letras = Convert.ToDateTime(fechasdia).ToString("dddd").Substring(0, 1).ToUpper();
 
                         var getTipoAsistencia = await ColorTipoAsistencia(Convert.ToInt32(_Listardias.TipoAsistencia));
                         var li = ((ElementoConfiguracion)getTipoAsistencia.Value);
@@ -924,23 +713,8 @@ namespace ERPMVC.Controllers
         }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
         [HttpPost]
-        public async Task<JsonResult> GetControlAsistenciasByEmpl(ControlAsistencias NuevaControlAsistencia, DateTime primero, DateTime actual)
+        public async Task<List<ControlAsistencias>> GetControlAsistenciasByEmplActivos(DateTime primero, DateTime actual)
         {
             var primerdiames = Convert.ToDateTime(primero);
             var diaactual = Convert.ToDateTime(actual);
@@ -951,12 +725,13 @@ namespace ERPMVC.Controllers
             {
                 string baseadress = _config.Value.urlbase;
                 HttpClient _client = new HttpClient();
+                ControlAsistenciasDTO NuevaControlAsistencia = new ControlAsistenciasDTO();
                 NuevaControlAsistencia.FechaCreacion = primerdiames;//new DateTime(2019, 11, 01);
                 NuevaControlAsistencia.FechaModificacion = diaactual;//DateTime.Now;
                 NuevaControlAsistencia.UsuarioCreacion = HttpContext.Session.GetString("user");
                 NuevaControlAsistencia.UsuarioModificacion = HttpContext.Session.GetString("user");
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.PostAsJsonAsync(baseadress + "api/ControlAsistencias/GetControlAsistenciasByEmployeeId", NuevaControlAsistencia);
+                var result = await _client.PostAsJsonAsync(baseadress + "api/ControlAsistencias/GetControlAsistenciasByEmplActivos", NuevaControlAsistencia);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
@@ -973,37 +748,9 @@ namespace ERPMVC.Controllers
             }
 
 
-            return Json(ControlAsistencia);
+            return ControlAsistencia;
         }
 
-        [HttpGet]
-        public async Task<ActionResult> GetSumControlAsistenciasByEmployeeId(Int64 EmpleadoId)
-        {
-            ControlAsistencias _suma = new ControlAsistencias();
-            try
-            {
-                string baseadress = _config.Value.urlbase;
-                HttpClient _client = new HttpClient();
-
-                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/ControlAsistencias/GetSumControlAsistenciasByEmployeeId/" + EmpleadoId);
-                string valorrespuesta = "";
-                if (result.IsSuccessStatusCode)
-                {
-                    valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _suma = JsonConvert.DeserializeObject<ControlAsistencias>(valorrespuesta);
-
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
-                throw ex;
-            }
-
-
-            return View(_suma);
-        }
 
         [HttpPost]
         public async Task<ActionResult<ControlAsistencias>> Insert(ControlAsistencias _ControlAsistencia)
@@ -1460,102 +1207,6 @@ namespace ERPMVC.Controllers
             return Json(_Nuevo_Update);
         }
 
-
-        [HttpGet]
-        public async Task<DataSourceResult> GetListEmployees([DataSourceRequest]DataSourceRequest request)
-        {
-            List<Employees> _ListEmpleados = new List<Employees>();
-            try
-            {
-
-                string baseadress = _config.Value.urlbase;
-                HttpClient _client = new HttpClient();
-                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/Employees/GetEmployees");
-                string valorrespuesta = "";
-                if (result.IsSuccessStatusCode)
-                {
-                    valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _ListEmpleados = JsonConvert.DeserializeObject<List<Employees>>(valorrespuesta);
-                    _ListEmpleados = _ListEmpleados.OrderByDescending(q => q.IdEmpleado).ToList();
-                }
-
-
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
-                throw ex;
-            }
-
-
-            return _ListEmpleados.ToDataSourceResult(request);
-
-        }
-
-
-        [HttpGet]
-        public async Task<DataSourceResult> GetDias([DataSourceRequest]DataSourceRequest request)
-        {
-            List<Employees> _ListEmpleados = new List<Employees>();
-            try
-            {
-
-                string baseadress = _config.Value.urlbase;
-                HttpClient _client = new HttpClient();
-                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/Employees/GetEmployees");
-                string valorrespuesta = "";
-                if (result.IsSuccessStatusCode)
-                {
-                    valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _ListEmpleados = JsonConvert.DeserializeObject<List<Employees>>(valorrespuesta);
-                    _ListEmpleados = _ListEmpleados.OrderByDescending(q => q.IdEmpleado).ToList();
-                }
-
-
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
-                throw ex;
-            }
-
-
-            return _ListEmpleados.ToDataSourceResult(request);
-
-        }
-
-        [HttpPost]
-        public async Task<JsonResult> CantidadTipoAsietnciaByEmpleado(ControlAsistencias NuevaControlAsistencia, DateTime primero, DateTime actual, Int64 TipoAsistencia)
-        {
-            Int32 ControlAsistencia = 0;
-            try
-            {
-                string baseadress = _config.Value.urlbase;
-                HttpClient _client = new HttpClient();
-                NuevaControlAsistencia.IdEmpleado = NuevaControlAsistencia.Empleado.IdEmpleado;
-                NuevaControlAsistencia.TipoAsistencia = TipoAsistencia;
-                NuevaControlAsistencia.FechaCreacion = primero;
-                NuevaControlAsistencia.FechaModificacion = actual;
-                NuevaControlAsistencia.UsuarioCreacion = HttpContext.Session.GetString("user");
-                NuevaControlAsistencia.UsuarioModificacion = HttpContext.Session.GetString("user");
-                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.PostAsJsonAsync(baseadress + "api/ControlAsistencias/GetSumControlAsistenciasByEmployeeId", NuevaControlAsistencia);
-                string valorrespuesta = "";
-                if (result.IsSuccessStatusCode)
-                {
-                    valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    ControlAsistencia = JsonConvert.DeserializeObject<Int32>(valorrespuesta);
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
-                throw ex;
-            }
-            return Json(ControlAsistencia);
-        }
 
 
 
