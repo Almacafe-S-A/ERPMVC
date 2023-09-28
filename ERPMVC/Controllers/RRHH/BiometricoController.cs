@@ -123,10 +123,12 @@ namespace ERPMVC.Controllers
                 var hoja = libro.GetSheetAt(0);
                 var titulos = hoja.GetRow(0);
                 //validar titulos
-                if (!(titulos.GetCell(0).StringCellValue.ToUpper().Equals("CODIGO") &&
-                      titulos.GetCell(1).StringCellValue.ToUpper().Equals("FECHA") &&
-                      titulos.GetCell(2).StringCellValue.ToUpper().Equals("HORA") &&
-                      titulos.GetCell(3).StringCellValue.ToUpper().Equals("TIPO")))
+                if (!(titulos.GetCell(0).StringCellValue.Equals("Número") &&
+                      titulos.GetCell(1).StringCellValue.Equals("Nombre") &&
+                      titulos.GetCell(2).StringCellValue.Equals("Tiempo") &&
+                      titulos.GetCell(3).StringCellValue.Equals("Estado") &&
+                      titulos.GetCell(4).StringCellValue.Equals("Dispositivos") &&
+                      titulos.GetCell(5).StringCellValue.Equals("Tipo de Registro")))
                 {
                     libro.Close();
                     throw new Exception("Titulos de hoja de excel no son validos");
@@ -147,8 +149,8 @@ namespace ERPMVC.Controllers
                     var filaRegistro = hoja.GetRow(fila);
 
                     var IdBiometrico = Utils.GetNumeroXLS(filaRegistro.GetCell(0, MissingCellPolicy.RETURN_NULL_AND_BLANK));
-                    var fecha = Utils.GetFechaXLS(filaRegistro.GetCell(1, MissingCellPolicy.RETURN_NULL_AND_BLANK));
-                    var hora = Utils.GetHoraXLS(filaRegistro.GetCell(2, MissingCellPolicy.RETURN_NULL_AND_BLANK));
+                    var fecha = Utils.GetFechaXLS(filaRegistro.GetCell(2, MissingCellPolicy.RETURN_NULL_AND_BLANK));
+                    //var hora = Utils.GetHoraXLS(filaRegistro.GetCell(2, MissingCellPolicy.RETURN_NULL_AND_BLANK));
                     var tipo = filaRegistro.GetCell(3, MissingCellPolicy.RETURN_NULL_AND_BLANK).ToString();
 
                     if (fecha.Equals(DateTime.MinValue)) {
@@ -158,11 +160,11 @@ namespace ERPMVC.Controllers
 
                     }
 
-                    if (hora.Equals(DateTime.MinValue)) { 
+                    /*if (hora.Equals(DateTime.MinValue)) { 
                         TempData["Errores"] = "Formato de Fecha No Valido";
                         return RedirectToAction("Index");
                         continue;
-                    }
+                    }*/
 
                     if (IdBiometrico == null) { 
                         TempData["Errores"] = "Formato de Fecha No Valido";
@@ -170,7 +172,7 @@ namespace ERPMVC.Controllers
                         continue; 
                     }
 
-                    var fechaHora = new DateTime(fecha.Year, fecha.Month, fecha.Day, hora.Hour, hora.Minute, 0);
+                    var fechaHora = new DateTime(fecha.Year, fecha.Month, fecha.Day, fecha.Hour, fecha.Minute, 0);
 
                     DetalleBiometrico detalle = new DetalleBiometrico()
                                                 {
