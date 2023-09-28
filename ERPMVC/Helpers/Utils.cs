@@ -55,6 +55,19 @@ namespace ERPMVC.Helpers
             {
                 return DateTime.MinValue;
             }
+            if(celda.CellType == CellType.String)
+            {
+                string[] formatos = {"d/M/yyyy H:mm:ss tt", "d/M/yyyy H:mm tt",
+                         "dd/MM/yyyy HH:mm:ss", "d/M/yyyy H:mm:ss",
+                         "d/M/yyyy HH:mm tt", "d/M/yyyy HH tt",
+                         "d/M/yyyy H:mm", "d/M/yyyy H:mm",
+                         "dd/MM/yyyy HH:mm", "dd/M/yyyy HH:mm",
+                         "d/MM/yyyy HH:mm:ss.ffffff" };
+                string fecha = celda.StringCellValue;
+                //string formato = celda.CellStyle.GetDataFormatString();
+                return DateTime.ParseExact(fecha, formatos, null);
+            }
+
 
             try
             {
