@@ -24,7 +24,7 @@ namespace ERPMVC.DTO
         public double Formula { get; set; }
         [Required(ErrorMessage = "La quincena a aplicar es requerida")]
         [Display(Name = "Quincena a aplicar")]
-        [Range(1,2,ErrorMessage = "La quincena aplicar puede ser: 1era o 2da")]
+        [Range(1,3,ErrorMessage = "La quincena aplicar puede ser: 1era, 2da o ambas")]
         public double Fortnight { get; set; }
         public bool EsPorcentaje { get; set; }
         public DateTime FechaCreacion { get; set; }

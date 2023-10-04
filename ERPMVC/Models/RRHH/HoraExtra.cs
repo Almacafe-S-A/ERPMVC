@@ -35,5 +35,8 @@ namespace ERPMVC.Models
 
         [ForeignKey("IdEstado")]
         public Estados Estado { get; set; }
+
+        public double HorasExtras { get; set; }
+
     }
 }

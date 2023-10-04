@@ -3,9 +3,7 @@
 @{
     DateTime fecha = DateTime.Today;
     bool todo = false;
-
     ViewData["Title"] = "Horas Extra";
-
     ClaimsPrincipal permisos = (ClaimsPrincipal)ViewData["permisos"];
 }
 <h3 class="text-themecolor">Revisión y Aprobación de Horas Extra</h3>
@@ -16,10 +14,10 @@
                 <form id="frmBiometrico" kendo-validator="true">
                     <div class="form-group">
                                 <label class="control-label" style="min-width: 100%;">Fecha</label>
-                                <kendo-datepicker name="Fecha"
-                                                  style="min-width: 100%;"
-                                                  format="dd/MM/yyyy "
-                                                  value="fecha"/>
+                        <kendo-datepicker id="Fecha" name="Fecha" style="min-width: 100%;"
+                                          format="dd/MM/yyyy "
+                                          value="fecha" />
+                        <input type="hidden" id="fechaSeleccionada" name="fechaSeleccionada" />
                     </div>
                     <div class="form-group">
                         <label>Mostrar Todos los Estados:</label>
@@ -46,13 +44,24 @@
             event.preventDefault(); // Evita la acción de envío por defecto
             debugger;
             var fechaHoraExtra = $("#Fecha").data("kendoDatePicker").value();
-            $("#titulo").text("Horas Extra de " + fechaHoraExtra.toLocaleDateString("es-ES"));
+            var fechaFormateada = fechaHoraExtra.toLocaleDateString("es-ES", {
+                day: "2-digit",
+                month: "2-digit",
+                year: "numeric"
+            });
+            if (fechaHoraExtra) {
+                $("#fechaHoraExtra").val(kendo.toString(fechaSeleccionada, "dd/MM/yyyy"));
+            }
+            $("#titulo").text("Horas Extra de " + fechaFormateada);
             GetData(); // Llama a GetData cuando se envía el formulario
         });
     });
 
 
+
+
     function RefrescarGridDetalle() {
+        debugger;
         var grid = $("#grdConfiguracion").getKendoGrid();
         grid.dataSource.read();
 
@@ -62,14 +71,12 @@
         debugger;
         var fechaHoraExtra = $("#Fecha").data("kendoDatePicker").value();
         var checked = $("#Todos").prop("checked");
-
         var data = {
 
             fecha: fechaHoraExtra.toJSON(),
             todos: checked
         };
-        return data
-        RefrescarGridDetalle();
+        return data;
     }
 
     function Aprobar(e) {
@@ -154,10 +161,12 @@
 
 
     function dataBound(e) {
+        debugger;
         $.each(this.dataSource.data(), function () {
-            if (this.Estado.NombreEstado != 'Cargado') {
+            if (this.IdEstado != 70) {
                 $('[data-uid=' + this.uid + ']').find('.k-grid-Aprobar').hide();
                 $('[data-uid=' + this.uid + ']').find('.k-grid-Rechazar').hide();
+                $('[data-uid=' + this.uid + ']').find('.k-grid-edit').hide();
             }
         })
     }
@@ -166,22 +175,25 @@
 
 
 @(Html.Kendo().Grid<ERPMVC.Models.HoraExtra>()
-                                      .Name("grdConfiguracion").NoRecords()
+                                      .Name("grdConfiguracion").NoRecords().Events(e => e.DataBound("dataBound"))
 
                                       .Columns(columns =>
                                       {
                                           {
                                               columns.Command(command =>
                                               {
+                                                  command.Edit().Text(" ").IconClass("fa fa-edit");
                                                   command.Custom("Aprobar").Text(" ").IconClass("fa fa-thumbs-up").Click("Aprobar");
                                                   command.Custom("Rechazar").Text(" ").IconClass("fa fa-thumbs-down").Click("Rechazar");
 
                                               }).Width(200).Title("Acciones");
                                           }
-                                          columns.Bound(p => p.Id).Title("No.").Width(80);
+                                          columns.Bound(p => p.Id).Width(80).Visible(false);
+                                          columns.Bound(p => p.IdEmpleado).Title("Empleado ID").Width(80);
                                           columns.Bound(p => p.Empleado.NombreEmpleado).Title("Empleado").Width(130);
                                           columns.Bound(p => p.Horas).Title("Horas").Width(130).HtmlAttributes(new { style = "text-align: right;" });
                                           columns.Bound(p => p.Minutos).Title("Minutos").Width(150).HtmlAttributes(new { style = "text-align: right;" });
+                                          columns.Bound(p => p.HorasExtras).Width(80).Title("Total Horas");
                                           columns.Bound(p => p.Estado.NombreEstado).Title("Estado").Width(150);
                                       }).Filterable(f => f.Operators(o => o.ForString(s => s
                                                              .Clear()
@@ -212,14 +224,21 @@
                                                        .IsNotEqualTo("No es igual que")
                                                         )
                                                      ))
-
-                                        .Editable(e => e.Mode(GridEditMode.PopUp))
+                                        .ToolBar(tools =>
+                                        {
+                                            tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
+                                        })
+                                        .Editable(e => e.Mode(GridEditMode.InLine))
                                         .Sortable()
                                         .AutoBind(true)
                                         .Pageable(p => p.Input(true))
                                         .Resizable(s => s.Columns(true))
                                         .Filterable()
                                         .Scrollable()
+                                        .Excel(excel => excel
+                                            .AllPages(true)
+                                            .Filterable(true)
+                                        )
                                         .DataSource(dataSource =>
                                        dataSource
                                        //.Ajax()
@@ -228,16 +247,56 @@
                                         .Model(model =>
                                         {
                                             model.Id(p => p.Id);
+                                            model.Field(p => p.Id).Editable(false);
+                                            model.Field(p => p.IdEmpleado).Editable(false);
+                                            model.Field(p => p.Empleado.NombreEmpleado).Editable(false);
+                                            model.Field(p => p.Horas).Editable(true);
+                                            model.Field(p => p.Minutos).Editable(true);
+                                            model.Field(p => p.Estado.NombreEstado).Editable(false);
                                         })
                                         .Events(events =>
                                         {
                                             events.Error("error_handler");
+                                            events.RequestEnd("checkResult");
                                         })
                                         .Read(read => read.Action("GetHorasExtra", "HoraExtra").Data("GetData"))
-                                  ).Events(e => e.DataBound("dataBound"))
+                                        .Update(update => update.Action("Update", "HoraExtra", new { id = "{0}" }).Type(HttpVerbs.Post))
+                                  ).Events(e => e.DataBound("dataBound").ExcelExport("fechaexcel").Cancel("RefrescarGridDetalle"))
 )
 
 <script>
+    function error_handler(e) {
+        $.toast({
+            heading: 'Error',
+            text: e.xhr.responseText,
+            position: 'top-right',
+            loaderBg: '#ff6849',
+            icon: 'error',
+            hideAfter: 30000,
+            stack: 6
+        });
+        RefrescarGridDetalle();
+
+    }
+    function fechaexcel(e) {
+       debugger;
+        var fechaHoraExtra = $("#Fecha").data("kendoDatePicker").value();
+        e.workbook.fileName = kendo.toString(fechaHoraExtra, "d") + "_HorasExtraReport.xlsx";
+    }
+    function checkResult(e) {
+         if ((e.type == "update" && e.response.Errors == null)) {
+                $.toast({
+                    heading: 'Éxito',
+                    text: '¡Datos actualizados correctamente!',
+                    position: 'top-right',
+                    loaderBg: '#00ff00',
+                    icon: 'success',
+                    hideAfter: 30000,
+                    stack: 6
+                });
+            RefrescarGridDetalle();
+        }
+    }
     function setRowButtonTooltip(btn_cl, btn_tooltip) {
         $("#grdConfiguracion").kendoTooltip({
             filter: btn_cl,
@@ -245,6 +304,7 @@
         });
     }
 
+    setRowButtonTooltip(".k-grid-edit", "Editar Hora Extra");
     setRowButtonTooltip(".k-grid-Aprobar", "Aprobar");
     setRowButtonTooltip(".k-grid-Rechazar", "Rechazar");
 </script>
