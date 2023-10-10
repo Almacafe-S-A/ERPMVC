@@ -191,19 +191,20 @@ namespace ERPMVC.Controllers
                 {
                     return RedirectToAction("Index");
                 }
-                else {
-                   TempData["Errores"] = await respuesta.Content.ReadAsStringAsync();
-
+                else
+                {
+                    TempData["Errores"] = await respuesta.Content.ReadAsStringAsync();
                 }
 
-                
-                return RedirectToAction("Index");
+
+
+                return View("Index");
             }
             catch (Exception ex)
             {
                 logger.LogError(ex,"Error al guardar el registro biometrico");
                 TempData["Errores"] = ex.Message;
-                return RedirectToAction("Index");
+                return View("Index");
             }
         }
 
