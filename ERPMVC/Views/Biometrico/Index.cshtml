@@ -12,8 +12,8 @@
 }
 <h3 class="text-themecolor">Carga de Archivo Biometrico</h3>
 
-<form id="frmBiometrico" enctype="multipart/form-data" kendo-validator="true" method="post" action="@Url.Action("GuardarBiometrico","Biometrico")" kendo-messages="messages" >
-    
+<form id="frmBiometrico" enctype="multipart/form-data" kendo-validator="true" method="post" kendo-messages="messages">
+
     <div class="card">
         <div class="card-body">
             <div class="row">
@@ -49,7 +49,7 @@
                 </div>
                 <div class="col-md-3">
                     <label style="min-width:100%"></label>
-                    
+
                     <button class="btn btn-primary" type="submit">Cargar Archivo</button>
                 </div>
 
@@ -59,6 +59,35 @@
         </div>
     </div>
 </form>
+
+<script>
+    $(document).ready(function () {
+        $("#frmBiometrico").submit(function (event) {
+            event.preventDefault(); // Evitar que el formulario se envíe de inmediato
+            $.ajax({
+                url: '@Url.Action("GuardarBiometrico", "Biometrico")',
+                method: 'POST',
+                data: new FormData(this), // Enviar los datos del formulario
+                processData: false,
+                contentType: false,
+                success: function (result) {
+                    // Manejo exitoso
+                    console.log("Guardado exitoso:", result);
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    if (XMLHttpRequest.status === 400) {
+                    debugger;
+                        errorMessage = "Error: " + TempData["Errores"];                    
+                        $("#error-container").text(errorMessage);
+                    } else {
+                        // Manejar otros errores
+                        console.error("Otro tipo de error:", textStatus, errorThrown);
+                    }
+                }
+            });
+        });
+    });
+</script>
 
 
 <div class="row">
@@ -171,7 +200,6 @@
                 RefreshBiometrico();
             },
             error: function (XMLHttpRequest, textStatus, errorThrown) {
-                debugger;
                 $.toast({
                     heading: 'Error',
                     text: textStatus + ": " + XMLHttpRequest.responseText,
