@@ -1,5 +1,6 @@
 ﻿@using Kendo.Mvc.UI
 @using System.Security.Claims
+@model ERPMVC.Models.BiometricoPost
 @{
     var errores = TempData.Keys.Contains("Errores") ? TempData["Errores"].ToString() : "";
     ClaimsPrincipal permisos = (ClaimsPrincipal)ViewData["permisos"];
@@ -12,7 +13,10 @@
 }
 <h3 class="text-themecolor">Carga de Archivo Biometrico</h3>
 
-<form id="frmBiometrico" enctype="multipart/form-data" kendo-validator="true" method="post" kendo-messages="messages">
+<form id="frmBiometrico" enctype="multipart/form-data" kendo-validator="true" method="post" kendo-messages="messages"
+      asp-action="GuardarBiometrico" asp-controller="Biometrico"
+      data-ajax-begin="onBegin" data-ajax-complete="onComplete"
+      data-ajax-failure="onFailed" data-ajax-success="onSuccess">
 
     <div class="card">
         <div class="card-body">
@@ -50,10 +54,14 @@
                 <div class="col-md-3">
                     <label style="min-width:100%"></label>
 
-                    <button class="btn btn-primary" type="submit">Cargar Archivo</button>
+                    <button id="btncargar" class="btn btn-primary" type="submit">Cargar Archivo</button>
                 </div>
 
-                <div class="col-md-3">
+                <div class="col-md-6">
+                    
+                    <span style="min-width:max-content" class="text-danger">@Model.message</span>
+                    
+                   
                 </div>
             </div>
         </div>
@@ -61,32 +69,70 @@
 </form>
 
 <script>
-    $(document).ready(function () {
-        $("#frmBiometrico").submit(function (event) {
-            event.preventDefault(); // Evitar que el formulario se envíe de inmediato
-            $.ajax({
-                url: '@Url.Action("GuardarBiometrico", "Biometrico")',
-                method: 'POST',
-                data: new FormData(this), // Enviar los datos del formulario
-                processData: false,
-                contentType: false,
-                success: function (result) {
-                    // Manejo exitoso
-                    console.log("Guardado exitoso:", result);
-                },
-                error: function (XMLHttpRequest, textStatus, errorThrown) {
-                    if (XMLHttpRequest.status === 400) {
-                    debugger;
-                        errorMessage = "Error: " + TempData["Errores"];                    
-                        $("#error-container").text(errorMessage);
-                    } else {
-                        // Manejar otros errores
-                        console.error("Otro tipo de error:", textStatus, errorThrown);
-                    }
-                }
-            });
-        });
-    });
+
+
+    var onBegin = function () {
+        //alert("Begin");
+        debugger;
+        $("#btncargar").prop("disabled", true);
+        var validator = $("#frmBiometrico").data("kendoValidator");
+
+        if (!validator.validate()) {
+            MostrarMensaje("El formulario está incompleto, por favor ingrese la información requerida.", "Error", "Error", 6000);
+
+        };
+    };
+
+
+
+    var onComplete = function (context) {
+        $("#btncargar").prop("disabled", false);
+
+    };
+
+    var onSuccess = function (context) {
+        //alert(context);
+        console.log(context);
+        MostrarMensaje("Datos guardados correctamente.", "sucess", "Satisfactorio", 6000);
+        
+
+    };
+
+    var onFailed = function (context) {
+        // alert(context);
+        debugger;
+        console.log(context);
+        MostrarMensaje("Ha ocurrido un error al crear al empleado.", "Error", "Error", 6000);
+        $("#btnEmployees").prop("disabled", false);
+
+    };
+
+    //$(document).ready(function () {
+    //    $("#frmBiometrico").submit(function (event) {
+    //        event.preventDefault(); // Evitar que el formulario se envíe de inmediato
+    //        $.ajax({
+    //            url: '@Url.Action("GuardarBiometrico", "Biometrico")',
+    //            method: 'POST',
+    //            data: new FormData(this), // Enviar los datos del formulario
+    //            processData: false,
+    //            contentType: false,
+    //            success: function (result) {
+    //                // Manejo exitoso
+    //                console.log("Guardado exitoso:", result);
+    //            },
+    //            error: function (XMLHttpRequest, textStatus, errorThrown) {
+    //                if (XMLHttpRequest.status === 400) {
+    //                debugger;
+    //                    errorMessage = "Error: " + TempData["Errores"];                    
+    //                    $("#error-container").text(errorMessage);
+    //                } else {
+    //                    // Manejar otros errores
+    //                    console.error("Otro tipo de error:", textStatus, errorThrown);
+    //                }
+    //            }
+    //        });
+    //    });
+    //});
 </script>
 
 
