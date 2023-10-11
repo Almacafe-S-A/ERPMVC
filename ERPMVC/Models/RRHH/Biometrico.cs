@@ -27,5 +27,9 @@ namespace ERPMVC.Models
         public DateTime Fecha { get; set; }
         public string Observacion { get; set; }
         public IEnumerable<IFormFile> Archivo { get; set; }
+
+        public string message { get; set; }
+
+        public bool valid { get; set; }
     }
 }

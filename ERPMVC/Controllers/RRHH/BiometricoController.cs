@@ -96,7 +96,7 @@ namespace ERPMVC.Controllers
         }
 
         [HttpPost("[action]")]
-        public async Task<ActionResult> GuardarBiometrico([FromForm]BiometricoPost registro)
+        public async Task<ActionResult<BiometricoPost>> GuardarBiometrico([FromForm]BiometricoPost registro)
         {
             try
             {
@@ -155,8 +155,8 @@ namespace ERPMVC.Controllers
 
                     if (fecha.Equals(DateTime.MinValue)) {
                         TempData["Errores"] = "Formato de Fecha No Valido";
-                        return RedirectToAction("Index");
-                        continue;
+                        return BadRequest("Formato de Fecha No Valido");
+                        
 
                     }
 
@@ -166,10 +166,10 @@ namespace ERPMVC.Controllers
                         continue;
                     }*/
 
-                    if (IdBiometrico == null) { 
+                    if (IdBiometrico == null) {
                         TempData["Errores"] = "Formato de Fecha No Valido";
-                        return RedirectToAction("Index");
-                        continue; 
+                        return BadRequest("Formato de Fecha No Valido");
+
                     }
 
                     var fechaHora = new DateTime(fecha.Year, fecha.Month, fecha.Day, fecha.Hour, fecha.Minute, 0);
@@ -193,7 +193,8 @@ namespace ERPMVC.Controllers
                 }
                 else
                 {
-                    TempData["Errores"] = await respuesta.Content.ReadAsStringAsync();
+                    return BadRequest(" await respuesta.Content.ReadAsStringAsync();");
+
                 }
 
 
@@ -204,7 +205,10 @@ namespace ERPMVC.Controllers
             {
                 logger.LogError(ex,"Error al guardar el registro biometrico");
                 TempData["Errores"] = ex.Message;
-                return View("Index");
+                //return BadRequest(ex.Message);
+                Response.StatusCode = 400;
+                return View("Index", new BiometricoPost { message = ex.Message, valid =false });
+
             }
         }
 
