@@ -59,43 +59,6 @@ namespace ERPMVC.Controllers
             return horario.ToDataSourceResult(request);
         }
 
-        public async Task<ActionResult> Guardar([DataSourceRequest] DataSourceRequest request, Horario horario)
-        {
-            try
-            {
-                    if (horario.Id == 0)
-                    {
-                        horario.UsuarioCreacion = HttpContext.Session.GetString("user");
-                        horario.UsuarioModificacion = horario.UsuarioCreacion;
-                        horario.FechaCreacion = DateTime.Now;
-                        horario.FechaModificacion = horario.FechaCreacion;
-                        horario.IdEstado = horario.activo ? 1 : 2;
-                }
-                else
-                    {
-                        horario.UsuarioModificacion = HttpContext.Session.GetString("user");
-                        horario.FechaModificacion = DateTime.Now;
-                        horario.IdEstado = horario.activo ? 1 : 2;
-                }
-                var respuesta = await Utils.HttpPostAsync(HttpContext.Session.GetString("token"),
-                        config.Value.urlbase + "api/Horario/Guardar", horario);
-                    if (respuesta.IsSuccessStatusCode)
-                    {
-                        var contenido = await respuesta.Content.ReadAsStringAsync();
-                        var resultado = JsonConvert.DeserializeObject<Horario>(contenido);
-                        horario.Id = resultado.Id;
-                        return Json(new[] { resultado }.ToDataSourceResult(request, ModelState));
-                    }
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "Error al actualizar horario");
-                return BadRequest();
-            }
-            return Ok();
-        }
-
-
         [HttpPost("[action]")]
         public async Task<ActionResult> pvwAddHorario([FromBody] HorarioDTO _sarpara)
         {
@@ -132,9 +95,9 @@ namespace ERPMVC.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<Horario>> SaveHorario([FromBody] HorarioDTO horarioDTO)
+        public async Task<IActionResult> SaveHorario([FromBody] HorarioDTO horarioDTO)
         {
-                Horario _Horario = horarioDTO; // Convierte el DTO en un objeto Horario
+            Horario _Horario = horarioDTO; // Convierte el DTO en un objeto Horario
             try
             {
                 // Verificar si el horarioDTO es nulo
@@ -162,31 +125,39 @@ namespace ERPMVC.Controllers
                     return BadRequest("La hora de inicio debe ser menor que la hora final.");
                 }
 
-
                 if (horarioDTO.Id == 0)
                 {
                     var insertResult = await Insert(horarioDTO); // Define tu método InsertHorario
+                    if (insertResult is BadRequestObjectResult)
+                    {
+                        return insertResult; // Si hay un error en la inserción, devuelve BadRequest
+                    }
                 }
                 else
                 {
-                    var updateResult = await Update(_Horario.Id, _Horario); // Define tu método UpdateHorario
+                    var updateResult = await Update(horarioDTO.Id, horarioDTO); // Define tu método UpdateHorario
+                    if (updateResult is BadRequestObjectResult)
+                    {
+                        return updateResult; // Si hay un error en la actualización, devuelve BadRequest
+                    }
                 }
             }
             catch (Exception ex)
             {
                 logger.LogError($"Ocurrió un error: {ex.ToString()}");
-                throw ex;
+                return BadRequest($"Ocurrió un error: {ex.Message}");
             }
 
             return Json(_Horario);
         }
 
 
+
+
         [HttpPost]
         //[ValidateAntiForgeryToken]
-        public async Task<ActionResult<Horario>> Insert(Horario horario)
+        public async Task<IActionResult> Insert(Horario horario)
         {
-            Horario _Horario = horario;
             try
             {
                 string baseadress = config.Value.urlbase;
@@ -196,22 +167,28 @@ namespace ERPMVC.Controllers
                 horario.UsuarioModificacion = HttpContext.Session.GetString("user");
                 horario.FechaCreacion = DateTime.Now;
                 horario.FechaModificacion = DateTime.Now;
+                horario.IdEstado = horario.activo ? 1 : 2;
                 var result = await _client.PostAsJsonAsync(baseadress + "api/Horario/Insert", horario);
-                string valorrespuesta = "";
+
                 if (result.IsSuccessStatusCode)
                 {
-                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    var valorrespuesta = await result.Content.ReadAsStringAsync();
                     horario = JsonConvert.DeserializeObject<Horario>(valorrespuesta);
+                    return Ok(horario);
                 }
-
+                else
+                {
+                    return BadRequest("La solicitud HTTP no fue exitosa. Código de estado: " + result.StatusCode);
+                }
             }
             catch (Exception ex)
             {
-                return await Task.Run(() => BadRequest($"Ocurrio un error{ex.Message}"));
+                return BadRequest($"Ocurrió un error: {ex.Message}");
             }
-
-            return Ok(horario);
         }
+
+
+
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(Int64 Id, Horario horario)
         {
@@ -224,11 +201,17 @@ namespace ERPMVC.Controllers
                 _Horario.FechaModificacion = DateTime.Now;
                 _Horario.UsuarioModificacion = HttpContext.Session.GetString("user");
                 var result = await _client.PutAsJsonAsync(baseadress + "api/Horario/Update", _Horario);
-                string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
+                string valorrespuesta = "";
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _Horario = JsonConvert.DeserializeObject<Horario>(valorrespuesta);
+                }
+                else
+                {
+                    // La solicitud no fue exitosa, maneja el error aquí
+                    var errorResponse = await result.Content.ReadAsStringAsync();
+                    return BadRequest("Error en la solicitud HTTP: " + errorResponse);
                 }
 
             }
