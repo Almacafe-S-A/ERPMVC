@@ -38,8 +38,11 @@ namespace ERPMVC.Controllers
         //[Authorize(Policy = "RRHH.Asistencia.Cargar Archivo Biometrico")]
         public IActionResult Index()
         {
+            BiometricoPost biometricoPost = new BiometricoPost();
+            biometricoPost.valid = true;
+            biometricoPost.message = "";
             ViewData["permisos"] = _principal;
-            return View();
+            return View(biometricoPost);
         }
 
         public IActionResult VerDetalle(long idBiometrico)
@@ -96,8 +99,9 @@ namespace ERPMVC.Controllers
         }
 
         [HttpPost("[action]")]
-        public async Task<ActionResult> GuardarBiometrico([FromForm]BiometricoPost registro)
+        public async Task<ActionResult<BiometricoPost>> GuardarBiometrico([FromForm]BiometricoPost registro)
         {
+            Exception ex = null;
             try
             {
                 if (registro.Archivo == null)
@@ -155,8 +159,8 @@ namespace ERPMVC.Controllers
 
                     if (fecha.Equals(DateTime.MinValue)) {
                         TempData["Errores"] = "Formato de Fecha No Valido";
-                        return RedirectToAction("Index");
-                        continue;
+                        throw new Exception("Formato de Fecha No Valido");
+
 
                     }
 
@@ -166,10 +170,10 @@ namespace ERPMVC.Controllers
                         continue;
                     }*/
 
-                    if (IdBiometrico == null) { 
+                    if (IdBiometrico == null) {
                         TempData["Errores"] = "Formato de Fecha No Valido";
-                        return RedirectToAction("Index");
-                        continue; 
+                        throw new Exception("Formato de Fecha No Valido");
+
                     }
 
                     var fechaHora = new DateTime(fecha.Year, fecha.Month, fecha.Day, fecha.Hour, fecha.Minute, 0);
@@ -193,18 +197,20 @@ namespace ERPMVC.Controllers
                 }
                 else
                 {
-                    TempData["Errores"] = await respuesta.Content.ReadAsStringAsync();
+                    var errorMessage = await respuesta.Content.ReadAsStringAsync();
+                    ex = JsonConvert.DeserializeObject<Exception>(errorMessage);
+                    TempData["Errores"] = ex.Message;
+                    throw ex; // Devuelve el mensaje de error
                 }
-
-
-
-                return View("Index");
             }
-            catch (Exception ex)
+            catch (Exception exception)
             {
-                logger.LogError(ex,"Error al guardar el registro biometrico");
-                TempData["Errores"] = ex.Message;
-                return View("Index");
+                logger.LogError(exception, "Error al guardar el registro biometrico");
+                TempData["Errores"] = exception.Message;
+                //return BadRequest(ex.Message);
+                Response.StatusCode = 400;
+                return View("Index", new BiometricoPost { message = exception.Message, valid =false });
+
             }
         }
 

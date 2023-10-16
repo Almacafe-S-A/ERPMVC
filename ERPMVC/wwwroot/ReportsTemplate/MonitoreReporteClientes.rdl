@@ -22,6 +22,9 @@
             <Value>=Parameters!Fecha.Value</Value>
             <rd:UserDefined>true</rd:UserDefined>
           </QueryParameter>
+          <QueryParameter Name="@MontoMayor">
+            <Value>=Parameters!MontoMayor.Value</Value>
+          </QueryParameter>
         </QueryParameters>
         <CommandText>SELECT (Select top (1)  tipoinstitucion from CompanyInfo) as TipoInstitucion,
 	   (Select top (1)  CodigoInstitucion from CompanyInfo) as CodigoInstitucion,
@@ -31,8 +34,8 @@
 	   2 CodigoIdentificacion,
 	   case when c.CustomerTypeId = 1 then UPPER(p.SortName) else c.Nacionalidad end CodigoNacionalidad,
 	   case when pro.id = c.ProfesionId then pro.Valorstring else '0' end CodigoProfesion,
-	   --case when (c.CustomerTypeId = 1 or c.CustomerTypeId = 2) then substring(c.GiroActividadNegocio,0,5) else '0000' end CodigoActividadEconomica,
-	   case when act.id = c.ActividadEconomicaId then act.Valorstring else '0000' end CodigoActividadEconomica,
+	   case when (c.CustomerTypeId = 1 or c.CustomerTypeId = 2) then substring(c.GiroActividadNegocio,0,5) else '0000' end CodigoActividadEconomica,
+	   --case when act.id = c.ActividadEconomicaId then act.Valorstring else '0000' end CodigoActividadEconomica,
 	   case when gen.Id = c.GeneroId then gen.Valorstring else '0' end Genero,
 	   c.Address Direccion,
 	   case when c.CustomerTypeId = 1 then UPPER(p.SortName) else c.Nacionalidad end ResidenciaPais,
@@ -42,7 +45,8 @@
 	   case when c.CustomerTypeId = 1 then 'No Aplica' else  NombreEmpresaPN end EmpresaLabora,
 	   case when c.CustomerTypeId = 1 then 2 else 1 end TipoPersona,
 	   c.CustomerId CIF
-  FROM Customer c --right join InvoicePayments i on i.CustomerId = c.CustomerId 
+  FROM Customer c 
+  right join InvoicePayments i on i.CustomerId = c.CustomerId 
   left join Country p on p.Id = c.CountryId 
   left join State s on s.Id = c.StateId
   left join City cy on cy.Id = c.CityId
@@ -50,7 +54,8 @@
   left join ElementoConfiguracion pro on pro.id = c.ProfesionId
   left join ElementoConfiguracion gen on gen.id = c.GeneroId
 
-where  MONTH(C.FechaCreacion)=MONTH(@Fecha) AND YEAR(C.FechaCreacion)=YEAR(@Fecha) AND C.FechaCreacion&lt;=@Fecha</CommandText>
+where  MONTH(i.FechaCreacion)=MONTH(@Fecha) AND YEAR(i.FechaCreacion)=YEAR(@Fecha) AND i.FechaCreacion&lt;=@Fecha 
+ and i.MontoPagado&gt;=@MontoMayor and i.Estado='Aprobado'</CommandText>
       </Query>
       <Fields>
         <Field Name="TipoInstitucion">
@@ -139,6 +144,9 @@ where  MONTH(C.FechaCreacion)=MONTH(@Fecha) AND YEAR(C.FechaCreacion)=YEAR(@Fech
                 </TablixColumn>
                 <TablixColumn>
                   <Width>25mm</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>31.02792mm</Width>
                 </TablixColumn>
                 <TablixColumn>
                   <Width>25mm</Width>
@@ -289,6 +297,47 @@ where  MONTH(C.FechaCreacion)=MONTH(@Fecha) AND YEAR(C.FechaCreacion)=YEAR(@Fech
                             </Paragraph>
                           </Paragraphs>
                           <rd:DefaultName>Textbox5</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Style>None</Style>
+                            </Border>
+                            <BottomBorder>
+                              <Color>LightGrey</Color>
+                              <Style>Solid</Style>
+                              <Width>1pt</Width>
+                            </BottomBorder>
+                            <BackgroundColor>White</BackgroundColor>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox6">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>Numero de Identificacion</Value>
+                                  <Style>
+                                    <FontSize>11pt</FontSize>
+                                    <FontWeight>Bold</FontWeight>
+                                    <Color>#666666</Color>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox6</rd:DefaultName>
                           <Style>
                             <Border>
                               <Style>None</Style>
@@ -952,6 +1001,41 @@ where  MONTH(C.FechaCreacion)=MONTH(@Fecha) AND YEAR(C.FechaCreacion)=YEAR(@Fech
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
+                        <Textbox Name="RTN">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Fields!RTN.Value</Value>
+                                  <Style>
+                                    <FontWeight>Normal</FontWeight>
+                                    <Color>#333333</Color>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>RTN</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Style>None</Style>
+                            </Border>
+                            <BackgroundColor>White</BackgroundColor>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
                         <Textbox Name="CustomerName">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
@@ -1427,6 +1511,7 @@ where  MONTH(C.FechaCreacion)=MONTH(@Fecha) AND YEAR(C.FechaCreacion)=YEAR(@Fech
                 <TablixMember />
                 <TablixMember />
                 <TablixMember />
+                <TablixMember />
               </TablixMembers>
             </TablixColumnHierarchy>
             <TablixRowHierarchy>
@@ -1435,7 +1520,11 @@ where  MONTH(C.FechaCreacion)=MONTH(@Fecha) AND YEAR(C.FechaCreacion)=YEAR(@Fech
                   <KeepWithGroup>After</KeepWithGroup>
                 </TablixMember>
                 <TablixMember>
-                  <Group Name="Details" />
+                  <Group Name="Details">
+                    <GroupExpressions>
+                      <GroupExpression>=Fields!CustomerName.Value</GroupExpression>
+                    </GroupExpressions>
+                  </Group>
                 </TablixMember>
               </TablixMembers>
             </TablixRowHierarchy>
@@ -1443,7 +1532,7 @@ where  MONTH(C.FechaCreacion)=MONTH(@Fecha) AND YEAR(C.FechaCreacion)=YEAR(@Fech
             <Top>10.16mm</Top>
             <Left>3.175mm</Left>
             <Height>12mm</Height>
-            <Width>418.93166mm</Width>
+            <Width>449.95958mm</Width>
             <Style>
               <Border>
                 <Style>None</Style>
@@ -1457,7 +1546,7 @@ where  MONTH(C.FechaCreacion)=MONTH(@Fecha) AND YEAR(C.FechaCreacion)=YEAR(@Fech
               <Paragraph>
                 <TextRuns>
                   <TextRun>
-                    <Value>Reporte Clientes</Value>
+                    <Value> Clientes</Value>
                     <Style>
                       <FontFamily>Segoe UI Light</FontFamily>
                       <FontSize>18pt</FontSize>
@@ -1465,7 +1554,7 @@ where  MONTH(C.FechaCreacion)=MONTH(@Fecha) AND YEAR(C.FechaCreacion)=YEAR(@Fech
                   </TextRun>
                 </TextRuns>
                 <Style>
-                  <TextAlign>Center</TextAlign>
+                  <TextAlign>Left</TextAlign>
                 </Style>
               </Paragraph>
             </Paragraphs>
@@ -1494,7 +1583,7 @@ where  MONTH(C.FechaCreacion)=MONTH(@Fecha) AND YEAR(C.FechaCreacion)=YEAR(@Fech
           </Border>
         </Style>
       </Body>
-      <Width>16.73296in</Width>
+      <Width>17.83994in</Width>
       <Page>
         <PageFooter>
           <Height>0.45in</Height>
@@ -1555,16 +1644,30 @@ where  MONTH(C.FechaCreacion)=MONTH(@Fecha) AND YEAR(C.FechaCreacion)=YEAR(@Fech
       <DataType>DateTime</DataType>
       <Prompt>Fecha</Prompt>
     </ReportParameter>
+    <ReportParameter Name="MontoMayor">
+      <DataType>Float</DataType>
+      <DefaultValue>
+        <Values>
+          <Value>200000</Value>
+        </Values>
+      </DefaultValue>
+      <Prompt>Monto Mayor</Prompt>
+    </ReportParameter>
   </ReportParameters>
   <ReportParametersLayout>
     <GridLayoutDefinition>
-      <NumberOfColumns>1</NumberOfColumns>
+      <NumberOfColumns>2</NumberOfColumns>
       <NumberOfRows>1</NumberOfRows>
       <CellDefinitions>
         <CellDefinition>
           <ColumnIndex>0</ColumnIndex>
           <RowIndex>0</RowIndex>
           <ParameterName>Fecha</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>1</ColumnIndex>
+          <RowIndex>0</RowIndex>
+          <ParameterName>MontoMayor</ParameterName>
         </CellDefinition>
       </CellDefinitions>
     </GridLayoutDefinition>

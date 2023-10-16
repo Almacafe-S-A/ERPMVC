@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data.Odbc;
 using System.Linq;
 using System.Net.Http;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using ERPMVC.DTO;
 using ERPMVC.Helpers;
@@ -462,8 +463,20 @@ namespace ERPMVC.Controllers
                 try
                 {
                     peso = await listener.ClienteTcpLectura(config.Value.IpBascula, config.Value.PuertoBascula);
-                    peso = peso.Trim();
-                    peso = peso.Split('+', StringSplitOptions.None)[1];
+                    //peso = peso.Trim();
+                    //peso = peso.Split('+', StringSplitOptions.None)[1];
+                    Match match = Regex.Match(peso, @"(\d+)");
+
+                    if (match.Success)
+                    {
+                        peso = match.Value;
+                    }
+                    else
+                    {
+                        //peso = "0"; // Valor predeterminado si no se encontraron números
+                        throw new Exception(peso); 
+                    }
+
                     pesoobtenido = Convert.ToInt32(peso);
                 }
                 catch (Exception ex)
