@@ -6,7 +6,7 @@
     <DataSource Name="ERP">
       <ConnectionProperties>
         <DataProvider>SQL</DataProvider>
-        <ConnectString>Data Source=(local);Initial Catalog=ERP-PRODUCCION</ConnectString>
+        <ConnectString>Data Source=192.168.0.5;Initial Catalog=ERP-PRODUCCION</ConnectString>
         <IntegratedSecurity>true</IntegratedSecurity>
       </ConnectionProperties>
       <rd:SecurityType>Integrated</rd:SecurityType>
@@ -14,7 +14,7 @@
     </DataSource>
   </DataSources>
   <DataSets>
-    <DataSet Name="ClientesAltasBjas">
+    <DataSet Name="Transacciones">
       <Query>
         <DataSourceName>ERP</DataSourceName>
         <QueryParameters>
@@ -30,12 +30,12 @@
 		(Select top (1)  tipoinstitucion from CompanyInfo) as TipoInstitucion,
 	   (Select top (1)  CodigoInstitucion from CompanyInfo) as CodigoInstitucion,
 	   b.BranchCode CodigoSucursal,
+                   @fecha FechaReporte,
 	   b.ZipCode CodigoAgencia,
 	   i.Id Transaccion,
 	   FORMAT( i.FechaPago,'yyyyMMdd') as FechaTransaccion,
 	   N'115003' CodigoTipoTransaccion,
-	   case when iv.ProductId = 1 then N'105003' when iv.ProductId = 2 then N'105001'  when iv.ProductId = 3 then N'105005'   end
-	   CodigoTipoProducto,
+	   case when iv.ProductId = 1 then N'105003' when iv.ProductId = 2 then N'105001' when iv.ProductId = 4 then N'105005' when iv.ProductId = 5 then N'105005'  end CodigoTipoProducto,
 	   ac.AccountNumber NumeroProductoAfectado,
 	   CONCAT(N'Pago de facturacion por parte del cliente por servicio de ', iv.ProductName) as Descripcion,
 	   1 CodigoMoneda,
@@ -46,7 +46,7 @@
   left join AccountManagement ac on ac.AccountManagementId = i.CuentaBancariaId
   left join Branch b on b.BranchId = i.BranchId left join InvoicePaymentsLine il on i.id = il.InvoicePaymentId 
   inner join invoice iv on iv.InvoiceId = il.InvoivceId
-  where year(i.FechaModificacion) = year(@fecha)  and month(i.FechaModificacion) = month(@fecha) and i.MontoPagado&gt;@MontoMayor</CommandText>
+  where year(i.FechaPago) = year(@fecha)  and month(i.FechaPago) = month(@fecha) and FechaPago &lt;= @fecha and i.MontoPagado&gt;=@MontoMayor and i.Estado='Aprobado' --and (iv.ProductId = 1 or iv.ProductId = 3)</CommandText>
       </Query>
       <Fields>
         <Field Name="id">
@@ -63,6 +63,10 @@
         </Field>
         <Field Name="CodigoSucursal">
           <DataField>CodigoSucursal</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="FechaReporte">
+          <DataField>FechaReporte</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
         <Field Name="CodigoAgencia">
@@ -89,13 +93,13 @@
           <DataField>NumeroProductoAfectado</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
-        <Field Name="CodigoMoneda">
-          <DataField>CodigoMoneda</DataField>
-          <rd:TypeName>System.Int32</rd:TypeName>
-        </Field>
         <Field Name="Descripcion">
           <DataField>Descripcion</DataField>
           <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="CodigoMoneda">
+          <DataField>CodigoMoneda</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
         </Field>
         <Field Name="TasaCambio">
           <DataField>TasaCambio</DataField>
@@ -125,7 +129,7 @@
                   <Width>25mm</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>25mm</Width>
+                  <Width>18.78542mm</Width>
                 </TablixColumn>
                 <TablixColumn>
                   <Width>25mm</Width>
@@ -143,16 +147,16 @@
                   <Width>25mm</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>25mm</Width>
+                  <Width>23.14792mm</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>25mm</Width>
+                  <Width>37.89916mm</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>25mm</Width>
+                  <Width>21.29583mm</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>25mm</Width>
+                  <Width>18.91458mm</Width>
                 </TablixColumn>
                 <TablixColumn>
                   <Width>25mm</Width>
@@ -180,7 +184,7 @@
                                 </TextRun>
                               </TextRuns>
                               <Style>
-                                <TextAlign>Right</TextAlign>
+                                <TextAlign>Center</TextAlign>
                               </Style>
                             </Paragraph>
                           </Paragraphs>
@@ -221,7 +225,7 @@
                                 </TextRun>
                               </TextRuns>
                               <Style>
-                                <TextAlign>Right</TextAlign>
+                                <TextAlign>Center</TextAlign>
                               </Style>
                             </Paragraph>
                           </Paragraphs>
@@ -262,7 +266,7 @@
                                 </TextRun>
                               </TextRuns>
                               <Style>
-                                <TextAlign>Right</TextAlign>
+                                <TextAlign>Center</TextAlign>
                               </Style>
                             </Paragraph>
                           </Paragraphs>
@@ -303,7 +307,7 @@
                                 </TextRun>
                               </TextRuns>
                               <Style>
-                                <TextAlign>Right</TextAlign>
+                                <TextAlign>Center</TextAlign>
                               </Style>
                             </Paragraph>
                           </Paragraphs>
@@ -344,7 +348,7 @@
                                 </TextRun>
                               </TextRuns>
                               <Style>
-                                <TextAlign>Right</TextAlign>
+                                <TextAlign>Center</TextAlign>
                               </Style>
                             </Paragraph>
                           </Paragraphs>
@@ -376,7 +380,7 @@
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>NumeroTransaccion</Value>
+                                  <Value>Numero Transaccion</Value>
                                   <Style>
                                     <FontSize>11pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
@@ -385,7 +389,7 @@
                                 </TextRun>
                               </TextRuns>
                               <Style>
-                                <TextAlign>Right</TextAlign>
+                                <TextAlign>Center</TextAlign>
                               </Style>
                             </Paragraph>
                           </Paragraphs>
@@ -426,7 +430,7 @@
                                 </TextRun>
                               </TextRuns>
                               <Style>
-                                <TextAlign>Right</TextAlign>
+                                <TextAlign>Center</TextAlign>
                               </Style>
                             </Paragraph>
                           </Paragraphs>
@@ -467,7 +471,7 @@
                                 </TextRun>
                               </TextRuns>
                               <Style>
-                                <TextAlign>Right</TextAlign>
+                                <TextAlign>Center</TextAlign>
                               </Style>
                             </Paragraph>
                           </Paragraphs>
@@ -508,7 +512,7 @@
                                 </TextRun>
                               </TextRuns>
                               <Style>
-                                <TextAlign>Right</TextAlign>
+                                <TextAlign>Center</TextAlign>
                               </Style>
                             </Paragraph>
                           </Paragraphs>
@@ -549,7 +553,7 @@
                                 </TextRun>
                               </TextRuns>
                               <Style>
-                                <TextAlign>Right</TextAlign>
+                                <TextAlign>Center</TextAlign>
                               </Style>
                             </Paragraph>
                           </Paragraphs>
@@ -590,7 +594,7 @@
                                 </TextRun>
                               </TextRuns>
                               <Style>
-                                <TextAlign>Right</TextAlign>
+                                <TextAlign>Center</TextAlign>
                               </Style>
                             </Paragraph>
                           </Paragraphs>
@@ -631,7 +635,7 @@
                                 </TextRun>
                               </TextRuns>
                               <Style>
-                                <TextAlign>Right</TextAlign>
+                                <TextAlign>Center</TextAlign>
                               </Style>
                             </Paragraph>
                           </Paragraphs>
@@ -672,7 +676,7 @@
                                 </TextRun>
                               </TextRuns>
                               <Style>
-                                <TextAlign>Right</TextAlign>
+                                <TextAlign>Center</TextAlign>
                               </Style>
                             </Paragraph>
                           </Paragraphs>
@@ -713,7 +717,7 @@
                                 </TextRun>
                               </TextRuns>
                               <Style>
-                                <TextAlign>Right</TextAlign>
+                                <TextAlign>Center</TextAlign>
                               </Style>
                             </Paragraph>
                           </Paragraphs>
@@ -757,7 +761,9 @@
                                   </Style>
                                 </TextRun>
                               </TextRuns>
-                              <Style />
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
                             </Paragraph>
                           </Paragraphs>
                           <rd:DefaultName>TipoInstitucion</rd:DefaultName>
@@ -790,7 +796,9 @@
                                   </Style>
                                 </TextRun>
                               </TextRuns>
-                              <Style />
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
                             </Paragraph>
                           </Paragraphs>
                           <rd:DefaultName>CodigoInstitucion</rd:DefaultName>
@@ -823,7 +831,9 @@
                                   </Style>
                                 </TextRun>
                               </TextRuns>
-                              <Style />
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
                             </Paragraph>
                           </Paragraphs>
                           <rd:DefaultName>CodigoSucursal</rd:DefaultName>
@@ -856,7 +866,9 @@
                                   </Style>
                                 </TextRun>
                               </TextRuns>
-                              <Style />
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
                             </Paragraph>
                           </Paragraphs>
                           <rd:DefaultName>CodigoAgencia</rd:DefaultName>
@@ -875,14 +887,14 @@
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="Textbox29">
+                        <Textbox Name="FechaReporte">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Parameters!fecha.Value</Value>
+                                  <Value>=FORMAT(First(Fields!FechaReporte.Value,"Transacciones"),"yyyyMMdd")</Value>
                                   <Style>
                                     <FontWeight>Normal</FontWeight>
                                     <Format>yyyyMMdd</Format>
@@ -890,10 +902,12 @@
                                   </Style>
                                 </TextRun>
                               </TextRuns>
-                              <Style />
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>Textbox29</rd:DefaultName>
+                          <rd:DefaultName>FechaReporte</rd:DefaultName>
                           <Style>
                             <Border>
                               <Style>None</Style>
@@ -923,7 +937,9 @@
                                   </Style>
                                 </TextRun>
                               </TextRuns>
-                              <Style />
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
                             </Paragraph>
                           </Paragraphs>
                           <rd:DefaultName>Transaccion</rd:DefaultName>
@@ -956,7 +972,9 @@
                                   </Style>
                                 </TextRun>
                               </TextRuns>
-                              <Style />
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
                             </Paragraph>
                           </Paragraphs>
                           <rd:DefaultName>FechaTransaccion</rd:DefaultName>
@@ -989,7 +1007,9 @@
                                   </Style>
                                 </TextRun>
                               </TextRuns>
-                              <Style />
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
                             </Paragraph>
                           </Paragraphs>
                           <rd:DefaultName>CodigoTipoTransaccion</rd:DefaultName>
@@ -1022,7 +1042,9 @@
                                   </Style>
                                 </TextRun>
                               </TextRuns>
-                              <Style />
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
                             </Paragraph>
                           </Paragraphs>
                           <rd:DefaultName>CodigoTipoProducto</rd:DefaultName>
@@ -1055,7 +1077,9 @@
                                   </Style>
                                 </TextRun>
                               </TextRuns>
-                              <Style />
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
                             </Paragraph>
                           </Paragraphs>
                           <rd:DefaultName>NumeroProductoAfectado</rd:DefaultName>
@@ -1088,7 +1112,9 @@
                                   </Style>
                                 </TextRun>
                               </TextRuns>
-                              <Style />
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
                             </Paragraph>
                           </Paragraphs>
                           <rd:DefaultName>Descripcion1</rd:DefaultName>
@@ -1121,7 +1147,9 @@
                                   </Style>
                                 </TextRun>
                               </TextRuns>
-                              <Style />
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
                             </Paragraph>
                           </Paragraphs>
                           <rd:DefaultName>CodigoMoneda</rd:DefaultName>
@@ -1154,7 +1182,9 @@
                                   </Style>
                                 </TextRun>
                               </TextRuns>
-                              <Style />
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
                             </Paragraph>
                           </Paragraphs>
                           <rd:DefaultName>TasaCambio</rd:DefaultName>
@@ -1187,7 +1217,9 @@
                                   </Style>
                                 </TextRun>
                               </TextRuns>
-                              <Style />
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
                             </Paragraph>
                           </Paragraphs>
                           <rd:DefaultName>Monto</rd:DefaultName>
@@ -1236,11 +1268,11 @@
                 </TablixMember>
               </TablixMembers>
             </TablixRowHierarchy>
-            <DataSetName>ClientesAltasBjas</DataSetName>
+            <DataSetName>Transacciones</DataSetName>
             <Top>0mm</Top>
-            <Left>0mm</Left>
+            <Left>1.905mm</Left>
             <Height>12mm</Height>
-            <Width>350mm</Width>
+            <Width>345.04291mm</Width>
             <Style>
               <Border>
                 <Style>None</Style>
@@ -1248,17 +1280,17 @@
             </Style>
           </Tablix>
         </ReportItems>
-        <Height>57.15mm</Height>
+        <Height>1.01042in</Height>
         <Style>
           <Border>
             <Style>None</Style>
           </Border>
         </Style>
       </Body>
-      <Width>425mm</Width>
+      <Width>13.71145in</Width>
       <Page>
         <PageHeader>
-          <Height>15.66333mm</Height>
+          <Height>0.61667in</Height>
           <PrintOnFirstPage>true</PrintOnFirstPage>
           <PrintOnLastPage>true</PrintOnLastPage>
           <ReportItems>
@@ -1269,7 +1301,7 @@
                 <Paragraph>
                   <TextRuns>
                     <TextRun>
-                      <Value>Transacciones de Clientes</Value>
+                      <Value>Transacciones Financieras</Value>
                       <Style>
                         <FontFamily>Segoe UI Light</FontFamily>
                         <FontSize>18pt</FontSize>
@@ -1277,16 +1309,16 @@
                     </TextRun>
                   </TextRuns>
                   <Style>
-                    <TextAlign>Center</TextAlign>
+                    <TextAlign>Left</TextAlign>
                   </Style>
                 </Paragraph>
               </Paragraphs>
               <rd:WatermarkTextbox>Title</rd:WatermarkTextbox>
               <rd:DefaultName>ReportTitle</rd:DefaultName>
               <Top>2.75167mm</Top>
-              <Left>1.498cm</Left>
+              <Left>0.1905cm</Left>
               <Height>10.16mm</Height>
-              <Width>75mm</Width>
+              <Width>93.78542mm</Width>
               <Style>
                 <Border>
                   <Style>None</Style>
@@ -1305,7 +1337,7 @@
           </Style>
         </PageHeader>
         <PageFooter>
-          <Height>11.43mm</Height>
+          <Height>0.45in</Height>
           <PrintOnFirstPage>true</PrintOnFirstPage>
           <PrintOnLastPage>true</PrintOnLastPage>
           <ReportItems>
@@ -1316,7 +1348,7 @@
                 <Paragraph>
                   <TextRuns>
                     <TextRun>
-                      <Value>=Parameters!fecha.Value</Value>
+                      <Value>=Globals!ExecutionTime</Value>
                       <Style />
                     </TextRun>
                   </TextRuns>
@@ -1326,8 +1358,8 @@
                 </Paragraph>
               </Paragraphs>
               <rd:DefaultName>ExecutionTime</rd:DefaultName>
-              <Top>5.08mm</Top>
-              <Left>105.4567mm</Left>
+              <Top>1.41111mm</Top>
+              <Left>209.17338mm</Left>
               <Height>6.35mm</Height>
               <Width>50.8mm</Width>
               <Style>
@@ -1347,13 +1379,13 @@
             </Border>
           </Style>
         </PageFooter>
-        <PageHeight>29.7cm</PageHeight>
-        <PageWidth>21cm</PageWidth>
-        <LeftMargin>2cm</LeftMargin>
-        <RightMargin>2cm</RightMargin>
-        <TopMargin>2cm</TopMargin>
-        <BottomMargin>2cm</BottomMargin>
-        <ColumnSpacing>0.13cm</ColumnSpacing>
+        <PageHeight>8.26772in</PageHeight>
+        <PageWidth>14in</PageWidth>
+        <LeftMargin>0.1in</LeftMargin>
+        <RightMargin>0.1in</RightMargin>
+        <TopMargin>0in</TopMargin>
+        <BottomMargin>0in</BottomMargin>
+        <ColumnSpacing>0.05118in</ColumnSpacing>
         <Style />
       </Page>
     </ReportSection>
@@ -1361,11 +1393,6 @@
   <ReportParameters>
     <ReportParameter Name="fecha">
       <DataType>DateTime</DataType>
-      <DefaultValue>
-        <Values>
-          <Value>=Globals!ExecutionTime</Value>
-        </Values>
-      </DefaultValue>
       <Prompt>Fecha</Prompt>
     </ReportParameter>
     <ReportParameter Name="MontoMayor">
@@ -1380,8 +1407,8 @@
   </ReportParameters>
   <ReportParametersLayout>
     <GridLayoutDefinition>
-      <NumberOfColumns>1</NumberOfColumns>
-      <NumberOfRows>2</NumberOfRows>
+      <NumberOfColumns>2</NumberOfColumns>
+      <NumberOfRows>1</NumberOfRows>
       <CellDefinitions>
         <CellDefinition>
           <ColumnIndex>0</ColumnIndex>
@@ -1389,13 +1416,13 @@
           <ParameterName>fecha</ParameterName>
         </CellDefinition>
         <CellDefinition>
-          <ColumnIndex>0</ColumnIndex>
-          <RowIndex>1</RowIndex>
+          <ColumnIndex>1</ColumnIndex>
+          <RowIndex>0</RowIndex>
           <ParameterName>MontoMayor</ParameterName>
         </CellDefinition>
       </CellDefinitions>
     </GridLayoutDefinition>
   </ReportParametersLayout>
-  <rd:ReportUnitType>Mm</rd:ReportUnitType>
+  <rd:ReportUnitType>Inch</rd:ReportUnitType>
   <rd:ReportID>22f107e5-5607-4d3a-8d6c-0d7be9e6b195</rd:ReportID>
 </Report>
