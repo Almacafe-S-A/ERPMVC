@@ -16,16 +16,13 @@ namespace ERPMVC.Models
         [ForeignKey("PeriodoId")]
         public Periodo Periodo { get; set; }
 
-        [Required]
         public string Nombre { get; set; }
 
-        [Required]
         public DateTime FechaInicio { get; set; }
-        [Required]
         public DateTime FechaFin { get; set; }
         
         [UIHintAttribute("EstadosList")]
-            public long IdEstado { get; set; }
+        public long IdEstado { get; set; }
         public Estados Estado { get; set; }
 
         public DateTime FechaCreacion { get; set; }

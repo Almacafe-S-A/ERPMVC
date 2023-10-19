@@ -1,4 +1,4 @@
-﻿@model ERPMVC.Models.Presupuesto
+﻿@model ERPMVC.Models.Feriado
 @using System.Security.Claims
 @{
     ViewData["Title"] = "Feriado";
@@ -6,9 +6,6 @@
 }
 
 <style>
-
-
-
     .k-checkbox + .k-checkbox-label {
         border-color: #ff6358;
         color: #fff;
@@ -20,9 +17,9 @@
 <div class="row">
     <div class="col-md-3">
         <div class="form-group">
-            <label asp-for="Id" class="control-label" style="width:100%">Periodo</label>
-            <kendo-dropdownlist name="Id" filter="Kendo.Mvc.UI.FilterType.Contains"
-                                id="PeriodoId"
+            <label asp-for="Periodo" class="control-label" style="width:100%">Periodo</label>
+            <kendo-dropdownlist name="Periodo" filter="Kendo.Mvc.UI.FilterType.Contains"
+                                id="Periodo"
                                 option-label="Seleccione el periodo"
                                 for="Id"
                                 on-data-bound="RefreshFeriado"
@@ -31,7 +28,6 @@
                                 datatextfield="Anio"
                                 datavaluefield="Id"
                                 auto-bind="true"
-                                data-val-required="El Periodo es requerido"
                                 style="width: 100%;">
                 <datasource type="DataSourceTagHelperType.WebApi">
                     <transport>
@@ -40,24 +36,60 @@
                 </datasource>
 
             </kendo-dropdownlist>
-            <span asp-validation-for="Id" class="text-danger"></span>
+            <span asp-validation-for="Periodo" class="text-danger"></span>
         </div>
     </div>
 </div>
 
 <script type="text/javascript">
 
+    function DeleteFeriado(e) {
+        if (confirm('¿Esta seguro que desea eliminar este Feriado?')) {
+            e.preventDefault();
+            var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+            var dataObject = {
+                Id: dataItem.Id,
+                editar: 0
+            };
+
+            $.ajax({
+                url: '@Url.Action("Delete", "Feriado")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (result) {
+                    RefreshFeriado()
+                    console.log('success', result)
+
+                    $("#numFeriado").html('');
+                    $("#numFeriado").html(result);
+
+
+                    //$("#btnCAI").hide();
+                    $('#ModalFeriado').modal('show');
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    //alert(textStatus + ": " + XMLHttpRequest.responseText);
+                    MostrarMensaje(textStatus + ": " + XMLHttpRequest.responseText, "Error", "Error", 6000);
+                }
+            });
+        }
+    }
+
     function GetPeriodo(){
-        var periodo = $("#PeriodoId").val();
+        var periodo = $("#Periodo").val();
         return {
             PeriodoId : periodo,
         }
     }
 
-
     function RefreshFeriado(){
+
         var grid = $("#gridFeriado").getKendoGrid();
-        var idPeriodo = $("#PeriodoId").val();
+
+        var idPeriodo = $("#Periodo").val();
         if(idPeriodo == ""){
             $(".k-grid-add", "#gridFeriado").hide();
         }else{
@@ -67,61 +99,46 @@
     }
 
     function AddFeriado() {
-        var grids = $("#gridFeriado").data("kendoGrid");
-        if ($("#PeriodoId").val() === '') {
-			
-            $('#gridFeriado').data("kendoGrid").cancelChanges();
+        $("#btnFeriado").show();
+        $("#btnFeriado").prop("disabled", false);
 
-            $.toast({
-                heading: 'Error',
-                text: ' Debe seleccionar un Periodo!',
-                position: 'top-right',
-                loaderBg: '#ff6849',
-                icon: 'error',
-                hideAfter: 30000,
-                stack: 6
-            });
-            return;
-            grids.hideColumn(0);
-        }
-        else {
-            grids.showColumn(0);
-        }
+        $('#ModalFeriado').find(':input').not(':submit').val('');
+        $('#ModalFeriado').modal('show');
+        $("#Id").val('0');
+        $("#IdEstado").data("kendoDropDownList").value(0);
+        $("#")
+        var validator = $("#frmFeriado").data("kendoValidator");
     }
+    function EditFeriado(e) {
+        e.preventDefault();
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        var dataObject = {
+            Id: dataItem.Id,
+            editar: 0
+        };
 
-    function GetPresupuesto() {
+        $.ajax({
+            url: '@Url.Action("pvwAddFeriado", "Feriado")',
+            method: 'POST',
+            datatype: "json",
+            contentType: 'application/json',
+            async: false,
+            data: JSON.stringify(dataObject),
+            success: function (result) {
+                console.log('success', result)
 
-        var pre = $("#Feriado").val();
+                $("#numFeriado").html('');
+                $("#numFeriado").html(result);
 
-        var dataItem = $("#gridFeriado").data("kendoGrid").dataSource.data()[0];
-        dataItem.set("Nombre", pre);
-        dataItem.set("FechaInicio", pre);
-        dataItem.set("FechaFin", pre);
-        dataItem.set("IdEstado", pre);
-        var noEdit = false;
-        var siEdit = true;
-        //dataItem.fields["PresupuestoEnero"].editable = noEdit;
-        //dataItem.fields["EjecucionEnero"].editable = noEdit;
-        $('#ModalPresupuestoFijo').modal('hide');
-    }
 
-    function SoloNumeros(e) {
-        key = e.keyCode || e.which;
-        tecla = String.fromCharCode(key).toLowerCase();
-        letras = "123456789";
-        especiales = "8-37-39-46";
-
-        tecla_especial = false
-        for (var i in especiales) {
-            if (key == especiales[i]) {
-                tecla_especial = true;
-                break;
+                //$("#btnCAI").hide();
+                $('#ModalFeriado').modal('show');
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                //alert(textStatus + ": " + XMLHttpRequest.responseText);
+                MostrarMensaje(textStatus + ": " + XMLHttpRequest.responseText, "Error", "Error", 6000);
             }
-        }
-
-        if (letras.indexOf(tecla) == -1 && !tecla_especial) {
-            return false;
-        }
+        });
     }
 
     $('.decimales').on('input', function decimals(e) {
@@ -141,8 +158,9 @@ Html.Kendo().Grid<ERPMVC.Models.Feriado>
                 {
                     columns.Command(command =>
                     {
-                        command.Edit().Text(" ").IconClass("fa fa-edit").UpdateText(" ").CancelText(" ");
-                        command.Destroy().Text(" ").IconClass("fa fa-trash");
+                        command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditFeriado");
+                        command.Custom("Eliminar").Text(" ").Click("DeleteFeriado").IconClass("fa fa-trash-alt");
+
                     }).Width(120).Title("Acciones");
                 }
                 columns.Bound(p => p.Id).Width(100).Visible(false);
@@ -188,8 +206,7 @@ Html.Kendo().Grid<ERPMVC.Models.Feriado>
             {
                 if (User.HasClaim("RRHH.Parametros.Feriados.Editar", "true"))
                 {
-
-                    tools.Create().Text("Agregar").HtmlAttributes(new { @class = "k-i-plus-sm", @style = "display:none;", onclick = "AddFeriado();" });
+                    tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus").HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddFeriado()" });
                 }
                 tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" }).Text("Exportar a excel");
                 tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" }).Text("Exportar a pdf");
@@ -197,7 +214,7 @@ Html.Kendo().Grid<ERPMVC.Models.Feriado>
 
             })
 
-            .Editable(e => e.Mode(GridEditMode.InLine))
+            .Editable(e => e.Mode(GridEditMode.PopUp))
             .Events(e => e.Save("Guardar"))
             .Sortable()
             .Filterable()
@@ -229,7 +246,7 @@ Html.Kendo().Grid<ERPMVC.Models.Feriado>
                 events.RequestEnd("checkResult");
             })
             .Read(read => read.Action("GetFeriadosByPeriodo", "Feriado").Data("GetPeriodo"))
-            .Create(create => create.Action("Guardar", "Feriado"))
+            .Create(create => create.Action("SaveFeriado", "Feriado"))
             .Update(update => update.Action("Update", "Feriado", new { id = "{0}" }).Type(HttpVerbs.Post))
             .Destroy(update => update.Action("Delete", "Feriado", new { id = "{0}" }).Type(HttpVerbs.Post))
             ).Resizable(resize => resize.Columns(true))
@@ -304,18 +321,17 @@ Html.Kendo().Grid<ERPMVC.Models.Feriado>
             content: btn_tooltip
         });
     }
-
-
+  
     function Guardar(e) {
         debugger;
         var pres = e.model;
-        var idPeriodo = $("#PeriodoId").val();
+        var idPeriodo = $("#Periodo").val();
         pres.set("PeriodoId", idPeriodo);
     }
 
     function CancelEdit(e) {
         var pres = e.model;
-        var idPeriodo = $("#PeriodoId").val();
+        var idPeriodo = $("#Periodo").val();
         pres.set("PeriodoId", idPeriodo);
     }
 
@@ -326,3 +342,10 @@ Html.Kendo().Grid<ERPMVC.Models.Feriado>
     setRowButtonTooltip(".k-grid-cancel", "Cancelar");
 	
 </script>
+<div id="numFeriado">
+    @{
+        var feriadoDto = new ERPMVC.DTO.FeriadoDTO { Id = 0 };
+    }
+
+    @await Html.PartialAsync("pvwAddFeriado", feriadoDto)
+</div>

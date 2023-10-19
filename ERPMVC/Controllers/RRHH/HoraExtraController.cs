@@ -61,7 +61,7 @@ public async Task<DataSourceResult> GetHorasExtra([DataSourceRequest] DataSource
             foreach (var horaExtra in horasExtra)
             {
                 double horasExtras = horaExtra.Horas + (horaExtra.Minutos / 60.0);
-                        horasExtras = Math.Round(horasExtras, MidpointRounding.AwayFromZero);
+                        horasExtras = Math.Round(horasExtras, 1, MidpointRounding.AwayFromZero);
                 horaExtra.HorasExtras = horasExtras;
             }
         }

@@ -69,7 +69,7 @@ namespace ERPMVC.Controllers
 
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     elementoConfiguracions = JsonConvert.DeserializeObject<List<ElementoConfiguracion>>(valorrespuesta);
-                    elementoConfiguracions.Add(new ElementoConfiguracion { Id = 0, Valorstring = "" });
+                    elementoConfiguracions.Add(new ElementoConfiguracion { Id = 0, Valorstring = " " });
                     TA = elementoConfiguracions.OrderBy(q => q.Id).ToList();
                 }
             }
