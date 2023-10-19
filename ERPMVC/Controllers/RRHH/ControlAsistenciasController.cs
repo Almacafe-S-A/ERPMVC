@@ -65,9 +65,12 @@ namespace ERPMVC.Controllers
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
-                    valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    TA = JsonConvert.DeserializeObject<IEnumerable<ElementoConfiguracion>>(valorrespuesta);
+                    List<ElementoConfiguracion> elementoConfiguracions = new List<ElementoConfiguracion>();
 
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    elementoConfiguracions = JsonConvert.DeserializeObject<List<ElementoConfiguracion>>(valorrespuesta);
+                    elementoConfiguracions.Add(new ElementoConfiguracion { Id = 0, Valorstring = " " });
+                    TA = elementoConfiguracions.OrderBy(q => q.Id).ToList();
                 }
             }
             catch (Exception ex)
