@@ -130,11 +130,37 @@ namespace ERPMVC.Controllers
         {
             if (ModelState.IsValid)
             {
-                deduccion.DeductionType = deduccion.DeductionTypeId == 1 ? "Por Ley" : deduccion.DeductionTypeId == 2 ? "Eventual" : deduccion.DeductionTypeId == 3 ? "Colegiación" : "Fondo Pensión / AFP";
-
                 HttpResponseMessage respuesta;
+                    if(deduccion.IdEstado == 1)
+                    {
+                    deduccion.NombreEstado = "Activo";
+                    }
+                    else
+                    {
+                        deduccion.NombreEstado = "Inactivo";
+                    }
+                    if(deduccion.Fortnight == 1)
+                {
+                    deduccion.Cantidad = "1era";
+                }
+                    else if(deduccion.Fortnight == 2)
+                {
+                      deduccion.Cantidad = "2da";
+                }
+                    else if(deduccion.Fortnight == 3)
+                {
+                    deduccion.Cantidad = "Ambas";
+                }
+                else
+                {
+                    deduccion.Cantidad = deduccion.Fortnight.ToString();
+                }
+                    deduccion.FechaModificacion = DateTime.Now;
+                    deduccion.UsuarioModificacion = _principal.Identity.Name;
                 if (deduccion.DeductionId == 0)
                 {
+                    deduccion.FechaCreacion = DateTime.Now;
+                    deduccion.UsuarioCreacion = _principal.Identity.Name;
                     respuesta = await Utils.HttpPostAsync(HttpContext.Session.GetString("token"),
                         config.Value.urlbase + "api/Deduction/Insert", deduccion);
                 }
@@ -147,7 +173,7 @@ namespace ERPMVC.Controllers
                 if (respuesta.IsSuccessStatusCode)
                 {
                     ViewData["Editar"] = 1;
-                    return PartialView("pvwTipoDeduccion", deduccion);
+                    return Ok(deduccion);
                 }
                 else
                 {
