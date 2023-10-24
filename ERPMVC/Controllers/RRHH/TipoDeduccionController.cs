@@ -6,6 +6,9 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using ERPMVC.DTO;
 using ERPMVC.Helpers;
+using ERPMVC.Models;
+using Kendo.Mvc.Extensions;
+using Kendo.Mvc.UI;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -39,7 +42,7 @@ namespace ERPMVC.Controllers
         public ActionResult VistaDetalle()
         {
             ViewData["Editar"] = 1;
-            return PartialView("pvwTipoDeduccion", new DeduccionDTO());
+            return PartialView("pvwTipoDeduccion", new Deduccion());
         }
 
         public async Task<ActionResult> EditarDeduccion(long DeductionId)
@@ -49,7 +52,7 @@ namespace ERPMVC.Controllers
             if (respuesta.IsSuccessStatusCode)
             {
                 var contenido = await respuesta.Content.ReadAsStringAsync();
-                var resultado = JsonConvert.DeserializeObject<DeduccionDTO>(contenido);
+                var resultado = JsonConvert.DeserializeObject<Deduccion>(contenido);
                 ViewData["Editar"] = 1;
                 return PartialView("pvwTipoDeduccion", resultado);
             }
@@ -64,7 +67,7 @@ namespace ERPMVC.Controllers
             if (respuesta.IsSuccessStatusCode)
             {
                 var contenido = await respuesta.Content.ReadAsStringAsync();
-                var resultado = JsonConvert.DeserializeObject<DeduccionDTO>(contenido);
+                var resultado = JsonConvert.DeserializeObject<Deduccion>(contenido);
                 ViewData["Editar"] = 0;
                 return PartialView("pvwTipoDeduccion", resultado);
             }
@@ -72,7 +75,7 @@ namespace ERPMVC.Controllers
             return BadRequest();
         }
 
-        public async Task<ActionResult<List<DeduccionDTO>>> GetDeducciones()
+        public async Task<ActionResult<List<Deduccion>>> GetDeducciones()
         {
             try
             {
@@ -83,12 +86,12 @@ namespace ERPMVC.Controllers
                 if (respuesta.IsSuccessStatusCode)
                 {
                     var contenido = await respuesta.Content.ReadAsStringAsync();
-                    var resultado = JsonConvert.DeserializeObject<List<DeduccionDTO>>(contenido);
+                    var resultado = JsonConvert.DeserializeObject<List<Deduccion>>(contenido);
                     return Ok(resultado);
                 }
                 else
                 {
-                    return Ok(new List<DeduccionDTO>());
+                    return Ok(new List<Deduccion>());
                 }
             }
             catch (Exception ex)
@@ -98,7 +101,37 @@ namespace ERPMVC.Controllers
             }
         }
 
-        public async Task<ActionResult<List<DeduccionDTO>>> GetDeduccionesSinLey()
+        
+
+
+
+        public async Task<ActionResult> GetDeductionQtiesById( [DataSourceRequest] DataSourceRequest request, int DeductionId)
+        {
+            try
+            {
+                string direccionBase = config.Value.urlbase;
+                HttpClient cliente = new HttpClient();
+                cliente.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var respuesta = await cliente.GetAsync(direccionBase + $"api/Deduction/GetDeductionQtiesById/{DeductionId}");
+                if (respuesta.IsSuccessStatusCode)
+                {
+                    var contenido = await respuesta.Content.ReadAsStringAsync();
+                    List<DeductionQty> resultado = JsonConvert.DeserializeObject<List<DeductionQty>>(contenido);
+                    return Json(resultado.ToDataSourceResult(request));
+                }
+                else
+                {
+                    throw new Exception( await respuesta.Content.ReadAsStringAsync());
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex.StackTrace);
+                return BadRequest("Error al cargar tipos de deducciones");
+            }
+        }
+
+        public async Task<ActionResult<List<Deduccion>>> GetDeduccionesSinLey()
         {
             try
             {
@@ -109,13 +142,13 @@ namespace ERPMVC.Controllers
                 if (respuesta.IsSuccessStatusCode)
                 {
                     var contenido = await respuesta.Content.ReadAsStringAsync();
-                    var resultado = JsonConvert.DeserializeObject<List<DeduccionDTO>>(contenido);
+                    var resultado = JsonConvert.DeserializeObject<List<Deduccion>>(contenido);
                     resultado = resultado.Where(r => r.DeductionId > 4).ToList();
                     return Ok(resultado);
                 }
                 else
                 {
-                    return Ok(new List<DeduccionDTO>());
+                    return Ok(new List<Deduccion>());
                 }
             }
             catch (Exception ex)
@@ -126,7 +159,7 @@ namespace ERPMVC.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult> GuardarDeduccion([FromBody] DeduccionDTO deduccion)
+        public async Task<ActionResult> GuardarDeduccion([FromBody] Deduccion deduccion)
         {
             if (ModelState.IsValid)
             {
@@ -196,7 +229,7 @@ namespace ERPMVC.Controllers
                 if (respuesta.IsSuccessStatusCode)
                 {
                     var contenido = await respuesta.Content.ReadAsStringAsync();
-                    var resultado = JsonConvert.DeserializeObject<DeduccionDTO>(contenido);
+                    var resultado = JsonConvert.DeserializeObject<Deduccion>(contenido);
                     return Ok(resultado);
                 }
 

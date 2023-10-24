@@ -1,7 +1,19 @@
-﻿@model ERPMVC.DTO.DeduccionDTO
+﻿@model ERPMVC.Models.Deduccion
 @{
     var editable = (int)ViewData["Editar"] != 1;
+    var permisoEditar = User.HasClaim("RRHH.Tipo de Deduccion.Editar", "true");
 }
+
+<script>
+    function GetDeductionId(){
+        debugger;
+        var deduccionId = $("#DeductionId").val();
+        var dataObject = {
+            DeductionId: deduccionId,
+        }
+        return dataObject
+    }
+    </script>
 <div id="ModalTipoDeduccionUpload" class="modal fade" role="dialog">
     <div class="modal-dialog modal-lg">
 
@@ -72,6 +84,68 @@
                         </div>
                     }
                 </div>
+                <div class="row">
+                    <div class="col-md-12">
+                        @(Html.Kendo().Grid<ERPMVC.Models.DeductionQty>()
+
+                            .Name("gridDeductionQty")
+
+                            .Columns(columns =>
+                            {
+                                if (permisoEditar)
+                                {
+                                    
+                                }
+                                columns.Command(command =>
+                                    {
+                                        //command.Custom("Ver detalles").Click("Detalles");
+                                        command.Edit().Text(" ").IconClass("fa fa-edit");
+                                    command.Destroy().Text(" ").IconClass("fa fa-trash");
+                                    }).Width(100).Title("Acciones");
+
+                                columns.Bound(p => p.Id).Width(150).Visible(false);
+                                columns.Bound(p => p.No).Width(200).Title("No");
+                                columns.Bound(p => p.Fortnight).Width(200).Title("Quincena");
+                                columns.Bound(p => p.Porcentaje).Width(190);
+
+                            })
+
+
+
+                            .ToolBar(tools =>
+                            {
+                                tools.Create().Text("Agregar").IconClass("k-icon k-i-plus");
+
+                            })
+                            .Editable(e => e.Mode(GridEditMode.InCell))
+                            .Sortable()
+                            .Pageable()
+                            .Filterable()
+                            .Scrollable()
+                            .DataSource(dataSource =>
+                            dataSource
+                            .WebApi()
+
+                            .ServerOperation(false)
+                            .Model(model =>
+                            {
+                                model.Id(p => p.Id);
+                                model.Field(p => p.Fortnight).Editable(true);
+                                model.Field(p => p.No).Editable(true);
+                                model.Field(p => p.Porcentaje).Editable(true);
+
+                            })
+                            .Events(events => events.Error("error_handler"))
+                            .Read(read => read.Action("GetDeductionQtiesById", "TipoDeduccion").Data("GetDeductionId"))
+                            )
+                            )
+                    </div>
+
+
+                </div>
+
+               
+                    
             </form>
         </div>
 
@@ -79,27 +153,15 @@
 </div>
 <span id="notificacion"></span>
 <script>
+
+    
     function RefrescarGrid() {
         var grid = $("#grdTipos").getKendoGrid();
         grid.dataSource.read();
     }
-        var fortnightInput = document.getElementById("Fortnight");
-        var customAmountInput = document.getElementById("CustomAmount");
-        fortnightInput.addEventListener("change", function () {
-        debugger;
-        if (this.value >= "4") {
-            customAmountInput.style.display = "block";
-            customAmountInput.removeAttribute("disabled");
 
-        } else {
-            customAmountInput.style.display = "none";
-            customAmountInput.setAttribute("disabled", "disabled");
-        }
-    });
-    customAmountInput.addEventListener("change", function () {
-        debugger;
-            fortnightInput.value = customAmountInput.value;
-    });
+    
+        
 
     function CerrarTipoDeduccion() {
         window.RefreshTipoDeduccion();
@@ -109,13 +171,16 @@
     function Guardar(e) {
         e.preventDefault();
         debugger;
+
+        var displayedData = $("#gridDeductionQty").data().kendoGrid.dataSource.view();
         var deduccion = {
             DeductionId: Number($("#DeductionId").val()),
             Description: $("#Description").val(),
             DeductionTypeId: Number($("#DeductionTypeId").val()),
             DeductionType: $("#DeductionTypeId option:selected").text(), // Obtener el nombre del valor seleccionado
             Fortnight: Number($("#Fortnight").val()),
-            IdEstado: $("#IdEstado").val()
+            IdEstado: $("#IdEstado").val(),
+            DeductionQties: displayedData,
             //Estado: $("#IdEstado").data("kendoDropDownList").value()
         };
         var validator = $("#frmTipoDeduccion").data("kendoValidator");

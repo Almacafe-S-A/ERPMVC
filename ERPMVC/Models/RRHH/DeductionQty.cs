@@ -3,14 +3,17 @@ using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace ERPAPI.Models
+namespace ERPMVC.Models
 {
     public class DeductionQty
     {
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public long Id { get; set; }
+
+        public int No { get; set; }
+
         [ForeignKey("DeductionId")]
-        public DeduccionDTO Deduction { get; set; }
+        public Deduccion Deduction { get; set; }
         public Int64 DeductionId { get; set; }
         [Display(Name = "Quincena a pagar")]
         public double Fortnight { get; set; }
