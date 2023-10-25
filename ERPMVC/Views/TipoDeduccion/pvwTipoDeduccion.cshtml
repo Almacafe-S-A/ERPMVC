@@ -2,6 +2,7 @@
 @{
     var editable = (int)ViewData["Editar"] != 1;
     var permisoEditar = User.HasClaim("RRHH.Tipo de Deduccion.Editar", "true");
+    var currentNoValue = 1;
 }
 
 <script>
@@ -14,6 +15,11 @@
         return dataObject
     }
     </script>
+    <style>
+    .hidden {
+        display: none;
+    }
+    </style>
 <div id="ModalTipoDeduccionUpload" class="modal fade" role="dialog">
     <div class="modal-dialog modal-lg">
 
@@ -39,17 +45,17 @@
                     <div class="row">
                         <div class="col-md-4">
                             <label for="Fortnight">Deducir en Quincena</label><br />
-                            <select id="Fortnight" name="Fortnight" disabled="@editable">
+                            <select id="Fortnight" name="Fortnight" disabled="@editable" asp-for="Fortnight">
                                 <option value="1" selected>1era</option>
                                 <option value="2">2da</option>
                                 <option value="3">Ambas</option>
                                 <option value="4">Mas de Una</option>
                             </select>
-                            <input type="number" id="CustomAmount" name="CustomAmount" style="display: none;" placeholder="Cantidad" />
                         </div>
+
                         <div class="col-md-4">
                             <label for="DeductionTypeId">Tipo </label><br />
-                            <select id="DeductionTypeId" name="DeductionTypeId" disabled="@editable">
+                            <select id="DeductionTypeId" name="DeductionTypeId" disabled="@editable" asp-for="DeductionTypeId">
                                 <option value="1" selected>Por Ley</option>
                                 <option value="2">Eventual</option>
                             </select>
@@ -73,6 +79,7 @@
                                 </kendo-dropdownlist>
                                 <span asp-validation-for="IdEstado" class="text-danger"></span>
                             </div>
+
                         </div>
                     </div>
                     @if (!editable)
@@ -85,9 +92,9 @@
                     }
                 </div>
                 <div class="row">
-                    <div class="col-md-12">
+                    <div class="col-md-12" id="gridDeduct">
                         @(Html.Kendo().Grid<ERPMVC.Models.DeductionQty>()
-
+                            
                             .Name("gridDeductionQty")
 
                             .Columns(columns =>
@@ -131,7 +138,7 @@
                             {
                                 model.Id(p => p.Id);
                                 model.Field(p => p.Fortnight).Editable(true);
-                                model.Field(p => p.No).Editable(true);
+                                model.Field(p => p.No).Editable(false);
                                 model.Field(p => p.Porcentaje).Editable(true);
 
                             })
@@ -140,27 +147,50 @@
                             )
                             )
                     </div>
-
-
-                </div>
-
-               
-                    
+                </div>    
+                
             </form>
+               
         </div>
 
     </div>
 </div>
 <span id="notificacion"></span>
 <script>
+        var grid = $("#gridDeductionQty").data("kendoGrid");
+        grid.bind("dataBound", function (e) {
+            var dataItems = grid.dataSource.view();
 
-    
+            for (var i = 0; i < dataItems.length; i++) {
+                dataItems[i].No = i + 1;
+            }
+            grid.refresh();
+        });
+    $(document).ready(function () {
+        var fortnightInput = $("#Fortnight");
+        var displayedData = $("#gridDeduct");
+        fortnightInput.on("change", function () {
+            if (fortnightInput.val() === "4") {
+                displayedData.show();
+            } else {
+                displayedData.hide();
+            }
+        });
+
+        function checkFortnightValue() {
+            if (fortnightInput.val() === "4") {
+                displayedData.show();
+            } else {
+                displayedData.hide();
+            }
+        }
+        checkFortnightValue();
+    });
+
     function RefrescarGrid() {
         var grid = $("#grdTipos").getKendoGrid();
         grid.dataSource.read();
     }
-
-    
         
 
     function CerrarTipoDeduccion() {

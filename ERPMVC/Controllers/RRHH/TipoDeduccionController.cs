@@ -164,32 +164,32 @@ namespace ERPMVC.Controllers
             if (ModelState.IsValid)
             {
                 HttpResponseMessage respuesta;
-                    if(deduccion.IdEstado == 1)
-                    {
+                if (deduccion.IdEstado == 1)
+                {
                     deduccion.NombreEstado = "Activo";
-                    }
-                    else
-                    {
-                        deduccion.NombreEstado = "Inactivo";
-                    }
-                    if(deduccion.Fortnight == 1)
+                }
+                else
+                {
+                    deduccion.NombreEstado = "Inactivo";
+                }
+                if (deduccion.Fortnight == 1)
                 {
                     deduccion.Cantidad = "1era";
                 }
-                    else if(deduccion.Fortnight == 2)
+                else if (deduccion.Fortnight == 2)
                 {
-                      deduccion.Cantidad = "2da";
+                    deduccion.Cantidad = "2da";
                 }
-                    else if(deduccion.Fortnight == 3)
+                else if (deduccion.Fortnight == 3)
                 {
                     deduccion.Cantidad = "Ambas";
                 }
                 else
                 {
-                    deduccion.Cantidad = deduccion.Fortnight.ToString();
+                    deduccion.Cantidad = "Mas de una";
                 }
-                    deduccion.FechaModificacion = DateTime.Now;
-                    deduccion.UsuarioModificacion = _principal.Identity.Name;
+                deduccion.FechaModificacion = DateTime.Now;
+                deduccion.UsuarioModificacion = _principal.Identity.Name;
                 if (deduccion.DeductionId == 0)
                 {
                     deduccion.FechaCreacion = DateTime.Now;
@@ -202,7 +202,7 @@ namespace ERPMVC.Controllers
                     respuesta = await Utils.HttpPutAsync(HttpContext.Session.GetString("token"),
                         config.Value.urlbase + "api/Deduction/Update", deduccion);
                 }
-                
+
                 if (respuesta.IsSuccessStatusCode)
                 {
                     ViewData["Editar"] = 1;
@@ -212,7 +212,7 @@ namespace ERPMVC.Controllers
                 {
                     return BadRequest();
                 }
-                
+
             }
             else
             {
@@ -237,7 +237,7 @@ namespace ERPMVC.Controllers
             }
             catch (Exception ex)
             {
-                logger.LogError(ex,"Error al cargar tipo deducción por nombre");
+                logger.LogError(ex, "Error al cargar tipo deducción por nombre");
                 return BadRequest();
             }
         }
