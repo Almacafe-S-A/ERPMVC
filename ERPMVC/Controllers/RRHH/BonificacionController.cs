@@ -33,13 +33,13 @@ namespace ERPMVC.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> PostFiltro([FromForm] int Periodo, int Mes, string Inactivo)
+        public async Task<IActionResult> PostFiltro([FromForm] int Periodo, int Mes, bool Inactivo)
         {
             try
             {
                 TempData["Periodo"] = Periodo;
                 TempData["Mes"] = Mes;
-                TempData["Inactivo"] = Inactivo.Equals("on");
+                TempData["Inactivo"] = Inactivo;
                 return RedirectToAction("Index");
             }
             catch (Exception ex)

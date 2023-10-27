@@ -5,10 +5,11 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Threading.Tasks;
 using ERPMVC.DTO;
+using ERPMVC.Models;
 
 namespace ERPMVC.Models
 {
-    public class DeduccionEmpleado
+    public class Deduction
     {
         [Required]
         public Int64 Id { get; set; }
@@ -43,7 +44,9 @@ namespace ERPMVC.Models
         public string UsuarioModificacion { get; set; }
         public string UsuarioCreacion { get; set; }
 
-        public DeduccionDTO Deduccion { get; set; }
+        public Deduccion Deduccion { get; set; }
+
+
     }
 
     public class DeduccionesEmpleadoDTO
