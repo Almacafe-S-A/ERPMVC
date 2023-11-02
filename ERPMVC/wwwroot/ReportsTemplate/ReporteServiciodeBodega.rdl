@@ -32,8 +32,14 @@
           <QueryParameter Name="@FechaInicio">
             <Value>=Parameters!FechaInicio.Value</Value>
           </QueryParameter>
+          <QueryParameter Name="@Motivo">
+            <Value>=Parameters!Motivo.Value</Value>
+          </QueryParameter>
           <QueryParameter Name="@FechaFinal">
             <Value>=Parameters!FechaFinal.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@Sucursal">
+            <Value>=Parameters!Sucursal.Value</Value>
           </QueryParameter>
           <QueryParameter Name="@Cliente">
             <Value>=Parameters!Cliente.Value</Value>
@@ -43,9 +49,6 @@
           </QueryParameter>
           <QueryParameter Name="@SubServicio">
             <Value>=Parameters!SubServicio.Value</Value>
-          </QueryParameter>
-          <QueryParameter Name="@Motivo">
-            <Value>=Parameters!Motivo.Value</Value>
           </QueryParameter>
         </QueryParameters>
         <CommandText>SELECT ss.[SubServicesWareHouseId]
@@ -81,7 +84,7 @@ FROM SubServicesWareHouse ss
 INNER JOIN Product pr on pr.ProductId = ss.ServiceId
 INNER JOIN Employees e on e.IdEmpleado = ss.[EmployeeId]
 INNER JOIN SubProduct sp on sp.SubProductId = ss.SubServiceId and pr.ProductId = ss.ServiceId
-Where ss.StartTime BETWEEN @FechaInicio AND dateadd(Day,1,@FechaFinal) and (ss.CustomerId=@Cliente or @Cliente=0) and (ServiceId=@Servicio or @Servicio=0) and (ss.SubServiceId=@SubServicio or @SubServicio=0) and (ss.Motivo=@Motivo or @Motivo=0) and ss.[Estado]='Aprobado'
+Where (ss.StartTime &gt;= @FechaInicio AND ss.StartTime &lt;= @FechaFinal) and ss.[BranchId]=@Sucursal and (ss.CustomerId=@Cliente or @Cliente=0) and (ServiceId=@Servicio or @Servicio=0) and (ss.SubServiceId=@SubServicio or @SubServicio=0) and (ss.Motivo Like @Motivo or @Motivo ='TODOS') --and ss.[Estado]='Facturado'
 ORDER BY  ss.StartTime</CommandText>
       </Query>
       <Fields>
@@ -264,6 +267,46 @@ order by NombreEmpleado Asc</CommandText>
         </Field>
       </Fields>
     </DataSet>
+    <DataSet Name="Motivos">
+      <Query>
+        <DataSourceName>ERP</DataSourceName>
+        <CommandText>select 0 AS Id, 'TODOS' as Nombre
+UNION ALL
+select Id, Nombre
+from ElementoConfiguracion
+where IdConfiguracion = 146
+order by Nombre Asc</CommandText>
+      </Query>
+      <Fields>
+        <Field Name="Id">
+          <DataField>Id</DataField>
+          <rd:TypeName>System.Int64</rd:TypeName>
+        </Field>
+        <Field Name="Nombre">
+          <DataField>Nombre</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+      </Fields>
+    </DataSet>
+    <DataSet Name="Sucursal">
+      <Query>
+        <DataSourceName>ERP</DataSourceName>
+        <CommandText>SELECT BranchId, BranchName 
+From BRANCH
+Where IdEstado =1
+</CommandText>
+      </Query>
+      <Fields>
+        <Field Name="BranchId">
+          <DataField>BranchId</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="BranchName">
+          <DataField>BranchName</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+      </Fields>
+    </DataSet>
   </DataSets>
   <ReportSections>
     <ReportSection>
@@ -296,7 +339,7 @@ order by NombreEmpleado Asc</CommandText>
               </TablixColumns>
               <TablixRows>
                 <TablixRow>
-                  <Height>0.2694in</Height>
+                  <Height>0.30065in</Height>
                   <TablixCells>
                     <TablixCell>
                       <CellContents>
@@ -1066,7 +1109,7 @@ order by NombreEmpleado Asc</CommandText>
                   </TablixCells>
                 </TablixRow>
                 <TablixRow>
-                  <Height>0.25in</Height>
+                  <Height>0.27083in</Height>
                   <TablixCells>
                     <TablixCell>
                       <CellContents>
@@ -1278,7 +1321,7 @@ order by NombreEmpleado Asc</CommandText>
             <DataSetName>Servicios</DataSetName>
             <Top>0.15875cm</Top>
             <Left>0.04271in</Left>
-            <Height>0.7594in</Height>
+            <Height>0.81148in</Height>
             <Width>8.25247in</Width>
             <Style />
           </Tablix>
@@ -1300,7 +1343,7 @@ order by NombreEmpleado Asc</CommandText>
                 </Style>
               </Paragraph>
             </Paragraphs>
-            <Top>1.59144in</Top>
+            <Top>1.71644in</Top>
             <Left>5.19755in</Left>
             <Height>0.20263in</Height>
             <Width>2.67428in</Width>
@@ -1338,7 +1381,7 @@ order by NombreEmpleado Asc</CommandText>
                 </Style>
               </Paragraph>
             </Paragraphs>
-            <Top>1.58184in</Top>
+            <Top>1.70684in</Top>
             <Left>0.57255in</Left>
             <Height>0.20263in</Height>
             <Width>2.67428in</Width>
@@ -1359,7 +1402,7 @@ order by NombreEmpleado Asc</CommandText>
             </Style>
           </Textbox>
         </ReportItems>
-        <Height>1.89281in</Height>
+        <Height>2.04407in</Height>
         <Style>
           <Border />
           <BackgroundColor>White</BackgroundColor>
@@ -1656,7 +1699,7 @@ order by NombreEmpleado Asc</CommandText>
                       </Style>
                     </TextRun>
                     <TextRun>
-                      <Value>=First(Fields!BranchName.Value, "Servicios")</Value>
+                      <Value>=First(Fields!BranchName.Value, "Sucursal")</Value>
                       <Style>
                         <FontSize>11pt</FontSize>
                         <FontWeight>Bold</FontWeight>
@@ -1752,7 +1795,7 @@ order by NombreEmpleado Asc</CommandText>
           </Style>
         </PageHeader>
         <PageFooter>
-          <Height>0.27083in</Height>
+          <Height>0.23958in</Height>
           <PrintOnFirstPage>true</PrintOnFirstPage>
           <PrintOnLastPage>true</PrintOnLastPage>
           <Style>
@@ -1764,7 +1807,7 @@ order by NombreEmpleado Asc</CommandText>
         <LeftMargin>0in</LeftMargin>
         <RightMargin>0in</RightMargin>
         <TopMargin>0.25in</TopMargin>
-        <BottomMargin>0.25in</BottomMargin>
+        <BottomMargin>0.15in</BottomMargin>
         <Style>
           <Border />
           <BackgroundColor>White</BackgroundColor>
@@ -1780,6 +1823,17 @@ order by NombreEmpleado Asc</CommandText>
     <ReportParameter Name="FechaFinal">
       <DataType>DateTime</DataType>
       <Prompt>Hasta</Prompt>
+    </ReportParameter>
+    <ReportParameter Name="Sucursal">
+      <DataType>Integer</DataType>
+      <Prompt>Sucursal</Prompt>
+      <ValidValues>
+        <DataSetReference>
+          <DataSetName>Sucursal</DataSetName>
+          <ValueField>BranchId</ValueField>
+          <LabelField>BranchName</LabelField>
+        </DataSetReference>
+      </ValidValues>
     </ReportParameter>
     <ReportParameter Name="Servicio">
       <DataType>Integer</DataType>
@@ -1818,15 +1872,22 @@ order by NombreEmpleado Asc</CommandText>
       <DataType>String</DataType>
       <DefaultValue>
         <Values>
-          <Value>0</Value>
+          <Value>TODOS</Value>
         </Values>
       </DefaultValue>
       <Prompt>Motivo</Prompt>
+      <ValidValues>
+        <DataSetReference>
+          <DataSetName>Motivos</DataSetName>
+          <ValueField>Nombre</ValueField>
+          <LabelField>Nombre</LabelField>
+        </DataSetReference>
+      </ValidValues>
     </ReportParameter>
   </ReportParameters>
   <ReportParametersLayout>
     <GridLayoutDefinition>
-      <NumberOfColumns>3</NumberOfColumns>
+      <NumberOfColumns>4</NumberOfColumns>
       <NumberOfRows>2</NumberOfRows>
       <CellDefinitions>
         <CellDefinition>
@@ -1845,7 +1906,7 @@ order by NombreEmpleado Asc</CommandText>
           <ParameterName>Cliente</ParameterName>
         </CellDefinition>
         <CellDefinition>
-          <ColumnIndex>2</ColumnIndex>
+          <ColumnIndex>3</ColumnIndex>
           <RowIndex>0</RowIndex>
           <ParameterName>Servicio</ParameterName>
         </CellDefinition>
@@ -1858,6 +1919,11 @@ order by NombreEmpleado Asc</CommandText>
           <ColumnIndex>2</ColumnIndex>
           <RowIndex>1</RowIndex>
           <ParameterName>Motivo</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>2</ColumnIndex>
+          <RowIndex>0</RowIndex>
+          <ParameterName>Sucursal</ParameterName>
         </CellDefinition>
       </CellDefinitions>
     </GridLayoutDefinition>
