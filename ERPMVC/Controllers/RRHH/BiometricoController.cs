@@ -193,6 +193,8 @@ namespace ERPMVC.Controllers
                     config.Value.urlbase + "api/Biometrico/Guardar", biometrico);
                 if (respuesta.IsSuccessStatusCode)
                 {
+                    var inasistencia = await Utils.HttpGetAsync(HttpContext.Session.GetString("token"),
+                        config.Value.urlbase + $"api/Inasistencia/GetInasistenciasFecha/{biometrico.Fecha.ToString("yyyy-MM-dd")}");
                     return RedirectToAction("Index");
                 }
                 else
