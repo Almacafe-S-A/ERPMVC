@@ -103,6 +103,38 @@ namespace ERPMVC.Controllers
             return Json(_TipoPlanillas.ToDataSourceResult(request));
 
         }
+
+
+        [HttpGet]
+        public async Task<JsonResult> GetTipoPlanillasActivo([DataSourceRequest] DataSourceRequest request)
+        {
+            List<TipoPlanillas> _TipoPlanillas = new List<TipoPlanillas>();
+            try
+            {
+
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/TipoPlanillas/GetTipoPlanillasActivo");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _TipoPlanillas = JsonConvert.DeserializeObject<List<TipoPlanillas>>(valorrespuesta);
+                }
+
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: {ex.ToString()}");
+                throw ex;
+            }
+
+
+            return Json(_TipoPlanillas.ToDataSourceResult(request));
+
+        }
         //--------------------------------------------------------------------------------------
         [HttpGet]
         public async Task<JsonResult> GetBOX([DataSourceRequest]DataSourceRequest request)
