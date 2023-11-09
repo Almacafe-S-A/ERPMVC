@@ -6,19 +6,26 @@
     var inactivo = (bool)(TempData.ContainsKey("Inactivo")? TempData["Inactivo"] : false);
     var meses = new[] {"Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"};
 }
-<h3 class="text-themecolor">Otros Ingresos y Bonificaciones</h3>
 <div class="container-fluid">
     <div class="row">
+        <div class="col">
+            <h3 class="text-themecolor">Otros Ingresos y Bonificaciones</h3>
+        </div>
+    </div>
+
+    <div class="row mt-4">
         <div class="col">
             <h4>Filtro de Bonificaciones</h4>
         </div>
     </div>
+
     <form id="frmFiltroBono" kendo-validator="true" method="post" action="@Url.Action("PostFiltro", "Bonificacion")">
         <div class="row">
             <div class="col-md-3 col-sm-12">
                 <label for="Periodo">Año:</label>
                 <input id="Periodo" name="Periodo" value="@periodo" />
             </div>
+
             <div class="col-md-3 col-sm-12">
                 <label for="Mes">Mes:</label>
                 <select id="Mes" name="Mes">
@@ -38,21 +45,18 @@
             </div>
 
             <div class="col-md-3 col-sm-12">
-                <label for="Inactivo">Inactivos:</label>
-                <input id="Inactivo" name="Inactivo"/>
-            </div>
-            <div class="col-md-3 col-sm-12">
-                <input type="submit" value="Filtrar" />
+                <input type="submit" value="Filtrar" class="btn btn-primary" />
             </div>
         </div>
     </form>
-    
-    <div class="row">
+
+    <div class="row mt-4">
         <div class="col">
             <h4>Bonificaciones de @meses[mes - 1] de @periodo </h4>
         </div>
     </div>
-    <div class="row">
+
+    <div class="row mt-4">
         <div class="col">
             <div class="row">
                 <div id="grdConfiguracion"></div>
@@ -61,248 +65,189 @@
     </div>
 </div>
 
+
+@(Html.Kendo().Grid<ERPMVC.Models.Bonificacion>()
+                  .Name("grdConfiguracion").NoRecords()
+                  .Columns(columns =>
+                  {
+                      {
+                          columns.Command(command =>
+                          {
+                              command.Edit().Text(" ").IconClass("fa fa-edit");
+                          }).Width(90).Title("Acciones");
+                      }
+                      columns.Bound(p => p.EmpleadoId).Title("ID").Width(60);
+                      columns.Bound(p => p.Empleado).Title("Empleado")
+                      .ClientTemplate("#=typeof Empleado === 'undefined'||Empleado===null?null:Empleado.NombreEmpleado#").Width(180);
+                      columns.Bound(p => p.Tipo).Title("Tipo Otros Ingresos o Bonificaciones")
+                      .ClientTemplate("#=typeof Tipo === 'undefined'||Tipo===null?null:Tipo.Nombre#").Width(180);
+                      columns.Bound(p => p.Cantidad).Title("Cantidad").Width(120)
+                      .HtmlAttributes(new Dictionary<string, object> { ["style"] = "text-align: right;" });
+                      columns.Bound(p => p.Tipo.Valor).Title("Valor Bono").Width(120)
+                      .HtmlAttributes(new Dictionary<string, object> { ["style"] = "text-align: right;" })
+                      .ClientTemplate("#=typeof Tipo === 'undefined'||Tipo===null?null:Tipo.Valor#");
+                      columns.Bound(p => p.Monto).Title("Monto").Width(100).ClientFooterTemplate("#=totalColumnas(1,1)#")
+                      .HtmlAttributes(new Dictionary<string, object> { ["style"] = "text-align: right;" })
+                      .FooterHtmlAttributes(new Dictionary<string, object> { ["style"] = "text-align: right;" });
+                      columns.Bound(p => p.NombreQuincena).Title("Quincena").Width(110);
+                      columns.Bound(p => p.Estado).Title("Estado").Width(110)
+                      .ClientTemplate("#=typeof Estado === 'undefined'||Estado===null?null:Estado.NombreEstado#");
+                  }).Filterable(f => f.Operators(o => o.ForString(s => s
+                                         .Clear()
+                                         .Contains("Contiene")
+                                         .DoesNotContain("No contiene")
+                                         .EndsWith("Termina con")
+                                         .IsEqualTo("Es igual a")
+                                         .IsNotEqualTo("No es igual a")
+                                         .IsNull("Es nulo")
+                                         .StartsWith("Inicia con")
+                                   )
+                                     .ForNumber(n => n
+                                     .Clear()
+                                     .IsEqualTo("Es igual a")
+                                     .IsGreaterThan("Es mayor que")
+                                     .IsLessThan("Es menor que")
+                                     .IsNull("Es nulo")
+                                     .IsLessThanOrEqualTo("Es menor o igual que")
+                                     .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                   )
+                                   .ForDate(d => d
+                                   .Clear()
+                                   .IsEqualTo("Es igual que")
+                                   .IsGreaterThan("Es mayor que")
+                                   .IsLessThan("Es menor que")
+                                   .IsLessThanOrEqualTo("Es menor o igual que")
+                                   .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                   .IsNotEqualTo("No es igual que")
+                                    )
+                                 ))
+                                 .ToolBar(tools =>
+                              {
+                                  tools.Create().Text("Agregar").IconClass("k-icon k-i-plus")
+                                     .HtmlAttributes(new { @class = "k-i-plus-sm"});
+                                  tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
+                              })
+                    .Editable(e => e.Mode(GridEditMode.InLine))
+                    .Sortable()
+                    .AutoBind(true)
+                    .Pageable(p => p.Input(true))
+                    .Resizable(s => s.Columns(true))
+                    .Filterable()
+                    .Scrollable()
+                    .Pdf(pdf => pdf.FileName("BonificacionReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                    + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+                    .ProxyURL(Url.Action("Export", "Home")).AllPages())
+                    .DataSource(dataSource =>
+                   dataSource
+                   //.Ajax()
+                   .WebApi()
+                    .ServerOperation(true)
+                    .Model(model =>
+                    {
+                        model.Id(p => p.Id);
+                        model.Field(p => p.Id).Editable(false);
+                        model.Field(p => p.EmpleadoId).Editable(false);
+                        model.Field(p => p.Monto).Editable(false);
+                    })
+                    .Events(events => events.Error("error_handler"))
+                    .Read(read => read.Action("GetBonificacionesMesPeriodo", "Bonificacion").Data("Parametros"))
+                    .Update(update => update.Action("Guardar", "Bonificacion").Type(HttpVerbs.Post).Data("Parametros"))
+                    .Create(create => create.Action("Guardar", "Bonificacion").Type(HttpVerbs.Post).Data("Parametros"))
+              ).Events(e => e.Save("RefrescarGrid"))
+)
+
 <script>
     $(document).ready(function () {
-        CrearGrid();
-
-        $("#Inactivo").kendoSwitch({
-            checked: @inactivo.ToString().ToLower(),
-            messages: {
-                checked: "si",
-                unchecked: "no"
-            }
-        });
-
         $("#Periodo").kendoNumericTextBox({ spinners: false, decimals:0, restrictDecimals:true, format:"0000" });
-        $("#Mes").kendoDropDownList({ index: (@mes - 1) });
+
+
+        // Obtiene el elemento select por su id
+        var selectMes = document.getElementById('Mes');
+
+        // Obtiene el mes actual (de 1 a 12, donde enero es 1 y diciembre es 12)
+        var mesActual = new Date().getMonth() + 1;
+
+        // Establece el valor del select al mes actual
+        selectMes.value = mesActual.toString();
     });
 
     function Validar(e) {
         debugger;
-        if (e.model.Monto <= 0) {
-            //$.toast({
-            //    heading: 'Error',
-            //    text: ' Error: El monto debe ser mayor a 0',
-            //    position: 'top-right',
-            //    loaderBg: '#ff6849',
-            //    icon: 'error',
-            //    hideAfter: 2000,
-            //    stack: 6
-            //});
-             MostrarMensaje("El monto debe ser mayor que 0", "Error", "Error", 6000);
+        if (e.model.Cantidad <= 0) {
+             MostrarMensaje("La Cantidad debe ser mayor que 0", "Error", "Error", 6000);
             e.preventDefault();
             return false;
         }
-        if (e.model.FechaBono.getMonth()+1 !== @mes || e.model.FechaBono.getFullYear() !== @periodo) {
-            //$.toast({
-            //    heading: 'Error',
-            //    text: ' Error: La fecha de la bonificación no es valida',
-            //    position: 'top-right',
-            //    loaderBg: '#ff6849',
-            //    icon: 'error',
-            //    hideAfter: 2000,
-            //    stack: 6
-            //});
-             MostrarMensaje("La fecha de bonificación no es válida.", "Error", "Error", 6000);
-            e.preventDefault();
-            return false;
-        }
+    }
+    function Parametros(data) {
+        return{
+        Periodo: @periodo,
+            Mes: @mes
 
-        //if (e.model.Nombre === '') {
-        //    $.toast({
-        //        heading: 'Error',
-        //        text: ' Error: Nombre no puede estar en blanco',
-        //        position: 'top-right',
-        //        loaderBg: '#ff6849',
-        //        icon: 'error',
-        //        hideAfter: 2000,
-        //        stack: 6
-        //    });
-        //    e.preventDefault();
-        //}
+        }
     }
 
-    function CrearGrid() {
-        $("#grdConfiguracion").kendoGrid({
-            dataSource: {
-                transport: {
-                    read: {
-                        url: "@Url.Action("GetBonificacionesMesPeriodo", "Bonificacion")",
-                        data: {
-                            Periodo: @periodo,
-                            Mes:@mes,
-                            inactivos: @inactivo.ToString().ToLower()
-                        }
-                    },
-                    update: { url: "@Url.Action("Guardar", "Bonificacion")", type:"POST"},
-                    create: { url: "@Url.Action("Guardar", "Bonificacion")", type:"POST"},
-                    parameterMap: function (datos, tipo) {
-                        if (tipo !== 'read') {
-                            //debugger;
-                            datos.EstadoId = datos.Estado.IdEstado;
-                            datos.EmpleadoId = datos.Empleado.IdEmpleado;
-                            datos.TipoId = datos.Tipo.Id;
-                            datos.FechaBono = kendo.toString(kendo.parseDate(datos.FechaBono, "dd/MM/yyyy"), "yyyy-MM-dd");
-                            //debugger;
-                        }
-                        return datos;
-                    }
-                },
-                schema: {
-                    model: {
-                        id:"Id",
-                        fields: {
-                            Id: { type: "number", editable: true },
-                            EmpleadoId: { type: "number", editable: true },
-                            Empleado: { defaultValue: { IdEmpleado: 0, NombreEmpleado: "" }, editable: true },
-                            TipoId: { type: "number", editable: true },
-                            Tipo: { defaultValue: {Id:0, Nombre:""}, editable:true},
-                            Monto: { type: "number", editable: true },
-                            FechaBono: { type: "date", editable: true, format: "{0:dd/MM/yyyy}" },
-                            EstadoId: { type: "number", editable: true },
-                            Estado: { defaultValue: {IdEstado:90,NombreEstado:"Activo"}, editable: true }
-                        }
-                    }
-                },
-                requestEnd: function (e) {
-                    debugger;
-                    if (e.type !== "read") {
-                        $("#grdConfiguracion").data("kendoGrid").dataSource.read();
-                    }
-                },
-                error: errorGrid
-            },
-            toolbar: [
-                { name: "create", text: "Nuevo Otro Ingreso o Bonificación" }
-            ],
-            columns: [
-                {
-                    command: [
-                        { name: "edit", text: { edit: "", update: "", cancel: "" }}
-                    ],
-                    width:60
-                },
-                { field: "Id", title: "Id. ", width: 80, hidden: true },
-                { field: "Empleado", title: "Empleado", width: 200, editor: editorEmpleado, template: "#= Empleado.NombreEmpleado #" },
-                { field: "Tipo", title: "Tipo Otros Ingresos o Bonificaciones", width: 200, editor: editorTipo, template: "#= Tipo.Nombre #" },
-                { field: "FechaBono", title: "Fecha", width: 100, template: '#= kendo.toString(FechaBono,"dd/MM/yyyy")#' },
-                { field: "Monto", title: "Monto", width: 100, editor: editorNumerico, format: "{0:#,##0.00}" },
-                { field: "Estado", title: "Estado", width: 100, editor: editorEstado, template: "#= Estado.NombreEstado #"}
-            ],
-            noRecords: {
-                template:"No hay Tipos de Bonificaciones"
-            },
-            //height: 400,
-            scrollable: true,
-            editable: "inline",
-            save:Validar
+    function totalColumnas(tiporesultado, moneda) {
+        var data = $("#grdConfiguracion").getKendoGrid().dataSource.data();
+        var total = 0;
+
+        switch (tiporesultado) {
+            case 1:
+                data.forEach(r => total += r.Monto);
+                break;
+            default:
+                break;
+        }
+        var formatter = new Intl.NumberFormat('es-HN', {
+            style: 'currency',
+            currency: 'LPS',
+            minimumFractionDigits: 2
         });
-
-        function editorEstado(contenedor, opciones) {
-            $('<input data-bind="value:' + opciones.field + '"/>')
-                .appendTo(contenedor)
-                .kendoDropDownList({
-                    index:0,
-                    autoBind: true,
-                    dataTextField: "NombreEstado",
-                    dataValueField: "IdEstado",
-                    dataSource: {
-                        transport: {
-                            read: {
-                                type:"GET",
-                                url: '@Url.Action("GetGrupoEstadoI", "Estados")',
-                                dataType: "json",
-                            }
-                        },
-                        schema: {
-                            model: {
-                                fields: {
-                                    IdEstado: { type: "number" },
-                                    NombreEstado: {type:"string"}
-                                }
-                            }
-                        }
-                    }
-                });
+        if (moneda == 1) {
+            return formatter.format(total);
         }
-    }
-
-    function editorEmpleado(contenedor, opciones) {
-        $('<input name="' + opciones.field + '" />')
-            .appendTo(contenedor)
-            .kendoDropDownList({
-                index:0,
-                autoBind: true,
-                dataTextField: "NombreEmpleado",
-                dataValueField: "IdEmpleado",
-                dataSource: {
-                    transport: {
-                        read: {
-                            type:"GET",
-                            url: '@Url.Action("GetEmployeesV2", "Employees")',
-                            dataType: "json"
-                        }
-                    },
-                    schema: {
-                        model: {
-                            fields: {
-                                IdEmpleado: { type: "number" },
-                                NombreEmpleado: {type:"string"}
-                            }
-                        }
-                    }
-                },
-                filter:"contains"
+        if (moneda == 2) {
+            formatter = new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD',
+                minimumFractionDigits: 2
             });
-    }
-
-    function editorTipo(contenedor, opciones) {
-        $('<input name="' + opciones.field + '" />')
-            .appendTo(contenedor)
-            .kendoDropDownList({
-                index:0,
-                autoBind: true,
-                dataTextField: "Nombre",
-                dataValueField: "Id",
-                dataSource: {
-                    transport: {
-                        read: {
-                            type:"GET",
-                            url: '@Url.Action("GetTiposBonificacionesActivos", "TipoBonificacion")',
-                            dataType: "json"
-                        }
-                    },
-                    schema: {
-                        model: {
-                            fields: {
-                                Id: { type: "number" },
-                                Nombre: {type:"string"}
-                            }
-                        }
-                    }
-                },
-                filter:"contains"
+            return formatter.format(total);
+        }
+        if (moneda == 0) {
+            formatter = new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'LPS',
+                minimumFractionDigits: 2
             });
+            return formatter.format(total).replace(/[a-z]{3}/i, "").trim();
+        }
+        return total;
     }
 
-    function editorNumerico(contenedor, opciones) {
-        $('<input data-bind="value:' + opciones.field + '"/>')
-            .appendTo(contenedor)
-            .kendoNumericTextBox({ spinners: false });
-    }
-
-    function errorGrid(e) {
+    function RefrescarGrid() {
         debugger;
-        //$.toast({
-        //    heading: 'Error',
-        //    text: ' Error:' + e.status + " " + e.errorThrown + " " + e.xhr.responseText,
-        //    position: 'top-right',
-        //    loaderBg: '#ff6849',
-        //    icon: 'error',
-        //    hideAfter: 2000,
-        //    stack: 6
-        //});
+        var grid = $("#grdConfiguracion").data("kendoGrid").dataSource.read();
 
-         MostrarMensaje(e.status + ": " + e.xhr.responseText, "Error", "Error", 6000);
+
     }
+
+    function setToolbarTooltip(btn_cl, btn_tooltip) {
+        $("#grdConfiguracion").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+
+    function setRowButtonTooltip(btn_cl, btn_tooltip) {
+        $("#grdConfiguracion").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+
+    setRowButtonTooltip(".k-grid-edit", "Editar Registro");
+    //setRowButtonTooltip(".k-grid-delete", "Eliminar");
+    setRowButtonTooltip(".k-grid-update", "Guardar Registro");
+    setRowButtonTooltip(".k-grid-cancel", "Cancelar");
 </script>
