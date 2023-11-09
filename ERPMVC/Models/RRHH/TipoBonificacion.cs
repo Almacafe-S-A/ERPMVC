@@ -10,6 +10,7 @@ namespace ERPMVC.Models
         public long Id { get; set; }
 
         public string Nombre { get; set; }
+        public double Valor { get; set; }
 
         public long EstadoId { get; set; }
 

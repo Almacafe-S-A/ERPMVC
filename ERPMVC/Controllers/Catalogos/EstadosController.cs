@@ -72,6 +72,32 @@ namespace ERPMVC.Controllers
 
         }
 
+        [HttpGet("[controller]/[action]")]
+        public async Task<DataSourceResult> GetEstadosBonificacion([DataSourceRequest] DataSourceRequest request)
+        {
+            List<Estados> _Estados = new List<Estados>();
+            try
+            {
+
+                string baseadress = _config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/Estados/Get");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _Estados = JsonConvert.DeserializeObject<List<Estados>>(valorrespuesta).Where(w => w.IdEstado == 98 || w.IdEstado == 99).ToList();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: {ex.ToString()}");
+                throw ex;
+            }
+            return await Task.Run(() => _Estados.ToDataSourceResult(request));
+        }
+
         [HttpPost("[controller]/[action]")]
         public async Task<ActionResult> pvwAddEstado([FromBody]EstadoDTO _sarpara)
         {

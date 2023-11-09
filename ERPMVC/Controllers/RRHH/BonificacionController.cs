@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
 using ERPMVC.Helpers;
 using ERPMVC.Models;
+using Kendo.Mvc.Extensions;
+using Kendo.Mvc.UI;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -50,29 +53,32 @@ namespace ERPMVC.Controllers
             }
         }
 
-        public async Task<ActionResult> GetBonificacionesMesPeriodo(int Periodo, int Mes, bool inactivos)
+        public async Task<DataSourceResult> GetBonificacionesMesPeriodo([DataSourceRequest] DataSourceRequest request, int Periodo, int Mes)
         {
+            List<Bonificacion> bonificaciones = new List<Bonificacion>();
             try
             {
-                var respuesta = await Utils.HttpGetAsync(HttpContext.Session.GetString("token"),
-                    config.Value.urlbase + $"api/Bonificacion/GetBonificacionesMesPeriodo/{Periodo}/{Mes}/{inactivos}");
-                if (respuesta.IsSuccessStatusCode)
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + $"api/Bonificacion/GetBonificacionesMesPeriodo/{Periodo}/{Mes}");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
                 {
-                    var contenido = await respuesta.Content.ReadAsStringAsync();
-                    var resultado = JsonConvert.DeserializeObject<List<Bonificacion>>(contenido);
-                    return Ok(resultado);
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    bonificaciones = JsonConvert.DeserializeObject<List<Bonificacion>>(valorrespuesta);
+                    bonificaciones = bonificaciones.OrderByDescending(x => x.Id).ToList();
                 }
-
-                return BadRequest(await respuesta.Content.ReadAsStringAsync());
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, "Error al cargar las bonificaciones.");
-                return BadRequest(ex.Message);
+                logger.LogError($"Ocurrio un error: {ex.ToString()}");
+                throw ex;
             }
+            return bonificaciones.ToDataSourceResult(request);
         }
 
-        public async Task<ActionResult> Guardar(Bonificacion registro)
+        public async Task<ActionResult> Guardar(Bonificacion registro, int Periodo, int Mes)
         {
             try
             {
@@ -89,23 +95,38 @@ namespace ERPMVC.Controllers
                     registro.FechaModificacion = DateTime.Now;
                 }
 
-                if (registro.EmpleadoId == 0)
+                if (registro.Empleado.IdEmpleado == 0)
                     throw new Exception("Debe seleccionar a un empleado.");
 
-                if (registro.Monto <= 0)
-                    throw new Exception("Monto de bonificación es invalido.");
+                if (registro.Cantidad <= 0)
+                    throw new Exception("Cantidad de bonificación es invalido.");
 
-                if (registro.TipoId == 0)
+                if (registro.Tipo.Id == 0)
                     throw new Exception("Debe seleccionar un tipo de bonificación");
 
-                if (registro.TipoId == 1)
+                if (registro.Tipo.Id == 1)
                     throw new Exception(
                         "El bono educativo no puede ser otorgado de forma manual, debe utilizar la opción del sistema designada para este efecto.");
-
+                if (registro.NombreQuincena == "1")
+                {
+                    registro.NombreQuincena = "Primera";
+                }
+                if (registro.NombreQuincena == "2")
+                {
+                    registro.NombreQuincena = "Segunda";
+                }
+                if (registro.NombreQuincena == "3")
+                {
+                    registro.NombreQuincena = "Ambas";
+                }
+                registro.FechaBono = new DateTime(Periodo, Mes, 1);
+                registro.EmpleadoId = registro.Empleado.IdEmpleado;
+                registro.TipoId = registro.Tipo.Id;
+                registro.Monto = registro.Cantidad * registro.Tipo.Valor;
+                registro.EstadoId = registro.Estado.IdEstado;
                 registro.Estado = null;
                 registro.Empleado = null;
                 registro.Tipo = null;
-
                 var respuesta = await Utils.HttpPostAsync(HttpContext.Session.GetString("token"),
                     config.Value.urlbase + "api/Bonificacion/Guardar", registro);
                 if (respuesta.IsSuccessStatusCode)
