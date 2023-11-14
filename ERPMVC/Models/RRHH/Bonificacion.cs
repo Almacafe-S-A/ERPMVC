@@ -19,7 +19,7 @@ namespace ERPMVC.Models
         [UIHint("EstadosBonificacion")]
         public Estados Estado { get; set; }
 
-        [UIHint("Employees")]
+        [UIHint("Employeesddl")]
         public Employees Empleado { get; set; }
 
         [UIHint("TipoBonificacion")]
