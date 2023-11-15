@@ -5,15 +5,6 @@
     ClaimsPrincipal permisos = (ClaimsPrincipal)ViewData["permisos"];
 }
 
-<style>
-    .k-checkbox + .k-checkbox-label {
-        border-color: #ff6358;
-        color: #fff;
-        background-color: #fff;
-        margin-left: 50px;
-    }
-</style>
-
 <div class="row">
     <div class="col-md-3">
         <div class="form-group">
@@ -153,7 +144,6 @@ Html.Kendo().Grid<ERPMVC.Models.Feriado>
             .Name("gridFeriado")
             .Columns(columns =>
             {
-
                 if (User.HasClaim("RRHH.Parametros.Feriados.Editar", "true"))
                 {
                     columns.Command(command =>
@@ -180,8 +170,6 @@ Html.Kendo().Grid<ERPMVC.Models.Feriado>
             .IsNotEqualTo("No es igual a")
             .IsNull("Es nulo")
             .StartsWith("Inicia con")
-
-
             )
             .ForNumber(n => n
             .Clear()
@@ -200,16 +188,16 @@ Html.Kendo().Grid<ERPMVC.Models.Feriado>
             .IsLessThanOrEqualTo("Es menor o igual que")
             .IsGreaterThanOrEqualTo("Es mayor o igual que")
             .IsNotEqualTo("No es igual que")
-            )
-            ))
+            )).Extra(false))
             .ToolBar(tools =>
             {
                 if (User.HasClaim("RRHH.Parametros.Feriados.Editar", "true"))
                 {
                     tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus").HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddFeriado()" });
+                    tools.Custom().Text("Exportar a PDF").IconClass("k-icon k-i-pdf").HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "exportToPDF()" });
                 }
                 tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" }).Text("Exportar a excel");
-                tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" }).Text("Exportar a pdf");
+               // tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" }).Text("Exportar a pdf");
 
 
             })
@@ -217,17 +205,27 @@ Html.Kendo().Grid<ERPMVC.Models.Feriado>
             .Editable(e => e.Mode(GridEditMode.PopUp))
             .Events(e => e.Save("Guardar"))
             .Sortable()
-            .Filterable()
+            .Pageable(pageable => pageable
+            .Refresh(true)
+            .PageSizes(true))
             .Scrollable()
-            .Pdf(pdf => pdf.FileName("UsuariosReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+            .Pdf(pdf => pdf
+            .FileName("UsuariosReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
             + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
-            .ProxyURL(Url.Action("Export", "Home")).AllPages())
+            .ProxyURL(Url.Action("Export", "Home"))
+            .AllPages()
+            .AvoidLinks()
+            .PaperSize("A4")
+            .Scale(0.8)
+            .Margin("2cm", "1cm", "1cm", "1cm")
+            .Landscape()
+            .TemplateId("page-template")
+            .RepeatHeaders())
             .Excel(excel => excel.FileName("UsuariosReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
             + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
             .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
             .DataSource(dataSource =>
             dataSource
-
             .WebApi()
             .ServerOperation(true)
 .Model(model =>
@@ -251,9 +249,22 @@ Html.Kendo().Grid<ERPMVC.Models.Feriado>
             .Destroy(update => update.Action("Delete", "Feriado", new { id = "{0}" }).Type(HttpVerbs.Post))
             ).Resizable(resize => resize.Columns(true))
             )
-			
+
 <script>
-	
+    function exportToPDF() {
+        debugger;
+        var grid = $("#gridFeriado").data("kendoGrid");
+
+        grid.hideColumn(0);
+        // Ocultar las columnas que no se desean exportar
+        // Exportar a PDF
+        grid.saveAsPDF();
+        // Restaurar la visibilidad de la columna después de un pequeño retraso para asegurarse de que se haya generado el PDF
+        setTimeout(function () {
+            grid.showColumn(0)
+        }, 800);
+    }
+
     function checkResult(e) {
         if ((e.type == "create" && e.response.Errors == null)) {
             $.toast({
