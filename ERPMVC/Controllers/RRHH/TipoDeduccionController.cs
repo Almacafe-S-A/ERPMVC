@@ -161,62 +161,70 @@ namespace ERPMVC.Controllers
         [HttpPost]
         public async Task<ActionResult> GuardarDeduccion([FromBody] Deduccion deduccion)
         {
-            if (ModelState.IsValid)
+            try
             {
-                HttpResponseMessage respuesta;
-                if (deduccion.IdEstado == 1)
+                if (ModelState.IsValid)
                 {
-                    deduccion.NombreEstado = "Activo";
-                }
-                else
-                {
-                    deduccion.NombreEstado = "Inactivo";
-                }
-                if (deduccion.Fortnight == 1)
-                {
-                    deduccion.Cantidad = "1era";
-                }
-                else if (deduccion.Fortnight == 2)
-                {
-                    deduccion.Cantidad = "2da";
-                }
-                else if (deduccion.Fortnight == 3)
-                {
-                    deduccion.Cantidad = "Ambas";
-                }
-                else
-                {
-                    deduccion.Cantidad = "Mas de una";
-                }
-                deduccion.FechaModificacion = DateTime.Now;
-                deduccion.UsuarioModificacion = _principal.Identity.Name;
-                if (deduccion.DeductionId == 0)
-                {
-                    deduccion.FechaCreacion = DateTime.Now;
-                    deduccion.UsuarioCreacion = _principal.Identity.Name;
-                    respuesta = await Utils.HttpPostAsync(HttpContext.Session.GetString("token"),
-                        config.Value.urlbase + "api/Deduction/Insert", deduccion);
-                }
-                else
-                {
-                    respuesta = await Utils.HttpPutAsync(HttpContext.Session.GetString("token"),
-                        config.Value.urlbase + "api/Deduction/Update", deduccion);
-                }
+                    HttpResponseMessage respuesta;
+                    if (deduccion.IdEstado == 1)
+                    {
+                        deduccion.NombreEstado = "Activo";
+                    }
+                    else
+                    {
+                        deduccion.NombreEstado = "Inactivo";
+                    }
+                    if (deduccion.Fortnight == 1)
+                    {
+                        deduccion.Cantidad = "1era";
+                    }
+                    else if (deduccion.Fortnight == 2)
+                    {
+                        deduccion.Cantidad = "2da";
+                    }
+                    else if (deduccion.Fortnight == 3)
+                    {
+                        deduccion.Cantidad = "Ambas";
+                    }
+                    else
+                    {
+                        deduccion.Cantidad = "Mas de una";
+                    }
+                    deduccion.FechaModificacion = DateTime.Now;
+                    deduccion.UsuarioModificacion = _principal.Identity.Name;
+                    if (deduccion.DeductionId == 0)
+                    {
+                        deduccion.FechaCreacion = DateTime.Now;
+                        deduccion.UsuarioCreacion = _principal.Identity.Name;
+                        respuesta = await Utils.HttpPostAsync(HttpContext.Session.GetString("token"),
+                            config.Value.urlbase + "api/Deduction/Insert", deduccion);
+                    }
+                    else
+                    {
+                        respuesta = await Utils.HttpPutAsync(HttpContext.Session.GetString("token"),
+                            config.Value.urlbase + "api/Deduction/Update", deduccion);
+                    }
 
-                if (respuesta.IsSuccessStatusCode)
-                {
-                    ViewData["Editar"] = 1;
-                    return Ok(deduccion);
+                    if (respuesta.IsSuccessStatusCode)
+                    {
+                        ViewData["Editar"] = 1;
+                        return Ok(deduccion);
+                    }
+                    else
+                    {
+                        return BadRequest();
+                    }
+
                 }
                 else
                 {
-                    return BadRequest();
+                    throw new Exception("Campos no validos en tipo de deducción");
                 }
-
             }
-            else
+            catch (Exception ex)
             {
-                throw new Exception("Campos no validos en tipo de deducción");
+                logger.LogError(ex, "Error al guardar tipo deducción por nombre");
+                return BadRequest();
             }
         }
 
