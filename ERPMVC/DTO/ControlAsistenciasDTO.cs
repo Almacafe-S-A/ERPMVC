@@ -119,6 +119,13 @@ namespace ERPMVC.DTO
 
         public int LlegadasTarde { get; set; }
         public int DiasLaborales { get; set; }
+        public int Domingo { get; set; }
+        public int Feriado { get; set; }
+        public int Incapacidad { get; set; }
+        public int Vacaciones { get; set; }
+        public int Permisos { get; set; }
+        public int TeleTrabajo { get; set; }
+        public int Inasistencia { get; set; }
         public String PorcentajeLlegadasTarde { get; set; }
 
         [UIHint("ElementoConfiguracion")]
