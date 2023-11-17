@@ -158,13 +158,28 @@ namespace ERPMVC.Controllers
 
                     NuevaControlAsistencia.LlegadasTarde = asistenciaempleado.Where(q => q.TipoAsistencia == 77).Count();
 
-                    int DomigosyLibres = asistenciaempleado.Where(q => q.TipoAsistencia == 78).Count(); 
+                    int DomigosyLibres = asistenciaempleado.Where(q => q.TipoAsistencia == 78).Count();
+                    NuevaControlAsistencia.Domingo = DomigosyLibres;
                    
                     int PermisosH = asistenciaempleado.Where(q => q.TipoAsistencia == 79).Count();
-                    
-                    int Presentes = asistenciaempleado.Where(q => q.TipoAsistencia == 83).Count();  
+                    NuevaControlAsistencia.Feriado = PermisosH;
 
-                    int DiasLaborales = (NuevaControlAsistencia.LlegadasTarde + DomigosyLibres + PermisosH + Presentes);
+                    NuevaControlAsistencia.Incapacidad = asistenciaempleado.Where(q => q.TipoAsistencia == 80).Count();
+                   
+                    NuevaControlAsistencia.Vacaciones = asistenciaempleado.Where(q => q.TipoAsistencia == 81).Count();
+
+                    NuevaControlAsistencia.Permisos = asistenciaempleado.Where(q => q.TipoAsistencia == 82).Count();
+
+                    int Presentes = asistenciaempleado.Where(q => q.TipoAsistencia == 83).Count();
+                    NuevaControlAsistencia.DiasLaborales = Presentes;
+
+                    NuevaControlAsistencia.TeleTrabajo = asistenciaempleado.Where(q => q.TipoAsistencia == 210).Count();
+
+                    NuevaControlAsistencia.Inasistencia = asistenciaempleado.Where(q => q.TipoAsistencia == 215).Count();
+
+                    int DiasLaborales = (NuevaControlAsistencia.LlegadasTarde + DomigosyLibres + PermisosH + NuevaControlAsistencia.Incapacidad + NuevaControlAsistencia.Vacaciones 
+                        + NuevaControlAsistencia.Permisos + Presentes + NuevaControlAsistencia.TeleTrabajo + NuevaControlAsistencia.Inasistencia);
+
                     NuevaControlAsistencia.DiasLaborales = DiasLaborales;
 
                     //double porcentajellegadastarde = ((double)cLLegadasTarde / (double)DiasLaborales) * 100;
