@@ -132,7 +132,8 @@ namespace ERPMVC.Controllers
                       titulos.GetCell(2).StringCellValue.Equals("Tiempo") &&
                       titulos.GetCell(3).StringCellValue.Equals("Estado") &&
                       titulos.GetCell(4).StringCellValue.Equals("Dispositivos") &&
-                      titulos.GetCell(5).StringCellValue.Equals("Tipo de Registro")))
+                      titulos.GetCell(5).StringCellValue.Equals("Tipo de Registro") &&
+                      titulos.GetCell(6).StringCellValue.Equals("Horario")))
                 {
                     libro.Close();
                     throw new Exception("Titulos de hoja de excel no son validos");
@@ -156,6 +157,7 @@ namespace ERPMVC.Controllers
                     var fecha = Utils.GetFechaXLS(filaRegistro.GetCell(2, MissingCellPolicy.RETURN_NULL_AND_BLANK));
                     //var hora = Utils.GetHoraXLS(filaRegistro.GetCell(2, MissingCellPolicy.RETURN_NULL_AND_BLANK));
                     var tipo = filaRegistro.GetCell(3, MissingCellPolicy.RETURN_NULL_AND_BLANK).ToString();
+                    var IdHorario = Utils.GetNumeroXLS(filaRegistro.GetCell(6, MissingCellPolicy.RETURN_NULL_AND_BLANK));
 
                     if (fecha.Equals(DateTime.MinValue)) {
                         TempData["Errores"] = "Formato de Fecha No Valido";
@@ -183,8 +185,9 @@ namespace ERPMVC.Controllers
                                                     Encabezado = biometrico,
                                                     FechaHora = fechaHora,
                                                     IdBiometrico = (long)IdBiometrico.Value,
-                                                    Tipo = tipo
-                                                };
+                                                    Tipo = tipo,
+                                                    IdHorario = (long)IdHorario.Value
+                    };
                     biometrico.Detalle.Add(detalle);
                 }
                 libro.Close();

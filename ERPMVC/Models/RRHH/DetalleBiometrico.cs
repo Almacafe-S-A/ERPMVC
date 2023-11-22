@@ -18,6 +18,8 @@ namespace ERPMVC.Models
 
         public string Tipo { get; set; }
 
+        public long IdHorario { get; set; }
+
         [JsonIgnore]
         public Biometrico Encabezado { get; set; }
 
