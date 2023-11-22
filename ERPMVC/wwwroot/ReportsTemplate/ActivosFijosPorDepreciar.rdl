@@ -56,27 +56,44 @@ WHERE IdEstado = 1</CommandText>
             <Value>=Parameters!ESTADO.Value</Value>
           </QueryParameter>
         </QueryParameters>
-        <CommandText>select *  from (
-
+        <CommandText>
+select tabla.* from (
 SELECT 
 ROW_NUMBER() OVER(PARTITION BY T0.FIXEDASSETID ORDER BY T2.YEAR DESC) AS NUMEROFILA
  ,T0.FixedAssetId
 , T0.Codigo
 , T0.AssetDate
 , T0.FixedAssetName
+,STR(@ANIO) + '-' +RIGHT ('00' + STR(@MES),2)+'-01' Parametro
+,T0.FechaBaja
+,T0.DepreciatedDate
 , T0.BranchName
-, T0.Estado
+, T0.Estado EstadoACTUAL
+, CASE WHEN T0.IdEstado = 87 THEN 'Importe Original'
+		WHEN T0.FechaBaja IS NULL AND T0.DEPRECIATEDDATE IS NULL   THEN 'Depreciandose'
+	 -- when T0.FechaBaja is not null and t0.FechaBaja &gt; STR(@ANIO) + '-' +RIGHT ('00' + STR(@MES+1),2)+'-01'  THEN 'Dado de Baja'
+		when T0.DepreciatedDate IS NOT NULL AND T0.DepreciatedDate &lt;= STR(@ANIO) + '-' +RIGHT ('00' + STR(@MES),2)+'-01'   THEN 'Depreciado' 
+		WHEN T0.DepreciatedDate IS NOT NULL AND T0.DepreciatedDate &gt; STR(@ANIO) + '-' +RIGHT ('00' + STR(@MES),2)+'-01'   THEN 'Depreciandose'
+		when T0.FechaBaja is not null and @MES =12 and t0.FechaBaja  &lt;= STR(@ANIO+1) + '-01-01' THEN 'Dado de Baja'
+		when T0.FechaBaja is not null and @MES =12 and t0.FechaBaja &gt; STR(@ANIO+1) + '-01-01' THEN 'Depreciandose'
+		when T0.FechaBaja is not null and t0.FechaBaja &lt;= STR(@ANIO) + '-' +RIGHT ('00' + STR(@MES+1),2)+'-01' THEN 'Dado de Baja'
+		when T0.FechaBaja is not null and t0.FechaBaja &gt; STR(@ANIO) + '-' +RIGHT ('00' + STR(@MES+1),2)+'-01' THEN 'Depreciandose'
+		--when T0.DepreciatedDate IS NOT NULL AND T0.DepreciatedDate &gt; '2023-12-01'   THEN 'Depreciandose'
+		
+
+END Estado
 , T0.Amount
 , T0.Cost
 , T0.ActiveTotalCost
 , T0.ResidualValue
 , T0.ToDepreciate
 , T0.FixedActiveLife
-,T0.FechaBaja
+
 , T0.Ubicacion
 , T1.FixedAssetGroupName
 , T2.Year
-, isnull((Select t3.TotalDepreciated from DepreciationFixedAsset t3 where FixedAssetId = T0.FixedAssetId and t3.Year = @ANIO - 1),0 )  depreciaAnioAnterior
+, isnull((Select SUM(t4.TotalDepreciated) from DepreciationFixedAsset t4
+  where FixedAssetId = T0.FixedAssetId and t4.Year &lt; @ANIO GROUP BY T4.FixedAssetId ),0 )    depreciaAnioAnterior
 , CASE WHEN @MES  &gt;= 1 OR @MES = 0 THEN T2.January ELSE 0 END January
 ,  CASE WHEN @MES  &gt;= 2 OR @MES = 0 THEN T2.February ELSE 0 END February
 ,  CASE WHEN @MES  &gt;= 3 OR @MES = 0 THEN T2.March ELSE 0 END March
@@ -88,7 +105,7 @@ ROW_NUMBER() OVER(PARTITION BY T0.FIXEDASSETID ORDER BY T2.YEAR DESC) AS NUMEROF
 ,  CASE WHEN @MES  &gt;= 9 OR @MES = 0 THEN T2.September ELSE 0 END September
 ,  CASE WHEN @MES  &gt;= 10 OR @MES = 0 THEN T2.October ELSE 0 END October
 ,  CASE WHEN @MES  &gt;= 11 OR @MES = 0 THEN T2.November ELSE 0 END November
-,  CASE WHEN @MES  &gt;= 12 OR @MES = 0 THEN T2.December ELSE 0 END December
+,  CASE WHEN @MES  &gt;= 12 OR @MES = 0 THEN t2.December ELSE 0 END December
 
 , CASE WHEN @MES  = 1 THEN T2.January 
 		WHEN @MES  = 2  THEN T2.January + T2.February 
@@ -108,13 +125,16 @@ FROM FixedAsset T0
 Left JOIN FixedAssetGroup T1 ON T0.FixedAssetGroupId = T1.FixedAssetGroupId
 LEFT JOIN DepreciationFixedAsset T2 ON T2.FixedAssetId = T0.FixedAssetId
 WHERE 
-
-( T2.Year = @ANIO OR T0.Estado ='Depreciado' or T0.Estado ='Importe Original'  ) AND
+T2.Year &lt;= @ANIO and
+--(  T0.Estado ='Depreciado' or T0.Estado ='Importe Original'  ) AND
  (T0.CenterCostId = @CENTROCOSTO OR @CENTROCOSTO = 0)
 AND (T0.BranchId = @SUCURSAL OR @SUCURSAL = 0)
 AND (T1.FixedAssetGroupId = @GRUPO OR @GRUPO = 0)
-AND ((T0.Estado = 'Depreciado' AND @ESTADO = 1 ) OR (T0.Estado = 'Depreciandose' AND @ESTADO = 2 ) OR (T0.Estado = 'Importe Original' AND @ESTADO = 3 ) OR (T0.Estado = 'Dado de Baja' AND @ESTADO = 4 ) OR  (T0.Estado &lt;&gt; 'Dado de Baja' AND @ESTADO = 0 ) )
-) as tabla WHERE NUMEROFILA = 1</CommandText>
+
+) as tabla  WHERE NUMEROFILA = 1 AND (  @ESTADO = 0 or (tabla.Estado = 'Depreciado' AND @ESTADO = 1 ) 
+															OR (tabla.Estado = 'Depreciandose' AND @ESTADO = 2 ) 
+															OR (tabla.Estado = 'Importe Original' AND @ESTADO = 3 ) 
+															OR (tabla.Estado = 'Dado de Baja' AND @ESTADO = 4 ))</CommandText>
         <Timeout>2</Timeout>
       </Query>
       <Fields>
@@ -138,8 +158,16 @@ AND ((T0.Estado = 'Depreciado' AND @ESTADO = 1 ) OR (T0.Estado = 'Depreciandose'
           <DataField>FixedAssetName</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
+        <Field Name="Parametro">
+          <DataField>Parametro</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
         <Field Name="BranchName">
           <DataField>BranchName</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="EstadoACTUAL">
+          <DataField>EstadoACTUAL</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
         <Field Name="Estado">
@@ -177,6 +205,10 @@ AND ((T0.Estado = 'Depreciado' AND @ESTADO = 1 ) OR (T0.Estado = 'Depreciandose'
         <Field Name="Ubicacion">
           <DataField>Ubicacion</DataField>
           <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="DepreciatedDate">
+          <DataField>DepreciatedDate</DataField>
+          <rd:TypeName>System.DateTime</rd:TypeName>
         </Field>
         <Field Name="FixedAssetGroupName">
           <DataField>FixedAssetGroupName</DataField>
@@ -413,6 +445,9 @@ union select 0, 'TODOS' </CommandText>
                   <Width>1in</Width>
                 </TablixColumn>
                 <TablixColumn>
+                  <Width>1in</Width>
+                </TablixColumn>
+                <TablixColumn>
                   <Width>2.525in</Width>
                 </TablixColumn>
                 <TablixColumn>
@@ -606,6 +641,40 @@ union select 0, 'TODOS' </CommandText>
                             </Paragraph>
                           </Paragraphs>
                           <rd:DefaultName>Textbox6</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>Gray</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox15">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>Fecha Depreciado</Value>
+                                  <Style>
+                                    <FontWeight>Bold</FontWeight>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox15</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>Gray</Color>
@@ -1513,13 +1582,47 @@ union select 0, 'TODOS' </CommandText>
                               <TextRuns>
                                 <TextRun>
                                   <Value>=Fields!FechaBaja.Value</Value>
-                                  <Style />
+                                  <Style>
+                                    <Format>d</Format>
+                                  </Style>
                                 </TextRun>
                               </TextRuns>
                               <Style />
                             </Paragraph>
                           </Paragraphs>
                           <rd:DefaultName>FechaBaja</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>Gray</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="DepreciatedDate">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Fields!DepreciatedDate.Value</Value>
+                                  <Style>
+                                    <Format>d</Format>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>DepreciatedDate</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>Gray</Color>
@@ -2270,7 +2373,7 @@ union select 0, 'TODOS' </CommandText>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Fields!ActiveTotalCost.Value-Fields!DepreciacionAnual.Value+Fields!depreciaAnioAnterior.Value</Value>
+                                  <Value>=Fields!ActiveTotalCost.Value-(Fields!DepreciacionAnual.Value+Fields!depreciaAnioAnterior.Value)</Value>
                                   <Style>
                                     <Format>#,0.00;(#,0.00)</Format>
                                   </Style>
@@ -2309,7 +2412,7 @@ union select 0, 'TODOS' </CommandText>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Sum(Fields!FixedAssetId.Value)</Value>
+                                  <Value />
                                   <Style>
                                     <FontWeight>Bold</FontWeight>
                                   </Style>
@@ -2419,6 +2522,38 @@ union select 0, 'TODOS' </CommandText>
                             </Paragraph>
                           </Paragraphs>
                           <rd:DefaultName>Textbox10</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>Gray</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox18">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value />
+                                  <Style>
+                                    <FontWeight>Bold</FontWeight>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox18</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>Gray</Color>
@@ -3236,7 +3371,7 @@ union select 0, 'TODOS' </CommandText>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Sum(Fields!FixedAssetId.Value)</Value>
+                                  <Value />
                                   <Style />
                                 </TextRun>
                               </TextRuns>
@@ -3338,6 +3473,36 @@ union select 0, 'TODOS' </CommandText>
                             </Paragraph>
                           </Paragraphs>
                           <rd:DefaultName>Textbox11</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>Gray</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox21">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value />
+                                  <Style />
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox21</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>Gray</Color>
@@ -4164,6 +4329,7 @@ union select 0, 'TODOS' </CommandText>
                 <TablixMember />
                 <TablixMember />
                 <TablixMember />
+                <TablixMember />
               </TablixMembers>
             </TablixColumnHierarchy>
             <TablixRowHierarchy>
@@ -4316,7 +4482,7 @@ union select 0, 'TODOS' </CommandText>
             <Top>0.125in</Top>
             <Left>0.125in</Left>
             <Height>1in</Height>
-            <Width>29.68959in</Width>
+            <Width>30.68959in</Width>
             <ZIndex>2</ZIndex>
             <Style />
           </Tablix>
@@ -4327,7 +4493,7 @@ union select 0, 'TODOS' </CommandText>
           <BackgroundColor>White</BackgroundColor>
         </Style>
       </Body>
-      <Width>30.11667in</Width>
+      <Width>30.81459in</Width>
       <Page>
         <PageHeader>
           <Height>1.65027in</Height>
