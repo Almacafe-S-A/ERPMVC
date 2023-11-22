@@ -210,12 +210,12 @@ namespace ERPMVC.Controllers
             }
             catch (Exception exception)
             {
-                logger.LogError(exception, "Error al guardar el registro biometrico");
-                TempData["Errores"] = exception.Message;
-                //return BadRequest(ex.Message);
-                Response.StatusCode = 400;
-                return View("Index", new BiometricoPost { message = exception.Message, valid =false });
-
+                var biometricoPost = new BiometricoPost
+                {
+                    message = "Error al guardar el registro biometrico: " + exception.Message,
+                    valid = false
+                };
+                return View("Index", biometricoPost);
             }
         }
 
