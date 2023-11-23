@@ -2,7 +2,6 @@
 @using System.Security.Claims
 @{
     ViewData["Title"] = "Inasistencias";
-
     DateTime fecha = DateTime.Today;
     bool todo = false;
     if (TempData.ContainsKey("Fecha"))
@@ -72,9 +71,9 @@
 </div>
 
 <script>
-
-
     function CrearGrid() {
+        var fechaActual = new Date();
+        var fechaFormateada = fechaActual.getFullYear() + "-" + (fechaActual.getMonth() + 1) + "-" + fechaActual.getDate();
         $("#grdConfiguracion").kendoGrid({
             dataSource: {
                 transport: {
@@ -92,6 +91,9 @@
                             Id: { type: "number", editable: false },
                             Fecha: {type:"date", editable: false},
                             Empleado: { defaultValue: {IdEmpleado:0,NombreEmpleado:''}, editable: false },
+                            NombreEmpleado: { type: "string" , editable: false},
+                            TipoNombre: { type: "string", editable: false },
+                            NombreEstado: { type: "string", editable: false },
                             HoraLlegada: { type: "string", editable: false },
                             Tipo: { defaultValue: { Id: 0, Nomnbre: "" }, editable: false },
                             Observacion: { type: "string", editable: false },
@@ -99,6 +101,15 @@
                         }
                     }
                 }
+            },
+            toolbar: [
+                { name: "excel", text: "Exportar a Excel" } // Cambio aquí
+
+            ],
+            excel: {
+                fileName: "InasistenciasReport_" + fechaFormateada + ".xlsx", // Cambio aquí
+                proxyURL: '@Url.Action("Export", "Home")',
+                allPages: true
             },
             columns: [
                 {
@@ -109,11 +120,14 @@
                 },
                 { field: "Id", title: "Id. ", width: 50, hidden: true },
                 { field: "IdEmpleado", title: "Codigo", width: 80, template: '#= Empleado.IdEmpleado #' },
-                { field: "Empleado", title: "Empleado", width: 200, template: '#= Empleado.NombreEmpleado #' },
+                { field: "Empleado", title: "Empleado", width: 200, template: '#= Empleado.NombreEmpleado #', hidden: true},
+                { field: "NombreEmpleado", title: "EmpleadoTest", width: 200 },
                 { field: "HoraLlegada", title: "Hora Llegada", width: 100, attributes: { style: "text-align: right;" }},
-                { field: "Tipo", title: "Tipo Inasistencia", width: 100, template: '#= Tipo.Nombre #' },
+                { field: "Tipo", title: "Tipo Inasistencia", width: 100, template: '#= Tipo.Nombre #', hidden: true },
+                { field: "TipoNombre", title: "TipoNombreTest", width: 200 },
                 { field: "Observacion", title: "Observación", width: 200 },
-                { field: "Estado", title: "Estado", width: 100, template: "#= Estado.NombreEstado #"}
+                { field: "NombreEstado", title: "NombreEstadoTest", width: 200 },
+                { field: "Estado", title: "Estado", width: 100, template: "#= Estado.NombreEstado#", hidden: true }
             ],
             noRecords: {
                 template:"No hay inasistencias para la fecha estipulada."
@@ -157,6 +171,12 @@
 
     function RefreshGrid() {
         $("#grdConfiguracion").getKendoGrid().dataSource.read();
+    }
+    // Función para exportar a Excel
+    function exportToExcel() {
+        debugger;
+        var grid = $("#grdConfiguracion").data("kendoGrid");
+        grid.saveAsExcel();
     }
 
     $(document).ready(function () {

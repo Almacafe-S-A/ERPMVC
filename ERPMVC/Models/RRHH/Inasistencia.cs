@@ -19,6 +19,10 @@ namespace ERPMVC.Models
 
         public Employees Empleado { get; set; }
 
+        public string NombreEmpleado { get { return Empleado.NombreEmpleado ?? ""; } }
+        public string TipoNombre { get { return Tipo.Nombre ?? ""; } }
+        public string NombreEstado { get { return Estado.NombreEstado ?? ""; } }
+
         public long IdEstado { get; set; }
 
         public Estados Estado { get; set; }
