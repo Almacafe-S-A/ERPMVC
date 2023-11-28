@@ -177,8 +177,8 @@ namespace ERPMVC.Controllers
 
                     NuevaControlAsistencia.Inasistencia = asistenciaempleado.Where(q => q.TipoAsistencia == 215).Count();
 
-                    int DiasLaborales = (NuevaControlAsistencia.LlegadasTarde + DomigosyLibres + PermisosH + NuevaControlAsistencia.Incapacidad + NuevaControlAsistencia.Vacaciones 
-                        + NuevaControlAsistencia.Permisos + Presentes + NuevaControlAsistencia.TeleTrabajo + NuevaControlAsistencia.Inasistencia);
+                    int DiasLaborales = (DomigosyLibres + PermisosH + NuevaControlAsistencia.Incapacidad + NuevaControlAsistencia.Vacaciones 
+                        + NuevaControlAsistencia.Permisos + Presentes + NuevaControlAsistencia.TeleTrabajo);
 
                     NuevaControlAsistencia.DiasLaborales = DiasLaborales;
 
