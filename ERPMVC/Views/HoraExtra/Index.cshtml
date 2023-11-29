@@ -57,8 +57,41 @@
         });
     });
 
-
-
+    function Revisar(e) {
+        debugger;
+        if (!confirm('Esta seguro de marcar como revisada esta Hora Extra?')) return;
+        var registro = this.dataItem($(e.currentTarget).closest('tr'));
+        var parametros = {
+            idHoraExtra: registro.Id
+        };
+        debugger;
+        $.ajax({
+            url: '@Url.Action("Revisar", "HoraExtra")',
+            method: 'POST',
+            datatype: "json",
+            async: false,
+            data: parametros,
+            success: function (result) {
+                $.toast({
+                    heading: 'Satisfactorio',
+                    text: 'La Hora Extra se ha revisado correctamente.',
+                    position: 'top-right',
+                    loaderBg: '#ff6849',
+                    icon: 'success',
+                    hideAfter: 7000,
+                    stack: 6
+                });
+                RefrescarGridDetalle();
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                notification.show({
+                    title: "Validación",
+                    message: textStatus + ": " + XMLHttpRequest.responseText
+                }, "error");
+                alert(textStatus + ": " + XMLHttpRequest.responseText);
+            }
+        });
+    }
 
     function RefrescarGridDetalle() {
         debugger;
@@ -87,7 +120,7 @@
         };
         debugger;
         $.ajax({
-            url: '@Url.Action("AprobarHorasExtra", "HoraExtra")',
+            url: '@Url.Action("Aprobar", "HoraExtra")',
             method: 'POST',
             datatype: "json",
             async: false,
@@ -127,7 +160,7 @@
         };
         debugger;
         $.ajax({
-            url: '@Url.Action("RechazarHoraExtra", "HoraExtra")',
+            url: '@Url.Action("Rechazar", "HoraExtra")',
             method: 'POST',
             datatype: "json",
             async: false,
@@ -159,17 +192,23 @@
         });
     }
 
-
     function dataBound(e) {
-        debugger;
-        $.each(this.dataSource.data(), function () {
-            if (this.IdEstado != 70) {
-                $('[data-uid=' + this.uid + ']').find('.k-grid-Aprobar').hide();
-                $('[data-uid=' + this.uid + ']').find('.k-grid-Rechazar').hide();
-                $('[data-uid=' + this.uid + ']').find('.k-grid-edit').hide();
+        var grid = this;
+        var data = grid.dataSource.data();
+        $.each(data, function (index, item) {
+            var estado = item.Estados;
+            var row = grid.tbody.find("tr[data-uid='" + item.uid + "']");
+            // Ocultar todos los botones por defecto
+            row.find(".k-grid-Revisar, .k-grid-Aprobar, .k-grid-Rechazar").hide();
+            // Mostrar botones según el estado
+            if (estado === "Pendiente") {
+                row.find(".k-grid-Revisar").show();
+            } else if (estado === "Revisado") {
+                row.find(".k-grid-Aprobar, .k-grid-Rechazar").show();
             }
-        })
+        });
     }
+
 
 </script>
 
@@ -183,6 +222,7 @@
                                               columns.Command(command =>
                                               {
                                                   command.Edit().Text(" ").IconClass("fa fa-edit");
+                                                  command.Custom("Revisar").Text(" ").IconClass("fa fa-check").Click("Revisar");
                                                   command.Custom("Aprobar").Text(" ").IconClass("fa fa-thumbs-up").Click("Aprobar");
                                                   command.Custom("Rechazar").Text(" ").IconClass("fa fa-thumbs-down").Click("Rechazar");
 
@@ -197,7 +237,7 @@
                                           columns.Bound(p => p.Minutos).Title("Minutos").Width(100).HtmlAttributes(new { style = "text-align: right;" });
                                           columns.Bound(p => p.HorasExtras).Width(125).Title("Total Horas").HtmlAttributes(new { style = "text-align: right;" });
                                           columns.Bound(p => p.Observaciones).Width(135).Title("Observación");
-                                          columns.Bound(p => p.Estado.NombreEstado).Title("Estado").Width(150);
+                                          columns.Bound(p => p.Estados).Title("Estado").Width(150);
                                       }).Filterable(f => f.Operators(o => o.ForString(s => s
                                                              .Clear()
                                                              .Contains("Contiene")
@@ -257,7 +297,7 @@
                                             model.Field(p => p.Empleado.NombreEmpleado).Editable(false);
                                             model.Field(p => p.Horas).Editable(true);
                                             model.Field(p => p.Minutos).Editable(true);
-                                            model.Field(p => p.Estado.NombreEstado).Editable(false);
+                                            model.Field(p => p.Estados).Editable(false);
                                         })
                                         .Events(events =>
                                         {
@@ -310,6 +350,7 @@
     }
 
     setRowButtonTooltip(".k-grid-edit", "Editar Hora Extra");
+    setRowButtonTooltip(".k-grid-Revisar", "Revisar");
     setRowButtonTooltip(".k-grid-Aprobar", "Aprobar");
     setRowButtonTooltip(".k-grid-Rechazar", "Rechazar");
 </script>

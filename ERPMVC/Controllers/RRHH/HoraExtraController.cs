@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using NPOI.HPSF;
 using NPOI.SS.Formula.Functions;
 
@@ -74,7 +75,92 @@ public async Task<DataSourceResult> GetHorasExtra([DataSourceRequest] DataSource
     return horasExtra.ToDataSourceResult(request);
 }
 
+        [HttpPost("[action]")]
+        public async Task<ActionResult> Revisar(long idHoraExtra)
+        {
+            try
+            {
+                if (idHoraExtra == 0)
+                {
+                    return await Task.Run(() => BadRequest("No llego correctamente el modelo!"));
+                }
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + $"api/HorasExtra/ChangeStatus/{idHoraExtra}/{1}");
+                string valorrespuesta = "";
+                if (!result.IsSuccessStatusCode)
+                {
+                    return await Task.Run(() => BadRequest("No se Aprobo el documento!"));
+                }
 
+                return Ok();
+
+            }
+            catch (Exception ex)
+            {
+                logger.LogError($"Ocurrio un error: {ex.ToString()}");
+                throw ex;
+            }
+        }
+
+        [HttpPost("[action]")]
+        public async Task<ActionResult> Aprobar(long idHoraExtra)
+        {
+            try
+            {
+                if (idHoraExtra == 0)
+                {
+                    return await Task.Run(() => BadRequest("No llego correctamente el modelo!"));
+                }
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + $"api/HorasExtra/ChangeStatus/{idHoraExtra}/{2}");
+                string valorrespuesta = "";
+                if (!result.IsSuccessStatusCode)
+                {
+                    return await Task.Run(() => BadRequest("No se Aprobo el documento!"));
+                }
+
+                return Ok();
+
+            }
+            catch (Exception ex)
+            {
+                logger.LogError($"Ocurrio un error: {ex.ToString()}");
+                throw ex;
+            }
+        }
+
+        [HttpPost("[action]")]
+        public async Task<ActionResult> Rechazar(long idHoraExtra)
+        {
+            try
+            {
+                if (idHoraExtra == 0)
+                {
+                    return await Task.Run(() => BadRequest("No llego correctamente el modelo!"));
+                }
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + $"api/HorasExtra/ChangeStatus/{idHoraExtra}/{3}");
+                string valorrespuesta = "";
+                if (!result.IsSuccessStatusCode)
+                {
+                    return await Task.Run(() => BadRequest("No se Aprobo el documento!"));
+                }
+
+                return Ok();
+
+            }
+            catch (Exception ex)
+            {
+                logger.LogError($"Ocurrio un error: {ex.ToString()}");
+                throw ex;
+            }
+        }
         [HttpPost("[action]")]
         public async Task<ActionResult> AprobarHorasExtra(long idHoraExtra)
         {
