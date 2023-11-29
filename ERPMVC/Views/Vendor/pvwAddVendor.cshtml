@@ -583,159 +583,176 @@
                 var grid = $("#gridNumeracionVendor").getKendoGrid();
                 grid.dataSource.read();
             }
+
+            var saveVendorRunning = false;
     function SaveVendor(e) {
+        debugger;
+        if (saveVendorRunning) {
+            return; // Si la función ya está en ejecución, salir para evitar duplicados
+        }
+        try
+        {
+            saveVendorRunning = true; // Establecer que la función está en ejecución
 
-                    var notification = $("#notification").data("kendoNotification");
-                   // e.preventDefault();
-               //debugger;
-                $("#btnVendor").hide();
-                $("#btnVendor").prop("disabled", true);
-                 var displayedData = $("#gridNumeracionVendor").data().kendoGrid.dataSource.view();
-                //RefreshOFAC(); return; // inhabilitacion de la busqueda de listas mediaticas y OFAC
-                /*
+                            var notification = $("#notification").data("kendoNotification");
+                           // e.preventDefault();
+                       //debugger;
+                        $("#btnVendor").hide();
+                        $("#btnVendor").prop("disabled", true);
+                         var displayedData = $("#gridNumeracionVendor").data().kendoGrid.dataSource.view();
+                        //RefreshOFAC(); return; // inhabilitacion de la busqueda de listas mediaticas y OFAC
+                        /*
                
 
                
-                var listadoenqueaparece = "";
-                var gridListaOFAC = $("#gridListaOFAC").data().kendoGrid.dataSource.data();
-                var gridListaPEPS = $("#gridListaPEPS").data().kendoGrid.dataSource.data();
-                var gridListaNegra = $("#gridListaNegra").data().kendoGrid.dataSource.data();
-                var gridListaONU = $("#gridListaONU").data().kendoGrid.dataSource.data();
-                var gridListaOFACIdentity = $("#gridListaOFACIdentity").getKendoGrid().dataSource.read();
+                        var listadoenqueaparece = "";
+                        var gridListaOFAC = $("#gridListaOFAC").data().kendoGrid.dataSource.data();
+                        var gridListaPEPS = $("#gridListaPEPS").data().kendoGrid.dataSource.data();
+                        var gridListaNegra = $("#gridListaNegra").data().kendoGrid.dataSource.data();
+                        var gridListaONU = $("#gridListaONU").data().kendoGrid.dataSource.data();
+                        var gridListaOFACIdentity = $("#gridListaOFACIdentity").getKendoGrid().dataSource.read();
 
-               ////debugger;
-                var confirmaexpecion = false;
+                       ////debugger;
+                        var confirmaexpecion = false;
 
-                if (
-                    gridListaPEPS.length > 0
+                        if (
+                            gridListaPEPS.length > 0
 
-                )
+                        )
+                        {
+                            if (confirm("¿Desea crear una excepción para este Proveedor y enviar a aprobación?, esto notificara a Gerencia")) {
+                                validadetalle = true;
+                                confirmaexpecion = true;
+                                Estado = 'Enviada a Aprobacion'
+                                listadoenqueaparece += gridListaPEPS.length > 0 ? "PEPS" : "";
+                            }
+
+                        }*/
+                         var validadetalle = true; // validar formulario
+                if (validadetalle)
                 {
-                    if (confirm("¿Desea crear una excepción para este Proveedor y enviar a aprobación?, esto notificara a Gerencia")) {
-                        validadetalle = true;
-                        confirmaexpecion = true;
-                        Estado = 'Enviada a Aprobacion'
-                        listadoenqueaparece += gridListaPEPS.length > 0 ? "PEPS" : "";
+                   //debugger;
+                    var bandera = validarllenado();
+                    if ( bandera== true)
+                    {
+                        //$("#Identidad").val() = ;
+                            var dataObject = {
+                                'VendorId': $("#VendorId").val(),
+                                'VendorName': $("#VendorName").val(),
+                                'VendorTypeId': $("#VendorTypeId").val(),
+                                'VendorTypeName': $("#VendorTypeId").data("kendoDropDownList").text(),
+                                'RTN': $("#RTN").val(),
+                                'CityId': $("#CityId").val(),
+                                'Address': $("#Address").val(),
+                                'StateId': $("#StateId").val(),
+                                'CountryId': $("#CountryId").val(),
+                                'IdEstadoVendorConfi': $("#IdEstadoVendorConfi").val(),
+                                'EstadoVendorConfi': $("#IdEstadoVendorConfi").data("kendoDropDownList").text(),
+                                'Phone': $("#Phone").val(),
+                                //'Identidad': $("#Identidad").val('0'),
+                                'Email': $("#Email").val(),
+                                'CurrencyId': $("#CurrencyId").val(),
+                                'IdEstado': $("#IdEstado").val(),
+                                'Estado': $("#IdEstado").data("kendoDropDownList").text(),
+                                'CompanyReferenceone': $("#CompanyReferenceone").val(),
+                                'CompanyReferencetwo': $("#CompanyReferencetwo").val(),
+                                'QtyMonth': $("#QtyMonth").val(),
+                                'CreatedDate': $("#CreatedDate").val(),
+                                'ModifiedDate': $("#ModifiedDate").val(),
+                                'CreatedUser': $("#CreatedUser").val(),
+                                'ModifiedUser': $("#ModifiedUser").val(),
+                                'RepresentativeName': $("#RepresentativeName").val(),
+                                'IdentityRepresentative': $("#IdentityRepresentative").val(),
+                                'RTNRepresentative': $("#RTNRepresentative").val(),
+
+                                '_Vendor': displayedData
+                            };
+
+                           // console.log(JSON.stringify(dataObject));
+                            //var form = $("#frmNumeracion");
+                           // form.validate();
+                            var validator = $("#frmVendor").data("kendoValidator");
+                            var status = $(".status");
+                            if (validator.validate()) {
+
+                                    $.ajax({
+                                        url: '@Url.Action("SaveVendor", "Vendor")',
+                                        method: 'POST',
+                                        datatype: "json",
+                                        contentType: 'application/json',
+                                        async: false,
+                                        data: JSON.stringify(dataObject),
+                                        success: function (data) {
+
+                                            //notification.show({
+                                            //    message: "Guardado correctamente!"
+                                            //}, "upload-success");
+                                            //$.toast({
+                                            //    heading: 'Satisfactorio',
+                                            //    text: ' Datos guardados correctamente.',
+                                            //    position: 'top-right',
+                                            //    loaderBg: '#ff6849',
+                                            //    icon: 'success',
+                                            //    hideAfter: 30000,
+                                            //    stack: 6
+                                            //});
+                                             MostrarMensaje("Datos guardados correctamente.", "success", "Satisfactorio", 6000);
+                                            RefrescarGrid();
+
+                                            $('#ModalVendor').modal('hide');
+
+
+                                        },
+                                        error: function (XMLHttpRequest, textStatus, errorThrown) {
+
+                                            //notification.show({
+                                            //    title: "Validación",
+                                            //    message: textStatus + ": " + XMLHttpRequest.responseText
+                                            //}, "error");
+                                             MostrarMensaje(textStatus + ": " + XMLHttpRequest.responseText, "Error", "Error", 6000);
+                                        }
+                                    });
+
+                                }
+                            else {
+                                $("#btnVendor").show();
+                                $("#btnVendor").prop("disabled", false);
+                                    status.text("Oops! Hay datos invalidos en el formulario.")
+                                        .removeClass("valid")
+                                        .addClass("invalid");
+                                }
+
+
+
+                       // } else
+                       // {
+                         //
+                    }
+                    else{
+                        //$.toast({
+                        //    heading: 'Error',
+                        //    text:  ' Los campos de Categoria de Proveedor no pueden quedar vacios.',
+                        //    position: 'top-right',
+                        //    showHideTransition: 'fade',
+                        //    loaderBg: '#ff6849',
+                        //    icon: 'error',
+                        //    hideAfter: 30000,
+                        //    stack: 6
+                        //});
+                         MostrarMensaje("Debe de llenar el campo requerido 'Categoría de Proveedor'", "Error", "Error", 6000);
                     }
 
-                }*/
-                 var validadetalle = true; // validar formulario
-        if (validadetalle)
-        {
-           //debugger;
-            var bandera = validarllenado();
-            if ( bandera== true)
-            {
-                //$("#Identidad").val() = ;
-                    var dataObject = {
-                        'VendorId': $("#VendorId").val(),
-                        'VendorName': $("#VendorName").val(),
-                        'VendorTypeId': $("#VendorTypeId").val(),
-                        'VendorTypeName': $("#VendorTypeId").data("kendoDropDownList").text(),
-                        'RTN': $("#RTN").val(),
-                        'CityId': $("#CityId").val(),
-                        'Address': $("#Address").val(),
-                        'StateId': $("#StateId").val(),
-                        'CountryId': $("#CountryId").val(),
-                        'IdEstadoVendorConfi': $("#IdEstadoVendorConfi").val(),
-                        'EstadoVendorConfi': $("#IdEstadoVendorConfi").data("kendoDropDownList").text(),
-                        'Phone': $("#Phone").val(),
-                        //'Identidad': $("#Identidad").val('0'),
-                        'Email': $("#Email").val(),
-                        'CurrencyId': $("#CurrencyId").val(),
-                        'IdEstado': $("#IdEstado").val(),
-                        'Estado': $("#IdEstado").data("kendoDropDownList").text(),
-                        'CompanyReferenceone': $("#CompanyReferenceone").val(),
-                        'CompanyReferencetwo': $("#CompanyReferencetwo").val(),
-                        'QtyMonth': $("#QtyMonth").val(),
-                        'CreatedDate': $("#CreatedDate").val(),
-                        'ModifiedDate': $("#ModifiedDate").val(),
-                        'CreatedUser': $("#CreatedUser").val(),
-                        'ModifiedUser': $("#ModifiedUser").val(),
-                        'RepresentativeName': $("#RepresentativeName").val(),
-                        'IdentityRepresentative': $("#IdentityRepresentative").val(),
-                        'RTNRepresentative': $("#RTNRepresentative").val(),
-
-                        '_Vendor': displayedData
-                    };
-
-                   // console.log(JSON.stringify(dataObject));
-                    //var form = $("#frmNumeracion");
-                   // form.validate();
-                    var validator = $("#frmVendor").data("kendoValidator");
-                    var status = $(".status");
-                    if (validator.validate()) {
-
-                            $.ajax({
-                                url: '@Url.Action("SaveVendor", "Vendor")',
-                                method: 'POST',
-                                datatype: "json",
-                                contentType: 'application/json',
-                                async: false,
-                                data: JSON.stringify(dataObject),
-                                success: function (data) {
-
-                                    //notification.show({
-                                    //    message: "Guardado correctamente!"
-                                    //}, "upload-success");
-                                    //$.toast({
-                                    //    heading: 'Satisfactorio',
-                                    //    text: ' Datos guardados correctamente.',
-                                    //    position: 'top-right',
-                                    //    loaderBg: '#ff6849',
-                                    //    icon: 'success',
-                                    //    hideAfter: 30000,
-                                    //    stack: 6
-                                    //});
-                                     MostrarMensaje("Datos guardados correctamente.", "success", "Satisfactorio", 6000);
-                                    RefrescarGrid();
-
-                                    $('#ModalVendor').modal('hide');
-
-
-                                },
-                                error: function (XMLHttpRequest, textStatus, errorThrown) {
-
-                                    //notification.show({
-                                    //    title: "Validación",
-                                    //    message: textStatus + ": " + XMLHttpRequest.responseText
-                                    //}, "error");
-                                     MostrarMensaje(textStatus + ": " + XMLHttpRequest.responseText, "Error", "Error", 6000);
-                                }
-                            });
-
-                        }
-                    else {
-                        $("#btnVendor").show();
-                        $("#btnVendor").prop("disabled", false);
-                            status.text("Oops! Hay datos invalidos en el formulario.")
-                                .removeClass("valid")
-                                .addClass("invalid");
-                        }
-
-
-
-               // } else
-               // {
-                 //
-            }
-            else{
-                //$.toast({
-                //    heading: 'Error',
-                //    text:  ' Los campos de Categoria de Proveedor no pueden quedar vacios.',
-                //    position: 'top-right',
-                //    showHideTransition: 'fade',
-                //    loaderBg: '#ff6849',
-                //    icon: 'error',
-                //    hideAfter: 30000,
-                //    stack: 6
-                //});
-                 MostrarMensaje("Debe de llenar el campo requerido 'Categoría de Proveedor'", "Error", "Error", 6000);
-            }
-
+                }
+                $("#btnVendor").show();
+               $("#btnVendor").prop("disabled", false);
+        } catch (ex) {
+            console.log(ex);
+            saveVendorRunning = false; // Asegúrate de restablecer el estado si ocurre una excepción
+        } finally {
+            setTimeout(function () {
+                saveVendorRunning = false; // Asegúrate de restablecer el estado después de un tiempo determinado
+            }, 4000);
         }
-        $("#btnVendor").show();
-       $("#btnVendor").prop("disabled", false);
     }
     function validarllenado() {
         if ($("#IdEstadoVendorConfi").val() == 70 && ($("#CompanyReferenceone").val() == '' || $("#CompanyReferenceone").val() == null)
