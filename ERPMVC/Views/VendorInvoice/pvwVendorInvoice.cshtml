@@ -434,16 +434,19 @@
         var grid = $("#gridInvoices").getKendoGrid();
         grid.dataSource.read();
     }
-
+    var saveVendorRunning = false;
      function SaveFacturaProveedores(e) {
         debugger;
         if (!confirm("¿Está seguro que desea guardar los datos?")) {
             return; 
         }
+        if (saveVendorRunning) {
+            return; // Si la función ya está en ejecución, salir para evitar duplicados
+        }
        try{
             $("#btnSaveVendorInvoice").hide();
             $("#btnSaveVendorInvoice").prop("disabled", true);
-            
+            saveVendorRunning = true; // Establecer que la función está en ejecución
             var ret = $("#AplicaRetencion").data("kendoSwitch");
             var retencion =  ret.check();
             var validator = $("#frmSalesOrder").data("kendoValidator");
@@ -521,18 +524,14 @@
                     MostrarMensaje(textStatus + ": " + XMLHttpRequest.responseText, "Error", "Error", 6000);
                 }
             });
-       }catch(e){
-            MostrarMensaje( e , "Error", "Error", 6000);
-       
-       }finally{
-            $("#btnSaveVendorInvoice").show();
-            $("#btnSaveVendorInvoice").prop("disabled", false);
-       
-       }
-
-
-         
-
+        } catch (ex) {
+            console.log(ex);
+            saveVendorRunning = false; // Asegúrate de restablecer el estado si ocurre una excepción
+        } finally {
+            setTimeout(function () {
+                saveVendorRunning = false; // Asegúrate de restablecer el estado después de un tiempo determinado
+            }, 4000);
+        } 
     }
 
 
