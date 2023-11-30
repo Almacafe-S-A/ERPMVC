@@ -21,12 +21,12 @@ namespace ERPMVC.Controllers
     [Authorize]
     [CustomAuthorization]
     [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
-    public class TipoPlanillasController : Controller
+    public class PlanillaTiposController : Controller
     {
         private readonly IOptions<MyConfig> config;
         private readonly ILogger _logger;
         private readonly ClaimsPrincipal _principal;
-        public TipoPlanillasController(ILogger<TipoPlanillasController> logger, IOptions<MyConfig> config, IHttpContextAccessor httpContextAccessor)
+        public PlanillaTiposController(ILogger<PlanillaTiposController> logger, IOptions<MyConfig> config, IHttpContextAccessor httpContextAccessor)
         {
             this.config = config;
             this._logger = logger;
@@ -35,7 +35,7 @@ namespace ERPMVC.Controllers
 
         // GET: Customer
         //[Authorize(Policy = "RRHH.Parametros Tipo de Planilla")]
-        public ActionResult TipoPlanillas()
+        public ActionResult PlanillaTipos()
         {
             ViewData["permisos"] = _principal;
             return View();
@@ -44,20 +44,20 @@ namespace ERPMVC.Controllers
         [HttpGet]
         public async Task<JsonResult> Get([DataSourceRequest]DataSourceRequest request)
         {
-            List<TipoPlanillas> _TipoPlanillas = new List<TipoPlanillas>();
+            List<PlanillaTipo> _PlanillaTipos = new List<PlanillaTipo>();
             try
             {
 
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/TipoPlanillas/GetTipoPlanillas");
+                var result = await _client.GetAsync(baseadress + "api/PlanillaTipos/GetPlanillaTipos");
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _TipoPlanillas = JsonConvert.DeserializeObject<List<TipoPlanillas>>(valorrespuesta);
-                    _TipoPlanillas = _TipoPlanillas.OrderByDescending(p => p.IdTipoPlanilla).ToList();
+                    _PlanillaTipos = JsonConvert.DeserializeObject<List<PlanillaTipo>>(valorrespuesta);
+                    _PlanillaTipos = _PlanillaTipos.OrderByDescending(p => p.IdTipoPlanilla).ToList();
                 }
 
 
@@ -69,26 +69,26 @@ namespace ERPMVC.Controllers
             }
 
 
-            return Json(_TipoPlanillas.ToDataSourceResult(request));
+            return Json(_PlanillaTipos.ToDataSourceResult(request));
 
         }
 
         [HttpGet]
-        public async Task<JsonResult> GetTipoPlanillas([DataSourceRequest]DataSourceRequest request)
+        public async Task<JsonResult> GetPlanillaTipos([DataSourceRequest]DataSourceRequest request)
         {
-            List<TipoPlanillas> _TipoPlanillas = new List<TipoPlanillas>();
+            List<PlanillaTipo> _PlanillaTipos = new List<PlanillaTipo>();
             try
             {
 
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/TipoPlanillas/GetTipoPlanillas");
+                var result = await _client.GetAsync(baseadress + "api/PlanillaTipos/GetPlanillaTipos");
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _TipoPlanillas = JsonConvert.DeserializeObject<List<TipoPlanillas>>(valorrespuesta);
+                    _PlanillaTipos = JsonConvert.DeserializeObject<List<PlanillaTipo>>(valorrespuesta);
                 }
 
 
@@ -100,27 +100,28 @@ namespace ERPMVC.Controllers
             }
 
 
-            return Json(_TipoPlanillas.ToDataSourceResult(request));
+            return Json(_PlanillaTipos.ToDataSourceResult(request));
 
         }
 
 
         [HttpGet]
-        public async Task<JsonResult> GetTipoPlanillasActivo([DataSourceRequest] DataSourceRequest request)
+        public async Task<JsonResult> GetPlanillaTiposActivo([DataSourceRequest] DataSourceRequest request)
         {
-            List<TipoPlanillas> _TipoPlanillas = new List<TipoPlanillas>();
+            List<PlanillaTipo> _PlanillaTipos = new List<PlanillaTipo>();
             try
             {
 
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/TipoPlanillas/GetTipoPlanillasActivo");
+                var result = await _client.GetAsync(baseadress + "api/PlanillaTipos/GetPlanillaTipos");
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _TipoPlanillas = JsonConvert.DeserializeObject<List<TipoPlanillas>>(valorrespuesta);
+                    _PlanillaTipos = JsonConvert.DeserializeObject<List<PlanillaTipo>>(valorrespuesta);
+                    _PlanillaTipos = _PlanillaTipos.Where(e => e.EstadoId ==1).ToList();
                 }
 
 
@@ -132,26 +133,26 @@ namespace ERPMVC.Controllers
             }
 
 
-            return Json(_TipoPlanillas.ToDataSourceResult(request));
+            return Json(_PlanillaTipos.ToDataSourceResult(request));
 
         }
         //--------------------------------------------------------------------------------------
         [HttpGet]
         public async Task<JsonResult> GetBOX([DataSourceRequest]DataSourceRequest request)
         {
-            List<TipoPlanillas> _TipoPlanillas = new List<TipoPlanillas>();
+            List<PlanillaTipo> _PlanillaTipos = new List<PlanillaTipo>();
             try
             {
 
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/TipoPlanillas/GetPlanilla");
+                var result = await _client.GetAsync(baseadress + "api/PlanillaTipos/GetPlanilla");
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _TipoPlanillas = JsonConvert.DeserializeObject<List<TipoPlanillas>>(valorrespuesta);
+                    _PlanillaTipos = JsonConvert.DeserializeObject<List<PlanillaTipo>>(valorrespuesta);
 
                 }
 
@@ -164,31 +165,31 @@ namespace ERPMVC.Controllers
             }
 
 
-            return Json(_TipoPlanillas);
+            return Json(_PlanillaTipos);
 
         }
 
         [HttpPost("[action]")]
-        public async Task<ActionResult> pvwAddTipoPlanillas([FromBody]TipoPlanillasDTO _sarpara)
+        public async Task<ActionResult> pvwAddPlanillaTipos([FromBody]PlanillaTipo _sarpara)
         {
-            TipoPlanillasDTO _TipoPlanillas = new TipoPlanillasDTO();
+            PlanillaTipo _PlanillaTipos = new PlanillaTipo();
             try
             {
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/TipoPlanillas/GetTipoPlanillasById/" + _sarpara.IdTipoPlanilla);
+                var result = await _client.GetAsync(baseadress + "api/PlanillaTipos/GetPlanillaTiposById/" + _sarpara.IdTipoPlanilla);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _TipoPlanillas = JsonConvert.DeserializeObject<TipoPlanillasDTO>(valorrespuesta);
+                    _PlanillaTipos = JsonConvert.DeserializeObject<PlanillaTipo>(valorrespuesta);
 
                 }
 
-                if (_TipoPlanillas == null)
+                if (_PlanillaTipos == null)
                 {
-                    _TipoPlanillas = new TipoPlanillasDTO();
+                    _PlanillaTipos = new PlanillaTipo();
                 }
             }
             catch (Exception ex)
@@ -199,57 +200,57 @@ namespace ERPMVC.Controllers
 
 
 
-            return PartialView(_TipoPlanillas);
+            return PartialView(_PlanillaTipos);
 
         }
 
         
         [HttpPost]
-        public async Task<ActionResult<TipoPlanillas>> SaveTipoPlanillas([FromBody]TipoPlanillasDTO _TipoPlanillasP)
+        public async Task<ActionResult<PlanillaTipo>> SavePlanillaTipos([FromBody]PlanillaTipo _PlanillaTiposP)
         {
 
-            TipoPlanillas _TipoPlanillas = _TipoPlanillasP;
+            PlanillaTipo _PlanillaTipos = _PlanillaTiposP;
             try
             {
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/TipoPlanillas/GetTipoPlanillasById/" + _TipoPlanillas.IdTipoPlanilla);
+                var result = await _client.GetAsync(baseadress + "api/PlanillaTipos/GetPlanillaTiposById/" + _PlanillaTipos.IdTipoPlanilla);
                 string valorrespuesta = "";
-                _TipoPlanillas.FechaModificacion = DateTime.Now;
-                _TipoPlanillas.Usuariomodificacion = HttpContext.Session.GetString("user");
+                _PlanillaTipos.FechaModificacion = DateTime.Now;
+                _PlanillaTipos.Usuariomodificacion = HttpContext.Session.GetString("user");
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _TipoPlanillas = JsonConvert.DeserializeObject<TipoPlanillasDTO>(valorrespuesta);
+                    _PlanillaTipos = JsonConvert.DeserializeObject<PlanillaTipo>(valorrespuesta);
                 }
 
-                if (_TipoPlanillas == null)
+                if (_PlanillaTipos == null)
                 {
-                    _TipoPlanillas = new Models.TipoPlanillas();
+                    _PlanillaTipos = new Models.PlanillaTipo();
                 }
 
-                if (_TipoPlanillasP.IdTipoPlanilla == 0)
+                if (_PlanillaTiposP.IdTipoPlanilla == 0)
                 {
-                    _TipoPlanillas.FechaCreacion = DateTime.Now;
-                    _TipoPlanillas.Usuariomodificacion = HttpContext.Session.GetString("user");
-                    var ValidacionTipoPlanillaresult = await ValidacionTipoPlanillas(_TipoPlanillasP);
+                    _PlanillaTipos.FechaCreacion = DateTime.Now;
+                    _PlanillaTipos.Usuariomodificacion = HttpContext.Session.GetString("user");
+                    var ValidacionTipoPlanillaresult = await ValidacionPlanillaTipos(_PlanillaTiposP);
                     if ((ValidacionTipoPlanillaresult as ObjectResult).Value.ToString() == "Ya exíste un Tipo de Planilla creada con el mismo Nombre.")
                     {
                         return await Task.Run(() => BadRequest("Ya exíste un Tipo de Planilla creada con el mismo Nombre."));
                     }
-                    var insertresult = await Insert(_TipoPlanillasP);
+                    var insertresult = await Insert(_PlanillaTiposP);
                 }
                 else
                 {
-                    _TipoPlanillasP.Usuariocreacion = _TipoPlanillas.Usuariocreacion;
-                    _TipoPlanillasP.FechaCreacion = _TipoPlanillas.FechaCreacion;
-                    var ValidacionTipoPlanillaresult = await ValidacionTipoPlanillas(_TipoPlanillasP);
+                    _PlanillaTiposP.Usuariocreacion = _PlanillaTipos.Usuariocreacion;
+                    _PlanillaTiposP.FechaCreacion = _PlanillaTipos.FechaCreacion;
+                    var ValidacionTipoPlanillaresult = await ValidacionPlanillaTipos(_PlanillaTiposP);
                     if ((ValidacionTipoPlanillaresult as ObjectResult).Value.ToString() == "Ya exíste un Tipo de Planilla creada con el mismo Nombre.")
                     {
                         return await Task.Run(() => BadRequest("Ya exíste un Tipo de Planilla creada con el mismo Nombre."));
                     }
-                    var updateresult = await Update(_TipoPlanillas.IdTipoPlanilla, _TipoPlanillasP);
+                    var updateresult = await Update(_PlanillaTipos.IdTipoPlanilla, _PlanillaTiposP);
                 }
 
             }
@@ -259,7 +260,7 @@ namespace ERPMVC.Controllers
                 throw ex;
             }
 
-            return Json(_TipoPlanillas);
+            return Json(_PlanillaTipos);
         }
 
 
@@ -267,26 +268,26 @@ namespace ERPMVC.Controllers
         // POST: Planilla/Insert
         [HttpPost]
         //[ValidateAntiForgeryToken]
-        public async Task<ActionResult> Insert(TipoPlanillas _TipoPlanillasP)
+        public async Task<ActionResult> Insert(PlanillaTipo _PlanillaTiposP)
         {
-            TipoPlanillas _TipoPlanillas = _TipoPlanillasP;
+            PlanillaTipo _PlanillaTipos = _PlanillaTiposP;
             try
             {
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                _TipoPlanillas.Estado = null;
-                _TipoPlanillas.Categoria = null;
-                _TipoPlanillas.Usuariocreacion = HttpContext.Session.GetString("user");
-                _TipoPlanillas.Usuariomodificacion = HttpContext.Session.GetString("user");
-                _TipoPlanillas.FechaCreacion = DateTime.Now;
-                _TipoPlanillas.FechaModificacion = DateTime.Now;
-                var result = await _client.PostAsJsonAsync(baseadress + "api/TipoPlanillas/Insert", _TipoPlanillas);
+                _PlanillaTipos.Estado = null;
+                _PlanillaTipos.Categoria = null;
+                _PlanillaTipos.Usuariocreacion = HttpContext.Session.GetString("user");
+                _PlanillaTipos.Usuariomodificacion = HttpContext.Session.GetString("user");
+                _PlanillaTipos.FechaCreacion = DateTime.Now;
+                _PlanillaTipos.FechaModificacion = DateTime.Now;
+                var result = await _client.PostAsJsonAsync(baseadress + "api/PlanillaTipos/Insert", _PlanillaTipos);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _TipoPlanillas = JsonConvert.DeserializeObject<TipoPlanillas>(valorrespuesta);
+                    _PlanillaTipos = JsonConvert.DeserializeObject<PlanillaTipo>(valorrespuesta);
                 }
 
             }
@@ -295,28 +296,28 @@ namespace ERPMVC.Controllers
                 return BadRequest($"Ocurrio un error{ex.Message}");
             }
 
-            return new ObjectResult(new DataSourceResult { Data = new[] { _TipoPlanillas }, Total = 1 });
+            return new ObjectResult(new DataSourceResult { Data = new[] { _PlanillaTipos }, Total = 1 });
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(Int64 Id, TipoPlanillas _TipoPlanillasP)
+        public async Task<IActionResult> Update(Int64 Id, PlanillaTipo _PlanillaTiposP)
         {
-            TipoPlanillas _TipoPlanillas = _TipoPlanillasP;
+            PlanillaTipo _PlanillaTipos = _PlanillaTiposP;
             try
             {
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                _TipoPlanillas.Estado = null;
-                _TipoPlanillas.Categoria = null;
-                _TipoPlanillas.FechaModificacion = DateTime.Now;
-                _TipoPlanillas.Usuariomodificacion = HttpContext.Session.GetString("user");
-                var result = await _client.PutAsJsonAsync(baseadress + "api/TipoPlanillas/Update", _TipoPlanillas);
+                _PlanillaTipos.Estado = null;
+                _PlanillaTipos.Categoria = null;
+                _PlanillaTipos.FechaModificacion = DateTime.Now;
+                _PlanillaTipos.Usuariomodificacion = HttpContext.Session.GetString("user");
+                var result = await _client.PutAsJsonAsync(baseadress + "api/PlanillaTipos/Update", _PlanillaTipos);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _TipoPlanillas = JsonConvert.DeserializeObject<TipoPlanillas>(valorrespuesta);
+                    _PlanillaTipos = JsonConvert.DeserializeObject<PlanillaTipo>(valorrespuesta);
                 }
 
             }
@@ -325,28 +326,28 @@ namespace ERPMVC.Controllers
                 return BadRequest($"Ocurrio un error{ex.Message}");
             }
 
-            return new ObjectResult(new DataSourceResult { Data = new[] { _TipoPlanillas }, Total = 1 });
+            return new ObjectResult(new DataSourceResult { Data = new[] { _PlanillaTipos }, Total = 1 });
         }
 
 
         //--------------------------------------------------------------------------------------
 
         [HttpPost]
-        public async Task<ActionResult<TipoPlanillas>> Delete([FromBody]TipoPlanillas _TipoPlanillasP)
+        public async Task<ActionResult<PlanillaTipo>> Delete([FromBody]PlanillaTipo _PlanillaTiposP)
         {
-            TipoPlanillas _TipoPlanillas = _TipoPlanillasP;
+            PlanillaTipo _PlanillaTipos = _PlanillaTiposP;
             try
             {
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
 
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.PostAsJsonAsync(baseadress + "api/TipoPlanillas/Delete", _TipoPlanillas);
+                var result = await _client.PostAsJsonAsync(baseadress + "api/PlanillaTipos/Delete", _PlanillaTipos);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _TipoPlanillas = JsonConvert.DeserializeObject<TipoPlanillas>(valorrespuesta);
+                    _PlanillaTipos = JsonConvert.DeserializeObject<PlanillaTipo>(valorrespuesta);
                 }
                 else
                 {
@@ -357,38 +358,38 @@ namespace ERPMVC.Controllers
             {
                 return BadRequest($"Ocurrio un error{ex.Message}");
             }
-            return new ObjectResult(new DataSourceResult { Data = new[] { _TipoPlanillas }, Total = 1 });
+            return new ObjectResult(new DataSourceResult { Data = new[] { _PlanillaTipos }, Total = 1 });
         }
 
         //--------------------------------------------------------------------------------------
 
         [HttpPost("[controller]/[action]")]
-        public async Task<ActionResult> ValidacionTipoPlanillas([FromBody]TipoPlanillas _TipoPlanillas)
+        public async Task<ActionResult> ValidacionPlanillaTipos([FromBody]PlanillaTipo _PlanillaTipos)
         {
-            List<TipoPlanillas> _TipoPlanillasList = new List<TipoPlanillas>();
+            List<PlanillaTipo> _PlanillaTiposList = new List<PlanillaTipo>();
             try
             {
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/TipoPlanillas/GetTipoPlanillas");
+                var result = await _client.GetAsync(baseadress + "api/PlanillaTipos/GetPlanillaTipos");
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _TipoPlanillasList = JsonConvert.DeserializeObject<List<TipoPlanillas>>(valorrespuesta);
-                    if (_TipoPlanillas.IdTipoPlanilla != 0)
+                    _PlanillaTiposList = JsonConvert.DeserializeObject<List<PlanillaTipo>>(valorrespuesta);
+                    if (_PlanillaTipos.IdTipoPlanilla != 0)
                     {
-                        _TipoPlanillas = _TipoPlanillasList.Where(q => q.TipoPlanilla == _TipoPlanillas.TipoPlanilla && q.IdTipoPlanilla != _TipoPlanillas.IdTipoPlanilla).FirstOrDefault();
-                        if (_TipoPlanillas != null)
+                        _PlanillaTipos = _PlanillaTiposList.Where(q => q.TipoPlanilla == _PlanillaTipos.TipoPlanilla && q.IdTipoPlanilla != _PlanillaTipos.IdTipoPlanilla).FirstOrDefault();
+                        if (_PlanillaTipos != null)
                         {
                             return await Task.Run(() => BadRequest("Ya exíste un Tipo de Planilla creada con el mismo Nombre."));
                         }
                     }
                     else
                     {
-                        _TipoPlanillas = _TipoPlanillasList.Where(q => q.TipoPlanilla == _TipoPlanillas.TipoPlanilla).FirstOrDefault();
-                        if (_TipoPlanillas != null)
+                        _PlanillaTipos = _PlanillaTiposList.Where(q => q.TipoPlanilla == _PlanillaTipos.TipoPlanilla).FirstOrDefault();
+                        if (_PlanillaTipos != null)
                         {
                             return await Task.Run(() => BadRequest("Ya exíste un Tipo de Planilla creada con el mismo Nombre."));
                         }
@@ -400,7 +401,7 @@ namespace ERPMVC.Controllers
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 throw ex;
             }
-            return await Task.Run(() => Ok(_TipoPlanillasList));
+            return await Task.Run(() => Ok(_PlanillaTiposList));
         }
 
     }
