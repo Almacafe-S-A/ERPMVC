@@ -56,8 +56,7 @@ WHERE IdEstado = 1</CommandText>
             <Value>=Parameters!ESTADO.Value</Value>
           </QueryParameter>
         </QueryParameters>
-        <CommandText>
-drop table if exists tabla
+        <CommandText>drop table if exists tabla
 
 select tabla.* from (
 SELECT 
@@ -125,20 +124,19 @@ END Estado
 AS 'PorDepreciar'
 FROM FixedAsset T0
 Left JOIN FixedAssetGroup T1 ON T0.FixedAssetGroupId = T1.FixedAssetGroupId
-LEFT JOIN DepreciationFixedAsset T2 ON T2.FixedAssetId = T0.FixedAssetId
+left JOIN (select * from DepreciationFixedAsset da where da.YEAR = @ANIO)  T2 ON T2.FixedAssetId = T0.FixedAssetId
 WHERE 
  
 --(  T0.Estado ='Depreciado' or T0.Estado ='Importe Original'  ) AND
  (T0.CenterCostId = @CENTROCOSTO OR @CENTROCOSTO = 0)
 AND (T0.BranchId = @SUCURSAL OR @SUCURSAL = 0)
 AND (T1.FixedAssetGroupId = @GRUPO OR @GRUPO = 0)
-AND T2.Year = @ANIO
+AND T2.Year = @ANIO  or Year is null
 
-) as tabla  WHERE NUMEROFILA = 1 AND (  @ESTADO = 0 or (tabla.Estado = 'Depreciado' AND @ESTADO = 1 ) 
+) as tabla  WHERE   (  (@ESTADO = 0 and not tabla.Estado = 'Dado de Baja') or (tabla.Estado = 'Depreciado' AND @ESTADO = 1 ) 
 															OR (tabla.Estado = 'Depreciandose' AND @ESTADO = 2 ) 
 															OR (tabla.Estado = 'Importe Original' AND @ESTADO = 3 ) 
-															OR (tabla.Estado = 'Dado de Baja' AND @ESTADO = 4 ))
-</CommandText>
+															OR (tabla.Estado = 'Dado de Baja' AND @ESTADO = 4 )) ORDER BY FixedAssetId</CommandText>
         <Timeout>2</Timeout>
       </Query>
       <Fields>
