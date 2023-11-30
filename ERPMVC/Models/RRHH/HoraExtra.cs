@@ -41,6 +41,8 @@ namespace ERPMVC.Models
         public string Estados { get; set; }
 
         public double HorasExtras { get; set; }
+        [DisplayFormat(DataFormatString = "{0:0.00}")]
+        public double HorasExtrasBiometrico { get; set; }
 
     }
 }

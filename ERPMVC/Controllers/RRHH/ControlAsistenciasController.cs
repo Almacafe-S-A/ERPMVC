@@ -1226,11 +1226,32 @@ namespace ERPMVC.Controllers
             return Json(_Nuevo_Update);
         }
 
-
-
-
-
-
+        //[HttpPost("[action]")]
+        public async Task<ActionResult> Revisar(int idControlAsistencia)
+        {
+            try
+            {
+                if (idControlAsistencia == 0)
+                {
+                    return await Task.Run(() => BadRequest("No llego correctamente el modelo!"));
+                }
+                string baseadress = _config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + $"api/ControlAsistencias/ChangeStatus/{idControlAsistencia}");
+                string valorrespuesta = "";
+                if (!result.IsSuccessStatusCode)
+                {
+                    return await Task.Run(() => BadRequest("No se Aprobo la Revisión!"));
+                }
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: {ex.ToString()}");
+                throw ex;
+            }
+        }
 
     }
 }
