@@ -14,6 +14,10 @@ namespace ERPMVC.DTO
         public bool Revisado { get; set; }
         public string token { get; set; }
         public long EmployeesId { get; set; }
+
+        public int Mes { get; set; }
+
+        public int Anio { get; set; }
         public DateTime Dia1 { get; set; }
         
 

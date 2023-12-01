@@ -152,7 +152,19 @@ namespace ERPMVC.Controllers
                     NuevaControlAsistencia.Empleado = empleado;                
                     NuevaControlAsistencia.EmployeesId = empleado.IdEmpleado;
 
-                    List<ControlAsistencias> asistenciaempleado = asistencias.Where(q => q.IdEmpleado == empleado.IdEmpleado).ToList();                  
+                    List<ControlAsistencias> asistenciaempleado = asistencias.Where(q => q.IdEmpleado == empleado.IdEmpleado).ToList();
+
+                    ControlAsistencias asistenciarevisado = asistenciaempleado.Where(q => q.Revisado).FirstOrDefault();
+                    
+                    if (asistenciarevisado != null)
+                    {
+                        NuevaControlAsistencia.Revisado = true;
+                    }
+
+                    ControlAsistencias primerasistencia = asistenciaempleado.FirstOrDefault();
+                    if (primerasistencia!= null) { 
+                        NuevaControlAsistencia.Fecha = primerasistencia.Fecha;
+                    }
                     
                     NuevaControlAsistencia.Dia1 = l1;
 
@@ -1227,18 +1239,18 @@ namespace ERPMVC.Controllers
         }
 
         //[HttpPost("[action]")]
-        public async Task<ActionResult> Revisar(int idControlAsistencia)
+        public async Task<ActionResult> Revisar(ControlAsistenciasDTO asistencias)
         {
             try
             {
-                if (idControlAsistencia == 0)
+                if (asistencias == null)
                 {
                     return await Task.Run(() => BadRequest("No llego correctamente el modelo!"));
                 }
                 string baseadress = _config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + $"api/ControlAsistencias/ChangeStatus/{idControlAsistencia}");
+                var result = await _client.GetAsync(baseadress + $"api/ControlAsistencias/ChangeStatus/{asistencias.IdEmpleado}/{asistencias.Anio}/{asistencias.Mes}");
                 string valorrespuesta = "";
                 if (!result.IsSuccessStatusCode)
                 {
