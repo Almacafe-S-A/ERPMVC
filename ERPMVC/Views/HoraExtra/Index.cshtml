@@ -9,28 +9,27 @@
 <h3 class="text-themecolor">Revisión y Aprobación de Horas Extra</h3>
 <div class="container-fluid">
     <div class="row">
-        <div class="col">
+        <div class="col-md-2">
             <div class="row">
                 <form id="frmBiometrico" kendo-validator="true">
                     <div class="form-group">
-                                <label class="control-label" style="min-width: 100%;">Fecha</label>
-                        <kendo-datepicker id="Fecha" name="Fecha" style="min-width: 100%;"
-                                          format="dd/MM/yyyy "
-                                          value="fecha" />
-                        <input type="hidden" id="fechaSeleccionada" name="fechaSeleccionada" />
-                    </div>
-                    <div class="form-group">
-                        <input type="submit" value="Cargar" onclick="RefrescarGridDetalle()" />
+                        <div class="input-group">
+                            <label class="form-control">Fecha:</label>
+                            <kendo-datepicker id="Fecha" name="Fecha" format="dd/MM/yyyy" value="fecha" class="form-control" />
+                            <button type="submit" value="Cargar" onclick="RefrescarGridDetalle()"
+                                       class="btn btn-primary">Cargar</button>
+                        </div>
                     </div>
                 </form>
             </div>
+        </div>
             <div class="row">
                 <h4 id="titulo">Horas Extra de @fecha.ToString("dd/M/yyyy")</h4>
                 <div id="grdConfiguracion"></div>
             </div>
-        </div>
     </div>
 </div>
+
 
 <script>
     $(document).ready(function () {
@@ -193,12 +192,12 @@
             var estado = item.Estados;
             var row = grid.tbody.find("tr[data-uid='" + item.uid + "']");
             // Ocultar todos los botones por defecto
-            row.find(".k-grid-Revisar, .k-grid-Aprobar, .k-grid-Rechazar").hide();
+            row.find(".k-grid-Revisar, .k-grid-Aprobar, .k-grid-edit, .k-grid-Rechazar").hide();
             // Mostrar botones según el estado
             if (estado === "Pendiente") {
                 row.find(".k-grid-Revisar").show();
             } else if (estado === "Revisado") {
-                row.find(".k-grid-Aprobar, .k-grid-Rechazar").show();
+                row.find(".k-grid-Aprobar, .k-grid-Rechazar, .k-grid-edit").show();
             }
         });
     }
@@ -215,7 +214,7 @@
                                           {
                                               columns.Command(command =>
                                               {
-                                                  command.Edit().Text(" ").IconClass("fa fa-edit");
+                                                  command.Edit().Text(" ").IconClass("fa fa-edit").UpdateText(" ").CancelText(" ");
                                                   command.Custom("Revisar").Text(" ").IconClass("fa fa-check").Click("Revisar");
                                                   command.Custom("Aprobar").Text(" ").IconClass("fa fa-thumbs-up").Click("Aprobar");
                                                   command.Custom("Rechazar").Text(" ").IconClass("fa fa-thumbs-down").Click("Rechazar");
@@ -225,11 +224,12 @@
                                           columns.Bound(p => p.Id).Width(80).Visible(false);
                                           columns.Bound(p => p.IdEmpleado).Title("Id").Width(80);
                                           columns.Bound(p => p.Empleado.NombreEmpleado).Title("Empleado").Width(130);
-                                          columns.Bound(p => p.HoraEntrada).Title("Entrada").Width(100);
-                                          columns.Bound(p => p.HoraSalida).Title("Salida").Width(90);
-                                          columns.Bound(p => p.HorasExtras).Width(125).Title("Total Horas Extra").HtmlAttributes(new { style = "text-align: right;" });
+                                          columns.Bound(p => p.HoraEntrada).Title("Entrada").Width(100).HtmlAttributes(new { style = "text-align: right;" });
+                                          columns.Bound(p => p.HoraSalida).Title("Salida").Width(90).HtmlAttributes(new { style = "text-align: right;" });
+                                          columns.Bound(p => p.HorasExtrasBiometrico).Title("Horas Trabajadas").Width(90).HtmlAttributes(new { style = "text-align: right;" });
                                           columns.Bound(p => p.Horas).Title("Horas Extra").Width(90).HtmlAttributes(new { style = "text-align: right;" });
                                           columns.Bound(p => p.Minutos).Title("Minutos Extra").Width(100).HtmlAttributes(new { style = "text-align: right;" });
+                                          columns.Bound(p => p.HorasExtras).Width(125).Title("Total Horas Extra").HtmlAttributes(new { style = "text-align: right;" });
                                           columns.Bound(p => p.Observaciones).Width(135).Title("Observación");
                                           columns.Bound(p => p.Estados).Title("Estado").Width(150);
                                       }).Filterable(f => f.Operators(o => o.ForString(s => s
@@ -292,6 +292,8 @@
                                             model.Field(p => p.Horas).Editable(true);
                                             model.Field(p => p.Minutos).Editable(true);
                                             model.Field(p => p.Estados).Editable(false);
+                                            model.Field(p => p.HorasExtrasBiometrico).Editable(false);
+                                            model.Field(p => p.HorasExtras).Editable(false);
                                         })
                                         .Events(events =>
                                         {
@@ -343,8 +345,10 @@
         });
     }
 
-    setRowButtonTooltip(".k-grid-edit", "Editar Hora Extra");
+    setRowButtonTooltip(".k-grid-edit", "Editar");
     setRowButtonTooltip(".k-grid-Revisar", "Revisar");
     setRowButtonTooltip(".k-grid-Aprobar", "Aprobar");
     setRowButtonTooltip(".k-grid-Rechazar", "Rechazar");
+    setRowButtonTooltip(".k-grid-cancel", "Cancelar");
+    setRowButtonTooltip(".k-grid-update", "Guardar");
 </script>
