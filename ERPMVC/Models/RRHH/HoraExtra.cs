@@ -24,6 +24,7 @@ namespace ERPMVC.Models
 
         [Required]
         public int Minutos { get; set; }
+        public int HoraAlumerzo { get; set; }
         public string Observaciones { get; set; }
         public string HoraEntrada { get; set; }
         public string HoraSalida { get; set; }
@@ -41,6 +42,8 @@ namespace ERPMVC.Models
         public string Estados { get; set; }
 
         public double HorasExtras { get; set; }
+        [DisplayFormat(DataFormatString = "{0:0.00}")]
+        public double HorasExtrasBiometrico { get; set; }
 
     }
 }

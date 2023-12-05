@@ -427,6 +427,7 @@
 
                                                                             columns.Command(command =>
                                                                             {
+                                                                                command.Custom("Revisar").Text(" ").IconClass("fa fa-check").Click("Revisar");
                                                                                 command.Edit().Text(" ").IconClass("fa fa-edit").UpdateText(" ").CancelText(" ");
                                                                             }).Width(100).Title("Acciones").Locked(true).Lockable(false);
                                                                             columns.Bound(p => p.EmployeesId).Width(120).Locked(true).Lockable(false).Title("Código").Visible(true);
@@ -657,13 +658,54 @@
         this.refresh();
     }
 
-    function DataBound() {
+
+    function DataBound(e) {
         enables()
         AsistenciaTitle()
         InicialesDias()
+        $.each(this.dataSource.data(), function () {
+            if (Number(this.Revisado) == 1) {
+                $('[data-uid=' + this.uid + ']').find('.k-grid-Revisar').hide();
+                $('[data-uid=' + this.uid + ']').find('.k-grid-edit').hide();
+            }
+        })
     }
 
 
+    function Revisar(e) {
+        if (!confirm('Esta seguro de marcar como revisado este Control de Asistencia?')) return;
+        var registro = this.dataItem($(e.currentTarget).closest('tr'));
+        var parametros = parseFloat(registro.id);
+        var parametros = {
+            IdEmpleado: registro.id,
+            Fecha : registro.Fecha,
+            Anio: registro.Fecha.getFullYear(),
+            Mes: registro.Fecha.getMonth(),
+        };
+        debugger;
+        $.ajax({
+            url: '@Url.Action("Revisar", "ControlAsistencias")',
+            method: 'POST',
+            datatype: "json",
+            async: false,
+            data: parametros,
+            success: function (result) {
+                $.toast({
+                    heading: 'Satisfactorio',
+                    text: 'El Control de Asistencia se ha revisado correctamente.',
+                    position: 'top-right',
+                    loaderBg: '#ff6849',
+                    icon: 'success',
+                    hideAfter: 7000,
+                    stack: 6
+                });
+                onsave();
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                alert(textStatus + ": " + XMLHttpRequest.responseText);
+            }
+        });
+    }
 
 
 
@@ -684,9 +726,4 @@
     //setRowButtonTooltip(".k-grid-delete", "Eliminar");
     setRowButtonTooltip(".k-grid-update", "Guardar Registro");
     setRowButtonTooltip(".k-grid-cancel", "Cancelar");
-
-
-
-
-
 </script>

@@ -43,37 +43,51 @@ namespace ERPMVC.Controllers
 
     
 
-[HttpGet("[action]")]
-public async Task<DataSourceResult> GetHorasExtra([DataSourceRequest] DataSourceRequest request, DateTime Fecha, bool Todos)
-{
-    List<HoraExtra> horasExtra = new List<HoraExtra>();
-    try
-    {
-        var respuesta = await Utils.HttpGetAsync(HttpContext.Session.GetString("token"),
-            config.Value.urlbase + $"api/HorasExtra/GetHorasExtrasFecha/{Fecha.ToString("yyyy-MM-dd")}/" + (Todos ? 1 : 0));
-        string valorrespuesta = "";
-        if (respuesta.IsSuccessStatusCode)
+        [HttpGet("[action]")]
+        public async Task<DataSourceResult> GetHorasExtra([DataSourceRequest] DataSourceRequest request, DateTime Fecha, bool Todos)
         {
-            valorrespuesta = await respuesta.Content.ReadAsStringAsync();
-            horasExtra = JsonConvert.DeserializeObject<List<HoraExtra>>(valorrespuesta);
-            horasExtra = horasExtra.OrderByDescending(x => x.Id).ToList();
-
-            // Calcular y asignar las horas extras correctamente
-            foreach (var horaExtra in horasExtra)
+            List<HoraExtra> horasExtra = new List<HoraExtra>();
+            try
             {
-                double horasExtras = horaExtra.Horas + (horaExtra.Minutos / 60.0);
-                        horasExtras = Math.Round(horasExtras, 1, MidpointRounding.AwayFromZero);
-                horaExtra.HorasExtras = horasExtras;
+                var respuesta = await Utils.HttpGetAsync(HttpContext.Session.GetString("token"),
+                    config.Value.urlbase + $"api/HorasExtra/GetHorasExtrasFecha/{Fecha.ToString("yyyy-MM-dd")}/" + (Todos ? 1 : 0));
+                string valorrespuesta = "";
+                if (respuesta.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await respuesta.Content.ReadAsStringAsync();
+                    horasExtra = JsonConvert.DeserializeObject<List<HoraExtra>>(valorrespuesta);
+                    horasExtra = horasExtra.OrderByDescending(x => x.Id).ToList();
+
+                    // Calcular y asignar las horas extras correctamente
+                    foreach (var horaExtra in horasExtra)
+                    {
+                        double horasExtras = horaExtra.Horas + (horaExtra.Minutos / 60.0);
+                                horasExtras = Math.Round(horasExtras, 2, MidpointRounding.AwayFromZero);
+                        horaExtra.HorasExtras = horasExtras + horaExtra.HoraAlumerzo;
+
+                        if (horaExtra.HoraEntrada == null || horaExtra.HoraSalida == null)
+                        {
+                            continue;
+                        }
+                        // Convertir las cadenas de tiempo a objetos DateTime
+                        DateTime horaEntrada = DateTime.ParseExact(horaExtra.HoraEntrada, "HH:mm:ss", System.Globalization.CultureInfo.InvariantCulture);
+                        DateTime horaSalida =  DateTime.ParseExact(horaExtra.HoraSalida, "HH:mm:ss", System.Globalization.CultureInfo.InvariantCulture);
+
+                        // Calcular la diferencia entre las horas
+                        TimeSpan diferenciaHoras = horaSalida - horaEntrada;
+
+                        // La diferencia estará representada como un TimeSpan, puedes obtener los valores específicos si lo necesitas
+                        horaExtra.HorasExtrasBiometrico = diferenciaHoras.TotalHours;
+                    }
+                }
             }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Error al cargar las horas extra");
+                throw ex;
+            }
+            return horasExtra.ToDataSourceResult(request);
         }
-    }
-    catch (Exception ex)
-    {
-        logger.LogError(ex, "Error al cargar las horas extra");
-        throw ex;
-    }
-    return horasExtra.ToDataSourceResult(request);
-}
 
         [HttpPost("[action]")]
         public async Task<ActionResult> Revisar(long idHoraExtra)
@@ -93,9 +107,7 @@ public async Task<DataSourceResult> GetHorasExtra([DataSourceRequest] DataSource
                 {
                     return await Task.Run(() => BadRequest("No se Aprobo el documento!"));
                 }
-
                 return Ok();
-
             }
             catch (Exception ex)
             {
