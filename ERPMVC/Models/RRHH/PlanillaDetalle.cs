@@ -7,46 +7,33 @@ using System.Threading.Tasks;
 
 namespace ERPMVC.Models
 {
-    public class Planilla
+    public class PlanillaDetalle
     {
         [Required]
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public long Id { get; set; }
 
+        [Required]
+        public long PlanillaId { get; set; }
+
+        [Required]
+        public long EmpleadoId { get; set; }
+
+        public string EmpleadoNombre { get; set; }
+
+        [Required]
+        public decimal MontoBruto { get; set; }
+
+        [Required]
+        public decimal TotalDeducciones { get; set; }
+
 
 
         [Required]
-        public string Nombre { get; set; }
+        public decimal MontoNeto { get; set; }
 
-        [Required]
-        public int Periodo { get; set; }
-
-        [Required]
-        public int Mes { get; set; }
-
-        [Required]
-        public int TotalEmpleados { get; set; }
-
-        [Required]
-        public double TotalPlanilla { get; set; }
-
-        [Required]
-        public long EstadoId { get; set; }
-
-        [ForeignKey("EstadoId")]
-        public Estados Estado { get; set; }
-
-
-        [Required]
-        public long TipoPlanillaId { get; set; }
-
-        [ForeignKey("TipoPlanillaId")]
-        public PlanillaTipo TipoPlanilla { get; set; }
-
-
-
-        [ForeignKey("PlanillaId")]
-        public List<PlanillaDetalle> Detalle { get; set; }
+        //[ForeignKey("DetallePlanillaId")]
+        //public List<PlanillaDeduccion> Deducciones { get; set; }
 
         [Required]
         public DateTime FechaCreacion { get; set; }

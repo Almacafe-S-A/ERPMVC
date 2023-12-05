@@ -120,7 +120,7 @@ namespace ERPMVC.Models
         [Display(Name = "Tipo Planilla")]
         public long? IdTipoPlanilla { get; set; }
         [ForeignKey("IdTipoPlanilla")]
-        public TipoPlanillas TipoPlanilla { get; set; }
+        public PlanillaTipo TipoPlanilla { get; set; }
         [Display(Name = "Profesión")]
         public string Profesion { get; set; }
         public string Usuariocreacion { get; set; }

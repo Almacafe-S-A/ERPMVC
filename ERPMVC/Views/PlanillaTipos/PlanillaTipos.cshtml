@@ -1,0 +1,220 @@
+﻿@using Kendo.Mvc.UI
+@using System.Security.Claims
+@{
+    ViewData["Title"] = "Tipo Planillas";
+    ClaimsPrincipal permisos = (ClaimsPrincipal)ViewData["permisos"];
+}
+
+<script>
+
+    function onsave(e) {
+        //   console.log(new Date(e.model.FechaRecepcion).toISOString());
+        // e.model.set('FechaRecepcion', new Date(e.model.FechaRecepcion).toISOString());
+    }
+
+    function caidata(data) {
+        data.FechaRecepcion = data.FechaRecepcion.toISOString('yyyy-MM-dd');
+        data.FechaLimiteEmision = data.FechaLimiteEmision.toISOString('yyyy-MM-dd');
+    }
+
+    function AddPlanillaTipos() {
+
+        $('#ModalPlanillaTipos').find(':input').not(':submit').val('');
+        $('#ModalPlanillaTipos').modal('show');
+        $("#IdTipoPlanilla").val('0');
+        $("#EstadoId").data('kendoDropDownList').value(0);
+
+
+
+        var validator = $("#frmPlanillaTipos").data("kendoValidator");
+        validator.hideMessages();
+    }
+
+
+    function EditPlanillaTipos(e) {
+        e.preventDefault();
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        var dataObject = {
+            IdTipoPlanilla: dataItem.IdTipoPlanilla,
+            editar: 0
+        };
+
+        $.ajax({
+            url: '@Url.Action("pvwAddPlanillaTipos", "PlanillaTipos")',
+            method: 'POST',
+            datatype: "json",
+            contentType: 'application/json',
+            async: false,
+            data: JSON.stringify(dataObject),
+            success: function (result) {
+                $("#numPlanillaTipos").html('');
+                $("#numPlanillaTipos").html(result);
+
+
+                //$("#btnCAI").hide();
+                $('#ModalPlanillaTipos').modal('show');
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                alert(textStatus + ": " + XMLHttpRequest.responseText);
+            }
+        });
+    }
+
+    function DeletePlanillaTipos(e) {
+        if (confirm('¿Esta seguro que desea eliminar este registro?')) {
+            e.preventDefault();
+            var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+            var dataObject = {
+                IdTipoPlanilla: dataItem.IdTipoPlanilla
+            };
+            $.ajax({
+                url: '@Url.Action("Delete", "PlanillaTipos")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (result) {
+                    RefrescarGrid();
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                      $.toast({
+                        heading: 'Error',
+                        text:  XMLHttpRequest.responseJSON.Result,
+                        position: 'top-right',
+                        loaderBg: '#ff6849',
+                        icon: 'error',
+                        hideAfter: 30000,
+                        stack: 6
+                    });
+                }
+            });
+        }
+    }
+
+    function RefrescarGrid() {
+        var grid = $("#gridPlanillaTipos").getKendoGrid();
+        grid.dataSource.read();
+    }
+
+    function EsGafi() {
+        return { GAFI: false }
+    }
+
+
+
+</script>
+
+<h3 class="text-themecolor">Tipo de Planillas</h3>
+
+@(Html.Kendo().Grid<ERPMVC.Models.PlanillaTipo>
+            ()
+
+            .Name("gridPlanillaTipos")
+
+            .Columns(columns =>
+            {
+                //if (permisos.HasClaim("RRHH.Parametros Tipo de Planilla.Editar Tipo de Planilla", "true")
+                //    || permisos.HasClaim("RRHH.Parametros Tipo de Planilla.Eliminar Tipo de Planilla", "true"))
+                //{
+                columns.Command(command =>
+                {
+                    //command.Custom("Ver detalles").Click("Detalles");
+
+                    //if (permisos.HasClaim("RRHH.Parametros Tipo de Planilla.Editar Tipo de Planilla", "true"))
+                    //{
+                    command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditPlanillaTipos");
+                    //}
+                    //if (permisos.HasClaim("RRHH.Parametros Tipo de Planilla.Eliminar Tipo de Planilla", "true"))
+                    //{
+                    command.Custom("Eliminar").Text(" ").IconClass("fa fa-trash-alt").Click("DeletePlanillaTipos");
+                    //}
+                    //command.Destroy().Text(" ").IconClass("fa fa-trash-alt");
+                }).Title("Acciones").Width(70);
+            //}
+                columns.Bound(p => p.IdTipoPlanilla).Width(150);
+        columns.Bound(p => p.TipoPlanilla).Title("Nombre Tipo de Planillas").Width(170);
+        columns.Bound(p => p.Descripcion).Title("Descripción").Width(170);
+        columns.Bound(p => p.Estado.DescripcionEstado).Title("Estado").Width(170);
+
+
+    })
+
+
+            .ToolBar(tools =>
+            {
+
+        //tools.Create();
+        //if (permisos.HasClaim("RRHH.Parametros Tipo de Planilla.Agregar Tipo de Planilla", "true"))
+        //{
+        tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+                                .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddPlanillaTipos()" });
+        //}
+        tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
+        tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
+
+
+
+    })
+            .Editable(e => e.Mode(GridEditMode.PopUp))
+            .Sortable()
+            .Pageable(s => s
+                .Messages(m => m.Display("Elementos mostrados {0} - {1} de {2}")
+                .Empty("No hay datos."))
+            )
+            .Filterable()
+            .Scrollable()
+            .Pdf(pdf => pdf.FileName("Tipo_Planillas_Reporte" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+            + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+            .ProxyURL(Url.Action("Export", "Home")).AllPages())
+            .Excel(excel => excel.FileName("Tipo_Planillas_Reporte_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+            + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+            .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+            .DataSource(dataSource =>
+            dataSource
+            .WebApi()
+
+        .ServerOperation(true)
+        .Model(model =>
+        {
+        model.Id(p => p.IdTipoPlanilla);
+        model.Field(p => p.IdTipoPlanilla).Editable(false);
+
+
+    })
+            .Events(events => events.Error("error_handler"))
+            .Read(read => read.Action("Get", "PlanillaTipos").Data("EsGafi"))
+            .Create(create => create.Action("Insert", "PlanillaTipos").Type(HttpVerbs.Post))
+            .Update(update => update.Action("Update", "PlanillaTipos").Type(HttpVerbs.Post))
+            .Destroy(destroy => destroy.Action("Delete", "PlanillaTipos").Type(HttpVerbs.Post))
+
+            )
+            .Events(e =>
+            {
+        e.Save("onsave");
+
+    })
+)
+
+<div id="numPlanillaTipos">
+    @await Html.PartialAsync("pvwAddPlanillaTipos", new ERPMVC.Models.PlanillaTipo { IdTipoPlanilla = 0 })
+</div>
+<script>
+    function setToolbarTooltip(btn_cl, btn_tooltip) {
+        $("#gridPlanillaTipos").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+
+    function setRowButtonTooltip(btn_cl, btn_tooltip) {
+        $("#gridPlanillaTipos").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+
+    setRowButtonTooltip(".k-grid-delete", "Eliminar registro");
+    setRowButtonTooltip(".k-grid-Editar", "Editar registro");
+    setRowButtonTooltip(".k-grid-Agregar", "Agregar nuevo registro");
+</script>
