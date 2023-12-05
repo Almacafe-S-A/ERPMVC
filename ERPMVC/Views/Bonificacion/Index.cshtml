@@ -74,7 +74,9 @@
                           columns.Command(command =>
                           {
                               command.Edit().Text(" ").IconClass("fa fa-edit");
-                          }).Width(90).Title("Acciones");
+                              command.Custom("Aprobar").Text(" ").IconClass("fa fa-thumbs-up").Click("Aprobar");
+                              command.Custom("Rechazar").Text(" ").IconClass("fa fa-thumbs-down").Click("Rechazar");
+                          }).Width(129).Title("Acciones");
                       }
                       columns.Bound(p => p.EmpleadoId).Title("ID").Width(60);
                       columns.Bound(p => p.Empleado).Title("Empleado")
@@ -153,7 +155,7 @@
                     .Read(read => read.Action("GetBonificacionesMesPeriodo", "Bonificacion").Data("Parametros"))
                     .Update(update => update.Action("Guardar", "Bonificacion").Type(HttpVerbs.Post).Data("Parametros"))
                     .Create(create => create.Action("Guardar", "Bonificacion").Type(HttpVerbs.Post).Data("Parametros"))
-              ).Events(e => e.Save("RefrescarGrid"))
+              ).Events(e => e.Save("RefrescarGrid").DataBound("dataBound").SaveChanges("RefrescarGrid"))
 )
 
 <script>
@@ -228,8 +230,101 @@
     function RefrescarGrid() {
         debugger;
         var grid = $("#grdConfiguracion").data("kendoGrid").dataSource.read();
+    }
 
+    function Aprobar(e) {
+        if (!confirm('Esta seguro de aprobar esta Bonificación?')) return;
+        var registro = this.dataItem($(e.currentTarget).closest('tr'));
+        var parametros = {
+            idBonificacion: registro.Id
+        };
+        debugger;
+        $.ajax({
+            url: '@Url.Action("AprobarBonificacion", "Bonificacion")',
+            method: 'POST',
+            datatype: "json",
+            async: false,
+            data: parametros,
+            success: function (result) {
+                $.toast({
+                    heading: 'Satisfactorio',
+                    text: 'Datos aprobados correctamente.',
+                    position: 'top-right',
+                    loaderBg: '#ff6849',
+                    icon: 'success',
+                    hideAfter: 3000,
+                    stack: 6
+                });
+                RefrescarGrid();
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                $.toast({
+                    heading: 'Error',
+                    text: textStatus + ": " + XMLHttpRequest.responseText,
+                    position: 'top-right',
+                    loaderBg: '#ff6849',
+                    icon: 'error',
+                    hideAfter: 3000,
+                    stack: 6
+                });
+                RefrescarGrid();
+            }
+        });
+    }
 
+    function Rechazar(e) {
+        if (!confirm('Esta seguro de rechazar esta Bonificación?')) return;
+        var registro = this.dataItem($(e.currentTarget).closest('tr'));
+        var parametros = {
+            idBonificacion: registro.Id
+        };
+        debugger;
+        $.ajax({
+            url: '@Url.Action("RechazarBonificacion", "Bonificacion")',
+            method: 'POST',
+            datatype: "json",
+            async: false,
+            data: parametros,
+            success: function (result) {
+                $.toast({
+                    heading: 'Satisfactorio',
+                    text: 'Datos rechazados correctamente.',
+                    position: 'top-right',
+                    loaderBg: '#ff6849',
+                    icon: 'success',
+                    hideAfter: 3000,
+                    stack: 6
+                });
+                RefrescarGrid();
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                $.toast({
+                    heading: 'Error',
+                    text: textStatus + ": " + XMLHttpRequest.responseText,
+                    position: 'top-right',
+                    loaderBg: '#ff6849',
+                    icon: 'error',
+                    hideAfter: 3000,
+                    stack: 6
+                });
+                RefrescarGrid();
+            }
+        });
+    }
+
+    function dataBound(e) {
+        var grid = this;
+        var data = grid.dataSource.data();
+        $.each(data, function (index, item) {
+            var estado = item.EstadoId;
+            var row = grid.tbody.find("tr[data-uid='" + item.uid + "']");
+            // Ocultar todos los botones por defecto
+            row.find(".k-grid-Aprobar, .k-grid-edit, .k-grid-Rechazar").hide();
+            // Mostrar botones según el estado
+            if (estado == 8) {
+                row.find(".k-grid-Aprobar, .k-grid-Rechazar, .k-grid-edit").show();
+            }
+        });
     }
 
     function setToolbarTooltip(btn_cl, btn_tooltip) {
@@ -247,7 +342,8 @@
     }
 
     setRowButtonTooltip(".k-grid-edit", "Editar Registro");
-    //setRowButtonTooltip(".k-grid-delete", "Eliminar");
+    setRowButtonTooltip(".k-grid-Aprobar", "Aprobar");
+    setRowButtonTooltip(".k-grid-Rechazar", "Rechazar");
     setRowButtonTooltip(".k-grid-update", "Guardar Registro");
     setRowButtonTooltip(".k-grid-cancel", "Cancelar");
 </script>

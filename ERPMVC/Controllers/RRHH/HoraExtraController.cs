@@ -63,11 +63,15 @@ namespace ERPMVC.Controllers
                     {
                         double horasExtras = horaExtra.Horas + (horaExtra.Minutos / 60.0);
                                 horasExtras = Math.Round(horasExtras, 2, MidpointRounding.AwayFromZero);
-                        horaExtra.HorasExtras = horasExtras;
+                        horaExtra.HorasExtras = horasExtras + horaExtra.HoraAlumerzo;
 
+                        if (horaExtra.HoraEntrada == null || horaExtra.HoraSalida == null)
+                        {
+                            continue;
+                        }
                         // Convertir las cadenas de tiempo a objetos DateTime
                         DateTime horaEntrada = DateTime.ParseExact(horaExtra.HoraEntrada, "HH:mm:ss", System.Globalization.CultureInfo.InvariantCulture);
-                        DateTime horaSalida = DateTime.ParseExact(horaExtra.HoraSalida, "HH:mm:ss", System.Globalization.CultureInfo.InvariantCulture);
+                        DateTime horaSalida =  DateTime.ParseExact(horaExtra.HoraSalida, "HH:mm:ss", System.Globalization.CultureInfo.InvariantCulture);
 
                         // Calcular la diferencia entre las horas
                         TimeSpan diferenciaHoras = horaSalida - horaEntrada;

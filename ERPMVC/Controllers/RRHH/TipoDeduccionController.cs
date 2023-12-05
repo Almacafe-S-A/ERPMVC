@@ -223,7 +223,7 @@ namespace ERPMVC.Controllers
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, "Error al guardar tipo deducción por nombre");
+                logger.LogError(ex, "Error al guardar tipo deducción");
                 return BadRequest();
             }
         }

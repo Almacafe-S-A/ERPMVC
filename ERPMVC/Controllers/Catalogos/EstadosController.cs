@@ -87,7 +87,7 @@ namespace ERPMVC.Controllers
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _Estados = JsonConvert.DeserializeObject<List<Estados>>(valorrespuesta).Where(w => w.IdEstado == 98 || w.IdEstado == 99).ToList();
+                    _Estados = JsonConvert.DeserializeObject<List<Estados>>(valorrespuesta).Where(w => w.IdEstado == 8).ToList();
                 }
             }
             catch (Exception ex)
