@@ -161,7 +161,7 @@ namespace ERPMVC.Controllers
                     //var hora = Utils.GetHoraXLS(filaRegistro.GetCell(2, MissingCellPolicy.RETURN_NULL_AND_BLANK));
                     var tipo = filaRegistro.GetCell(3, MissingCellPolicy.RETURN_NULL_AND_BLANK).ToString();
                     var IdHorario = Utils.GetNumeroXLS(filaRegistro.GetCell(6, MissingCellPolicy.RETURN_NULL_AND_BLANK));
-
+                    var salidaPendiente = Utils.GetNumeroXLS(filaRegistro.GetCell(7, MissingCellPolicy.RETURN_NULL_AND_BLANK));
                     if (fecha.Equals(DateTime.MinValue)) {
                         TempData["Errores"] = "Formato de Fecha No Valido";
                         throw new Exception("Formato de Fecha No Valido");
@@ -189,7 +189,8 @@ namespace ERPMVC.Controllers
                                                     FechaHora = fechaHora,
                                                     IdBiometrico = (long)IdBiometrico.Value,
                                                     Tipo = tipo,
-                                                    IdHorario = (long)IdHorario.Value
+                                                    IdHorario = IdHorario == null ? 0: (long)IdHorario,
+                                                    SalidaPendiente = salidaPendiente == null ? false: Convert.ToBoolean(salidaPendiente),
                     };
                     biometrico.Detalle.Add(detalle);
                 }
