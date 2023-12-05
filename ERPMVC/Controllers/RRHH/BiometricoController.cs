@@ -133,7 +133,10 @@ namespace ERPMVC.Controllers
                       titulos.GetCell(3).StringCellValue.Equals("Estado") &&
                       titulos.GetCell(4).StringCellValue.Equals("Dispositivos") &&
                       titulos.GetCell(5).StringCellValue.Equals("Tipo de Registro") &&
-                      titulos.GetCell(6).StringCellValue.Equals("Horario")))
+                      titulos.GetCell(6).StringCellValue.Equals("Horario") &&
+                      titulos.GetCell(7).StringCellValue.Equals("SalidaPendiente")
+                      )
+                    )
                 {
                     libro.Close();
                     throw new Exception("Titulos de hoja de excel no son validos");
