@@ -146,5 +146,63 @@ namespace ERPMVC.Controllers
                 return BadRequest(ex.Message);
             }
         }
+
+        [HttpPost("[action]")]
+        public async Task<ActionResult> AprobarBonificacion(long idBonificacion)
+        {
+            try
+            {
+                if (idBonificacion == 0)
+                {
+                    return await Task.Run(() => BadRequest("No llego correctamente el modelo!"));
+                }
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + $"api/Bonificacion/ChangeStatus/{idBonificacion}/{1}");
+                string valorrespuesta = "";
+                if (!result.IsSuccessStatusCode)
+                {
+                    return await Task.Run(() => BadRequest("No se Aprobo el documento!"));
+                }
+
+                return Ok();
+
+            }
+            catch (Exception ex)
+            {
+                logger.LogError($"Ocurrio un error: {ex.ToString()}");
+                throw ex;
+            }
+        }
+
+        [HttpPost("[action]")]
+        public async Task<ActionResult> RechazarBonificacion(long idBonificacion)
+        {
+            try
+            {
+                if (idBonificacion == 0)
+                {
+                    return await Task.Run(() => BadRequest("No llego correctamente el modelo!"));
+                }
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + $"api/Bonificacion/ChangeStatus/{idBonificacion}/{2}");
+                string valorrespuesta = "";
+                if (!result.IsSuccessStatusCode)
+                {
+                    return await Task.Run(() => BadRequest("No se Rechazo el documento!"));
+                }
+
+                return Ok();
+
+            }
+            catch (Exception ex)
+            {
+                logger.LogError($"Ocurrio un error: {ex.ToString()}");
+                throw ex;
+            }
+        }
     }
 }
