@@ -119,11 +119,11 @@ namespace ERPMVC.Controllers
                     return BadRequest("La hora final no es válida.");
                 }
 
-                // Verificar que la hora de inicio sea menor que la hora final
+                /*// Verificar que la hora de inicio sea menor que la hora final
                 if (horaInicio >= horaFinal)
                 {
                     return BadRequest("La hora de inicio debe ser menor que la hora final.");
-                }
+                }*/
 
                 if (horarioDTO.Id == 0)
                 {
