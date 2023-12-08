@@ -72,7 +72,11 @@ namespace ERPMVC.Controllers
                         // Convertir las cadenas de tiempo a objetos DateTime
                         DateTime horaEntrada = DateTime.ParseExact(horaExtra.HoraEntrada, "HH:mm:ss", System.Globalization.CultureInfo.InvariantCulture);
                         DateTime horaSalida =  DateTime.ParseExact(horaExtra.HoraSalida, "HH:mm:ss", System.Globalization.CultureInfo.InvariantCulture);
-
+                        if (horaSalida < horaEntrada)
+                        {
+                            // Si la hora de salida es menor, significa que el empleado ha salido al día siguiente
+                            horaSalida = horaSalida.AddDays(1);
+                        }
                         // Calcular la diferencia entre las horas
                         TimeSpan diferenciaHoras = horaSalida - horaEntrada;
 
