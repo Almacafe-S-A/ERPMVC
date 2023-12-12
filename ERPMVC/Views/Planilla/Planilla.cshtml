@@ -1,0 +1,430 @@
+﻿@using System.Security.Claims
+
+@{
+    ViewBag.Title = "Planillas";
+    ClaimsPrincipal permisos = (ClaimsPrincipal)ViewData["permisos"];
+    bool permisoagregar = User.HasClaim("Cuentas por Cobrar.Factura.Generar", "true");
+}
+<script>
+
+
+    function AddPlanilla() {
+       
+         var dataObject = {
+             Id: 0,
+            editar : 1
+        };
+
+        $.ajax({
+            url: '@Url.Action("pvwPlanilla","Planilla")',
+            method: 'POST',
+            datatype: "json",
+            contentType: 'application/json',
+            async: false,
+            data: JSON.stringify(dataObject),
+            success: function (result) {
+              //  console.log(result);
+                $("#divPlanilla").html('');
+                $("#divPlanilla").html(result);
+
+                RefreshPlanillaDetail();
+                 $("#btnSavePlanilla").show();
+                 $('#PlanillaModal').modal('show');
+            },
+             error: function (XMLHttpRequest, textStatus, errorThrown) {
+                 //alert(textStatus + ": " + XMLHttpRequest.responseText);
+                  MostrarMensaje(textStatus + ": " + XMLHttpRequest.responseText, "Error", "Error", 6000);
+              }
+        });
+    }
+
+    function EditPlanilla(e) {
+        e.preventDefault();
+
+        ClearSession();
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        var dataObject = {
+            PlanillaId: dataItem.PlanillaId,
+            editar : 0
+        };
+
+        $.ajax({
+            url: '@Url.Action("pvwPlanilla", "Planilla")',
+            method: 'POST',
+            datatype: "json",
+            contentType: 'application/json',
+            async: false,
+            data: JSON.stringify(dataObject),
+            success: function (result) {
+                $("#divPlanilla").html('');
+                $("#divPlanilla").html(result);
+
+                RefreshPlanillaDetail();
+                 $("#btnSavePlanilla").show();
+                 $('#PlanillaModal').modal('show');
+            },
+             error: function (XMLHttpRequest, textStatus, errorThrown) {
+                  MostrarMensaje(textStatus + ": " + XMLHttpRequest.responseText, "Error", "Error", 6000);
+              }
+        });
+    }
+
+    function ImprimirFactura(e) {
+        e.preventDefault();
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+
+        window.location.href = '@Url.Action("SFPlanilla", "Planilla")/' + dataItem.PlanillaId;
+
+
+    }
+
+    function ImprimirProforma(e) {
+        e.preventDefault();
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+
+        window.location.href = '@Url.Action("SFPlanillaProforma", "Planilla")/' + dataItem.PlanillaId;
+
+
+    }
+    function ImprimirLibroVentas() {
+        var url = '@Url.Action("SFLibroVentas", "Planilla")';
+        var win = window.open(url, '_blank');
+        win.focus();
+    }
+
+    function GenerarFactura(e) {
+        if (confirm('Esta seguro de generar una Factura?')) {
+            e.preventDefault();
+            debugger;
+            var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+            var dataObject = {
+                PlanillaId: dataItem.PlanillaId,
+            };
+
+            $.ajax({
+                url: '@Url.Action("GenerarFactura", "Planilla")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (result) {
+                    MostrarMensaje('Factura Generada!', "success", "Satisfactorio", 6000);
+                    RefreshPlanillaes();
+                    return;
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                     MostrarMensaje(textStatus + ": " + XMLHttpRequest.responseText, "Error", "Error", 6000);
+                }
+            });
+        }
+    }
+
+
+    function AnularFactura(e) {
+        if (confirm('Esta seguro de anular una Factura?')) {
+            e.preventDefault();
+            debugger;
+            var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+            var dataObject = {
+                PlanillaId: dataItem.PlanillaId,
+            };
+
+            $.ajax({
+                url: '@Url.Action("AnularFactura", "Planilla")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (result) {
+                    MostrarMensaje('Factura Anulada!', "success", "Satisfactorio", 6000);
+                    RefreshPlanillaes();
+                    return;
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    MostrarMensaje(textStatus + ": " + XMLHttpRequest.responseText, "Error", "Error", 6000);
+                }
+            });
+        }
+    }
+
+    function closecondition() {
+        $('#myModalConditions').modal('hide');
+    }
+
+    function ReportePlanilla(e) {
+        var url = '@Url.Action("SFReportePlanilla", "Planilla")/';
+        var win = window.open(url, '_blank');
+        win.focus();
+    }
+	
+    function dataBound(e) {
+        $.each(this.dataSource.data(), function () {
+            if (this.Estado != "Revisado" ) {
+                $('[data-uid=' + this.uid + ']').find('.k-grid-Aprobar').hide();
+                
+            }
+            if (this.Estado != "Aprobado"){
+                $('[data-uid=' + this.uid + ']').find('.k-grid-GenerarFactura').hide();
+            }
+            if (this.Estado != "Revisión"){
+                $('[data-uid=' + this.uid + ']').find('.k-grid-Revisar').hide();
+            }
+            if (this.Estado != "Emitido") {
+                $('[data-uid=' + this.uid + ']').find('.k-grid-Imprimir').hide();
+                $('[data-uid=' + this.uid + ']').find('.k-grid-AnularFactura').hide();
+            }
+            if (this.Estado != "Anulado") {
+                //$('[data-uid=' + this.uid + ']').find('.k-grid-AnularFactura').hide();
+            }
+
+
+        })
+    }
+
+    function Aprobar(e) {
+        var notification = $("#notification").data("kendoNotification");
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        if (dataItem.Estado == 6) {
+                    notification.show({
+                    title: "Validación",
+                    message: "la Autorizacion ha sido aprobada"
+                }, "error");
+            }
+        if (!confirm('Esta seguro de aprobar la Factura?')) {
+            return;
+
+        }
+
+        var dataObject = {
+                PlanillaId: dataItem.PlanillaId,
+            };
+
+            $.ajax({
+                url: '@Url.Action("Aprobar", "Planilla")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (result) {
+                    $.toast({
+                        heading: 'Satisfactorio',
+                        text: 'La Factura Proforma se ha aprobado correctamente.',
+                        position: 'top-right',
+                        loaderBg: '#ff6849',
+                        icon: 'success',
+                        hideAfter: 7000,
+                        stack: 6
+                    });
+                RefreshPlanillaes();
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    notification.show({
+                        title: "Validación",
+                        message: textStatus + ": " + XMLHttpRequest.responseText
+                    }, "error");
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+                }
+            });
+            }
+
+
+
+
+    function Revisar(e) {
+        var notification = $("#notification").data("kendoNotification");
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        if (dataItem.Estado == 6) {
+                    notification.show({
+                    title: "Validación",
+                    message: "la Autorizacion ha sido aprobada"
+                }, "error");
+            }
+        if (!confirm('Esta seguro de marcar como revisada esta Factura Proforma?')) {
+            return;
+
+        }
+
+        var dataObject = {
+                PlanillaId: dataItem.PlanillaId,
+            };
+
+            $.ajax({
+                url: '@Url.Action("Revisar", "Planilla")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (result) {
+                    $.toast({
+                        heading: 'Satisfactorio',
+                        text: 'La Factura Proforma se ha revisado correctamente.',
+                        position: 'top-right',
+                        loaderBg: '#ff6849',
+                        icon: 'success',
+                        hideAfter: 7000,
+                        stack: 6
+                    });
+                RefreshPlanillaes();
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    notification.show({
+                        title: "Validación",
+                        message: textStatus + ": " + XMLHttpRequest.responseText
+                    }, "error");
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+                }
+            });
+            }
+
+
+
+</script>
+
+<h3 class="text-themecolor">Planillas</h3>
+
+@(
+Html.Kendo().Grid<ERPMVC.Models.Planilla>()
+                              .Name("gridPlanillas")
+                              .Columns(columns =>
+                              {
+
+                                  columns.Command(command =>
+                                      {
+                                          command.Custom("Detalles").Text(" ").IconClass("far fa-list-alt").Click("EditPlanilla");
+                                                //.Visible(permisoagregar.ToString());
+                                          command.Custom("Revisar").Text(" ").IconClass("fa fa-check").Click("Revisar");
+                                          command.Custom("Aprobar").Text(" ").IconClass("fa fa-thumbs-up").Click("Aprobar");
+                                          command.Custom("GenerarFactura").Text(" ").IconClass("fa fa-file-Planilla").Click("GenerarFactura");
+                                          command.Custom("AnularFactura").Text(" ").IconClass("fa fa-ban").Click("AnularFactura");
+                                          command.Custom("Imprimir").Text(" ").IconClass("fa fa-print").Click("ImprimirFactura");
+                                          
+                                      }).Title("Acciones").Width(180);
+
+                                  columns.Bound(p => p.Id).Title("Id").Width(150);
+                                  columns.Bound(p => p.Mes).Title("Mes").Width(150);
+                                  columns.Bound(p => p.FechaPlanilla).Format("{0:dd/MM/yyyy}").Title("Fecha Planilla").Width(170);
+                                  columns.Bound(p => p.FechaPago).Format("{0:dd/MM/yyyy}").Title("Fecha Pago").Width(170);
+                                   columns.Bound(p => p.TotalPlanilla).Format("{0:dd/MM/yyyy}").Title("Total Planilla").Width(170);
+                                    columns.Bound(p => p.TotalEmpleados).Format("{0:dd/MM/yyyy}").Title("Total Empleados").Width(170);
+                                  columns.Bound(p => p.Comentarios).Title("Cliente").Width(250);
+                                 
+                                  columns.Bound(p => p.EstadoId).Title("Estado").Width(200);
+
+                              })
+                                  .Filterable(f => f.Operators(o => o.ForString(s => s
+                                           .Clear()
+                                           .Contains("Contiene")
+                                           .DoesNotContain("No contiene")
+                                           .EndsWith("Termina con")
+                                           .IsEqualTo("Es igual a")
+                                           .IsNotEqualTo("No es igual a")
+                                           .IsNull("Es nulo")
+                                           .StartsWith("Inicia con")
+
+                                     )
+                                     .ForNumber(n => n
+                                       .Clear()
+                                       .IsEqualTo("Es igual a")
+                                       .IsGreaterThan("Es mayor que")
+                                       .IsLessThan("Es menor que")
+                                       .IsNull("Es nulo")
+                                       .IsLessThanOrEqualTo("Es menor o igual que")
+                                       .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                     )
+                                     .ForDate(d => d
+                                     .Clear()
+                                     .IsEqualTo("Es igual que")
+                                     .IsGreaterThan("Es mayor que")
+                                     .IsLessThan("Es menor que")
+                                     .IsLessThanOrEqualTo("Es menor o igual que")
+                                     .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                     .IsNotEqualTo("No es igual que")
+                                      )
+                                   ))
+                              .ToolBar(tools =>
+                              {
+                                  // tools.Create();
+                                  tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+                                                  .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddPlanilla();" });
+                                  
+                                      tools.Custom().Text("Reporte de Planillas").IconClass("k-icon k-i-file")
+                                     .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "ImprimirLibroVentas();" });
+                                  
+                                      tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
+                                      tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
+
+                              })
+                               .Editable(e => e.Mode(GridEditMode.PopUp))
+                                .Sortable()
+                                .AutoBind(true)
+                                .Pageable()
+                                .Filterable()
+                                .Scrollable()
+                                .Resizable(r => r.Columns(true))
+                                // .ClientDetailTemplateId("template")
+                                .Pdf(pdf => pdf.FileName("Planilla_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+                                .ProxyURL(Url.Action("Export", "Home")).AllPages())
+                                  .Excel(excel => excel.FileName("Planilla_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+                                .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+                                //.Events(e=>e.Save("onsave"))
+                                .DataSource(dataSource =>
+
+                               dataSource
+                               //.Ajax()
+                               .WebApi()
+                                .ServerOperation(true)
+                                .Model(model =>
+                                {
+                                    model.Id(p => p.Id);
+                                })
+                                .Events(events =>
+                                {
+                                    events.Error("error_handler");
+                                    //events.upda("EditHandler");
+
+                                })
+                                .Read(read => read.Action("Get", "Planilla"))
+                                .Create(create => create.Action("Insert", "Planilla"))
+                                .Update(update => update.Action("Update", "Planilla", new { id = "{0}" }))
+                                .Destroy(destroy => destroy.Action("Delete", "Planilla", new { id = "{0}" }))
+                          ).Events(e => e.DataBound("dataBound"))
+)
+
+<div id="divPlanilla">
+    @await Html.PartialAsync("pvwPlanilla", new ERPMVC.Models.Planilla { Id = 0, FechaPlanilla = DateTime.Now, FechaPago = null })
+</div>
+
+
+<script>
+
+    function setToolbarTooltip(btn_cl, btn_tooltip) {
+        $("#gridPlanillas").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+
+    function setRowButtonTooltip(btn_cl, btn_tooltip) {
+        $("#gridPlanillas").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+
+    setToolbarTooltip(".k-button k-button-icontext k-grid-Agregar k-i-plus-sm", "Agregar un nuevo registro");
+    //setRowButtonTooltip(".k-grid-edit", "Tooltip for Edit button");
+    setRowButtonTooltip(".k-grid-AnularFactura", "Anular Factura");
+    setRowButtonTooltip(".k-grid-GenerarFactura", "Generar Factura");
+    setRowButtonTooltip(".k-grid-Imprimir", "Imprimir Factura"); 
+    setRowButtonTooltip(".k-grid-ImprimirProforma", "Imprimir Proforma");
+    setRowButtonTooltip(".k-grid-Detalles", "Ver Detalle");
+    setRowButtonTooltip(".k-grid-Agregar", "Nueva Factura Proforma"); 
+</script>
+
+

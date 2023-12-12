@@ -14,50 +14,45 @@ namespace ERPMVC.Models
         public long Id { get; set; }
 
 
+        public string Comentarios { get; set; }
 
-        [Required]
-        public string Nombre { get; set; }
+        public DateTime FechaPlanilla { get; set; }
+        public DateTime? FechaPago { get; set; }
 
-        [Required]
-        public int Periodo { get; set; }
 
-        [Required]
+
+        public int PeriodoId { get; set; }
+        [ForeignKey("PeriodoId")]
+        public Periodo Periodo { get; set; }
+
         public int Mes { get; set; }
 
-        [Required]
         public int TotalEmpleados { get; set; }
 
-        [Required]
         public double TotalPlanilla { get; set; }
 
-        [Required]
         public long EstadoId { get; set; }
 
         [ForeignKey("EstadoId")]
         public Estados Estado { get; set; }
 
+        public string EstadoName { get; set; }
 
-        [Required]
+
         public long TipoPlanillaId { get; set; }
 
         [ForeignKey("TipoPlanillaId")]
         public PlanillaTipo TipoPlanilla { get; set; }
 
 
-
-        [ForeignKey("PlanillaId")]
         public List<PlanillaDetalle> Detalle { get; set; }
 
-        [Required]
         public DateTime FechaCreacion { get; set; }
 
-        [Required]
         public DateTime FechaModificacion { get; set; }
 
-        [Required]
         public string UsuarioModificacion { get; set; }
 
-        [Required]
         public string UsuarioCreacion { get; set; }
     }
 }

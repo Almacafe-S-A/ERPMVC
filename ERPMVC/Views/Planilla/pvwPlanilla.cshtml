@@ -1,0 +1,321 @@
+﻿@model ERPMVC.Models.Planilla
+@using System.Security.Claims
+@{ Layout = null;
+    var messages = new Dictionary<string, string>() { { "custom", "Ingrese un valor correcto." },
+                                {"required","Valor requerido" }
+                            };
+    //var rules = new Dictionary<string, string>() { { "custom", "customFunction" } };
+}
+
+<style>
+    hr.solid {
+        border-top: 1px solid #bbb;
+        width: 100%;
+    }
+</style>
+
+
+
+<script>
+    
+    function GetPuntoEmision() {
+        $("#IdPuntoEmision").data("kendoDropDownList").dataSource.read();
+    }
+
+
+
+    
+    function QuitarModal() {
+        $('#PlanillaModal').modal('hide');
+    }
+</script>
+
+
+<div id="PlanillaModal" class="modal fade" style="min-width:100%" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
+
+        <!-- Modal content-->
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Planilla</h4>
+                
+                <button type="button" name="btnprueba" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">             
+
+                <div class="container-fluid">
+                    <div class="card">
+                                <div class="card-body">
+                                    <form id="frmPlanilla" kendo-validator="true" kendo-messages="messages" 
+                                          data-ajax="true"
+                                          data-ajax-method="post"
+                                          method="post" class="validation-wizard wizard-circle"
+                                    >
+                                        <div class="row">
+                                            <div class="col-md-3">
+                                                <div class="form-group">
+                                                    <label asp-for="Id" class=" control-label" style="width:100%">No Planilla</label>
+                                                    <input type="text" asp-for="Id" name="PlanillaId" readonly class="k-textbox" style="min-width:100%" />
+                                                    <span asp-validation-for="Id" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                             <div class="col-md-3">
+                                                <div class="form-group">
+                                                    <label asp-for="FechaPlanilla" class="control-label" style="width: 100%;">Fecha Planilla</label>
+
+                                            <kendo-datetimepicker name="FechaPlanilla"
+                                                                              style="width: 100%;"
+                                                                              format="dd/MM/yyyy hh:mm:ss"
+                                                                              time-format="hh:mm:ss"
+                                                                              data-val-required="Fecha Planilla es requerido"
+                                                                              value="@Model.FechaPlanilla"></kendo-datetimepicker>
+
+                                                    <span asp-validation-for="FechaPlanilla" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="form-group">
+                                            <label asp-for="FechaPago" class="control-label" style="width: 100%;">Fecha Pago</label>
+
+                                            <kendo-datetimepicker name="FechaPago"
+                                                                              style="width: 100%;"
+                                                                              format="dd/MM/yyyy hh:mm:ss"
+                                                                              time-format="hh:mm:ss"
+                                                                  data-val-required="Fecha FechPlanilla es requerido"
+                                                                  value="@Model.FechaPago"></kendo-datetimepicker>
+
+                                            <span asp-validation-for="FechaPago" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="form-group">
+                                                    <label asp-for="TipoPlanillaId" class="control-label" style="width:100%">Tipo Planilla</label>
+
+                                                    <kendo-dropdownlist name="TipoPlanillaId" filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                                        for="TipoPlanillaId"
+                                                                        option-label="Seleccione el tipo de planilla"
+                                                                        datatextfield="TipoPlanilla"
+                                                                        datavaluefield="IdTipoPlanilla"
+                                                                        style="width: 100%;"
+                                                                        required data-required-msg="Tipo de Planilla es requerido">
+                                                        <datasource type="DataSourceTagHelperType.WebApi" page-size="9999999">
+                                                            <transport>
+                                                        <read url="@Url.Action("GetPlanillaTiposActivo", "PlanillaTipos")" />
+                                                            </transport>
+                                                        </datasource>
+                                                    </kendo-dropdownlist>
+
+                                                    <span asp-validation-for="TipoPlanillaId" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="form-group">
+                                                    <label asp-for="Periodo" class=" control-label" style="width:100%">Periodo</label>
+                                                    <input type="number" asp-for="Periodo" name="Periodo" id="DiasVencimiento" class="k-textbox" style="min-width:100%" />
+                                                    <span asp-validation-for="Periodo" class="text-danger"></span>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-md-3">
+                                                <div class="form-group">
+                                                    <label asp-for="Mes" class=" control-label" style="width:100%">Mes</label>
+                                                    <input type="number" asp-for="Mes" name="Mes" id="DiasVencimiento" class="k-textbox" style="min-width:100%" />
+                                                    <span asp-validation-for="Mes" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                            
+                                        </div>
+
+                                       
+                                            
+
+                                <div id="salesorderdetail">
+                                    @await Html.PartialAsync("pvwPlanillaDetail", Model)
+                                </div>
+                                <div class="row" style="display:none">
+
+
+                                    <div class="col-md-2">
+                                        <label asp-for="TotalPlanilla" class="control-label"></label>
+                                        <kendo-numerictextbox name="TotalExento"
+                                                              format="n2" spinners="false"
+                                                              min="0"
+                                                              disabled
+                                                              required class="control-label right bold"
+                                                              style="width: 100%;text-align:right;padding-right: 3px"
+                                                              max="999999999"
+                                                              step="1"
+                                                              value="Model.TotalPlanilla"></kendo-numerictextbox>
+                                        <span asp-validation-for="TotalPlanilla" class="text-danger"></span>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <label asp-for="TotalEmpleados" class="control-label"></label>
+                                        <kendo-numerictextbox name="TotalExonerado"
+                                                              format="n2" spinners="false"
+                                                              min="0"
+                                                              disabled
+                                                              required class="control-label right bold"
+                                                              style="width: 100%;text-align:right;padding-right: 3px;"
+                                                              max="999999999"
+                                                              step="1"
+                                                              value="Model.TotalEmpleados"></kendo-numerictextbox>
+                                        <span asp-validation-for="TotalEmpleados" class="text-danger"></span>
+                                    </div>
+
+
+                                </div>
+
+
+
+
+                                <div class="row">
+                                    @if (Model.Id == 0  )
+                                    {
+                                        <button id="btnSavePlanilla" type="submit" class="form-control btn-miboton " onclick="SavePlanilla(this);">Guardar</button>
+                                    }
+                                </div>
+
+                                </form>
+                                </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+
+    
+    function Numeros(e) {
+        var key = window.Event ? e.which : e.keyCode
+        return (key >= 48 && key <= 57)
+    }
+
+
+    $(document).ready(function () {
+       
+        
+    });
+    function SoloNumeros(e) {
+        key = e.keyCode || e.which;
+        tecla = String.fromCharCode(key).toLowerCase();
+        letras = "1234567890.";
+        especiales = "8-37-39-46";
+        tecla_especial = false
+        for (var i in especiales) {
+            if (key == especiales[i]) {
+                tecla_especial = true;
+                break;
+            }
+        }
+        if (letras.indexOf(tecla) == -1 && !tecla_especial) {
+            return false;
+        }
+    }
+
+
+
+
+    function RefreshPlanillas() {
+        var grid = $("#gridPlanilla").getKendoGrid();
+        grid.dataSource.read();
+    }
+
+    function SavePlanilla(e) {
+        try {
+            debugger;
+             var btnSavePlanilla = $("#btnSavePlanilla");
+            if (btnSavePlanilla.prop("disabled")) {
+                return; // Si el botón ya está deshabilitado, no hacer nada
+            }
+            btnSavePlanilla.prop("disabled", true); // Deshabilitar el botón
+
+            var validadetalle = true;
+            var displayedData = $("#gridPlanillaDetail").data().kendoGrid.dataSource.view();
+            for (var i = 0; i < displayedData.length; i++) {
+                
+            }
+            if (displayedData.length <= 0) {
+                MostrarMensaje('Debe Cargar Datos al detalle de la planilla', "Error", "Error", 6000);
+            }
+            for (var i = 0; i < displayedData.length; i++) {
+                if (displayedData[i].MontoTotal == 0) {
+                    MostrarMensaje("Error en el calculo de totales del detalle de la planilla" , "Error", "Error Validación", 6000);
+                    return;
+                }
+            }
+            var id = 0;
+            var validator = $("#frmPlanilla").data("kendoValidator");
+            var status = $(".status");
+
+            if (!validator.validate()) {
+                MostrarMensaje('Datos incorrectos en el formulario!', "Error", "Validación", 6000);
+                $("#btnSavePlanilla").show();
+                return;
+            }
+
+
+            var dataObject = {
+                'PlanillaId': $("#PlanillaId").val() === "" ? "0" : $("#PlanillaId").val(),
+                'PlanillaName': $("#PlanillaName").val(),
+                'BranchId': $("#BranchId").val(),
+                'CustomerContractId': $("#CustomerContractId").val(),
+                'BranchName': $("#BranchId").data("kendoDropDownList").text(),
+                'CustomerId': $("#CustomerId").val(),
+                'CustomerName': $("#CustomerId").data("kendoDropDownList").text(),
+                'ProductId': $("#ProductId").val(),
+                'ProductName': $("#ProductId").data("kendoDropDownList").text(),
+                'OrderDate': $("#OrderDate").getKendoDateTimePicker().value().toJSON(),
+                'PlanillaDate': $("#OrderDate").getKendoDateTimePicker().value().toJSON(),
+                'ExpirationDate': $("#ExpirationDate").getKendoDateTimePicker().value().toJSON(),
+                'SalesTypeId': $("#SalesTypeId").val(),
+             
+                'NoInicio': $('#NoInicio').val(),
+                'NoFin': $('#NoFin').val(),
+                'FechaLimiteEmision': $("#FechaLimiteEmision").getKendoDateTimePicker().value().toJSON(),
+                'Rango': $('#Rango').val(),
+                'DiasVencimiento': $('#DiasVencimiento').val(),
+                'Exonerado': exonerado,
+                'Exento': exento,
+                'PlanillaLine': displayedData,
+
+            };
+
+            $.ajax({
+                url: '@Url.Action("SavePlanilla", "Planilla")',
+                method: 'POST',
+                datatype: "json",
+                //  contentType: "application/x-www-form-urlencoded; charset=UTF-8",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (data) {
+
+                    MostrarMensaje('Datos guardados correctamente.', "success", "Satisfactorio", 6000);
+                    $('#PlanillaModal').modal('hide');
+
+                    RefreshPlanillas();
+
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    MostrarMensaje(textStatus + ": " + XMLHttpRequest.responseJSON.Value, "Error", "Error", 6000);
+                    $("#btnSavePlanilla").show();
+                }
+            });
+        } catch (ex) {
+            console.log(ex);
+        } finally {
+            setTimeout(function () {
+                $("#btnSavePlanilla").prop("disabled", false);
+            }, 4000);
+        }
+            
+
+        
+
+    }
+
+
+</script>
