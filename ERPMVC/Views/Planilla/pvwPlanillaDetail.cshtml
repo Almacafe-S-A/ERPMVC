@@ -1,0 +1,258 @@
+﻿@model ERPMVC.Models.Planilla
+@using System.Security.Claims
+<script>
+
+    
+    function setearvalor(nombrenumerico, valor) {
+        var numeric = $("#" + nombrenumerico).data("kendoNumericTextBox");
+        numeric.value(valor);
+        numeric.trigger('change');
+        numeric = null;
+    }
+
+
+    function GetPlanillaId() {
+            var PlanillaId = $("#Id").val();
+
+            return {
+                Id: PlanillaId,
+            };
+    }
+
+    function RefreshPlanillaDetail() {
+        var grid = $("#gridPlanillaDetalle").getKendoGrid();
+        grid.dataSource.read();
+    }
+
+    function onChangeExonerado(){
+        debugger;
+        var exo = $("#Exonerado").data("kendoSwitch");
+        var exonerado = exo.check();
+
+         var exe = $("#Exento").data("kendoSwitch");
+        var exento = exe.check();
+        
+        var displayedData = $("#gridPlanillaDetalle").getKendoGrid().dataSource.data();
+
+        if (displayedData.length <= 0) {
+            return;
+        }
+        for (var i = 0; i < displayedData.length; i++) {
+            //displayedData[i].set('TaxAmount' , exonerado ? 0 : displayedData[i].SubTotal * 0.15);
+            displayedData[i].TaxAmount = exonerado || exento ? 0 : displayedData[i].SubTotal * 0.15;
+        }
+        $("#gridPlanillaDetalle").data("kendoGrid").refresh();
+    }
+
+        
+
+    function Calcular(e) {
+        debugger;
+            var exo = $("#Exonerado").data("kendoSwitch");
+            var exonerado = exo.check();
+
+        var exe = $("#Exento").data("kendoSwitch");
+        var exento = exe.check();
+
+            e.model.Amount = e.model.Price * e.model.Quantity;
+            e.model.SubTotal = e.model.Amount - e.model.DiscountAmount;
+            e.model.TaxAmount =exonerado || exento ? 0: e.model.SubTotal * 0.15;
+            e.model.Total = e.model.SubTotal + e.model.TaxAmount;
+            $("#gridPlanillaDetalle").data("kendoGrid").refresh();
+
+            return;
+    }
+
+    const formatter = new Intl.NumberFormat("en-US");
+    formattear = new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'LPS',
+        minimumFractionDigits: 2
+    });
+
+    
+    
+
+    function totalColumnas(tiporesultado, moneda) {
+        var data = $("#gridPlanillaDetalle").getKendoGrid().dataSource.data();
+        var total = 0;
+
+        switch (tiporesultado) {
+            case 1: 
+                data.forEach(r => total += r.MontoBruto);
+                break;
+            case 2: /// Calcular el total CIB
+                data.forEach(r => total += r.DiscountAmount);
+                break;
+            case 3: ////Calcular el total CIF LPS
+                data.forEach(r => total += r.SubTotal);
+                break;
+            case 4://///Calcular el total de Valor de derechos importacion
+                data.forEach(r => total += r.TaxAmount);
+                break;
+            case 5:
+                data.forEach(r => total += r.Total);
+                break;
+
+            default:
+                break;
+        }
+        var formatter = new Intl.NumberFormat('es-HN', {
+            style: 'currency',
+            currency: 'LPS',
+            minimumFractionDigits: 2
+        });
+        if (moneda == 1) {
+            return formatter.format(total);
+        }
+        if (moneda == 2) {
+            formatter = new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD',
+                minimumFractionDigits: 2
+            });
+            return formatter.format(total);
+        }
+        if (moneda == 0) {
+            formatter = new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'LPS',
+                minimumFractionDigits: 2
+            });
+            return formatter.format(total).replace(/[a-z]{3}/i, "").trim();
+        }
+        return total;
+    }
+
+    function ImprimirVoucher(){
+        
+    }
+    
+
+</script>
+
+
+
+@(
+Html.Kendo().Grid<ERPMVC.Models.PlanillaDetalle>()
+                                                                  .Name("gridPlanillaDetalle")
+                                                                  .Events(e =>
+                                                                    e.CellClose("Calcular")
+                                                                    //.DataBound("Calcular")
+                                                                    )
+                                                                  .Columns(columns =>
+                                                                  {
+
+                                                                  columns.Command(command =>
+                                                      {
+
+                                                                              command.Destroy().Text(" ").IconClass("far fa-trash-alt");
+                                                              command.Custom("ImprimirVoucher").Text(" ").IconClass("far fa-print-alt").Click("ImprimirVoucher");
+                                                                          
+                                                                      }).Title("").Width(80);
+
+                                                                      columns.Bound(p => p.EmpleadoId).Title("Codigo").Width(130);
+                                                                      columns.Bound(p => p.EmpleadoNombre).Title("Colaborador").Width(180);
+                                                                      columns.Bound(p => p.MontoBruto).Title("Sueldo Base").Width(150).Format("{0:c2}")
+                                                                      .ClientFooterTemplate("<div style='text-align: right'>#= totalColumnas(1,1)#</div>")
+                                                                        .HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" });
+                                                                      columns.Bound(p => p.TotalDeducciones).Title("Total Deducciones").Width(180);
+                                                                      columns.Bound(p => p.TotalDeducciones).Title("Total Bonificaciones").Width(180);
+                                                                      columns.Bound(p => p.MontoNeto).Title("Monto Total").Width(250);
+                                                                    
+                                                                  })
+                                                                      .Filterable(f => f.Operators(o => o.ForString(s => s
+                                                               .Clear()
+                                                               .Contains("Contiene")
+                                                               .DoesNotContain("No contiene")
+                                                               .EndsWith("Termina con")
+                                                               .IsEqualTo("Es igual a")
+                                                               .IsNotEqualTo("No es igual a")
+                                                               .IsNull("Es nulo")
+                                                               .StartsWith("Inicia con")
+
+
+                                                         )
+                                                         .ForNumber(n => n
+                                                           .Clear()
+                                                           .IsEqualTo("Es igual a")
+                                                           .IsGreaterThan("Es mayor que")
+                                                           .IsLessThan("Es menor que")
+                                                           .IsNull("Es nulo")
+                                                           .IsLessThanOrEqualTo("Es menor o igual que")
+                                                           .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                                         )
+                                                         .ForDate(d => d
+                                                         .Clear()
+                                                         .IsEqualTo("Es igual que")
+                                                         .IsGreaterThan("Es mayor que")
+                                                         .IsLessThan("Es menor que")
+                                                         .IsLessThanOrEqualTo("Es menor o igual que")
+                                                         .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                                         .IsNotEqualTo("No es igual que")
+                                                          )
+                                                       ))
+                                                                  .ToolBar(tools =>
+                                                                  {
+                                                                      tools.Create().Text("Agregar").IconClass("k-icon k-i-plus")
+                                                                          .HtmlAttributes(new { @class = "k-i-plus-sm" });
+
+
+                                                                  })
+                                                                   .Editable(e => e.Mode(GridEditMode.InCell).CreateAt(GridInsertRowPosition.Bottom))
+                                                                    .Sortable(false)
+                                                                    .AutoBind(true)
+                                                                    .Navigatable(true)
+                                                                    .Filterable()
+                                                                    .Scrollable()
+                                                                    //.Events(e => e.DataBound("CalcularTotalDocumento"))
+                                                                    .DataSource(dataSource =>
+
+                                                                   dataSource
+                                                                   //.Ajax()
+                                                                   .WebApi()
+
+                                                                    .ServerOperation(true)
+                                                                    .Model(model =>
+                                                                    {
+                                                                        model.Id(p => p.Id);
+                                                                        model.Field(p => p.Id).Editable(false);
+                                                                        model.Field(p => p.EmpleadoNombre).Editable(false);
+                                                                        model.Field(p => p.MontoBruto).Editable(false);
+                                                                        model.Field(p => p.TotalDeducciones).Editable(true);
+
+                                                                    })
+                                                                    .Events(events =>
+                                                                    {
+                                                                        events.Error("error_handler");
+
+                                                                    })
+                                                                    //.Sort(s => s.Add(m => m.EmpleadoId).Descending())
+                                                                    .Read(read => read.Action("GetDetalleById", "Planilla").Data("GetPlanillaId"))
+                                                              )
+        )
+
+
+<script>
+
+    function setToolbarTooltip(btn_cl, btn_tooltip) {
+        $("#gridPlanillaDetalle").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+
+    function setRowButtonTooltip(btn_cl, btn_tooltip) {
+        $("#gridPlanillaDetalle").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+
+    //setRowButtonTooltip(".k-grid-GenerarFactura", "Generar una factura fiscal!");
+    setRowButtonTooltip(".k-grid-Eliminar", "Eliminar registro");
+    setRowButtonTooltip(".k-grid-Editar", "Ver Detalle");
+     setRowButtonTooltip(".k-grid-Editar", "Editar registro");
+    setRowButtonTooltip(".k-grid-Agregar", "Agregar nuevo registro");
+    setRowButtonTooltip(".k-grid-ImprimirVoucher", "Imprimir Voucher");
+</script>

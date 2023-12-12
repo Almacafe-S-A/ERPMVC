@@ -33,11 +33,8 @@ namespace ERPMVC.Controllers
             _principal = httpContextAccessor.HttpContext.User;
         }
 
-        // GET: Customer
-        //[Authorize(Policy = "RRHH.Parametros Tipo de Planilla")]
-        public ActionResult TipoPlanillas()
+        public ActionResult Planilla()
         {
-            ViewData["permisos"] = _principal;
             return View();
         }
 
@@ -51,7 +48,7 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/Planillas/Get");
+                var result = await _client.GetAsync(baseadress + "api/Planilla/Get");
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
@@ -72,6 +69,38 @@ namespace ERPMVC.Controllers
 
         }
 
+
+        [HttpGet]
+        public async Task<JsonResult> GetDetalleById([DataSourceRequest] DataSourceRequest request,Planilla planilla)
+        {
+            List<PlanillaDetalle> planillas = new List<PlanillaDetalle>();
+            try
+            {
+
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + $"api/Planilla/GetDetalleById/{planilla.Id}");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    planillas = JsonConvert.DeserializeObject<List<PlanillaDetalle>>(valorrespuesta);
+                }
+
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: {ex.ToString()}");
+                throw ex;
+            }
+
+
+            return Json(planillas.ToDataSourceResult(request));
+
+        }
+
         [HttpGet]
         public async Task<JsonResult> GetById([DataSourceRequest] DataSourceRequest request, int Id)
         {
@@ -82,7 +111,7 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + $"api/Planillas/GetById/{Id}");
+                var result = await _client.GetAsync(baseadress + $"api/Planilla/GetById/{Id}");
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
@@ -107,7 +136,7 @@ namespace ERPMVC.Controllers
 
 
         [HttpPost("[action]")]
-        public async Task<ActionResult> pvwAddPlanilla([FromBody] Planilla _sarpara)
+        public async Task<ActionResult> pvwPlanilla([FromBody] Planilla _sarpara)
         {
             Planilla planilla = new Planilla();
             try
@@ -115,7 +144,7 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/TipoPlanillas/GetTipoPlanillasById/" + _sarpara.Id);
+                var result = await _client.GetAsync(baseadress + "api/Planilla/GetPlanillaById/" + _sarpara.Id);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
@@ -126,7 +155,10 @@ namespace ERPMVC.Controllers
 
                 if (planilla == null)
                 {
-                    planilla = new Planilla();
+                    planilla = new Planilla {
+                        FechaPlanilla = DateTime.Now,   
+                        
+                    };
                 }
             }
             catch (Exception ex)
@@ -143,7 +175,7 @@ namespace ERPMVC.Controllers
 
 
         [HttpPost]
-        public async Task<ActionResult<Planilla>> SaveTipoPlanillas([FromBody] Planilla planillaP)
+        public async Task<ActionResult<Planilla>> SavePlanilla([FromBody] Planilla planillaP)
         {
 
             Planilla planilla = planillaP;
@@ -152,7 +184,7 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/TipoPlanillas/GetTipoPlanillasById/" + planilla.Id);
+                var result = await _client.GetAsync(baseadress + "api/Planilla/GetPlanillaById/" + planilla.Id);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
@@ -197,7 +229,7 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.PostAsJsonAsync(baseadress + "api/TipoPlanillas/Insert", planilla);
+                var result = await _client.PostAsJsonAsync(baseadress + "api/Planilla/Insert", planilla);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
@@ -223,7 +255,7 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.PutAsJsonAsync(baseadress + "api/TipoPlanillas/Update", planilla);
+                var result = await _client.PutAsJsonAsync(baseadress + "api/Planilla/Update", planilla);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
@@ -253,7 +285,7 @@ namespace ERPMVC.Controllers
                 HttpClient _client = new HttpClient();
 
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.PostAsJsonAsync(baseadress + "api/TipoPlanillas/Delete", planilla);
+                var result = await _client.PostAsJsonAsync(baseadress + "api/Planilla/Delete", planilla);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
