@@ -13,11 +13,14 @@
 
     function GetPlanillaId() {
             var PlanillaId = $("#Id").val();
-
+        var TipoPlanillaId = $("#TipoPlanillaId").val();
             return {
                 Id: PlanillaId,
+                TipoPlanillaId: TipoPlanillaId
             };
     }
+
+
 
     function RefreshPlanillaDetail() {
         var grid = $("#gridPlanillaDetalle").getKendoGrid();
@@ -46,30 +49,7 @@
 
         
 
-    function Calcular(e) {
-        debugger;
-            var exo = $("#Exonerado").data("kendoSwitch");
-            var exonerado = exo.check();
-
-        var exe = $("#Exento").data("kendoSwitch");
-        var exento = exe.check();
-
-            e.model.Amount = e.model.Price * e.model.Quantity;
-            e.model.SubTotal = e.model.Amount - e.model.DiscountAmount;
-            e.model.TaxAmount =exonerado || exento ? 0: e.model.SubTotal * 0.15;
-            e.model.Total = e.model.SubTotal + e.model.TaxAmount;
-            $("#gridPlanillaDetalle").data("kendoGrid").refresh();
-
-            return;
-    }
-
-    const formatter = new Intl.NumberFormat("en-US");
-    formattear = new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'LPS',
-        minimumFractionDigits: 2
-    });
-
+    
     
     
 
@@ -82,17 +62,26 @@
                 data.forEach(r => total += r.MontoBruto);
                 break;
             case 2: /// Calcular el total CIB
-                data.forEach(r => total += r.DiscountAmount);
+                data.forEach(r => total += r.MontoQuincenal);
                 break;
             case 3: ////Calcular el total CIF LPS
-                data.forEach(r => total += r.SubTotal);
+                data.forEach(r => total += r.Otros);
                 break;
             case 4://///Calcular el total de Valor de derechos importacion
-                data.forEach(r => total += r.TaxAmount);
+                data.forEach(r => total += r.TotalDeducciones);
                 break;
             case 5:
-                data.forEach(r => total += r.Total);
+                data.forEach(r => total += r.TotalBonificaciones);
                 break;
+            case 6:
+                data.forEach(r => total += r.MontoNeto);
+                break;
+
+
+
+                
+                
+                
 
             default:
                 break;
@@ -127,6 +116,25 @@
     function ImprimirVoucher(){
         
     }
+
+
+    function Calcular(e) {
+        debugger;
+
+        e.model.TotalIngreso = e.model.Otros + e.model.MontoQuincenal;
+        e.model.MontoNeto = e.model.TotalBonificaciones - e.model.TotalDeducciones;
+        $("#gridPlanillaDetalle").data("kendoGrid").refresh();
+
+        return;
+    }
+
+    const formatter = new Intl.NumberFormat("en-US");
+    formattear = new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'LPS',
+        minimumFractionDigits: 2
+    });
+
     
 
 </script>
@@ -147,18 +155,36 @@ Html.Kendo().Grid<ERPMVC.Models.PlanillaDetalle>()
                                                       {
 
                                                                               command.Destroy().Text(" ").IconClass("far fa-trash-alt");
-                                                              command.Custom("ImprimirVoucher").Text(" ").IconClass("far fa-print-alt").Click("ImprimirVoucher");
+                                                              command.Custom("ImprimirVoucher").Text(" ").IconClass("far fa-print").Click("ImprimirVoucher");
                                                                           
-                                                                      }).Title("").Width(80);
+                                                                      }).Title("").Width(120);
 
                                                                       columns.Bound(p => p.EmpleadoId).Title("Codigo").Width(130);
-                                                                      columns.Bound(p => p.EmpleadoNombre).Title("Colaborador").Width(180);
-                                                                      columns.Bound(p => p.MontoBruto).Title("Sueldo Base").Width(150).Format("{0:c2}")
-                                                                      .ClientFooterTemplate("<div style='text-align: right'>#= totalColumnas(1,1)#</div>")
+                                                                      columns.Bound(p => p.EmpleadoNombre).Title("Empleado").Width(180);
+                                                                      columns.Bound(p => p.MontoBruto).Title("Sueldo Mensual").Width(150)
+                                                                      .ClientFooterTemplate("<div style='text-align: right'>#= totalColumnas(1,1)#</div>").Format("{0:c2}")
                                                                         .HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" });
-                                                                      columns.Bound(p => p.TotalDeducciones).Title("Total Deducciones").Width(180);
-                                                                      columns.Bound(p => p.TotalDeducciones).Title("Total Bonificaciones").Width(180);
-                                                                      columns.Bound(p => p.MontoNeto).Title("Monto Total").Width(250);
+                                                                      columns.Bound(p => p.Dias).Title("Días").Width(180);
+
+                                                                      columns.Bound(p => p.MontoQuincenal).Title("Valor Devengado").Width(150)
+                                                                      .ClientFooterTemplate("<div style='text-align: right'>#= totalColumnas(2,1)#</div>").Format("{0:c2}")
+                                                                        .HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" });
+                                                                      columns.Bound(p => p.HorasExtras).Title("Horas Extras").Width(150).Format("{0:c2}")
+                                                                  .HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" });
+                                                                      columns.Bound(p => p.Otros).Title("Otros Ingresos").Width(150)
+                                                                    .ClientFooterTemplate("<div style='text-align: right'>#= totalColumnas(3,1)#</div>").Format("{0:c2}")
+                                                                  .HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" });
+                                                                      columns.Bound(p => p.TotalIngreso).Title("Total Ingresos").Width(180)
+                                                                      .ClientFooterTemplate("<div style='text-align: right'>#= totalColumnas(5,1)#</div>").Format("{0:c2}")
+                                                                        .HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" }); ;
+
+                                                                      columns.Bound(p => p.TotalDeducciones).Title("Total Deducciones").Width(180)
+                                                                      .ClientFooterTemplate("<div style='text-align: right'>#= totalColumnas(4,1)#</div>").Format("{0:c2}")
+                                                                        .HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" }); ;
+                                                                      
+                                                                      columns.Bound(p => p.MontoNeto).Title("Monto Total").Width(250)
+                                                                      .ClientFooterTemplate("<div style='text-align: right'>#= totalColumnas(6,1)#</div>").Format("{0:c2}")
+                                                                        .HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" }); ;
                                                                     
                                                                   })
                                                                       .Filterable(f => f.Operators(o => o.ForString(s => s
@@ -194,8 +220,8 @@ Html.Kendo().Grid<ERPMVC.Models.PlanillaDetalle>()
                                                        ))
                                                                   .ToolBar(tools =>
                                                                   {
-                                                                      tools.Create().Text("Agregar").IconClass("k-icon k-i-plus")
-                                                                          .HtmlAttributes(new { @class = "k-i-plus-sm" });
+                                                                      tools.Custom().Text("Cargar Empleados").IconClass("k-icon k-i-refresh")
+                                                                          .HtmlAttributes(new { @class = "k-i-plus-sm", @onclick = "RefreshPlanillaDetail()" });
 
 
                                                                   })
@@ -204,7 +230,11 @@ Html.Kendo().Grid<ERPMVC.Models.PlanillaDetalle>()
                                                                     .AutoBind(true)
                                                                     .Navigatable(true)
                                                                     .Filterable()
-                                                                    .Scrollable()
+                                                                    .Scrollable(s => s.Height("auto"))
+                                                                    .Reorderable(r => r.Columns(true))
+                                                                    
+                                                                    .ClientDetailTemplateId("template")
+                                                                    .Resizable(r => r.Columns(true))
                                                                     //.Events(e => e.DataBound("CalcularTotalDocumento"))
                                                                     .DataSource(dataSource =>
 
@@ -233,7 +263,52 @@ Html.Kendo().Grid<ERPMVC.Models.PlanillaDetalle>()
         )
 
 
+<script id="template" type="text/kendo-tmpl">
+    @(Html.Kendo().TabStrip()
+                    .Name("tabStrip_#=EmpleadoId#")
+                .SelectedIndex(0)
+                .Animation(animation => animation.Open(open => open.Fade(FadeDirection.In)))
+                .Items(items =>
+                {
+                    items.Add().Text("Deducciones").Content(@<text>
+                        @(Html.Kendo().Grid<ERPMVC.Models.DeduccionesEmpleadoDTO>()
+                        .Name("grid_#=EmpleadoId#") // template expression, to be evaluated in the master context
+                        .Columns(columns =>
+                        {
+                                    columns.Bound(o => o.CantidadDeducciones).Title("CantidadDeducciones").Width(100);
+                                    columns.Bound(o => o.TotalDeducciones).Width(150).Title("TotalDeducciones");
+                                    
+                                })
+                        .DataSource(dataSource => dataSource
+                            .Ajax()
+                            .PageSize(5)
+                            .Read(read => read.Action("GetDeduccionesEmpleado", "DeduccionEmplead", new { empleadoId = "#=EmpleadoId#" }))
+                        )
+                        .Pageable()
+                        .Sortable()
+                        .ToClientTemplate())
+                        </text>
+                    );
+                    items.Add().Text("Bonificaciones").Content(
+                        "<div class='employee-details'>" +
+                            "<ul>" +
+                                    "<li><label>Empleado:</label>#= EmpleadoNombre #</li>" +
+                            "</ul>" +
+                        "</div>"
+                    );
+                })
+                .ToClientTemplate())
+</script>
+
 <script>
+    function dataBound() {
+        this.expandRow(this.tbody.find("tr.k-master-row").first());
+    }
+</script>
+
+<script>
+
+
 
     function setToolbarTooltip(btn_cl, btn_tooltip) {
         $("#gridPlanillaDetalle").kendoTooltip({
@@ -252,7 +327,7 @@ Html.Kendo().Grid<ERPMVC.Models.PlanillaDetalle>()
     //setRowButtonTooltip(".k-grid-GenerarFactura", "Generar una factura fiscal!");
     setRowButtonTooltip(".k-grid-Eliminar", "Eliminar registro");
     setRowButtonTooltip(".k-grid-Editar", "Ver Detalle");
-     setRowButtonTooltip(".k-grid-Editar", "Editar registro");
+    setRowButtonTooltip(".k-grid-Editar", "Editar registro");
     setRowButtonTooltip(".k-grid-Agregar", "Agregar nuevo registro");
     setRowButtonTooltip(".k-grid-ImprimirVoucher", "Imprimir Voucher");
 </script>

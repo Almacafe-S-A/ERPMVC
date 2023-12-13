@@ -27,6 +27,21 @@ namespace ERPMVC.Models
 
         public int Mes { get; set; }
 
+        public int Quincena { get; set; }
+
+        public Int64? BankId { get; set; }
+        [ForeignKey("BankId")]
+        public Bank Bank { get; set; }
+
+        public string BankName { get; set; }
+
+        public Int64? BankAccountId { get; set; }
+
+        [ForeignKey("BankAccountId")]
+        public AccountManagement AccountManagement { get; set; }
+
+        public string BankAccountNo { get; set; }
+
         public int TotalEmpleados { get; set; }
 
         public double TotalPlanilla { get; set; }
