@@ -12,39 +12,60 @@ namespace ERPMVC.Models
         [Required]
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public long Id { get; set; }
-
-        [Required]
         public long PlanillaId { get; set; }
+        [ForeignKey("PlanillaId")]
+        public Planilla Planilla { get; set; }
 
-        [Required]
         public long EmpleadoId { get; set; }
+        [ForeignKey("EmpleadoId")]
+        public Employees Employee { get; set; }
 
         public string EmpleadoNombre { get; set; }
 
-        [Required]
-        public decimal MontoBruto { get; set; }
+        public double MontoBruto { get; set; }
 
-        [Required]
-        public decimal TotalDeducciones { get; set; }
+        public double Dias { get; set; }
+
+        public double MontoQuincenal { get; set; }
+
+        public double HorasExtras { get; set; }
+
+        public double Otros { get; set; }
+
+        public double TotalIngreso { get; set; }
+
+        //public double IHSS { get; set; }
+
+        //public double RAP { get; set; }
+
+        //public double Prestamo { get; set; }
+
+        //public double Adelantos { get; set; }
+
+        //public double Bantrab { get; set; }
+
+        public double TotalDeducciones { get; set; }
+
+        public double TotalBonificaciones { get; set; }
+
+        public double MontoNeto { get; set; }
 
 
+        public List<PlanillaDeduccion> Deducciones { get; set; }
 
-        [Required]
-        public decimal MontoNeto { get; set; }
+        //public List<deduccion> DeduccionEmpleado { get; set; }
 
-        //[ForeignKey("DetallePlanillaId")]
-        //public List<PlanillaDeduccion> Deducciones { get; set; }
+        public List<Bonificacion> Bonificaciones { get; set; }
 
-        [Required]
+        //public int MyProperty { get; set; }
+
+
         public DateTime FechaCreacion { get; set; }
 
-        [Required]
-        public DateTime FechaModificacion { get; set; }
+        public DateTime? FechaModificacion { get; set; }
 
-        [Required]
         public string UsuarioModificacion { get; set; }
 
-        [Required]
         public string UsuarioCreacion { get; set; }
     }
 }
