@@ -68,7 +68,7 @@
         });
     }
 
-    function ImprimirFactura(e) {
+    function Imprimir(e) {
         e.preventDefault();
         var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
 
@@ -77,14 +77,6 @@
 
     }
 
-    function ImprimirProforma(e) {
-        e.preventDefault();
-        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
-
-        window.location.href = '@Url.Action("SFPlanillaProforma", "Planilla")/' + dataItem.PlanillaId;
-
-
-    }
     function ImprimirLibroVentas() {
         var url = '@Url.Action("SFLibroVentas", "Planilla")';
         var win = window.open(url, '_blank');
@@ -120,8 +112,8 @@
     }
 
 
-    function AnularFactura(e) {
-        if (confirm('Esta seguro de anular una Factura?')) {
+    function Anular(e) {
+        if (confirm('Esta seguro de anular una Planilla?')) {
             e.preventDefault();
             debugger;
             var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
@@ -130,14 +122,14 @@
             };
 
             $.ajax({
-                url: '@Url.Action("AnularFactura", "Planilla")',
+                url: '@Url.Action("Anular", "Planilla")',
                 method: 'POST',
                 datatype: "json",
                 contentType: 'application/json',
                 async: false,
                 data: JSON.stringify(dataObject),
                 success: function (result) {
-                    MostrarMensaje('Factura Anulada!', "success", "Satisfactorio", 6000);
+                    MostrarMensaje('Planilla Anulada!', "success", "Satisfactorio", 6000);
                     RefreshPlanillaes();
                     return;
                 },
@@ -158,24 +150,21 @@
         win.focus();
     }
 	
-    function dataBound(e) {
+    function dataBounds(e) {
         $.each(this.dataSource.data(), function () {
-            if (this.Estado != "Revisado" ) {
+            debugger;
+            if (this.EstadoName != "Borrador") {
+                $('[data-uid=' + this.uid + ']').find('.k-grid-Revisar').hide();
+            }
+            if (this.EstadoName != "Revisado") {
                 $('[data-uid=' + this.uid + ']').find('.k-grid-Aprobar').hide();
                 
             }
-            if (this.Estado != "Aprobado"){
-                $('[data-uid=' + this.uid + ']').find('.k-grid-GenerarFactura').hide();
-            }
-            if (this.Estado != "Revisión"){
-                $('[data-uid=' + this.uid + ']').find('.k-grid-Revisar').hide();
-            }
-            if (this.Estado != "Emitido") {
+            if (this.EstadoName != "Aprobado") {
                 $('[data-uid=' + this.uid + ']').find('.k-grid-Imprimir').hide();
-                $('[data-uid=' + this.uid + ']').find('.k-grid-AnularFactura').hide();
             }
-            if (this.Estado != "Anulado") {
-                //$('[data-uid=' + this.uid + ']').find('.k-grid-AnularFactura').hide();
+            if (this.EstadoName != "Anulado") {
+                $('[data-uid=' + this.uid + ']').find('.k-grid-Imprimir').hide();
             }
 
 
@@ -197,7 +186,7 @@
         }
 
         var dataObject = {
-                PlanillaId: dataItem.PlanillaId,
+                Id: dataItem.Id,
             };
 
             $.ajax({
@@ -210,14 +199,14 @@
                 success: function (result) {
                     $.toast({
                         heading: 'Satisfactorio',
-                        text: 'La Factura Proforma se ha aprobado correctamente.',
+                        text: 'La Planilla se ha aprobado correctamente.',
                         position: 'top-right',
                         loaderBg: '#ff6849',
                         icon: 'success',
                         hideAfter: 7000,
                         stack: 6
                     });
-                RefreshPlanillaes();
+                RefreshPlanillas();
                 },
                 error: function (XMLHttpRequest, textStatus, errorThrown) {
                     notification.show({
@@ -238,7 +227,7 @@
         if (dataItem.Estado == 6) {
                     notification.show({
                     title: "Validación",
-                    message: "la Autorizacion ha sido aprobada"
+                    message: "la Planilla ha sido aprobada"
                 }, "error");
             }
         if (!confirm('Esta seguro de marcar como revisada esta Factura Proforma?')) {
@@ -247,7 +236,7 @@
         }
 
         var dataObject = {
-                PlanillaId: dataItem.PlanillaId,
+            Id: dataItem.Id,
             };
 
             $.ajax({
@@ -260,14 +249,14 @@
                 success: function (result) {
                     $.toast({
                         heading: 'Satisfactorio',
-                        text: 'La Factura Proforma se ha revisado correctamente.',
+                        text: 'La Planilla se ha revisado correctamente.',
                         position: 'top-right',
                         loaderBg: '#ff6849',
                         icon: 'success',
                         hideAfter: 7000,
                         stack: 6
                     });
-                RefreshPlanillaes();
+                RefreshPlanillas();
                 },
                 error: function (XMLHttpRequest, textStatus, errorThrown) {
                     notification.show({
@@ -297,8 +286,8 @@ Html.Kendo().Grid<ERPMVC.Models.Planilla>()
                                                 //.Visible(permisoagregar.ToString());
                                           command.Custom("Revisar").Text(" ").IconClass("fa fa-check").Click("Revisar");
                                           command.Custom("Aprobar").Text(" ").IconClass("fa fa-thumbs-up").Click("Aprobar");
-                                          command.Custom("AnularFactura").Text(" ").IconClass("fa fa-ban").Click("AnularFactura");
-                                          command.Custom("Imprimir").Text(" ").IconClass("fa fa-print").Click("ImprimirFactura");
+                                          command.Custom("Anular").Text(" ").IconClass("fa fa-ban").Click("Anular");
+                                          command.Custom("Imprimir").Text(" ").IconClass("fa fa-print").Click("Imprimir");
                                           
                                       }).Title("Acciones").Width(180);
 
@@ -393,7 +382,7 @@ Html.Kendo().Grid<ERPMVC.Models.Planilla>()
                                 .Create(create => create.Action("Insert", "Planilla"))
                                 .Update(update => update.Action("Update", "Planilla", new { id = "{0}" }))
                                 .Destroy(destroy => destroy.Action("Delete", "Planilla", new { id = "{0}" }))
-                          ).Events(e => e.DataBound("dataBound"))
+                          ).Events(e => e.DataBound("dataBounds"))
 )
 
 <div id="divPlanilla">
@@ -419,10 +408,8 @@ Html.Kendo().Grid<ERPMVC.Models.Planilla>()
 
     setToolbarTooltip(".k-button k-button-icontext k-grid-Agregar k-i-plus-sm", "Agregar un nuevo registro");
     //setRowButtonTooltip(".k-grid-edit", "Tooltip for Edit button");
-    setRowButtonTooltip(".k-grid-AnularFactura", "Anular Factura");
-    setRowButtonTooltip(".k-grid-GenerarFactura", "Generar Factura");
-    setRowButtonTooltip(".k-grid-Imprimir", "Imprimir Factura"); 
-    setRowButtonTooltip(".k-grid-ImprimirProforma", "Imprimir Proforma");
+    setRowButtonTooltip(".k-grid-Anular", "Anular");
+    setRowButtonTooltip(".k-grid-Imprimir", "Imprimir"); 
     setRowButtonTooltip(".k-grid-Detalles", "Ver Detalle");
     setRowButtonTooltip(".k-grid-Agregar", "Nueva Planilla"); 
 </script>
