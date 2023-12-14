@@ -77,39 +77,6 @@
 
     }
 
-    function ImprimirLibroVentas() {
-        var url = '@Url.Action("SFLibroVentas", "Planilla")';
-        var win = window.open(url, '_blank');
-        win.focus();
-    }
-
-    function GenerarFactura(e) {
-        if (confirm('Esta seguro de generar una Factura?')) {
-            e.preventDefault();
-            debugger;
-            var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
-            var dataObject = {
-                PlanillaId: dataItem.PlanillaId,
-            };
-
-            $.ajax({
-                url: '@Url.Action("GenerarFactura", "Planilla")',
-                method: 'POST',
-                datatype: "json",
-                contentType: 'application/json',
-                async: false,
-                data: JSON.stringify(dataObject),
-                success: function (result) {
-                    MostrarMensaje('Factura Generada!', "success", "Satisfactorio", 6000);
-                    RefreshPlanillaes();
-                    return;
-                },
-                error: function (XMLHttpRequest, textStatus, errorThrown) {
-                     MostrarMensaje(textStatus + ": " + XMLHttpRequest.responseText, "Error", "Error", 6000);
-                }
-            });
-        }
-    }
 
 
     function Anular(e) {
@@ -164,7 +131,7 @@
                 $('[data-uid=' + this.uid + ']').find('.k-grid-Imprimir').hide();
             }
             if (this.EstadoName != "Anulado") {
-                $('[data-uid=' + this.uid + ']').find('.k-grid-Imprimir').hide();
+               // $('[data-uid=' + this.uid + ']').find('.k-grid-Imprimir').hide();
             }
 
 
@@ -282,11 +249,23 @@ Html.Kendo().Grid<ERPMVC.Models.Planilla>()
 
                                   columns.Command(command =>
                                       {
-                                          command.Custom("Detalles").Text(" ").IconClass("far fa-list-alt").Click("EditPlanilla");
-                                                //.Visible(permisoagregar.ToString());
-                                          command.Custom("Revisar").Text(" ").IconClass("fa fa-check").Click("Revisar");
-                                          command.Custom("Aprobar").Text(" ").IconClass("fa fa-thumbs-up").Click("Aprobar");
-                                          command.Custom("Anular").Text(" ").IconClass("fa fa-ban").Click("Anular");
+                                          if (User.HasClaim("RRHH.Planillas y Operaciones.Planilla.Ver", "true"))
+                                          {
+                                              command.Custom("Ver").Text(" ").IconClass("far fa-eye").Click("EditPlanilla");
+                                          }
+                                          //.Visible(permisoagregar.ToString());
+                                          if (User.HasClaim("RRHH.Planillas y Operaciones.Planilla.Revisar", "true"))
+                                          {
+                                              command.Custom("Revisar").Text(" ").IconClass("fa fa-check").Click("Revisar");
+                                          }
+                                          if (User.HasClaim("RRHH.Planillas y Operaciones.Planilla.Aprobar", "true"))
+                                          {
+                                              command.Custom("Aprobar").Text(" ").IconClass("fa fa-thumbs-up").Click("Aprobar");
+                                          }
+                                          if (User.HasClaim("RRHH.Planillas y Operaciones.Planilla.Anular", "true"))
+                                          {
+                                              command.Custom("Anular").Text(" ").IconClass("fa fa-ban").Click("Anular");
+                                          }
                                           command.Custom("Imprimir").Text(" ").IconClass("fa fa-print").Click("Imprimir");
                                           
                                       }).Title("Acciones").Width(180);
@@ -337,12 +316,10 @@ Html.Kendo().Grid<ERPMVC.Models.Planilla>()
                               .ToolBar(tools =>
                               {
                                   // tools.Create();
+                                  if(User.HasClaim("RRHH.Planillas y Operaciones.Planilla.Agregar","true")){
                                   tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
                                                   .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddPlanilla();" });
-                                  
-                                      tools.Custom().Text("Reporte de Planillas").IconClass("k-icon k-i-file")
-                                     .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "ImprimirLibroVentas();" });
-                                  
+                                  }
                                       tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
                                       tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
 
@@ -409,6 +386,7 @@ Html.Kendo().Grid<ERPMVC.Models.Planilla>()
     setToolbarTooltip(".k-button k-button-icontext k-grid-Agregar k-i-plus-sm", "Agregar un nuevo registro");
     //setRowButtonTooltip(".k-grid-edit", "Tooltip for Edit button");
     setRowButtonTooltip(".k-grid-Anular", "Anular");
+    setRowButtonTooltip(".k-grid-Ver", "Ver");
     setRowButtonTooltip(".k-grid-Imprimir", "Imprimir"); 
     setRowButtonTooltip(".k-grid-Detalles", "Ver Detalle");
     setRowButtonTooltip(".k-grid-Agregar", "Nueva Planilla"); 
