@@ -370,6 +370,39 @@ namespace ERPMVC.Controllers
             return new ObjectResult(new DataSourceResult { Data = new[] { planilla }, Total = 1 });
         }
 
+        [HttpGet]
+        public async Task<ActionResult> SFVoucherPago(Int32 id)
+        {
+            try
+            {
+                PlanillaDetalle planillaDetalle = new PlanillaDetalle { Id = id, };
+                return await Task.Run(() => View(planillaDetalle));
+            }
+            catch (Exception)
+            {
+
+                return await Task.Run(() => BadRequest("Ocurrio un error"));
+            }
+
+        }
+
+
+        [HttpGet]
+        public async Task<ActionResult> SFPlanilla(Int32 id)
+        {
+            try
+            {
+                Planilla planilla = new Planilla { Id = id, };
+                return await Task.Run(() => View(planilla));
+            }
+            catch (Exception)
+            {
+
+                return await Task.Run(() => BadRequest("Ocurrio un error"));
+            }
+
+        }
+
         //--------------------------------------------------------------------------------------
 
     }
