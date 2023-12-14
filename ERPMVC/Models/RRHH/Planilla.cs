@@ -54,7 +54,7 @@ namespace ERPMVC.Models
         public string EstadoName { get; set; }
 
 
-        public long TipoPlanillaId { get; set; }
+        public long? TipoPlanillaId { get; set; }
 
         [ForeignKey("TipoPlanillaId")]
         public PlanillaTipo TipoPlanilla { get; set; }

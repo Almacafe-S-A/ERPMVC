@@ -80,7 +80,7 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + $"api/Planilla/GetDetalleById/{planilla.Id}/{planilla.TipoPlanillaId}");
+                var result = await _client.GetAsync(baseadress + $"api/Planilla/GetDetalleById/{planilla.Id}/{planilla.TipoPlanillaId??0}");
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
@@ -368,6 +368,39 @@ namespace ERPMVC.Controllers
                 return BadRequest($"Ocurrio un error{ex.Message}");
             }
             return new ObjectResult(new DataSourceResult { Data = new[] { planilla }, Total = 1 });
+        }
+
+        [HttpGet]
+        public async Task<ActionResult> SFVoucherPago(Int32 id)
+        {
+            try
+            {
+                PlanillaDetalle planillaDetalle = new PlanillaDetalle { Id = id, };
+                return await Task.Run(() => View(planillaDetalle));
+            }
+            catch (Exception)
+            {
+
+                return await Task.Run(() => BadRequest("Ocurrio un error"));
+            }
+
+        }
+
+
+        [HttpGet]
+        public async Task<ActionResult> SFPlanilla(Int32 id)
+        {
+            try
+            {
+                Planilla planilla = new Planilla { Id = id, };
+                return await Task.Run(() => View(planilla));
+            }
+            catch (Exception)
+            {
+
+                return await Task.Run(() => BadRequest("Ocurrio un error"));
+            }
+
         }
 
         //--------------------------------------------------------------------------------------

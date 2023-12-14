@@ -117,11 +117,16 @@ UNION SELECT 0 , 'TODOS'</CommandText>
   ,EndososCertificados.ProductId
   ,CertificadoDeposito.BranchId
   ,CertificadoDeposito.BranchName
+,EndososCertificadosLine.SubProductName
+,EndososCertificadosLine.Quantity
+,EndososCertificadosLine.ValorEndoso
 FROM
   CertificadoDeposito
   INNER JOIN EndososCertificados
     ON CertificadoDeposito.IdCD = EndososCertificados.IdCD
-WHERE EndososCertificados.DocumentDate Between @FechaInicio and @FechaFin
+INNER JOIN EndososCertificadosLine
+    ON EndososCertificados.EndososCertificadosId = EndososCertificadosLine.EndososCertificadosId
+WHERE EndososCertificados.DocumentDate Between @FechaInicio and dateadd(Day,1,@FechaFin)
 AND (EndososCertificados.CustomerId = @CustomerId or  @CustomerId = 0) AND CertificadoDeposito.BranchId = @Sucursal and CertificadoDeposito.ServicioId = @Servicio AND (EndososCertificados.ProductId = @Producto or @Producto = 0)</CommandText>
         <rd:DesignerState>
           <QueryDefinition xmlns="http://schemas.microsoft.com/ReportingServices/QueryDefinition/Relational">
@@ -209,6 +214,18 @@ AND (EndososCertificados.CustomerId = @CustomerId or  @CustomerId = 0) AND Certi
         <Field Name="BranchName">
           <DataField>BranchName</DataField>
           <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="SubProductName">
+          <DataField>SubProductName</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="Quantity">
+          <DataField>Quantity</DataField>
+          <rd:TypeName>System.Decimal</rd:TypeName>
+        </Field>
+        <Field Name="ValorEndoso">
+          <DataField>ValorEndoso</DataField>
+          <rd:TypeName>System.Decimal</rd:TypeName>
         </Field>
       </Fields>
     </DataSet>
@@ -741,14 +758,14 @@ Where IdEstado =1</CommandText>
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="CantidadEndosar">
+                        <Textbox Name="Quantity">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Fields!CantidadEndosar.Value</Value>
+                                  <Value>=Sum(Fields!Quantity.Value)</Value>
                                   <Style>
                                     <FontSize>9pt</FontSize>
                                     <FontWeight>Normal</FontWeight>
@@ -761,7 +778,7 @@ Where IdEstado =1</CommandText>
                               </Style>
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>CantidadEndosar</rd:DefaultName>
+                          <rd:DefaultName>Quantity</rd:DefaultName>
                           <Style>
                             <Border>
                               <Style>None</Style>
@@ -777,14 +794,14 @@ Where IdEstado =1</CommandText>
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="TotalEndoso">
+                        <Textbox Name="ValorEndoso">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Fields!TotalEndoso.Value</Value>
+                                  <Value>=Sum(Fields!ValorEndoso.Value)</Value>
                                   <Style>
                                     <FontSize>9pt</FontSize>
                                     <FontWeight>Normal</FontWeight>
@@ -797,7 +814,7 @@ Where IdEstado =1</CommandText>
                               </Style>
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>TotalEndoso</rd:DefaultName>
+                          <rd:DefaultName>ValorEndoso</rd:DefaultName>
                           <Style>
                             <Border>
                               <Style>None</Style>
@@ -813,14 +830,14 @@ Where IdEstado =1</CommandText>
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="ProductoEndosado">
+                        <Textbox Name="SubProductName">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Fields!ProductoEndosado.Value</Value>
+                                  <Value>=Fields!SubProductName.Value</Value>
                                   <Style>
                                     <FontSize>9pt</FontSize>
                                     <FontWeight>Normal</FontWeight>
@@ -832,7 +849,7 @@ Where IdEstado =1</CommandText>
                               </Style>
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>ProductoEndosado</rd:DefaultName>
+                          <rd:DefaultName>SubProductName</rd:DefaultName>
                           <Style>
                             <Border>
                               <Style>None</Style>
@@ -935,14 +952,14 @@ Where IdEstado =1</CommandText>
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="CantidadEndosar1">
+                        <Textbox Name="Quantity1">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Sum(Fields!CantidadEndosar.Value)</Value>
+                                  <Value>=Sum(Fields!Quantity.Value)</Value>
                                   <Style>
                                     <FontSize>9pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
@@ -956,7 +973,7 @@ Where IdEstado =1</CommandText>
                               </Style>
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>CantidadEndosar1</rd:DefaultName>
+                          <rd:DefaultName>Quantity1</rd:DefaultName>
                           <Style>
                             <Border>
                               <Style>None</Style>
@@ -977,14 +994,14 @@ Where IdEstado =1</CommandText>
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="TotalEndoso1">
+                        <Textbox Name="ValorEndoso1">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Sum(Fields!TotalEndoso.Value)</Value>
+                                  <Value>=Sum(Fields!ValorEndoso.Value)</Value>
                                   <Style>
                                     <FontSize>9pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
@@ -998,7 +1015,7 @@ Where IdEstado =1</CommandText>
                               </Style>
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>TotalEndoso1</rd:DefaultName>
+                          <rd:DefaultName>ValorEndoso1</rd:DefaultName>
                           <Style>
                             <Border>
                               <Style>None</Style>
@@ -1147,14 +1164,14 @@ Where IdEstado =1</CommandText>
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="CantidadEndosar3">
+                        <Textbox Name="Quantity2">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Sum(Fields!CantidadEndosar.Value)</Value>
+                                  <Value>=Sum(Fields!Quantity.Value)</Value>
                                   <Style>
                                     <FontSize>9pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
@@ -1168,7 +1185,7 @@ Where IdEstado =1</CommandText>
                               </Style>
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>CantidadEndosar3</rd:DefaultName>
+                          <rd:DefaultName>Quantity2</rd:DefaultName>
                           <Style>
                             <Border>
                               <Style>None</Style>
@@ -1189,14 +1206,14 @@ Where IdEstado =1</CommandText>
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="TotalEndoso3">
+                        <Textbox Name="ValorEndoso2">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Sum(Fields!TotalEndoso.Value)</Value>
+                                  <Value>=Sum(Fields!ValorEndoso.Value)</Value>
                                   <Style>
                                     <FontSize>9pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
@@ -1210,7 +1227,7 @@ Where IdEstado =1</CommandText>
                               </Style>
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>TotalEndoso3</rd:DefaultName>
+                          <rd:DefaultName>ValorEndoso2</rd:DefaultName>
                           <Style>
                             <Border>
                               <Style>None</Style>
@@ -1349,14 +1366,14 @@ Where IdEstado =1</CommandText>
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="CantidadEndosar2">
+                        <Textbox Name="Quantity3">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Sum(Fields!CantidadEndosar.Value)</Value>
+                                  <Value>=Sum(Fields!Quantity.Value)</Value>
                                   <Style>
                                     <FontSize>9pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
@@ -1370,7 +1387,7 @@ Where IdEstado =1</CommandText>
                               </Style>
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>CantidadEndosar2</rd:DefaultName>
+                          <rd:DefaultName>Quantity3</rd:DefaultName>
                           <Style>
                             <Border>
                               <Style>None</Style>
@@ -1386,14 +1403,14 @@ Where IdEstado =1</CommandText>
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="TotalEndoso2">
+                        <Textbox Name="ValorEndoso3">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Sum(Fields!TotalEndoso.Value)</Value>
+                                  <Value>=Sum(Fields!ValorEndoso.Value)</Value>
                                   <Style>
                                     <FontSize>9pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
@@ -1407,7 +1424,7 @@ Where IdEstado =1</CommandText>
                               </Style>
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>TotalEndoso2</rd:DefaultName>
+                          <rd:DefaultName>ValorEndoso3</rd:DefaultName>
                           <Style>
                             <Border>
                               <Style>None</Style>
@@ -1602,7 +1619,6 @@ Where IdEstado =1</CommandText>
                           <PaddingBottom>2pt</PaddingBottom>
                         </Style>
                       </Textbox>
-                      <rd:Selected>true</rd:Selected>
                     </CellContents>
                   </TablixHeader>
                   <TablixMembers>
@@ -1760,7 +1776,11 @@ Where IdEstado =1</CommandText>
                           </TablixHeader>
                           <TablixMembers>
                             <TablixMember>
-                              <Group Name="Details" />
+                              <Group Name="Details">
+                                <GroupExpressions>
+                                  <GroupExpression>=Fields!EndososCertificadosId.Value</GroupExpression>
+                                </GroupExpressions>
+                              </Group>
                               <SortExpressions>
                                 <SortExpression>
                                   <Value>=Fields!DocumentDate.Value</Value>
