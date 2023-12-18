@@ -93,6 +93,29 @@ namespace ERPMVC.Controllers
             return horasExtra.ToDataSourceResult(request);
         }
 
+        public async Task<DataSourceResult> GetHorasExtraDistribucion([DataSourceRequest] DataSourceRequest request,int IdHoraExtra)
+        {
+            List<HorasExtrasDistribucion> horasExtrasDistribucions = new List<HorasExtrasDistribucion>();
+            try
+            {
+                var respuesta = await Utils.HttpGetAsync(HttpContext.Session.GetString("token"),
+                    config.Value.urlbase + $"api/HorasExtra/GetDistribucionByHoraExtraId/{IdHoraExtra}");
+                string valorrespuesta = "";
+                if (respuesta.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await respuesta.Content.ReadAsStringAsync();
+                    horasExtrasDistribucions = JsonConvert.DeserializeObject<List<HorasExtrasDistribucion>>(valorrespuesta);
+                    horasExtrasDistribucions = horasExtrasDistribucions.OrderByDescending(x => x.Id).ToList();
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Error al cargar la distribucion hora extra");
+                throw ex;
+            }
+            return horasExtrasDistribucions.ToDataSourceResult(request);
+        }
+
         [HttpPost("[action]")]
         public async Task<ActionResult> Revisar(long idHoraExtra)
         {

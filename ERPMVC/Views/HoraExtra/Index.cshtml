@@ -273,6 +273,7 @@
                                         .Resizable(s => s.Columns(true))
                                         .Filterable()
                                         .Scrollable()
+                                        .ClientDetailTemplateId("template")
                                         .Excel(excel => excel
                                             .AllPages(true)
                                             .Filterable(true)
@@ -306,6 +307,43 @@
                                         .Update(update => update.Action("Update", "HoraExtra", new { id = "{0}" }).Type(HttpVerbs.Post))
                                   ).Events(e => e.DataBound("dataBound").ExcelExport("fechaexcel").Cancel("RefrescarGridDetalle"))
 )
+
+
+
+<script id="template" type="text/kendo-tmpl">
+    @(Html.Kendo().TabStrip()
+                            .Name("tabStrip_#=Id#")
+                    .SelectedIndex(0)
+                    .Animation(animation => animation.Open(open => open.Fade(FadeDirection.In)))
+                    .Items(items =>
+                    {
+                        items.Add().Text("Deducciones").Content(@<text>
+                            @(Html.Kendo().Grid<ERPMVC.Models.HorasExtrasDistribucion>()
+                        .Name("grid_#=Id#") // template expression, to be evaluated in the master context
+                        .Columns(columns =>
+                        {
+                                    columns.Bound(o => o.CantidadHoras).Title("Cantidad Horas").Width(100);
+                                    columns.Bound(o => o.ValorHoraExtra).Width(150).Title("Valor Hora Extra");
+                                    columns.Bound(o => o.TotalaAPagar).Title("Total a Pagar").Width(100);
+                                    columns.Bound(o => o.Pagado).Width(150).Title("Pagado");
+
+
+                                })
+                        .DataSource(dataSource => dataSource
+                            .Ajax()
+                            .PageSize(5)
+                            .Read(read => read.Action("GetHorasExtraDistribucion", "HoraExtra", new { IdHoraExtra = "#=Id#" }))
+                        )
+                        .Pageable()
+                        .Sortable()
+                        .ToClientTemplate())
+                            </text>
+                        );
+                        
+                    })
+                    .ToClientTemplate())
+</script>
+
 
 <script>
     function error_handler(e) {
