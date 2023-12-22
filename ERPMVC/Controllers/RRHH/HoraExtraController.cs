@@ -74,13 +74,13 @@ namespace ERPMVC.Controllers
                             continue;
                         }
                         // Convertir las cadenas de tiempo a objetos DateTime
-                        DateTime horaEntrada = DateTime.ParseExact(horaExtra.HoraEntrada, "HH:mm", System.Globalization.CultureInfo.InvariantCulture);
-                        DateTime horaSalida =  DateTime.ParseExact(horaExtra.HoraSalida, "HH:mm", System.Globalization.CultureInfo.InvariantCulture);
-                        if (horaSalida < horaEntrada)
-                        {
-                            // Si la hora de salida es menor, significa que el empleado ha salido al día siguiente
-                            horaSalida = horaSalida.AddDays(1);
-                        }
+                        TimeSpan horaEntrada = TimeSpan.Parse(horaExtra.HoraEntrada);
+                        TimeSpan horaSalida = TimeSpan.Parse(horaExtra.HoraSalida);
+                        //if (horaSalida < horaEntrada)
+                        //{
+                        //    // Si la hora de salida es menor, significa que el empleado ha salido al día siguiente
+                        //    horaSalida = horaSalida.AddDays(1);
+                        //}
                         // Calcular la diferencia entre las horas
                         TimeSpan diferenciaHoras = horaSalida - horaEntrada;
 
@@ -110,6 +110,16 @@ namespace ERPMVC.Controllers
                     valorrespuesta = await respuesta.Content.ReadAsStringAsync();
                     horasExtrasDistribucions = JsonConvert.DeserializeObject<List<HorasExtrasDistribucion>>(valorrespuesta);
                     horasExtrasDistribucions = horasExtrasDistribucions.OrderByDescending(x => x.Id).ToList();
+                    if (horasExtrasDistribucions.Count>0)
+                    {
+                        horasExtrasDistribucions.Add(new HorasExtrasDistribucion
+                        {
+                            CantidadHoras = horasExtrasDistribucions.Sum(s => s.CantidadHoras),
+                            TotalaAPagar = horasExtrasDistribucions.Sum(s => s.TotalaAPagar),
+                             
+                        }); 
+                    }
+                    
                 }
             }
             catch (Exception ex)
