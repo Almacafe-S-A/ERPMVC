@@ -63,15 +63,19 @@ namespace ERPMVC.Controllers
                     {
                         double horasExtras = horaExtra.Horas + (horaExtra.Minutos / 60.0);
                                 horasExtras = Math.Round(horasExtras, 2, MidpointRounding.AwayFromZero);
-                        horaExtra.HorasExtras = horasExtras + horaExtra.HoraAlumerzo;
+
+                        TimeSpan totalhorasextras = new TimeSpan(horaExtra.Horas+ horaExtra.HoraAlumerzo, horaExtra.Minutos, 0);
+
+                        
+                        horaExtra.HorasExtras = Math.Round(totalhorasextras.TotalHours, 2, MidpointRounding.AwayFromZero)  ;
 
                         if (horaExtra.HoraEntrada == null || horaExtra.HoraSalida == null)
                         {
                             continue;
                         }
                         // Convertir las cadenas de tiempo a objetos DateTime
-                        DateTime horaEntrada = DateTime.ParseExact(horaExtra.HoraEntrada, "HH:mm:ss", System.Globalization.CultureInfo.InvariantCulture);
-                        DateTime horaSalida =  DateTime.ParseExact(horaExtra.HoraSalida, "HH:mm:ss", System.Globalization.CultureInfo.InvariantCulture);
+                        DateTime horaEntrada = DateTime.ParseExact(horaExtra.HoraEntrada, "HH:mm", System.Globalization.CultureInfo.InvariantCulture);
+                        DateTime horaSalida =  DateTime.ParseExact(horaExtra.HoraSalida, "HH:mm", System.Globalization.CultureInfo.InvariantCulture);
                         if (horaSalida < horaEntrada)
                         {
                             // Si la hora de salida es menor, significa que el empleado ha salido al día siguiente
