@@ -80,7 +80,7 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + $"api/Planilla/GetDetalleById/{planilla.Id}/{planilla.TipoPlanillaId??0}");
+                var result = await _client.GetAsync(baseadress + $"api/Planilla/GetDetalleById/{planilla.Id}/{planilla.TipoPlanillaId??0}/{planilla.Mes}/{planilla.PeriodoId}/{planilla.Quincena}");
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
