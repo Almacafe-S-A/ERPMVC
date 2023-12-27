@@ -95,8 +95,8 @@ namespace ERPMVC.Controllers
                     registro.FechaModificacion = DateTime.Now;
                 }
 
-                if (registro.Empleado.IdEmpleado == 0)
-                    throw new Exception("Debe seleccionar a un empleado.");
+                //if (registro.Empleado.IdEmpleado == 0)
+                //    throw new Exception("Debe seleccionar a un empleado.");
 
                 if (registro.Cantidad <= 0)
                     throw new Exception("Cantidad de bonificación es invalido.");
@@ -104,26 +104,26 @@ namespace ERPMVC.Controllers
                 if (registro.Tipo.Id == 0)
                     throw new Exception("Debe seleccionar un tipo de bonificación");
 
-                if (registro.Tipo.Id == 1)
-                    throw new Exception(
-                        "El bono educativo no puede ser otorgado de forma manual, debe utilizar la opción del sistema designada para este efecto.");
-                if (registro.NombreQuincena == "1")
+               
+                if (registro.Quincena == 1)
                 {
                     registro.NombreQuincena = "Primera";
                 }
-                if (registro.NombreQuincena == "2")
+                if (registro.Quincena == 2)
                 {
                     registro.NombreQuincena = "Segunda";
                 }
-                if (registro.NombreQuincena == "3")
+                if (registro.Quincena == 3)
                 {
                     registro.NombreQuincena = "Ambas";
                 }
                 registro.FechaBono = new DateTime(Periodo, Mes, 1);
-                registro.EmpleadoId = registro.Empleado.IdEmpleado;
+                //registro.EmpleadoId = registro.Empleado.IdEmpleado;
                 registro.TipoId = registro.Tipo.Id;
+               
                 registro.Monto = registro.Cantidad * registro.Tipo.Valor;
-                registro.EstadoId = registro.Estado.IdEstado;
+                //registro.EstadoId = registro.Estado.IdEstado;
+                //registro.EmpleadoNombre = registro.Empleado.NombreEmpleado;
                 registro.Estado = null;
                 registro.Empleado = null;
                 registro.Tipo = null;

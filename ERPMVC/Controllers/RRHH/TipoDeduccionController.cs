@@ -32,7 +32,7 @@ namespace ERPMVC.Controllers
             _principal = httpContextAccessor.HttpContext.User;
         }
 
-        //[Authorize(Policy = "RRHH.Tipo Deduccion")]
+        //[Authorize(Policy = "RRHH.Tipo TipoDeduccion")]
         public ActionResult Index()
         {
             ViewData["permisos"] = _principal;
@@ -42,17 +42,17 @@ namespace ERPMVC.Controllers
         public ActionResult VistaDetalle()
         {
             ViewData["Editar"] = 1;
-            return PartialView("pvwTipoDeduccion", new Deduccion());
+            return PartialView("pvwTipoDeduccion", new TipoDeduccion());
         }
 
         public async Task<ActionResult> EditarDeduccion(long DeductionId)
         {
             var respuesta = await Utils.HttpGetAsync(HttpContext.Session.GetString("token"),
-                config.Value.urlbase + "api/Deduction/GetDeductionById/" + DeductionId);
+                config.Value.urlbase + "api/TipoDeduccion/GetDeductionById/" + DeductionId);
             if (respuesta.IsSuccessStatusCode)
             {
                 var contenido = await respuesta.Content.ReadAsStringAsync();
-                var resultado = JsonConvert.DeserializeObject<Deduccion>(contenido);
+                var resultado = JsonConvert.DeserializeObject<TipoDeduccion>(contenido);
                 ViewData["Editar"] = 1;
                 return PartialView("pvwTipoDeduccion", resultado);
             }
@@ -63,11 +63,11 @@ namespace ERPMVC.Controllers
         public async Task<ActionResult> VerDeduccion(long DeductionId)
         {
             var respuesta = await Utils.HttpGetAsync(HttpContext.Session.GetString("token"),
-                config.Value.urlbase + "api/Deduction/GetDeductionById/" + DeductionId);
+                config.Value.urlbase + "api/TipoDeduccion/GetDeductionById/" + DeductionId);
             if (respuesta.IsSuccessStatusCode)
             {
                 var contenido = await respuesta.Content.ReadAsStringAsync();
-                var resultado = JsonConvert.DeserializeObject<Deduccion>(contenido);
+                var resultado = JsonConvert.DeserializeObject<TipoDeduccion>(contenido);
                 ViewData["Editar"] = 0;
                 return PartialView("pvwTipoDeduccion", resultado);
             }
@@ -75,23 +75,23 @@ namespace ERPMVC.Controllers
             return BadRequest();
         }
 
-        public async Task<ActionResult<List<Deduccion>>> GetDeducciones()
+        public async Task<ActionResult<List<TipoDeduccion>>> GetDeducciones()
         {
             try
             {
                 string direccionBase = config.Value.urlbase;
                 HttpClient cliente = new HttpClient();
                 cliente.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var respuesta = await cliente.GetAsync(direccionBase + "api/Deduction/GetDeduction");
+                var respuesta = await cliente.GetAsync(direccionBase + "api/TipoDeduccion/GetDeduction");
                 if (respuesta.IsSuccessStatusCode)
                 {
                     var contenido = await respuesta.Content.ReadAsStringAsync();
-                    var resultado = JsonConvert.DeserializeObject<List<Deduccion>>(contenido);
+                    var resultado = JsonConvert.DeserializeObject<List<TipoDeduccion>>(contenido);
                     return Ok(resultado);
                 }
                 else
                 {
-                    return Ok(new List<Deduccion>());
+                    return Ok(new List<TipoDeduccion>());
                 }
             }
             catch (Exception ex)
@@ -101,7 +101,32 @@ namespace ERPMVC.Controllers
             }
         }
 
-        
+        [HttpGet("[controller]/[action]")]
+        public async Task<DataSourceResult> GetDeduccionesActivos([DataSourceRequest] DataSourceRequest request)
+        {
+            List<TipoDeduccion> tipoDeduccion = new List<TipoDeduccion>();
+            try
+            {
+                string direccionBase = config.Value.urlbase;
+                HttpClient cliente = new HttpClient();
+                cliente.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var respuesta = await cliente.GetAsync(direccionBase + "api/TipoDeduccion/GetDeduction");
+                if (respuesta.IsSuccessStatusCode)
+                {
+                    var contenido = await respuesta.Content.ReadAsStringAsync();
+                    tipoDeduccion = JsonConvert.DeserializeObject<List<TipoDeduccion>>(contenido);//.Where(w => w.EstadoId == 90).ToList()
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.LogError($"Ocurrio un error: {ex.ToString()}");
+                throw ex;
+            }
+            return await Task.Run(() => tipoDeduccion.ToDataSourceResult(request));
+        }
+
+
+
 
 
 
@@ -112,7 +137,7 @@ namespace ERPMVC.Controllers
                 string direccionBase = config.Value.urlbase;
                 HttpClient cliente = new HttpClient();
                 cliente.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var respuesta = await cliente.GetAsync(direccionBase + $"api/Deduction/GetDeductionQtiesById/{DeductionId}");
+                var respuesta = await cliente.GetAsync(direccionBase + $"api/TipoDeduccion/GetDeductionQtiesById/{DeductionId}");
                 if (respuesta.IsSuccessStatusCode)
                 {
                     var contenido = await respuesta.Content.ReadAsStringAsync();
@@ -131,24 +156,24 @@ namespace ERPMVC.Controllers
             }
         }
 
-        public async Task<ActionResult<List<Deduccion>>> GetDeduccionesSinLey()
+        public async Task<ActionResult<List<TipoDeduccion>>> GetDeduccionesSinLey()
         {
             try
             {
                 string direccionBase = config.Value.urlbase;
                 HttpClient cliente = new HttpClient();
                 cliente.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var respuesta = await cliente.GetAsync(direccionBase + "api/Deduction/GetDeduction");
+                var respuesta = await cliente.GetAsync(direccionBase + "api/TipoDeduccion/GetDeduction");
                 if (respuesta.IsSuccessStatusCode)
                 {
                     var contenido = await respuesta.Content.ReadAsStringAsync();
-                    var resultado = JsonConvert.DeserializeObject<List<Deduccion>>(contenido);
-                    resultado = resultado.Where(r => r.DeductionId > 4).ToList();
+                    var resultado = JsonConvert.DeserializeObject<List<TipoDeduccion>>(contenido);
+                    resultado = resultado.Where(r => r.Id > 4).ToList();
                     return Ok(resultado);
                 }
                 else
                 {
-                    return Ok(new List<Deduccion>());
+                    return Ok(new List<TipoDeduccion>());
                 }
             }
             catch (Exception ex)
@@ -159,7 +184,7 @@ namespace ERPMVC.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult> GuardarDeduccion([FromBody] Deduccion deduccion)
+        public async Task<ActionResult> GuardarDeduccion([FromBody] TipoDeduccion deduccion)
         {
             try
             {
@@ -192,17 +217,17 @@ namespace ERPMVC.Controllers
                     }
                     deduccion.FechaModificacion = DateTime.Now;
                     deduccion.UsuarioModificacion = _principal.Identity.Name;
-                    if (deduccion.DeductionId == 0)
+                    if (deduccion.Id == 0)
                     {
                         deduccion.FechaCreacion = DateTime.Now;
                         deduccion.UsuarioCreacion = _principal.Identity.Name;
                         respuesta = await Utils.HttpPostAsync(HttpContext.Session.GetString("token"),
-                            config.Value.urlbase + "api/Deduction/Insert", deduccion);
+                            config.Value.urlbase + "api/TipoDeduccion/Insert", deduccion);
                     }
                     else
                     {
                         respuesta = await Utils.HttpPutAsync(HttpContext.Session.GetString("token"),
-                            config.Value.urlbase + "api/Deduction/Update", deduccion);
+                            config.Value.urlbase + "api/TipoDeduccion/Update", deduccion);
                     }
 
                     if (respuesta.IsSuccessStatusCode)
@@ -233,11 +258,11 @@ namespace ERPMVC.Controllers
             try
             {
                 var respuesta = await Utils.HttpGetAsync(HttpContext.Session.GetString("token"),
-                    config.Value.urlbase + "api/Deduction/GetDeductionByDescription/" + nombre);
+                    config.Value.urlbase + "api/TipoDeduccion/GetDeductionByDescription/" + nombre);
                 if (respuesta.IsSuccessStatusCode)
                 {
                     var contenido = await respuesta.Content.ReadAsStringAsync();
-                    var resultado = JsonConvert.DeserializeObject<Deduccion>(contenido);
+                    var resultado = JsonConvert.DeserializeObject<TipoDeduccion>(contenido);
                     return Ok(resultado);
                 }
 
