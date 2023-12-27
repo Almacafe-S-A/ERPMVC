@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -21,6 +22,7 @@ namespace ERPMVC.Models
         public double Valor { get; set; }
         public DateTime FechaBono { get; set; }
         [UIHint("EstadosBonificacion")]
+        [Required]
         public long EstadoId { get; set; }
 
         [UIHint("EstadosBonificacion")]
@@ -31,14 +33,22 @@ namespace ERPMVC.Models
 
         public Employees Empleado { get; set; }
 
-        
-        
+        public string EstadoNombre { get; set; }
+        public string TipoBonificacionNombre { get; set; }
+        public Int64? PlanillaId { get; set; }
+        [ForeignKey("PlanillaId")]
+
+        public Planilla Planilla { get; set; }
+        public string NombreQuincena { get; set; }
+
+
+
+
         public TipoBonificacion Tipo { get; set; }
         public DateTime FechaCreacion { get; set; }
         public DateTime FechaModificacion { get; set; }
         public string UsuarioModificacion { get; set; }
         public string UsuarioCreacion { get; set; }
-        public string NombreQuincena { get; set; }
         [UIHint("Quincena")]
         [Required]
         public long Quincena { get; set; }

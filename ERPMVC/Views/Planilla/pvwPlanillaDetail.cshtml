@@ -294,17 +294,22 @@ Html.Kendo().Grid<ERPMVC.Models.PlanillaDetalle>()
                 {
                     items.Add().Text("Deducciones").Content(@<text>
                         @(Html.Kendo().Grid<ERPMVC.Models.DeduccionesEmpleadoDTO>()
-                        .Name("grid_#=EmpleadoId#") // template expression, to be evaluated in the master context
+                        .Name("gridDeduccion_#=EmpleadoId#") // template expression, to be evaluated in the master context
                         .Columns(columns =>
                         {
-                                    columns.Bound(o => o.CantidadDeducciones).Title("CantidadDeducciones").Width(100);
-                                    columns.Bound(o => o.TotalDeducciones).Width(150).Title("TotalDeducciones");
+                                    columns.Bound(o => o.TipoDeduccionNombre).Title("Descripción").Width(100);
+                                    columns.Bound(o => o.CantidadDeducciones).Title("Cantidad").Width(100).Format("{0:n2}")
+                                    .HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" }); ;
+                                    columns.Bound(o => o.Valor).Width(150).Title("Valor").Format("{0:c2}")
+                                    .HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" }); ;
+                                    columns.Bound(o => o.TotalDeducciones).Width(150).Title("Total").Format("{0:c2}")
+                                    .HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" }); ;
                                     
                                 })
                         .DataSource(dataSource => dataSource
                             .Ajax()
                             .PageSize(5)
-                            .Read(read => read.Action("GetDeduccionesEmpleado", "DeduccionEmplead", new { empleadoId = "#=EmpleadoId#" }))
+                            .Read(read => read.Action("GetDeduccionesEmpleado", "DeduccionEmpleado", new { empleadoId = "#=EmpleadoId#" }))
                         )
                         .Pageable()
                         .Sortable()
@@ -312,11 +317,31 @@ Html.Kendo().Grid<ERPMVC.Models.PlanillaDetalle>()
                         </text>
                     );
                     items.Add().Text("Bonificaciones").Content(
-                        "<div class='employee-details'>" +
-                            "<ul>" +
-                                    "<li><label>Empleado:</label>#= EmpleadoNombre #</li>" +
-                            "</ul>" +
-                        "</div>"
+                            @<text>
+                                @(Html.Kendo().Grid<ERPMVC.Models.Bonificacion>()
+                            .Name("gridBonificacion_#=EmpleadoId#") // template expression, to be evaluated in the master context
+                            .Columns(columns =>
+                            {
+                                    columns.Bound(o => o.TipoBonificacionNombre).Title("Descripción").Width(100);
+                                        columns.Bound(o => o.Cantidad).Title("Cantidad").Width(100).Format("{0:n2}")
+                                        .HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" }); ;
+                                        columns.Bound(o => o.Valor).Width(150).Title("Valor").Format("{0:c2}")
+                                        .HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" }); ;
+                                        columns.Bound(o => o.Monto).Width(150).Title("Total").Format("{0:c2}")
+                                        //.ClientFooterTemplate("#=sum#")
+                                        .HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" }); ;
+
+                                })
+                            .DataSource(dataSource => dataSource
+                                .Ajax()
+                                .PageSize(5)
+                                .Aggregates(a => a.Add(s =>s.Monto).Sum())
+                                .Read(read => read.Action("GetPorEmpleado", "Bonificacion", new { empleadoId = "#=EmpleadoId#" }))
+                            )
+                            .Pageable()
+                            .Sortable()
+                            .ToClientTemplate())
+                                </text>
                     );
                 })
                 .ToClientTemplate())

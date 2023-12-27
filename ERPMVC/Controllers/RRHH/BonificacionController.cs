@@ -78,6 +78,35 @@ namespace ERPMVC.Controllers
             return bonificaciones.ToDataSourceResult(request);
         }
 
+        public async Task<ActionResult> GetPorEmpleado([DataSourceRequest] DataSourceRequest request, long empleadoId)
+        //[DataSourceRequest] DataSourceRequest request, long empleadoId)
+        {
+            try
+            {
+                var respuesta = await Utils.HttpGetAsync(HttpContext.Session.GetString("token"),
+                    config.Value.urlbase + $"api/Bonificacion/GetBonificacionesEmpleado/{empleadoId}/{1}");
+                if (respuesta.IsSuccessStatusCode)
+                {
+                    var contenido = await respuesta.Content.ReadAsStringAsync();
+                    var resultado = JsonConvert.DeserializeObject<List<Bonificacion>>(contenido);
+                    if (resultado.Count == 0)
+                    {
+                        return Ok();
+                    }
+
+                    return Ok(resultado.ToDataSourceResult(request));
+
+                }
+
+                return BadRequest();
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Error al cargar deducciones del empleado");
+                return BadRequest();
+            }
+        }
+
         public async Task<ActionResult> Guardar(Bonificacion registro, int Periodo, int Mes)
         {
             try
