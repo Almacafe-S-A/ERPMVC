@@ -13,7 +13,7 @@ namespace ERPMVC.Models
         public int No { get; set; }
 
         [ForeignKey("DeductionId")]
-        public Deduccion Deduction { get; set; }
+        public TipoDeduccion Deduction { get; set; }
         public Int64 DeductionId { get; set; }
         [Display(Name = "Quincena a pagar")]
         public double Fortnight { get; set; }

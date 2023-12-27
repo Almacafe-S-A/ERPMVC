@@ -34,8 +34,11 @@ namespace ERPMVC.Controllers
         //[Authorize(Policy = "RRHH.Bonos y Deducciones.Deducciones por Empleado")]
         public ActionResult Index()
         {
-            ViewData["permisos"] = _principal;
-            return View();
+           DeduccionEmpleado deduccionEmpleado = new DeduccionEmpleado {
+            PeriodoId = Utils.PeriodoActualId,
+            Mes = DateTime.Now.Month
+           };
+            return View(deduccionEmpleado);
         }
 
         //[Authorize(Policy = "RRHH.Planillas y Operaciones.Calculo General ISR")]
@@ -63,34 +66,25 @@ namespace ERPMVC.Controllers
 
         public ActionResult EditarDeducciones(long codigoEmpleado, string nombreEmpleado, double salarioEmpleado)
         {
-            ViewData["permisos"] = _principal;
-            ViewData["Editar"] = 1;
-            ViewData["CodigoEmpleado"] = codigoEmpleado;
-            ViewData["NombreEmpleado"] = nombreEmpleado;
-            ViewData["SalarioEmpleado"] = salarioEmpleado;
+            
             return PartialView("pvwAgregarDeduccionEmpleado");
         }
 
         public ActionResult VerDeducciones(long codigoEmpleado, string nombreEmpleado, double salarioEmpleado)
         {
-            ViewData["permisos"] = _principal;
-            ViewData["Editar"] = 0;
-            ViewData["CodigoEmpleado"] = codigoEmpleado;
-            ViewData["NombreEmpleado"] = nombreEmpleado;
-            ViewData["SalarioEmpleado"] = salarioEmpleado;
             return PartialView("pvwAgregarDeduccionEmpleado");
         }
 
 
-        public async Task<ActionResult<List<DeduccionesEmpleadoDTO>>> GetEmpleadosDeducciones(DeduccionesEmpleadoDTO deduccionesEmpleadoDTO)
-        {
+        public async Task<ActionResult<List<DeduccionesEmpleadoDTO>>> GetEmpleadosDeducciones([DataSourceRequest] DataSourceRequest request,DeduccionesEmpleadoDTO deduccionesEmpleadoDTO)
+            {
             var respuesta = await Utils.HttpGetAsync(HttpContext.Session.GetString("token"),
-                config.Value.urlbase + $"api/Deduction/GetDeduccionesEmpleados/{deduccionesEmpleadoDTO.PeriodoId}/{deduccionesEmpleadoDTO.Mes}");
+                config.Value.urlbase + $"api/DeduccionEmpleado/GetDeduccionesEmpleados/{deduccionesEmpleadoDTO.PeriodoId}/{deduccionesEmpleadoDTO.Mes}");
             if (respuesta.IsSuccessStatusCode)
             {
                 var contenido = await respuesta.Content.ReadAsStringAsync();
                 var resultado = JsonConvert.DeserializeObject<List<DeduccionesEmpleadoDTO>>(contenido);
-                return Ok(resultado);
+                return Ok(resultado.ToDataSourceResult(request));
             }
 
             return BadRequest();
@@ -102,11 +96,11 @@ namespace ERPMVC.Controllers
             try
             {
                 var respuesta = await Utils.HttpGetAsync(HttpContext.Session.GetString("token"),
-                    config.Value.urlbase + "api/Deduction/GetDeduccionesPorEmpleado/"+empleadoId);
+                    config.Value.urlbase + "api/DeduccionEmpleado/GetDeduccionesPorEmpleado/" + empleadoId);
                 if (respuesta.IsSuccessStatusCode)
                 {
                     var contenido = await respuesta.Content.ReadAsStringAsync();
-                    var resultado = JsonConvert.DeserializeObject<List<Deduction>>(contenido);
+                    var resultado = JsonConvert.DeserializeObject<List<DeduccionEmpleado>>(contenido);
                     if (resultado.Count == 0)
                     {
                         return Ok();
@@ -131,7 +125,7 @@ namespace ERPMVC.Controllers
             try
             {
                 var respuesta = await Utils.HttpGetAsync(HttpContext.Session.GetString("token"),
-                    config.Value.urlbase + "api/Deduction/GetISREmpleado/" + empleadoId);
+                    config.Value.urlbase + "api/DeduccionEmpleado/GetISREmpleado/" + empleadoId);
                 if (respuesta.IsSuccessStatusCode)
                 {
                     var contenido = await respuesta.Content.ReadAsStringAsync();
@@ -148,13 +142,14 @@ namespace ERPMVC.Controllers
             }
         }
 
-        public async Task<ActionResult> GuardarDeduccionEmpleado([DataSourceRequest] DataSourceRequest request, Deduction deduccionGuardar)
+        public async Task<ActionResult> GuardarDeduccionEmpleado([DataSourceRequest] DataSourceRequest request, DeduccionEmpleado deduccionGuardar,
+            [FromQuery(Name ="Mes")] int mes, [FromQuery(Name = "PeriodoId")] int PeriodoId)
         {
             try
             {
-                //if (ModelState.IsValid)
-                //{
-                deduccionGuardar.Deduccion = null;
+                
+                deduccionGuardar.PeriodoId= PeriodoId;
+                deduccionGuardar.Mes = mes;
                     if (deduccionGuardar.Id == 0)
                     {
                         deduccionGuardar.UsuarioCreacion = HttpContext.Session.GetString("user");
@@ -168,14 +163,14 @@ namespace ERPMVC.Controllers
                         deduccionGuardar.FechaModificacion = DateTime.Now;
                     }
                     var respuesta = await Utils.HttpPostAsync(HttpContext.Session.GetString("token"),
-                        config.Value.urlbase + "api/Deduction/Guardar", deduccionGuardar);
+                        config.Value.urlbase + "api/DeduccionEmpleado/Guardar", deduccionGuardar);
                     if (respuesta.IsSuccessStatusCode)
                     {
                         var contenido = await respuesta.Content.ReadAsStringAsync();
-                        var resultado = JsonConvert.DeserializeObject<Deduction>(contenido);
+                        var resultado = JsonConvert.DeserializeObject<DeduccionEmpleado>(contenido);
                         return Json(new[] { resultado }.ToDataSourceResult(request, ModelState));
                     }
-               // }
+              
                 return BadRequest();
             }
             catch (Exception ex)
@@ -191,7 +186,7 @@ namespace ERPMVC.Controllers
             try
             {
                 var respuesta = await Utils.HttpPostAsync(HttpContext.Session.GetString("token"),
-                    config.Value.urlbase + $"api/Deduction/CalcularISRGeneral/{periodo}/{mes}/{HttpContext.Session.GetString("user")}",null);
+                    config.Value.urlbase + $"api/DeduccionEmpleado/CalcularISRGeneral/{periodo}/{mes}/{HttpContext.Session.GetString("user")}",null);
                 if (respuesta.IsSuccessStatusCode)
                 {
                     return Ok();
@@ -210,7 +205,7 @@ namespace ERPMVC.Controllers
             try
             {
                 var respuesta = await Utils.HttpGetAsync(HttpContext.Session.GetString("token"),
-                    config.Value.urlbase + $"api/Deduction/GetPagosISRPeriodo/{periodo}/{mes}");
+                    config.Value.urlbase + $"api/DeduccionEmpleado/GetPagosISRPeriodo/{periodo}/{mes}");
                 if (respuesta.IsSuccessStatusCode)
                 {
                     var contenido = await respuesta.Content.ReadAsStringAsync();
@@ -234,7 +229,7 @@ namespace ERPMVC.Controllers
             {
 
                 var respuesta = await Utils.HttpGetAsync(HttpContext.Session.GetString("token"),
-                    config.Value.urlbase + $"api/Deduction/CalcularISRGeneral/{pPeriodo.Periodo}/{pPeriodo.Mes}");
+                    config.Value.urlbase + $"api/DeduccionEmpleado/CalcularISRGeneral/{pPeriodo.Periodo}/{pPeriodo.Mes}");
                 if (respuesta.IsSuccessStatusCode)
                 {
                     var contenido = await respuesta.Content.ReadAsStringAsync();
@@ -258,7 +253,7 @@ namespace ERPMVC.Controllers
             {
 
                 var respuesta = await Utils.HttpGetAsync(HttpContext.Session.GetString("token"),
-                    config.Value.urlbase + $"api/Deduction/CalcularRAPGeneral/{pPeriodo.Periodo}/{pPeriodo.Mes}");
+                    config.Value.urlbase + $"api/DeduccionEmpleado/CalcularRAPGeneral/{pPeriodo.Periodo}/{pPeriodo.Mes}");
                 if (respuesta.IsSuccessStatusCode)
                 {
                     var contenido = await respuesta.Content.ReadAsStringAsync();
@@ -281,7 +276,7 @@ namespace ERPMVC.Controllers
             {
 
                 var respuesta = await Utils.HttpGetAsync(HttpContext.Session.GetString("token"),
-                    config.Value.urlbase + $"api/Deduction/CalcularIHSSGeneral/{pPeriodo.Periodo}/{pPeriodo.Mes}");
+                    config.Value.urlbase + $"api/DeduccionEmpleado/CalcularIHSSGeneral/{pPeriodo.Periodo}/{pPeriodo.Mes}");
                 if (respuesta.IsSuccessStatusCode)
                 {
                     var contenido = await respuesta.Content.ReadAsStringAsync();

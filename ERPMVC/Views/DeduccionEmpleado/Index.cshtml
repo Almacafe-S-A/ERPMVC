@@ -1,22 +1,22 @@
 ﻿@using Kendo.Mvc.UI
 @using System.Security.Claims
 
-@model ERPMVC.Models.DeduccionesEmpleadoDTO
+@model ERPMVC.Models.DeduccionEmpleado
 @{
     ViewData["Title"] = "Deducciones por Empleado";
 }
 
 <h3 class="text-themecolor">Deducciones por Empleado</h3>
-<form id="frmFiltro" kendo-validator="true" method="post" action="@Url.Action("GetEmpleadosDeducciones", "DeduccionEmpleado")">
+<form id="frmFiltro" kendo-validator="true" >
 
     <div class="card" id="divClasificacionCuentas">
         <div class="card-body">
 
 
             <div class="row">
-                <div class="col-md-4"><h4 class="card-title">Filtro de Bonificaciones</h4></div>
+                <div class="col-md-4"><h4 class="card-title">Filtro de Deducciones</h4></div>
                 <div class="col-md-2">
-                    <button type="submit" value="Filtrar" class="btn btn-primary">Cargar</button>
+                    <button type="button" onclick="RefrescarGrid()" value="Filtrar" class="btn btn-primary">Cargar</button>
                 </div>
             </div>
             <hr />
@@ -26,8 +26,25 @@
 
                 </div>
                 <div class="col-md-2">
-                    <input id="Periodo" asp-for="PeriodoId"  />
-                </div>
+                    <kendo-dropdownlist name="PeriodoId" filter="Kendo.Mvc.UI.FilterType.Contains"
+                                        option-label="Seleccione el periodo"
+                                        for="PeriodoId"
+                                        datatextfield="Anio"
+                                        value="@ERPMVC.Helpers.Utils.Periodo.Id"
+                                        datavaluefield="Id"
+                                        auto-bind="true"
+                                        data-val-required="Seleccione el periodo para visualizar asiento"
+                                        style="width: 100%;">
+                        <datasource type="DataSourceTagHelperType.WebApi">
+                            <transport>
+                                <read url="@Url.Action("Get", "Periodo")" />
+                            </transport>
+                        </datasource>
+
+                    </kendo-dropdownlist>
+                    <span asp-validation-for="PeriodoId" class="text-danger"></span>
+                 </div>
+                   
                 <div class="col-md-1">
                     <label class="form-label" for="Mes">Mes:</label>
                 </div>
@@ -57,8 +74,7 @@
 
 </form>
 
-<h4>Bonificaciones de </h4>
-@(Html.Kendo().Grid<ERPMVC.Models.Bonificacion>()
+@(Html.Kendo().Grid<ERPMVC.Models.DeduccionEmpleado>()
         .Name("grdConfiguracion").NoRecords()
         .Columns(columns =>
         {
@@ -74,16 +90,16 @@
             }
             columns.Template("#= EmpleadoId #").Width(60).Title("ID");
 
-            columns.Bound(p => p.EmpleadoId).Title("Empleado").Width(200)
-            .ClientTemplate("#= EmpleadoNombre #");
-            columns.Bound(p => p.FechaBono).Title("Fecha").Width(110)
-            .ClientTemplate("#= kendo.toString(FechaBono, 'yyyy-MM-dd') #");
+            columns.Bound(p => p.EmpleadoId).Title("Empleado").Width(200).EditorTemplateName("Employeesddl")
+            .ClientTemplate("#= NombreEmpleado #");
+            columns.Bound(p => p.Fecha).Title("Fecha").Width(110)
+            .ClientTemplate("#= kendo.toString(Fecha, 'yyyy-MM-dd') #");
             @*columns.Bound(p => p.Empleado).Title("Empleado")
         .ClientTemplate("#=typeof Empleado === 'undefined'||Empleado===null?EmpleadoNombre:Empleado.NombreEmpleado#")
 
         .Width(180);*@
-            columns.Bound(p => p.Tipo).Title("Tipo")
-        .ClientTemplate("#=typeof Tipo === 'undefined'||Tipo===null?null:Tipo.Nombre#").Width(180);
+            columns.Bound(p => p.TipoDeduccionId).Title("Tipo")
+        .ClientTemplate("#=typeof Tipo === 'undefined'||Tipo===null?null:Tipo.Nombre#").Width(180).EditorTemplateName("TipoDeduccion");
             columns.Bound(p => p.Cantidad).Title("Cantidad").Width(120).EditorTemplateName("NumericTextBox")
             .HtmlAttributes(new Dictionary<string, object> { ["style"] = "text-align: right;" });
             columns.Bound(p => p.Valor).Title("Valor Bono").Width(120).EditorTemplateName("NumericTextBox")
@@ -95,8 +111,8 @@
             .HtmlAttributes(new Dictionary<string, object> { ["style"] = "text-align: right;" })
             .FooterHtmlAttributes(new Dictionary<string, object> { ["style"] = "text-align: right;" }).Format("{0:c2}");
 
-            columns.Bound(p => p.Quincena).Title("Quincena").Width(110).ClientTemplate("#= NombreQuincena  #");
-            columns.Bound(p => p.EstadoId).Title("Estado").Width(110);
+            columns.Bound(p => p.Quincena).Title("Quincena").Width(110).EditorTemplateName("Quincena");
+            columns.Bound(p => p.EstadoId).Title("Estado").Width(110).EditorTemplateName("EstadosBonificacion");
         })
         .Filterable(f => f
         .Operators(o => o
@@ -184,10 +200,10 @@
             model.Field(p => p.EstadoId).DefaultValue(0);
         }).Aggregates(a => a.Add(c => c.Monto).Sum())
         .Events(events => events.Error("error_handler"))
-        .Group(group => group.Add(a => a.EmpleadoNombre))
-        .Read(read => read.Action("GetBonificacionesMesPeriodo", "Bonificacion").Data("Parametros"))
-        .Update(update => update.Action("Guardar", "Bonificacion").Type(HttpVerbs.Post).Data("Parametros"))
-        .Create(create => create.Action("Guardar", "Bonificacion").Type(HttpVerbs.Post).Data("Parametros"))
+        .Group(group => group.Add(a => a.NombreEmpleado))
+        .Read(read => read.Action("GetEmpleadosDeducciones", "DeduccionEmpleado", Model))
+        .Update(update => update.Action("GuardarDeduccionEmpleado", "DeduccionEmpleado", Model).Type(HttpVerbs.Post))
+        .Create(create => create.Action("GuardarDeduccionEmpleado", "DeduccionEmpleado", Model).Type(HttpVerbs.Post))
 
         ).Events(e => e.DataBound("dataBound").Save("RefrescarGrid").CellClose("Calcular"))
         .Resizable(resize => resize.Columns(true))
@@ -195,6 +211,8 @@
 
 
 <script>
+
+    
 
     function Calcular(e) {
         debugger;

@@ -21,7 +21,7 @@ namespace ERPMVC.Models
 
         public long? DeduccionId { get; set; }
         [ForeignKey("DeduccionId")]
-        public Deduction Deduction { get; set; }
+        public TipoDeduccion Deduction { get; set; }
 
         public string NombreDeduccion { get; set; }
 
