@@ -56,5 +56,9 @@ namespace ERPMVC.Models
         public int CantidadDeducciones { get; set; }
         public float TotalDeducciones { get; set; }
         public double SalarioEmpleado { get; set; }
+
+        public int Mes { get; set; }
+
+        public int PeriodoId { get; set; }
     }
 }

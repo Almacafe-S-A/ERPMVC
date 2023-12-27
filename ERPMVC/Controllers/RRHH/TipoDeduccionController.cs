@@ -48,7 +48,7 @@ namespace ERPMVC.Controllers
         public async Task<ActionResult> EditarDeduccion(long DeductionId)
         {
             var respuesta = await Utils.HttpGetAsync(HttpContext.Session.GetString("token"),
-                config.Value.urlbase + "api/Deduction/GetDeductionById/" + DeductionId);
+                config.Value.urlbase + "api/TipoDeduccion/GetDeductionById/" + DeductionId);
             if (respuesta.IsSuccessStatusCode)
             {
                 var contenido = await respuesta.Content.ReadAsStringAsync();
@@ -63,7 +63,7 @@ namespace ERPMVC.Controllers
         public async Task<ActionResult> VerDeduccion(long DeductionId)
         {
             var respuesta = await Utils.HttpGetAsync(HttpContext.Session.GetString("token"),
-                config.Value.urlbase + "api/Deduction/GetDeductionById/" + DeductionId);
+                config.Value.urlbase + "api/TipoDeduccion/GetDeductionById/" + DeductionId);
             if (respuesta.IsSuccessStatusCode)
             {
                 var contenido = await respuesta.Content.ReadAsStringAsync();
@@ -82,7 +82,7 @@ namespace ERPMVC.Controllers
                 string direccionBase = config.Value.urlbase;
                 HttpClient cliente = new HttpClient();
                 cliente.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var respuesta = await cliente.GetAsync(direccionBase + "api/Deduction/GetDeduction");
+                var respuesta = await cliente.GetAsync(direccionBase + "api/TipoDeduccion/GetDeduction");
                 if (respuesta.IsSuccessStatusCode)
                 {
                     var contenido = await respuesta.Content.ReadAsStringAsync();
@@ -112,7 +112,7 @@ namespace ERPMVC.Controllers
                 string direccionBase = config.Value.urlbase;
                 HttpClient cliente = new HttpClient();
                 cliente.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var respuesta = await cliente.GetAsync(direccionBase + $"api/Deduction/GetDeductionQtiesById/{DeductionId}");
+                var respuesta = await cliente.GetAsync(direccionBase + $"api/TipoDeduccion/GetDeductionQtiesById/{DeductionId}");
                 if (respuesta.IsSuccessStatusCode)
                 {
                     var contenido = await respuesta.Content.ReadAsStringAsync();
@@ -138,7 +138,7 @@ namespace ERPMVC.Controllers
                 string direccionBase = config.Value.urlbase;
                 HttpClient cliente = new HttpClient();
                 cliente.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var respuesta = await cliente.GetAsync(direccionBase + "api/Deduction/GetDeduction");
+                var respuesta = await cliente.GetAsync(direccionBase + "api/TipoDeduccion/GetDeduction");
                 if (respuesta.IsSuccessStatusCode)
                 {
                     var contenido = await respuesta.Content.ReadAsStringAsync();
@@ -197,12 +197,12 @@ namespace ERPMVC.Controllers
                         deduccion.FechaCreacion = DateTime.Now;
                         deduccion.UsuarioCreacion = _principal.Identity.Name;
                         respuesta = await Utils.HttpPostAsync(HttpContext.Session.GetString("token"),
-                            config.Value.urlbase + "api/Deduction/Insert", deduccion);
+                            config.Value.urlbase + "api/TipoDeduccion/Insert", deduccion);
                     }
                     else
                     {
                         respuesta = await Utils.HttpPutAsync(HttpContext.Session.GetString("token"),
-                            config.Value.urlbase + "api/Deduction/Update", deduccion);
+                            config.Value.urlbase + "api/TipoDeduccion/Update", deduccion);
                     }
 
                     if (respuesta.IsSuccessStatusCode)
@@ -233,7 +233,7 @@ namespace ERPMVC.Controllers
             try
             {
                 var respuesta = await Utils.HttpGetAsync(HttpContext.Session.GetString("token"),
-                    config.Value.urlbase + "api/Deduction/GetDeductionByDescription/" + nombre);
+                    config.Value.urlbase + "api/TipoDeduccion/GetDeductionByDescription/" + nombre);
                 if (respuesta.IsSuccessStatusCode)
                 {
                     var contenido = await respuesta.Content.ReadAsStringAsync();

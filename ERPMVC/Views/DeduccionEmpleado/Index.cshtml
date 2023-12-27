@@ -1,155 +1,363 @@
 ﻿@using Kendo.Mvc.UI
 @using System.Security.Claims
+
+@model ERPMVC.Models.DeduccionesEmpleadoDTO
 @{
     ViewData["Title"] = "Deducciones por Empleado";
-    ClaimsPrincipal permisos = (ClaimsPrincipal)ViewData["permisos"];
 }
+
 <h3 class="text-themecolor">Deducciones por Empleado</h3>
-<div class="container-fluid">
-    <div class="row">
-        <div class="col">
-            <div id="grdEmpleados"></div>
+<form id="frmFiltro" kendo-validator="true" method="post" action="@Url.Action("GetEmpleadosDeducciones", "DeduccionEmpleado")">
+
+    <div class="card" id="divClasificacionCuentas">
+        <div class="card-body">
+
+
+            <div class="row">
+                <div class="col-md-4"><h4 class="card-title">Filtro de Bonificaciones</h4></div>
+                <div class="col-md-2">
+                    <button type="submit" value="Filtrar" class="btn btn-primary">Cargar</button>
+                </div>
+            </div>
+            <hr />
+            <div class="row">
+                <div class="col-md-1">
+                    <label class="form-label">Año:</label>
+
+                </div>
+                <div class="col-md-2">
+                    <input id="Periodo" asp-for="PeriodoId"  />
+                </div>
+                <div class="col-md-1">
+                    <label class="form-label" for="Mes">Mes:</label>
+                </div>
+                <div class="col-md-2">
+                    <select asp-for="Mes"  name="Mes" class="k-dropdown-wrap k-state-default">
+                        <option value="1">Enero</option>
+                        <option value="2">Febrero</option>
+                        <option value="3">Marzo</option>
+                        <option value="4">Abril</option>
+                        <option value="5">Mayo</option>
+                        <option value="6">Junio</option>
+                        <option value="7">Julio</option>
+                        <option value="8">Agosto</option>
+                        <option value="9">Septiembre</option>
+                        <option value="10">Octubre</option>
+                        <option value="11">Noviembre</option>
+                        <option value="12">Diciembre</option>
+                    </select>
+                </div>
+            </div>
+
+
+
+
         </div>
     </div>
-</div>
-<div id="ModalDeduccion"></div>
+
+</form>
+
+<h4>Bonificaciones de </h4>
+@(Html.Kendo().Grid<ERPMVC.Models.Bonificacion>()
+        .Name("grdConfiguracion").NoRecords()
+        .Columns(columns =>
+        {
+            {
+                columns.Command(command =>
+                {
+                    command.Edit().Text(" ").IconClass("fa fa-edit").CancelText(" ").UpdateText(" ");
+                    command.Custom("Aprobar").Text(" ").IconClass("fa fa-thumbs-up").Click("Aprobar");
+                    command.Custom("Rechazar").Text(" ").IconClass("fa fa-thumbs-down").Click("Rechazar");
+
+
+                }).Width(120).Title("Acciones");
+            }
+            columns.Template("#= EmpleadoId #").Width(60).Title("ID");
+
+            columns.Bound(p => p.EmpleadoId).Title("Empleado").Width(200)
+            .ClientTemplate("#= EmpleadoNombre #");
+            columns.Bound(p => p.FechaBono).Title("Fecha").Width(110)
+            .ClientTemplate("#= kendo.toString(FechaBono, 'yyyy-MM-dd') #");
+            @*columns.Bound(p => p.Empleado).Title("Empleado")
+        .ClientTemplate("#=typeof Empleado === 'undefined'||Empleado===null?EmpleadoNombre:Empleado.NombreEmpleado#")
+
+        .Width(180);*@
+            columns.Bound(p => p.Tipo).Title("Tipo")
+        .ClientTemplate("#=typeof Tipo === 'undefined'||Tipo===null?null:Tipo.Nombre#").Width(180);
+            columns.Bound(p => p.Cantidad).Title("Cantidad").Width(120).EditorTemplateName("NumericTextBox")
+            .HtmlAttributes(new Dictionary<string, object> { ["style"] = "text-align: right;" });
+            columns.Bound(p => p.Valor).Title("Valor Bono").Width(120).EditorTemplateName("NumericTextBox")
+            .HtmlAttributes(new Dictionary<string, object> { ["style"] = "text-align: right;" });
+            columns.Bound(p => p.Monto).Title("Monto").Width(100).EditorTemplateName("NumericTextBox")
+            .ClientGroupHeaderColumnTemplate("#=FormatLocal(sum)#")
+            //.ClientGroupFooterTemplate("Total: #=FormatLocal(sum)#")
+            //.ClientFooterTemplate("Total: #=FormatLocal(sum)#")
+            .HtmlAttributes(new Dictionary<string, object> { ["style"] = "text-align: right;" })
+            .FooterHtmlAttributes(new Dictionary<string, object> { ["style"] = "text-align: right;" }).Format("{0:c2}");
+
+            columns.Bound(p => p.Quincena).Title("Quincena").Width(110).ClientTemplate("#= NombreQuincena  #");
+            columns.Bound(p => p.EstadoId).Title("Estado").Width(110);
+        })
+        .Filterable(f => f
+        .Operators(o => o
+        .ForString(s => s
+        .Clear()
+        .Contains("Contiene")
+        .DoesNotContain("No contiene")
+        .EndsWith("Termina con")
+        .IsEqualTo("Es igual a")
+        .IsNotEqualTo("No es igual a")
+        .IsNull("Es nulo")
+        .StartsWith("Inicia con")
+        )
+        .ForNumber(n => n
+        .Clear()
+        .IsEqualTo("Es igual a")
+        .IsGreaterThan("Es mayor que")
+        .IsLessThan("Es menor que")
+        .IsNull("Es nulo")
+        .IsLessThanOrEqualTo("Es menor o igual que")
+        .IsGreaterThanOrEqualTo("Es mayor o igual que")
+        )
+        .ForDate(d => d
+        .Clear()
+        .IsEqualTo("Es igual que")
+        .IsGreaterThan("Es mayor que")
+        .IsLessThan("Es menor que")
+        .IsLessThanOrEqualTo("Es menor o igual que")
+        .IsGreaterThanOrEqualTo("Es mayor o igual que")
+        .IsNotEqualTo("No es igual que")
+        )
+        .ForEnums(e => e
+        .Clear()
+        .IsEqualTo("Es igual a")
+        .IsNotEqualTo("No es igual a")
+        )
+        )
+        .Messages(m => m
+        .Info("Muestra elementos cuyo valor:")
+        .IsTrue("es verdadero")
+        .IsFalse("es falso")
+        .Filter("Filtrar")
+        .Clear("Limpiar")
+        .And("Y")
+        .Or("O")
+        .SelectValue("-Seleccione-")
+        .Operator("Operador")
+        .Value("Valor")
+        .Cancel("Cancelar")
+        )
+        )
+        .ToolBar(tools =>
+        {
+            tools.Create().Text("Agregar").IconClass("k-icon k-i-plus")
+            .HtmlAttributes(new { @class = "k-i-plus-sm" });
+            tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
+            tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" }).Text("Exportar a excel");
+        })
+        .Editable(e => e.Mode(GridEditMode.InLine))
+        .Sortable()
+        .Filterable()
+        .Scrollable(s => s.Height("auto"))
+        .Pdf(pdf => pdf.FileName("BonificacionReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+        + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+        .ProxyURL(Url.Action("Export", "Home")).AllPages())
+        .Excel(excel =>
+        {
+            excel.FileName("Otros Ingresos y Bonificaciones_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+            + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx");
+            excel.Filterable(true);
+            excel.ProxyURL(Url.Action("Export", "Home"));
+            excel.AllPages(true);
+        })
+        .DataSource(dataSource =>
+        dataSource
+        .WebApi()
+
+        .ServerOperation(true)
+        .Model(model =>
+        {
+            model.Id(p => p.Id);
+            model.Field(p => p.Id).Editable(false);
+            model.Field(p => p.EmpleadoId).Editable(true);
+            model.Field(p => p.Monto).Editable(false);
+            model.Field(p => p.EstadoId).DefaultValue(0);
+        }).Aggregates(a => a.Add(c => c.Monto).Sum())
+        .Events(events => events.Error("error_handler"))
+        .Group(group => group.Add(a => a.EmpleadoNombre))
+        .Read(read => read.Action("GetBonificacionesMesPeriodo", "Bonificacion").Data("Parametros"))
+        .Update(update => update.Action("Guardar", "Bonificacion").Type(HttpVerbs.Post).Data("Parametros"))
+        .Create(create => create.Action("Guardar", "Bonificacion").Type(HttpVerbs.Post).Data("Parametros"))
+
+        ).Events(e => e.DataBound("dataBound").Save("RefrescarGrid").CellClose("Calcular"))
+        .Resizable(resize => resize.Columns(true))
+        )
+
 
 <script>
 
-    function crearGrid() {
-        $("#grdEmpleados").kendoGrid({
-            dataSource: {
-                //type:"Ajax",
-                transport: {
-                    read:"@Url.Action("GetEmpleadosDeducciones", "Deduction")"
-                },
-                schema: {
-                    model: {
-                        fields: {
-                            EmpleadoId: { name: "EmpleadoId", type: "number", editable: false },
-                            NombreEmpleado: { name: "NombreEmpleado", type: "string", editable: false },
-                            CantidadDeducciones: { name: "CantidadDeducciones", type: "number", editable: false },
-                            TotalDeducciones: { name: "TotalDeducciones", type: "number", editable: false },
-                            SalarioEmpleado: {type:"number", editable:false}
-                        }
-                    }
-                }
-            },
-            columns: [
-                {
-                    command: [
-                        PermisoEditar(),
-                        PermisoVerDetalle()
-                    ],
-                    width:100
-                },
-                { field: "EmpleadoId", title: "Id Empleado ", width: 80 },
-                { field: "NombreEmpleado", title: "NombreEmpleado", width: 200},
-                { field: "CantidadDeducciones", title: "Cantidad", width: 100 },
-                { field: "SalarioEmpleado", title: "Salario", width: 100, format: "{0:#,##0.00}" },
-                { field: "TotalDeducciones", title: "Total Deducciones", width: 100, format: "{0:#,##0.00}" }
-               // { title: "Salario Neto", width: 100, template: '#= kendo.toString((SalarioEmpleado-TotalDeducciones),"n") #'}
-            ],
-            height: 400,
-            scrollable: true,
-            editable: false
-        });
-    }
-
-    function RefreshDeduccionEmpleado() {
-        $("#grdEmpleados").getKendoGrid().dataSource.read();
-    }
-
-    function editar_click(e) {
-        var registro = this.dataItem($(e.currentTarget).closest('tr'));
-        var parametros = {
-            codigoEmpleado: registro.EmpleadoId,
-            nombreEmpleado: registro.NombreEmpleado,
-            salarioEmpleado: registro.SalarioEmpleado
-        };
-        $.ajax({
-            url: '@Url.Action("EditarDeducciones", "Deduction")',
-            method: 'POST',
-            datatype: "json",
-            async: false,
-            data: parametros,//JSON.stringify(parametros),
-            success: function (result) {
-                $("#ModalDeduccion").html('');
-                $("#ModalDeduccion").html(result);
-                $('#DeduccionEmpleadoModalUpload').modal('show');
-            },
-            error: function (XMLHttpRequest, textStatus, errorThrown) {
-                alert(textStatus + ": " + XMLHttpRequest.responseText);
-            }
-        });
-
-    }
-
-    function detalle_click(e) {
-        var registro = this.dataItem($(e.currentTarget).closest('tr'));
-        var parametros = {
-            codigoEmpleado: registro.EmpleadoId,
-            nombreEmpleado: registro.NombreEmpleado,
-            salarioEmpleado: registro.SalarioEmpleado
-        };
-        $.ajax({
-            url: '@Url.Action("VerDeducciones", "Deduction")',
-            method: 'POST',
-            datatype: "json",
-            async: false,
-            data: parametros,//JSON.stringify(parametros),
-            success: function (result) {
-                $("#ModalDeduccion").html('');
-                $("#ModalDeduccion").html(result);
-                $('#DeduccionEmpleadoModalUpload').modal('show');
-            },
-            error: function (XMLHttpRequest, textStatus, errorThrown) {
-                alert(textStatus + ": " + XMLHttpRequest.responseText);
-            }
-        });
-    }
-
-    $(document).ready(function () {
-        crearGrid();
-    });
-</script>
-<script type="text/javascript">
-    function PermisoEditar() {
-        var permisos = '@ViewData["permisos"]';
-        Edit = {
-                name: "editar", click: editar_click, iconClass: "fa fa-edit", text: "",
-            }
-            return Edit
-        
-    }
-    function PermisoVerDetalle() {
-        var permisos = '@ViewData["permisos"]';
-      
-            Ver = {
-                name: "detalle", click: detalle_click, iconClass: "fa fa-list-alt", text: ""
-            }
-            return Ver
-       
-    }
-    function PermisoAgregarDeduccion() {
+    function Calcular(e) {
         debugger;
-        var permisos = '@ViewData["permisos"]';
-        
-            Create = {
-                name: "create",
-                text: "Nueva Deducción"
-            }
-            return Create
-        
+        e.model.Monto = e.model.Valor * e.model.Cantidad;
+
+        $("#grdConfiguracion").data("kendoGrid").refresh();
+
+        return;
     }
-    function PermisoEdit() {
-        var permisos = '@ViewData["permisos"]';
-       
-            Edit = {
-                name: "edit",
-                text: { edit: "", update: "", cancel: "" }
-            }
-            return Edit
-        
+    $(document).ready(function () {
+        $("#Periodo").kendoNumericTextBox({ spinners: false, decimals: 0, restrictDecimals: true, format: "0000" });
+
+
+        // Obtiene el elemento select por su id
+        var selectMes = document.getElementById('Mes');
+
+        // Obtiene el mes actual (de 1 a 12, donde enero es 1 y diciembre es 12)
+        var mesActual = new Date().getMonth() + 1;
+
+        // Establece el valor del select al mes actual
+        selectMes.value = mesActual.toString();
+    });
+
+    function Validar(e) {
+        debugger;
+        if (e.model.Cantidad <= 0) {
+            MostrarMensaje("La Cantidad debe ser mayor que 0", "Error", "Error", 6000);
+            e.preventDefault();
+            return false;
+        }
     }
+    
+
+    function FormatLocal(valor) {
+        formatter = new Intl.NumberFormat('en-US', {
+            style: 'currency',
+            currency: 'LPS',
+            minimumFractionDigits: 2
+        });
+        return formatter.format(valor).replace(/[a-z]{3}/i, "").trim();
+
+    }
+
+    function RefrescarGrid() {
+        debugger;
+        var grid = $("#grdConfiguracion").data("kendoGrid").dataSource.read();
+    }
+
+    function Aprobar(e) {
+        if (!confirm('Esta seguro de aprobar esta Bonificación?')) return;
+        var registro = this.dataItem($(e.currentTarget).closest('tr'));
+        var parametros = {
+            idBonificacion: registro.Id
+        };
+        debugger;
+        $.ajax({
+            url: '@Url.Action("AprobarBonificacion", "Bonificacion")',
+            method: 'POST',
+            datatype: "json",
+            async: false,
+            data: parametros,
+            success: function (result) {
+                $.toast({
+                    heading: 'Satisfactorio',
+                    text: 'Datos aprobados correctamente.',
+                    position: 'top-right',
+                    loaderBg: '#ff6849',
+                    icon: 'success',
+                    hideAfter: 3000,
+                    stack: 6
+                });
+                RefrescarGrid();
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                $.toast({
+                    heading: 'Error',
+                    text: textStatus + ": " + XMLHttpRequest.responseText,
+                    position: 'top-right',
+                    loaderBg: '#ff6849',
+                    icon: 'error',
+                    hideAfter: 3000,
+                    stack: 6
+                });
+                RefrescarGrid();
+            }
+        });
+    }
+
+    function Rechazar(e) {
+        if (!confirm('Esta seguro de rechazar esta Bonificación?')) return;
+        var registro = this.dataItem($(e.currentTarget).closest('tr'));
+        var parametros = {
+            idBonificacion: registro.Id
+        };
+        debugger;
+        $.ajax({
+            url: '@Url.Action("RechazarBonificacion", "Bonificacion")',
+            method: 'POST',
+            datatype: "json",
+            async: false,
+            data: parametros,
+            success: function (result) {
+                $.toast({
+                    heading: 'Satisfactorio',
+                    text: 'Datos rechazados correctamente.',
+                    position: 'top-right',
+                    loaderBg: '#ff6849',
+                    icon: 'success',
+                    hideAfter: 3000,
+                    stack: 6
+                });
+                RefrescarGrid();
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                $.toast({
+                    heading: 'Error',
+                    text: textStatus + ": " + XMLHttpRequest.responseText,
+                    position: 'top-right',
+                    loaderBg: '#ff6849',
+                    icon: 'error',
+                    hideAfter: 3000,
+                    stack: 6
+                });
+                RefrescarGrid();
+            }
+        });
+    }
+
+    function dataBound(e) {
+        var grid = this;
+        debugger;
+        $.each(this.dataSource.data(), function () {
+            if (this.EstadoId !== 8) {
+                $('[data-uid=' + this.uid + ']').find('.k-grid-Aprobar').hide();
+                $('[data-uid=' + this.uid + ']').find('.k-grid-edit').hide();
+                $('[data-uid=' + this.uid + ']').find('.k-grid-Rechazar').hide();
+            }
+
+        });
+
+
+        $(".k-grouping-row").each(function (e) {
+            grid.collapseGroup(this);
+        });
+    }
+
+    function setToolbarTooltip(btn_cl, btn_tooltip) {
+        $("#grdConfiguracion").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+
+    function setRowButtonTooltip(btn_cl, btn_tooltip) {
+        $("#grdConfiguracion").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+
+    setRowButtonTooltip(".k-grid-edit", "Editar Registro");
+    setRowButtonTooltip(".k-grid-Aprobar", "Aprobar");
+    setRowButtonTooltip(".k-grid-Rechazar", "Rechazar");
+    setRowButtonTooltip(".k-grid-update", "Guardar Registro");
+    setRowButtonTooltip(".k-grid-cancel", "Cancelar");
 </script>

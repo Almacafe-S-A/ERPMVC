@@ -82,10 +82,10 @@ namespace ERPMVC.Controllers
         }
 
 
-        public async Task<ActionResult<List<DeduccionesEmpleadoDTO>>> GetEmpleadosDeducciones()
+        public async Task<ActionResult<List<DeduccionesEmpleadoDTO>>> GetEmpleadosDeducciones(DeduccionesEmpleadoDTO deduccionesEmpleadoDTO)
         {
             var respuesta = await Utils.HttpGetAsync(HttpContext.Session.GetString("token"),
-                config.Value.urlbase + "api/Deduction/GetDeduccionesEmpleados");
+                config.Value.urlbase + $"api/Deduction/GetDeduccionesEmpleados/{deduccionesEmpleadoDTO.PeriodoId}/{deduccionesEmpleadoDTO.Mes}");
             if (respuesta.IsSuccessStatusCode)
             {
                 var contenido = await respuesta.Content.ReadAsStringAsync();
