@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
-using System.Security.Claims;
+using System.Net.Http;
 using System.Threading.Tasks;
 using ERPMVC.DTO;
 using ERPMVC.Helpers;
@@ -15,6 +14,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+
 namespace ERPMVC.Controllers 
 {
     [Authorize]
@@ -23,12 +23,10 @@ namespace ERPMVC.Controllers
     {
         private readonly IOptions<MyConfig> config;
         private readonly ILogger logger;
-        private readonly ClaimsPrincipal _principal;
         public DeduccionEmpleadoController(IOptions<MyConfig> config, ILogger<DeduccionEmpleadoController> logger, IHttpContextAccessor httpContextAccessor)
         {
             this.config = config;
             this.logger = logger;
-            _principal = httpContextAccessor.HttpContext.User;
         }
 
         //[Authorize(Policy = "RRHH.Bonos y Deducciones.Deducciones por Empleado")]
@@ -90,7 +88,7 @@ namespace ERPMVC.Controllers
             return BadRequest();
         }
 
-        public async Task<ActionResult> GetDeduccionesEmpleado(long empleadoId)
+        public async Task<ActionResult> GetDeduccionesEmpleado([DataSourceRequest] DataSourceRequest request, long empleadoId)
         //[DataSourceRequest] DataSourceRequest request, long empleadoId)
         {
             try
@@ -106,7 +104,7 @@ namespace ERPMVC.Controllers
                         return Ok();
                     }
 
-                    return Ok(resultado);
+                    return Ok(resultado.ToDataSourceResult(request));
 
                 }
 
@@ -289,6 +287,65 @@ namespace ERPMVC.Controllers
             {
                 logger.LogError(ex, $"Error al cargar el ISR para los empleados en periodo {pPeriodo.Periodo} y mes {pPeriodo.Mes}");
                 return BadRequest(ex.Message);
+            }
+        }
+
+
+        [HttpPost]
+        public async Task<ActionResult> Aprobar(long idBonificacion)
+        {
+            try
+            {
+                if (idBonificacion == 0)
+                {
+                    return await Task.Run(() => BadRequest("No llego correctamente el modelo!"));
+                }
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + $"api/DeduccionEmpleado/ChangeStatus/{idBonificacion}/{1}");
+                string valorrespuesta = "";
+                if (!result.IsSuccessStatusCode)
+                {
+                    return await Task.Run(() => BadRequest("No se Aprobo el documento!"));
+                }
+
+                return Ok();
+
+            }
+            catch (Exception ex)
+            {
+                logger.LogError($"Ocurrio un error: {ex.ToString()}");
+                throw ex;
+            }
+        }
+
+        [HttpPost]
+        public async Task<ActionResult> Rechazar(long idBonificacion)
+        {
+            try
+            {
+                if (idBonificacion == 0)
+                {
+                    return await Task.Run(() => BadRequest("No llego correctamente el modelo!"));
+                }
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + $"api/DeduccionEmpleado/ChangeStatus/{idBonificacion}/{2}");
+                string valorrespuesta = "";
+                if (!result.IsSuccessStatusCode)
+                {
+                    return await Task.Run(() => BadRequest("No se Rechazo el documento!"));
+                }
+
+                return Ok();
+
+            }
+            catch (Exception ex)
+            {
+                logger.LogError($"Ocurrio un error: {ex.ToString()}");
+                throw ex;
             }
         }
 

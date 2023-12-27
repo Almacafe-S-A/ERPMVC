@@ -15,13 +15,15 @@ namespace ERPMVC.Models
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public Int64 Id { get; set; }
         [Required]
+        [UIHint("Employeesddl")]
         public long EmpleadoId { get; set; }
 
         [ForeignKey("EmpleadoId")]
         public Employees Empleado { get; set; }
 
         public string NombreEmpleado { get; set; }
-
+        [UIHint("TipoDeduccion")]
+        [Required]
         public Int64 TipoDeduccionId { get; set; }
         [ForeignKey("TipoDeduccionId")]
         public TipoDeduccion TipoDeduccion { get; set; }
@@ -32,6 +34,7 @@ namespace ERPMVC.Models
         public int PeriodoId { get; set; }
         [ForeignKey("PeriodoId")]
         public Periodo Periodo { get; set; }
+        [UIHint("Quincena")]
         [Required]
         public int Quincena { get; set; }
         [Required]
@@ -42,12 +45,23 @@ namespace ERPMVC.Models
         public float Monto { get; set; }
 
         public int CuotaNo { get; set; }
+        [UIHint("EstadosBonificacion")]
         [Required]
         public long EstadoId { get; set; }
         [ForeignKey("EstadoId")]
         public Estados Estados { get; set; }
 
         public int CantidadCuotas { get; set; }
+
+        public string TipoDeduccionNombre { get; set; }
+        public int Anio { get; set; }
+        public string QuincenaNombre { get; set; }
+        public string EstadoNombre { get; set; }
+        public long? PlanillaId { get; set; }
+        [ForeignKey("PlanillaId")]
+        public Planilla Planilla { get; set; }
+
+
 
         public DateTime FechaCreacion { get; set; }
         public DateTime FechaModificacion { get; set; }

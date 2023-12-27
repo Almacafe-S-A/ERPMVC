@@ -16,6 +16,7 @@ namespace ERPMVC.Models
 
         public long EstadoId { get; set; }
 
+
         public Estados Estado { get; set; }
 
         public DateTime FechaCreacion { get; set; }

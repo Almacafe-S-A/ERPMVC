@@ -74,7 +74,8 @@
 
 </form>
 
-@(Html.Kendo().Grid<ERPMVC.Models.DeduccionEmpleado>()
+@(
+Html.Kendo().Grid<ERPMVC.Models.DeduccionEmpleado>()
         .Name("grdConfiguracion").NoRecords()
         .Columns(columns =>
         {
@@ -92,14 +93,13 @@
 
             columns.Bound(p => p.EmpleadoId).Title("Empleado").Width(200).EditorTemplateName("Employeesddl")
             .ClientTemplate("#= NombreEmpleado #");
-            columns.Bound(p => p.Fecha).Title("Fecha").Width(110)
-            .ClientTemplate("#= kendo.toString(Fecha, 'yyyy-MM-dd') #");
-            @*columns.Bound(p => p.Empleado).Title("Empleado")
+            columns.Bound(p => p.Fecha).Title("Fecha").Width(110).Format("{0:dd/MM/yyyy}");
+@*columns.Bound(p => p.Empleado).Title("Empleado")
         .ClientTemplate("#=typeof Empleado === 'undefined'||Empleado===null?EmpleadoNombre:Empleado.NombreEmpleado#")
 
         .Width(180);*@
             columns.Bound(p => p.TipoDeduccionId).Title("Tipo")
-        .ClientTemplate("#=typeof Tipo === 'undefined'||Tipo===null?null:Tipo.Nombre#").Width(180).EditorTemplateName("TipoDeduccion");
+        .ClientTemplate("#=TipoDeduccionNombre#").Width(180).EditorTemplateName("TipoDeduccion");
             columns.Bound(p => p.Cantidad).Title("Cantidad").Width(120).EditorTemplateName("NumericTextBox")
             .HtmlAttributes(new Dictionary<string, object> { ["style"] = "text-align: right;" });
             columns.Bound(p => p.Valor).Title("Valor Bono").Width(120).EditorTemplateName("NumericTextBox")
@@ -112,7 +112,8 @@
             .FooterHtmlAttributes(new Dictionary<string, object> { ["style"] = "text-align: right;" }).Format("{0:c2}");
 
             columns.Bound(p => p.Quincena).Title("Quincena").Width(110).EditorTemplateName("Quincena");
-            columns.Bound(p => p.EstadoId).Title("Estado").Width(110).EditorTemplateName("EstadosBonificacion");
+            columns.Bound(p => p.EstadoId).Title("Estado").Width(110).EditorTemplateName("EstadosBonificacion")
+            .ClientTemplate("#=EstadoNombre#");
         })
         .Filterable(f => f
         .Operators(o => o
@@ -175,12 +176,12 @@
         .Sortable()
         .Filterable()
         .Scrollable(s => s.Height("auto"))
-        .Pdf(pdf => pdf.FileName("BonificacionReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+        .Pdf(pdf => pdf.FileName("DeduccionesReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
         + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
         .ProxyURL(Url.Action("Export", "Home")).AllPages())
         .Excel(excel =>
         {
-            excel.FileName("Otros Ingresos y Bonificaciones_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+            excel.FileName("Deducciones_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
             + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx");
             excel.Filterable(true);
             excel.ProxyURL(Url.Action("Export", "Home"));
@@ -205,13 +206,15 @@
         .Update(update => update.Action("GuardarDeduccionEmpleado", "DeduccionEmpleado", Model).Type(HttpVerbs.Post))
         .Create(create => create.Action("GuardarDeduccionEmpleado", "DeduccionEmpleado", Model).Type(HttpVerbs.Post))
 
-        ).Events(e => e.DataBound("dataBound").Save("RefrescarGrid").CellClose("Calcular"))
+        ).Events(e => e.DataBound("dataBound").Save("RefrescarGrid").CellClose("Calcular").Save("onsave"))
         .Resizable(resize => resize.Columns(true))
         )
 
 
 <script>
-
+    function onsave(e) {
+        $("#grdConfiguracion").data("kendoGrid").refresh();
+    }
     
 
     function Calcular(e) {
@@ -262,14 +265,14 @@
     }
 
     function Aprobar(e) {
-        if (!confirm('Esta seguro de aprobar esta Bonificación?')) return;
+        if (!confirm('Esta seguro de aprobar esta Deduccion?')) return;
         var registro = this.dataItem($(e.currentTarget).closest('tr'));
         var parametros = {
             idBonificacion: registro.Id
         };
         debugger;
         $.ajax({
-            url: '@Url.Action("AprobarBonificacion", "Bonificacion")',
+            url: '@Url.Action("Aprobar", "DeduccionEmpleado")',
             method: 'POST',
             datatype: "json",
             async: false,
@@ -302,14 +305,14 @@
     }
 
     function Rechazar(e) {
-        if (!confirm('Esta seguro de rechazar esta Bonificación?')) return;
+        if (!confirm('Esta seguro de rechazar esta Deduccion?')) return;
         var registro = this.dataItem($(e.currentTarget).closest('tr'));
         var parametros = {
             idBonificacion: registro.Id
         };
         debugger;
         $.ajax({
-            url: '@Url.Action("RechazarBonificacion", "Bonificacion")',
+            url: '@Url.Action("Rechazar", "DeduccionEmpleado")',
             method: 'POST',
             datatype: "json",
             async: false,
