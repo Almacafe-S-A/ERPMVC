@@ -35,12 +35,22 @@ namespace ERPMVC.Models
 
         public string EstadoNombre { get; set; }
         public string TipoBonificacionNombre { get; set; }
-        public Int64? PlanillaId { get; set; }
-        [ForeignKey("PlanillaId")]
 
-        public Planilla Planilla { get; set; }
+        public Int64? PlanillaDetalleId { get; set; }
+        [ForeignKey("PlanillaDetalleId")]
+
+        public PlanillaDetalle PlanillaDetalle { get; set; }
+       
+
+        public int Mes { get; set; }
+
+        public int PeriodoId { get; set; }
+        [ForeignKey("PeriodoId")]
+        public Periodo Periodo { get; set; }
+
+        public int Anio { get; set; }
+
         public string NombreQuincena { get; set; }
-
 
 
 
