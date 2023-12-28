@@ -118,6 +118,37 @@ namespace ERPMVC.Controllers
         }
 
 
+        public async Task<ActionResult> GetDeduccionesEmpleadoPlanilla([DataSourceRequest] DataSourceRequest request,
+            int empleadoId, int mes, int periodoId, int planilladetalleId)
+        //[DataSourceRequest] DataSourceRequest request, long empleadoId)
+        {
+            try
+            {
+                var respuesta = await Utils.HttpGetAsync(HttpContext.Session.GetString("token"),
+                    config.Value.urlbase + $"api/DeduccionEmpleado/GetDeduccionesEmpleadosPlanilla/{empleadoId}/{mes}/{periodoId}/{planilladetalleId}");
+                if (respuesta.IsSuccessStatusCode)
+                {
+                    var contenido = await respuesta.Content.ReadAsStringAsync();
+                    var resultado = JsonConvert.DeserializeObject<List<DeduccionEmpleado>>(contenido);
+                    if (resultado.Count == 0)
+                    {
+                        return Ok();
+                    }
+
+                    return Ok(resultado.ToDataSourceResult(request));
+
+                }
+
+                return BadRequest();
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Error al cargar deducciones del empleado");
+                return BadRequest();
+            }
+        }
+
+
         public async Task<ActionResult> CalcularISR(long empleadoId)
         {
             try
