@@ -1,7 +1,8 @@
-﻿@{
+﻿
+@model ERPMVC.Models.Bonificacion
+@{
     ViewData["Title"] = "Otros Ingresos y Bonificaciones";
     var today = DateTime.Today;
-    var periodo = (int) (TempData.ContainsKey("Periodo")? TempData["Periodo"] : today.Year);
     var mes = (int) (TempData.ContainsKey("Mes") ? TempData["Mes"] : today.Month);
     var inactivo = (bool)(TempData.ContainsKey("Inactivo")? TempData["Inactivo"] : false);
     var meses = new[] {"Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"};
@@ -10,56 +11,73 @@
 
 <h3 class="text-themecolor">Otros Ingresos y Bonificaciones</h3>
 <form id="frmFiltroBono" kendo-validator="true" method="post" action="@Url.Action("PostFiltro", "Bonificacion")">
- 
-<div class="card" id="divClasificacionCuentas">
-    <div class="card-body">
-        
-        
-        <div class="row">
-                <div class="col-md-4"><h4 class="card-title">Filtro de Bonificaciones</h4></div>
+
+    <div class="card" id="divClasificacionCuentas">
+        <div class="card-body">
+
+
+            <div class="row">
+                <div class="col-md-4"><h4 class="card-title">Filtro de Deducciones</h4></div>
                 <div class="col-md-2">
-                <button type="submit" value="Filtrar" class="btn btn-primary">Cargar</button>
+                    <button type="button" onclick="RefrescarGrid()" value="Filtrar" class="btn btn-primary">Cargar</button>
+                </div>
             </div>
+            <hr />
+            <div class="row">
+                <div class="col-md-1">
+                    <label class="form-label">Año:</label>
+
+                </div>
+                <div class="col-md-2">
+                    <kendo-dropdownlist name="PeriodoId" filter="Kendo.Mvc.UI.FilterType.Contains"
+                                        option-label="Seleccione el periodo"
+                                        for="PeriodoId"
+                                        datatextfield="Anio"
+                                        value="@ERPMVC.Helpers.Utils.Periodo.Id"
+                                        datavaluefield="Id"
+                                        auto-bind="true"
+                                        data-val-required="Seleccione el periodo para visualizar asiento"
+                                        style="width: 100%;">
+                        <datasource type="DataSourceTagHelperType.WebApi">
+                            <transport>
+                                <read url="@Url.Action("Get", "Periodo")" />
+                            </transport>
+                        </datasource>
+
+                    </kendo-dropdownlist>
+                    <span asp-validation-for="PeriodoId" class="text-danger"></span>
+                </div>
+
+                <div class="col-md-1">
+                    <label class="form-label" for="Mes">Mes:</label>
+                </div>
+                <div class="col-md-2">
+                    <select asp-for="Mes" name="Mes" class="k-dropdown-wrap k-state-default">
+                        <option value="1">Enero</option>
+                        <option value="2">Febrero</option>
+                        <option value="3">Marzo</option>
+                        <option value="4">Abril</option>
+                        <option value="5">Mayo</option>
+                        <option value="6">Junio</option>
+                        <option value="7">Julio</option>
+                        <option value="8">Agosto</option>
+                        <option value="9">Septiembre</option>
+                        <option value="10">Octubre</option>
+                        <option value="11">Noviembre</option>
+                        <option value="12">Diciembre</option>
+                    </select>
+                </div>
+            </div>
+
+
+
+
         </div>
-        <hr />
-        <div class="row">
-            <div class="col-md-1">
-                <label class="form-label">Año:</label>
-
-            </div>
-            <div class="col-md-2">
-                <input id="Periodo" name="Periodo" value="@periodo" />
-            </div>
-            <div class="col-md-1">
-                <label class="form-label" for="Mes">Mes:</label>
-            </div>
-            <div class="col-md-2">
-                <select id="Mes" name="Mes" class="k-dropdown-wrap k-state-default">
-                    <option value="1">Enero</option>
-                    <option value="2">Febrero</option>
-                    <option value="3">Marzo</option>
-                    <option value="4">Abril</option>
-                    <option value="5">Mayo</option>
-                    <option value="6">Junio</option>
-                    <option value="7">Julio</option>
-                    <option value="8">Agosto</option>
-                    <option value="9">Septiembre</option>
-                    <option value="10">Octubre</option>
-                    <option value="11">Noviembre</option>
-                    <option value="12">Diciembre</option>
-                </select>
-            </div>
-        </div>
-        
-
-
-
     </div>
-</div>
 
 </form>
 
-<h4>Bonificaciones de @meses[mes - 1] de @periodo </h4>
+
 @(Html.Kendo().Grid<ERPMVC.Models.Bonificacion>()
         .Name("grdConfiguracion").NoRecords()
         .Columns(columns =>
@@ -187,9 +205,9 @@
         }).Aggregates(a => a.Add(c => c.Monto).Sum())
         .Events(events => events.Error("error_handler"))
         .Group(group => group.Add(a => a.EmpleadoNombre))
-        .Read(read => read.Action("GetBonificacionesMesPeriodo", "Bonificacion").Data("Parametros"))
-        .Update(update => update.Action("Guardar", "Bonificacion").Type(HttpVerbs.Post).Data("Parametros"))
-        .Create(create => create.Action("Guardar", "Bonificacion").Type(HttpVerbs.Post).Data("Parametros"))
+        .Read(read => read.Action("GetBonificacionesMesPeriodo", "Bonificacion",Model))
+        .Update(update => update.Action("Guardar", "Bonificacion", Model).Type(HttpVerbs.Post))
+        .Create(create => create.Action("Guardar", "Bonificacion", Model).Type(HttpVerbs.Post))
         
         ).Events(e => e.DataBound("dataBound").Save("RefrescarGrid").CellClose("Calcular"))
         .Resizable(resize => resize.Columns(true))
@@ -230,8 +248,8 @@
     }
     function Parametros(data) {
         return{
-        Periodo: @periodo,
-            Mes: @mes
+        Periodo: @Model.PeriodoId,
+            Mes: @Model.Mes
 
         }
     }

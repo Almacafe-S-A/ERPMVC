@@ -57,9 +57,12 @@ namespace ERPMVC.Models
         public int Anio { get; set; }
         public string QuincenaNombre { get; set; }
         public string EstadoNombre { get; set; }
-        public long? PlanillaId { get; set; }
-        [ForeignKey("PlanillaId")]
-        public Planilla Planilla { get; set; }
+
+        public long? PlanillaDetalleId { get; set; }
+        [ForeignKey("PlanillaDetalleId")]
+
+        public PlanillaDetalle PlanillaDetalle { get; set; }
+
 
 
 

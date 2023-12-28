@@ -32,7 +32,11 @@ namespace ERPMVC.Controllers
         //[Authorize(Policy = "RRHH.Bonos y Deducciones.Bonificaciones")]
         public IActionResult Index()
         {
-            return View();
+            Bonificacion bonificacion= new Bonificacion();
+            bonificacion.Periodo = Utils.Periodo;
+            bonificacion.PeriodoId = Utils.PeriodoActualId;
+            bonificacion.Mes = DateTime.Now.Month;
+            return View(bonificacion);
         }
 
         [HttpPost]
@@ -53,7 +57,7 @@ namespace ERPMVC.Controllers
             }
         }
 
-        public async Task<DataSourceResult> GetBonificacionesMesPeriodo([DataSourceRequest] DataSourceRequest request, int Periodo, int Mes)
+        public async Task<DataSourceResult> GetBonificacionesMesPeriodo([DataSourceRequest] DataSourceRequest request, Bonificacion bonificacion)
         {
             List<Bonificacion> bonificaciones = new List<Bonificacion>();
             try
@@ -61,7 +65,7 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + $"api/Bonificacion/GetBonificacionesMesPeriodo/{Periodo}/{Mes}");
+                var result = await _client.GetAsync(baseadress + $"api/Bonificacion/GetBonificacionesMesPeriodo/{bonificacion.PeriodoId}/{bonificacion.Mes}");
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
@@ -107,10 +111,43 @@ namespace ERPMVC.Controllers
             }
         }
 
-        public async Task<ActionResult> Guardar(Bonificacion registro, int Periodo, int Mes)
+
+        public async Task<ActionResult> GetPorEmpleadoPlanilla([DataSourceRequest] DataSourceRequest request,int empleadoId, int mes, int periodoId, int planilladetalleId)
+        //[DataSourceRequest] DataSourceRequest request, long empleadoId)
         {
             try
             {
+                var respuesta = await Utils.HttpGetAsync(HttpContext.Session.GetString("token"),
+                    config.Value.urlbase + $"api/Bonificacion/GetEmpleadoPlanilla/{empleadoId}/{mes}/{periodoId}/{planilladetalleId}");
+                if (respuesta.IsSuccessStatusCode)
+                {
+                    var contenido = await respuesta.Content.ReadAsStringAsync();
+                    var resultado = JsonConvert.DeserializeObject<List<Bonificacion>>(contenido);
+                    if (resultado.Count == 0)
+                    {
+                        return Ok();
+                    }
+
+                    return Ok(resultado.ToDataSourceResult(request));
+
+                }
+
+                return BadRequest();
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Error al cargar deducciones del empleado");
+                return BadRequest();
+            }
+        }
+
+        public async Task<ActionResult> Guardar(Bonificacion registro,
+            [FromQuery(Name = "Mes")] int mes, [FromQuery(Name = "PeriodoId")] int PeriodoId)
+        {
+            try
+            {
+                registro.PeriodoId = PeriodoId;
+                registro.Mes = mes; 
                 if (registro.Id == 0)
                 {
                     registro.UsuarioCreacion = HttpContext.Session.GetString("user");
@@ -146,7 +183,7 @@ namespace ERPMVC.Controllers
                 {
                     registro.NombreQuincena = "Ambas";
                 }
-                registro.FechaBono = new DateTime(Periodo, Mes, 1);
+                //registro.FechaBono = new DateTime(Periodo, Mes, 1);
                 //registro.EmpleadoId = registro.Empleado.IdEmpleado;
                 registro.TipoId = registro.Tipo.Id;
                
