@@ -146,14 +146,14 @@ namespace ERPMVC.Controllers
         {
             try
             {
-                registro.PeriodoId = PeriodoId;
-                registro.Mes = mes; 
                 if (registro.Id == 0)
                 {
                     registro.UsuarioCreacion = HttpContext.Session.GetString("user");
                     registro.UsuarioModificacion = registro.UsuarioCreacion;
                     registro.FechaCreacion = DateTime.Now;
                     registro.FechaModificacion = registro.FechaCreacion;
+                    registro.PeriodoId = PeriodoId;
+                    registro.Mes = mes; 
                 }
                 else
                 {
@@ -170,23 +170,13 @@ namespace ERPMVC.Controllers
                 if (registro.Tipo.Id == 0)
                     throw new Exception("Debe seleccionar un tipo de bonificación");
 
-               
-                if (registro.Quincena == 1)
+
+                if (registro.Quincena == 0)
                 {
-                    registro.NombreQuincena = "Primera";
+                    throw new Exception("Debe seleccionar una quincena");
+
                 }
-                if (registro.Quincena == 2)
-                {
-                    registro.NombreQuincena = "Segunda";
-                }
-                if (registro.Quincena == 3)
-                {
-                    registro.NombreQuincena = "Ambas";
-                }
-                //registro.FechaBono = new DateTime(Periodo, Mes, 1);
-                //registro.EmpleadoId = registro.Empleado.IdEmpleado;
                 registro.TipoId = registro.Tipo.Id;
-               
                 registro.Monto = registro.Cantidad * registro.Tipo.Valor;
                 //registro.EstadoId = registro.Estado.IdEstado;
                 //registro.EmpleadoNombre = registro.Empleado.NombreEmpleado;
