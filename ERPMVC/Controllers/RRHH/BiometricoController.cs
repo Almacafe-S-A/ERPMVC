@@ -181,7 +181,7 @@ namespace ERPMVC.Controllers
 
                     }
 
-                    var fechaHora = new DateTime(fecha.Year, fecha.Month, fecha.Day, fecha.Hour, fecha.Minute, 0);
+                    var fechaHora = new DateTime(fecha.Year, fecha.Month, fecha.Day, fecha.Hour, fecha.Minute, fecha.Second);
 
                     DetalleBiometrico detalle = new DetalleBiometrico()
                                                 {

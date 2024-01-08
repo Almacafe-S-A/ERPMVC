@@ -14,7 +14,11 @@ namespace ERPMVC.Models
         public long Id { get; set; }
 
         [Required]
-        public long IdBiometrico { get; set; }
+        public long DetalleBiometricoId { get; set; }
+        [ForeignKey("DetalleBiometricoId")]
+        public DetalleBiometrico DetalleBiometrico { get; set; }
+
+
 
         [Required]
         public long IdEmpleado { get; set; }
@@ -25,21 +29,24 @@ namespace ERPMVC.Models
         [Required]
         public int Minutos { get; set; }
         public int HoraAlumerzo { get; set; }
+
         public string Observaciones { get; set; }
+
+        public DateTime? Fecha { get; set; }
         public string HoraEntrada { get; set; }
         public string HoraSalida { get; set; }
 
-        public Biometrico Encabezado { get; set; }
+
 
         [ForeignKey("IdEmpleado")]
         public Employees Empleado { get; set; }
 
         [Required]
         public long IdEstado { get; set; }
+        public string Estados { get; set; }
 
         [ForeignKey("IdEstado")]
         public Estados Estado { get; set; }
-        public string Estados { get; set; }
 
         public double HorasExtras { get; set; }
         [DisplayFormat(DataFormatString = "{0:0.00}")]
