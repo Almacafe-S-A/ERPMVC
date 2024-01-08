@@ -63,8 +63,10 @@ namespace ERPMVC.Helpers
                          "d/M/yyyy H:mm", "d/M/yyyy H:mm",
                          "dd/MM/yyyy HH:mm", "dd/M/yyyy HH:mm",
                          "d/MM/yyyy HH:mm:ss.ffffff" };
+               // string[] formatos = {"d/M/yyyy H:mm:ss" };
                 string fecha = celda.StringCellValue;
                 //string formato = celda.CellStyle.GetDataFormatString();
+                //return DateTime.Parse(fecha);
                 return DateTime.ParseExact(fecha, formatos, null);
             }
 
