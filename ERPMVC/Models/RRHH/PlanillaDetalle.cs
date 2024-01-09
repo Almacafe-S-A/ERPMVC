@@ -28,15 +28,19 @@ namespace ERPMVC.Models
 
         public double MontoQuincenal { get; set; }
 
+        public decimal SueldoDiario { get; set; }
+
         public double HorasExtras { get; set; }
 
         public double Otros { get; set; }
 
         public double TotalIngreso { get; set; }
 
-        //public double IHSS { get; set; }
+        public double IHSS { get; set; }
 
-        //public double RAP { get; set; }
+        public double RAP { get; set; }
+
+        public double ISR { get; set; }
 
         //public double Prestamo { get; set; }
 
