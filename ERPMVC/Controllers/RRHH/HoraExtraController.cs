@@ -57,35 +57,10 @@ namespace ERPMVC.Controllers
                     valorrespuesta = await respuesta.Content.ReadAsStringAsync();
                     horasExtra = JsonConvert.DeserializeObject<List<HoraExtra>>(valorrespuesta);
                     horasExtra = horasExtra.OrderByDescending(x => x.Id).ToList();
-
-                    // Calcular y asignar las horas extras correctamente
-                    foreach (var horaExtra in horasExtra)
+                    foreach (var item in horasExtra)
                     {
-                        double horasExtras = horaExtra.Horas + (horaExtra.Minutos / 60.0);
-                                horasExtras = Math.Round(horasExtras, 2, MidpointRounding.AwayFromZero);
+                        item.HorasExtras += item.HoraAlumerzo;
 
-                        TimeSpan totalhorasextras = new TimeSpan(horaExtra.Horas+ horaExtra.HoraAlumerzo, horaExtra.Minutos, 0);
-
-                        
-                        horaExtra.HorasExtras = Math.Round(totalhorasextras.TotalHours, 2, MidpointRounding.AwayFromZero)  ;
-
-                        if (horaExtra.HoraEntrada == null || horaExtra.HoraSalida == null)
-                        {
-                            continue;
-                        }
-                        // Convertir las cadenas de tiempo a objetos DateTime
-                        TimeSpan horaEntrada = TimeSpan.Parse(horaExtra.HoraEntrada);
-                        TimeSpan horaSalida = TimeSpan.Parse(horaExtra.HoraSalida);
-                        //if (horaSalida < horaEntrada)
-                        //{
-                        //    // Si la hora de salida es menor, significa que el empleado ha salido al día siguiente
-                        //    horaSalida = horaSalida.AddDays(1);
-                        //}
-                        // Calcular la diferencia entre las horas
-                        TimeSpan diferenciaHoras = horaSalida - horaEntrada;
-
-                        // La diferencia estará representada como un TimeSpan, puedes obtener los valores específicos si lo necesitas
-                        horaExtra.HorasExtrasBiometrico = diferenciaHoras.TotalHours;
                     }
                 }
             }
