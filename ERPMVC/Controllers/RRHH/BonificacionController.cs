@@ -163,9 +163,6 @@ namespace ERPMVC.Controllers
                 //if (registro.Empleado.IdEmpleado == 0)
                 //    throw new Exception("Debe seleccionar a un empleado.");
 
-                if (registro.Cantidad <= 0)
-                    throw new Exception("Cantidad de bonificación es invalido.");
-
                 if (registro.Tipo.Id == 0)
                     throw new Exception("Debe seleccionar un tipo de bonificación");
 
