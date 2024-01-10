@@ -46,6 +46,8 @@ namespace ERPMVC.Models
 
         public double TotalPlanilla { get; set; }
 
+        public bool pagahorasextra { get; set; }
+
         public long EstadoId { get; set; }
 
         [ForeignKey("EstadoId")]

@@ -100,10 +100,10 @@ Html.Kendo().Grid<ERPMVC.Models.DeduccionEmpleado>()
         .Width(180);*@
             columns.Bound(p => p.TipoDeduccionId).Title("Tipo")
         .ClientTemplate("#=TipoDeduccionNombre#").Width(180).EditorTemplateName("TipoDeduccion");
-            columns.Bound(p => p.Cantidad).Visible(false).Title("Cantidad").Width(120).EditorTemplateName("NumericTextBox")
+           @* columns.Bound(p => p.Cantidad).Title("Cantidad").Width(120).EditorTemplateName("NumericTextBox")
             .HtmlAttributes(new Dictionary<string, object> { ["style"] = "text-align: right;" });
-            columns.Bound(p => p.Valor).Visible(false).Title("Valor").Width(120).EditorTemplateName("NumericTextBox")
-            .HtmlAttributes(new Dictionary<string, object> { ["style"] = "text-align: right;" });
+            columns.Bound(p => p.Valor).Title("Valor").Width(120).EditorTemplateName("NumericTextBox")
+            .HtmlAttributes(new Dictionary<string, object> { ["style"] = "text-align: right;" });*@
             columns.Bound(p => p.Monto).Title("Monto").Width(100).EditorTemplateName("NumericTextBox")
             .ClientGroupHeaderColumnTemplate("#=FormatLocal(sum)#")
             //.ClientGroupFooterTemplate("Total: #=FormatLocal(sum)#")
@@ -197,14 +197,14 @@ Html.Kendo().Grid<ERPMVC.Models.DeduccionEmpleado>()
             model.Id(p => p.Id);
             model.Field(p => p.Id).Editable(false);
             model.Field(p => p.EmpleadoId).Editable(true);
-            model.Field(p => p.Monto).Editable(false);
+            model.Field(p => p.Monto).Editable(true);
             model.Field(p => p.EstadoId).DefaultValue(0);
         }).Aggregates(a => a.Add(c => c.Monto).Sum())
         .Events(events => events.Error("error_handler"))
         .Group(group => group.Add(a => a.NombreEmpleado))
-        .Read(read => read.Action("GetEmpleadosDeducciones", "DeduccionEmpleado", Model))
-        .Update(update => update.Action("GuardarDeduccionEmpleado", "DeduccionEmpleado", Model).Type(HttpVerbs.Post))
-        .Create(create => create.Action("GuardarDeduccionEmpleado", "DeduccionEmpleado", Model).Type(HttpVerbs.Post))
+        .Read(read => read.Action("GetEmpleadosDeducciones", "DeduccionEmpleado", Model).Data("Parametros"))
+        .Update(update => update.Action("GuardarDeduccionEmpleado", "DeduccionEmpleado", Model).Type(HttpVerbs.Post).Data("Parametros"))
+        .Create(create => create.Action("GuardarDeduccionEmpleado", "DeduccionEmpleado", Model).Type(HttpVerbs.Post).Data("Parametros"))
 
         ).Events(e => e.DataBound("dataBound").CellClose("Calcular").Save("onsave"))
         .Resizable(resize => resize.Columns(true))
@@ -214,6 +214,14 @@ Html.Kendo().Grid<ERPMVC.Models.DeduccionEmpleado>()
 <script>
     function onsave(e) {
         $("#grdConfiguracion").data("kendoGrid").refresh();
+    }
+
+    function Parametros(data) {
+        return {
+            IdPeriodo: $("#PeriodoId").val(),
+            NoMes: $("#Mes").val()
+
+        }
     }
     
 
@@ -358,7 +366,7 @@ Html.Kendo().Grid<ERPMVC.Models.DeduccionEmpleado>()
 
 
         $(".k-grouping-row").each(function (e) {
-            grid.collapseGroup(this);
+            //grid.collapseGroup(this);
         });
     }
 

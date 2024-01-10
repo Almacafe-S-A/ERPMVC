@@ -57,7 +57,7 @@ namespace ERPMVC.Controllers
             }
         }
 
-        public async Task<DataSourceResult> GetBonificacionesMesPeriodo([DataSourceRequest] DataSourceRequest request, Bonificacion bonificacion)
+        public async Task<DataSourceResult> GetBonificacionesMesPeriodo([DataSourceRequest] DataSourceRequest request, BonificacionDTO bonificacion)
         {
             List<Bonificacion> bonificaciones = new List<Bonificacion>();
             try
@@ -65,7 +65,7 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + $"api/Bonificacion/GetBonificacionesMesPeriodo/{bonificacion.PeriodoId}/{bonificacion.Mes}");
+                var result = await _client.GetAsync(baseadress + $"api/Bonificacion/GetBonificacionesMesPeriodo/{bonificacion.IdPeriodo}/{bonificacion.NoMes}");
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
@@ -141,19 +141,18 @@ namespace ERPMVC.Controllers
             }
         }
 
-        public async Task<ActionResult> Guardar(Bonificacion registro,
-            [FromQuery(Name = "Mes")] int mes, [FromQuery(Name = "PeriodoId")] int PeriodoId)
+        public async Task<ActionResult> Guardar(Bonificacion registro,  int NoMes,  int IdPeriodo)
         {
             try
             {
+                registro.PeriodoId = IdPeriodo;
+                registro.Mes = NoMes; 
                 if (registro.Id == 0)
                 {
                     registro.UsuarioCreacion = HttpContext.Session.GetString("user");
                     registro.UsuarioModificacion = registro.UsuarioCreacion;
                     registro.FechaCreacion = DateTime.Now;
                     registro.FechaModificacion = registro.FechaCreacion;
-                    registro.PeriodoId = PeriodoId;
-                    registro.Mes = mes; 
                 }
                 else
                 {
@@ -164,19 +163,26 @@ namespace ERPMVC.Controllers
                 //if (registro.Empleado.IdEmpleado == 0)
                 //    throw new Exception("Debe seleccionar a un empleado.");
 
-                if (registro.Cantidad <= 0)
-                    throw new Exception("Cantidad de bonificación es invalido.");
-
                 if (registro.Tipo.Id == 0)
                     throw new Exception("Debe seleccionar un tipo de bonificación");
 
-
-                if (registro.Quincena == 0)
+               
+                if (registro.Quincena == 1)
                 {
-                    throw new Exception("Debe seleccionar una quincena");
-
+                    registro.NombreQuincena = "Primera";
                 }
+                if (registro.Quincena == 2)
+                {
+                    registro.NombreQuincena = "Segunda";
+                }
+                if (registro.Quincena == 3)
+                {
+                    registro.NombreQuincena = "Ambas";
+                }
+                //registro.FechaBono = new DateTime(Periodo, Mes, 1);
+                //registro.EmpleadoId = registro.Empleado.IdEmpleado;
                 registro.TipoId = registro.Tipo.Id;
+               
                 registro.Monto = registro.Cantidad * registro.Tipo.Valor;
                 //registro.EstadoId = registro.Estado.IdEstado;
                 //registro.EmpleadoNombre = registro.Empleado.NombreEmpleado;

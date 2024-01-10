@@ -77,7 +77,7 @@ namespace ERPMVC.Controllers
         public async Task<ActionResult<List<DeduccionesEmpleadoDTO>>> GetEmpleadosDeducciones([DataSourceRequest] DataSourceRequest request,DeduccionesEmpleadoDTO deduccionesEmpleadoDTO)
             {
             var respuesta = await Utils.HttpGetAsync(HttpContext.Session.GetString("token"),
-                config.Value.urlbase + $"api/DeduccionEmpleado/GetDeduccionesEmpleados/{deduccionesEmpleadoDTO.PeriodoId}/{deduccionesEmpleadoDTO.Mes}");
+                config.Value.urlbase + $"api/DeduccionEmpleado/GetDeduccionesEmpleados/{deduccionesEmpleadoDTO.IdPeriodo}/{deduccionesEmpleadoDTO.NoMes}");
             if (respuesta.IsSuccessStatusCode)
             {
                 var contenido = await respuesta.Content.ReadAsStringAsync();
@@ -171,14 +171,14 @@ namespace ERPMVC.Controllers
             }
         }
 
-        public async Task<ActionResult> GuardarDeduccionEmpleado([DataSourceRequest] DataSourceRequest request, DeduccionEmpleado deduccionGuardar,
+        public async Task<ActionResult> GuardarDeduccionEmpleado([DataSourceRequest] DataSourceRequest request, DeduccionesEmpleadoDTO deduccionGuardar,
             [FromQuery(Name ="Mes")] int mes, [FromQuery(Name = "PeriodoId")] int PeriodoId)
         {
             try
             {
                 
-                deduccionGuardar.PeriodoId= PeriodoId;
-                deduccionGuardar.Mes = mes;
+                deduccionGuardar.PeriodoId= deduccionGuardar.IdPeriodo;
+                deduccionGuardar.Mes = deduccionGuardar.NoMes;
                     if (deduccionGuardar.Id == 0)
                     {
                         deduccionGuardar.UsuarioCreacion = HttpContext.Session.GetString("user");

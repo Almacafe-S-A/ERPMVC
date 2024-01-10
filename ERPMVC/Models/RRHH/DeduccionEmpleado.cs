@@ -80,6 +80,11 @@ namespace ERPMVC.Models
         public int CantidadDeducciones { get; set; }
         public float TotalDeducciones { get; set; }
         public double SalarioEmpleado { get; set; }
+        public int IdPeriodo { get; set; }
+
+        public int NoMes { get; set; }
 
     }
+
+
 }
