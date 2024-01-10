@@ -80,13 +80,15 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + $"api/Planilla/GetDetalleById/{planilla.Id}/{planilla.TipoPlanillaId??0}/{planilla.Mes}/{planilla.PeriodoId}/{planilla.Quincena}");
+                var result = await _client.GetAsync(baseadress 
+                    + $"api/Planilla/GetDetalleById/{planilla.Id}/{planilla.TipoPlanillaId??0}/{planilla.Mes}/{planilla.PeriodoId}/{planilla.Quincena}/{planilla.pagahorasextra}");
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     planillas = JsonConvert.DeserializeObject<List<PlanillaDetalle>>(valorrespuesta);
                 }
+                
 
 
             }
@@ -155,9 +157,11 @@ namespace ERPMVC.Controllers
 
                 if (planilla == null)
                 {
-                    planilla = new Planilla {
-                        FechaPlanilla = DateTime.Now,   
-                        
+                    planilla = new Planilla
+                    {
+                        PeriodoId = Utils.PeriodoActualId,
+                        FechaPlanilla= DateTime.Now,
+                        FechaPago = DateTime.Now,
                     };
                 }
             }

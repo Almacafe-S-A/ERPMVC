@@ -57,7 +57,7 @@ namespace ERPMVC.Controllers
             }
         }
 
-        public async Task<DataSourceResult> GetBonificacionesMesPeriodo([DataSourceRequest] DataSourceRequest request, Bonificacion bonificacion)
+        public async Task<DataSourceResult> GetBonificacionesMesPeriodo([DataSourceRequest] DataSourceRequest request, BonificacionDTO bonificacion)
         {
             List<Bonificacion> bonificaciones = new List<Bonificacion>();
             try
@@ -65,7 +65,7 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + $"api/Bonificacion/GetBonificacionesMesPeriodo/{bonificacion.PeriodoId}/{bonificacion.Mes}");
+                var result = await _client.GetAsync(baseadress + $"api/Bonificacion/GetBonificacionesMesPeriodo/{bonificacion.IdPeriodo}/{bonificacion.NoMes}");
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
@@ -141,13 +141,12 @@ namespace ERPMVC.Controllers
             }
         }
 
-        public async Task<ActionResult> Guardar(Bonificacion registro,
-            [FromQuery(Name = "Mes")] int mes, [FromQuery(Name = "PeriodoId")] int PeriodoId)
+        public async Task<ActionResult> Guardar(Bonificacion registro,  int NoMes,  int IdPeriodo)
         {
             try
             {
-                registro.PeriodoId = PeriodoId;
-                registro.Mes = mes; 
+                registro.PeriodoId = IdPeriodo;
+                registro.Mes = NoMes; 
                 if (registro.Id == 0)
                 {
                     registro.UsuarioCreacion = HttpContext.Session.GetString("user");

@@ -64,4 +64,12 @@ namespace ERPMVC.Models
         public long Quincena { get; set; }
 
     }
+
+    public class BonificacionDTO:Bonificacion {
+        public int IdPeriodo { get; set; }
+
+        public int NoMes { get; set; }
+
+
+    }
 }

@@ -17,12 +17,15 @@
             var mes = $("#Mes").val();
         var periodoId = $("#PeriodoId").val();
         var quincena = $("#Quincena").val();
+        var pagahorasextra = $("#pagahorasextra").data("kendoSwitch");
+        var pagahorasextracheck = pagahorasextra.check();
             return {
                 Id: PlanillaId,
             TipoPlanillaId: TipoPlanillaId,
                 Mes: mes,
                 PeriodoId: periodoId,
                 Quincena: quincena,
+                pagahorasextra: pagahorasextracheck,
 
             };
     }
@@ -72,13 +75,13 @@
                 data.forEach(r => total += r.MontoQuincenal);
                 break;
             case 3: ////Calcular el total CIF LPS
-                data.forEach(r => total += r.Otros);
+                data.forEach(r => total += r.TotalBonificaciones);
                 break;
             case 4://///Calcular el total de Valor de derechos importacion
                 data.forEach(r => total += r.TotalDeducciones);
                 break;
             case 5:
-                data.forEach(r => total += r.TotalBonificaciones);
+                data.forEach(r => total += r.TotalIngreso);
                 break;
             case 6:
                 data.forEach(r => total += r.MontoNeto);
@@ -94,6 +97,10 @@
                 break;
             case 10:
                 data.forEach(r => total += r.RAP);
+                break;
+
+            case 11:
+                data.forEach(r => total += r.Otros);
                 break;
 
 
@@ -214,6 +221,10 @@ Html.Kendo().Grid<ERPMVC.Models.PlanillaDetalle>()
                                                                       .ClientFooterTemplate("<div style='text-align: right'>#= totalColumnas(10,1)#</div>").Format("{0:c2}")
                                                                         .HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" }); ;
 
+                                                                      columns.Bound(p => p.Otros).Title("Otras Deducciones").Width(180)
+                                                               .ClientFooterTemplate("<div style='text-align: right'>#= totalColumnas(11,1)#</div>").Format("{0:c2}")
+                                                                 .HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" });
+
                                                                       columns.Bound(p => p.TotalDeducciones).Title("Total Deducciones").Width(180)
                                                                       .ClientFooterTemplate("<div style='text-align: right'>#= totalColumnas(4,1)#</div>").Format("{0:c2}")
                                                                         .HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" }); ;
@@ -299,6 +310,7 @@ Html.Kendo().Grid<ERPMVC.Models.PlanillaDetalle>()
                                                                         model.Field(p => p.ISR).Editable(true);
                                                                         model.Field(p => p.RAP).Editable(true);
                                                                         model.Field(p => p.IHSS).Editable(true);
+                                                                        model.Field(p => p.Otros).Editable(false);
 
                                                                     })
                                                                     .Events(events =>
@@ -319,15 +331,17 @@ Html.Kendo().Grid<ERPMVC.Models.PlanillaDetalle>()
                 .Animation(animation => animation.Open(open => open.Fade(FadeDirection.In)))
                 .Items(items =>
                 {
-                    items.Add().Text("Deducciones").Content(@<text>
+                    items.Add().Text("Otras Deducciones").Content(@<text>
                         @(Html.Kendo().Grid<ERPMVC.Models.DeduccionesEmpleadoDTO>()
                         .Name("gridDeduccion_#=EmpleadoId#") // template expression, to be evaluated in the master context
                         .Columns(columns =>
                         {
-                                    columns.Bound(o => o.TipoDeduccionNombre).Title("Descripción").Width(100);
-                                    columns.Bound(o => o.Cantidad).Title("Cantidad").Width(100).Format("{0:n2}")
+                                    columns.Bound(o => o.Fecha).Width(100).Title("Fecha").Format("{0:dd/MM/yyyy}")
+                                            .HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" });
+                                    columns.Bound(o => o.TipoDeduccionNombre).Title("Descripción").Width(150);
+                                    columns.Bound(o => o.Cantidad).Title("Cantidad").Width(100).Format("{0:n2}").Visible(false)
                                     .HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" }); ;
-                                    columns.Bound(o => o.Valor).Width(150).Title("Valor").Format("{0:c2}")
+                                    columns.Bound(o => o.Valor).Width(150).Title("Valor").Format("{0:c2}").Visible(false)
                                     .HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" }); ;
                                     columns.Bound(o => o.Monto).Width(150).Title("Total").Format("{0:c2}")
                                     .HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" }); ;
@@ -344,20 +358,23 @@ Html.Kendo().Grid<ERPMVC.Models.PlanillaDetalle>()
                         .ToClientTemplate())
                         </text>
                     );
-                    items.Add().Text("Bonificaciones").Content(
+                    items.Add().Text("Otros Ingresos").Content(
                             @<text>
                                 @(Html.Kendo().Grid<ERPMVC.Models.Bonificacion>()
                             .Name("gridBonificacion_#=EmpleadoId#") // template expression, to be evaluated in the master context
                             .Columns(columns =>
                             {
-                                    columns.Bound(o => o.TipoBonificacionNombre).Title("Descripción").Width(100);
-                                        columns.Bound(o => o.Cantidad).Title("Cantidad").Width(100).Format("{0:n2}")
+                                        columns.Bound(o => o.FechaBono).Width(100).Title("Fecha").Format("{0:dd/MM/yyyy}")
+                                                    .HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" });
+                                        columns.Bound(o => o.TipoBonificacionNombre).Title("Descripción").Width(150);
+                                        columns.Bound(o => o.Cantidad).Title("Cantidad").Width(100).Format("{0:n2}").Visible(false)
                                         .HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" }); ;
-                                        columns.Bound(o => o.Valor).Width(150).Title("Valor").Format("{0:c2}")
+                                        columns.Bound(o => o.Valor).Width(150).Title("Valor").Format("{0:c2}").Visible(false)
                                         .HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" }); ;
-                                        columns.Bound(o => o.Monto).Width(150).Title("Total").Format("{0:c2}")
+                                        columns.Bound(o => o.Monto).Width(150).Title("Total").Format("{0:C2}")
                                         //.ClientFooterTemplate("#=sum#")
                                         .HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" }); ;
+                                        
 
                                 })
                             .DataSource(dataSource => dataSource
