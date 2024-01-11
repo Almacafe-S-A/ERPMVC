@@ -141,10 +141,11 @@ namespace ERPMVC.Controllers
             }
         }
 
-        public async Task<ActionResult> Guardar(Bonificacion registro,  int NoMes,  int IdPeriodo)
+        public async Task<ActionResult> Guardar(Bonificacion registro,  int NoMes,  int IdPeriodo, string FechaBono)
         {
             try
             {
+                registro.FechaBono = Utils.GetFecha(FechaBono);
                 registro.PeriodoId = IdPeriodo;
                 registro.Mes = NoMes; 
                 if (registro.Id == 0)

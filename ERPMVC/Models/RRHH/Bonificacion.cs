@@ -20,7 +20,11 @@ namespace ERPMVC.Models
         public double Monto { get; set; }
         public double Cantidad { get; set; }
         public double Valor { get; set; }
+        
         public DateTime FechaBono { get; set; }
+
+        public string FechaBonoString { get; set; }
+
         [UIHint("EstadosBonificacion")]
         [Required]
         public long EstadoId { get; set; }

@@ -161,5 +161,60 @@ namespace ERPMVC.Helpers
             }
         }
 
+        public static DateTime GetFecha(string pFecha)
+        {
+            DateTime fecha = new DateTime();
+            if (pFecha != null && pFecha.Length < 23)
+            {
+                int x = 0;
+                int dia = 1;
+                int mes = 1;
+                int anio = 1;
+                string digito = "";
+                foreach (char c in pFecha)
+                {
+                    if (c == '/' || c == ' ')
+                    {
+                        switch (x)
+                        {
+                            case 0:
+                                mes = Convert.ToInt32(digito);
+                                x++;
+                                digito = "";
+                                break;
+                            case 1:
+                                dia = Convert.ToInt32(digito);
+                                digito = "";
+                                x++;
+                                break;
+                            case 2:
+                                anio = Convert.ToInt32(digito);
+                                digito = "";
+                                x++;
+                                break;
+                            default:
+                                break;
+                        }
+                        if (c == ' ')
+                        {
+                            break;
+                        }
+
+                    }
+                    else
+                    {
+
+                        digito = digito + c;
+                    }
+                }
+                 fecha = new DateTime(anio, mes, dia);
+
+
+                return fecha;
+            }
+
+            fecha = DateTime.Parse(pFecha);
+            return fecha;
+        }
     }
 }

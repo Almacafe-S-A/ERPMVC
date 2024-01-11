@@ -79,7 +79,7 @@
 
 
 @(Html.Kendo().Grid<ERPMVC.Models.Bonificacion>()
-        .Name("grdConfiguracion").NoRecords()
+        .Name("grdConfiguracion").NoRecords(n => n.Template("No se encontraron registros"))
         .Columns(columns =>
         {
             {
@@ -96,27 +96,24 @@
 
             columns.Bound(p => p.EmpleadoId).Title("Empleado").Width(200)
             .ClientTemplate("#= EmpleadoNombre #");
-            columns.Bound(p => p.FechaBono).Title("Fecha").Width(110)
-            .ClientTemplate("#= kendo.toString(FechaBono, 'yyyy-MM-dd') #");
+            columns.Bound(p => p.FechaBono).Title("Fecha").Width(110).EditorTemplateName("Date").Format("{0:dd/MM/yyyy}");
             @*columns.Bound(p => p.Empleado).Title("Empleado")
         .ClientTemplate("#=typeof Empleado === 'undefined'||Empleado===null?EmpleadoNombre:Empleado.NombreEmpleado#")
 
         .Width(180);*@
             columns.Bound(p => p.Tipo).Title("Tipo")
         .ClientTemplate("#=typeof Tipo === 'undefined'||Tipo===null?null:Tipo.Nombre#").Width(180);
-          @*  columns.Bound(p => p.Cantidad).Title("Cantidad").Width(120).EditorTemplateName("NumericTextBox")
+             columns.Bound(p => p.Cantidad).Title("Cantidad").Width(120).EditorTemplateName("NumericTextBox")
             .HtmlAttributes(new Dictionary<string, object> { ["style"] = "text-align: right;" });
-            columns.Bound(p => p.Valor).Title("Valor Bono").Width(120).EditorTemplateName("NumericTextBox")
-            .HtmlAttributes(new Dictionary<string, object> { ["style"] = "text-align: right;" });*@
-            columns.Bound(p => p.Monto).Title("Monto").Width(100).EditorTemplateName("NumericTextBox")
+            columns.Bound(p => p.Valor).Title("Factor").Width(120).EditorTemplateName("NumericTextBox")
+            .HtmlAttributes(new Dictionary<string, object> { ["style"] = "text-align: right;" });
+            columns.Bound(p => p.Monto).Title("Total a Pagar").Width(100).EditorTemplateName("NumericTextBox")
             .ClientGroupHeaderColumnTemplate("#=FormatLocal(sum)#")
-            //.ClientGroupFooterTemplate("Total: #=FormatLocal(sum)#")
-            //.ClientFooterTemplate("Total: #=FormatLocal(sum)#")
             .HtmlAttributes(new Dictionary<string, object> { ["style"] = "text-align: right;" })
             .FooterHtmlAttributes(new Dictionary<string, object> { ["style"] = "text-align: right;" }).Format("{0:c2}");
 
             columns.Bound(p => p.Quincena).Title("Quincena").Width(110).ClientTemplate("#= NombreQuincena  #");
-            columns.Bound(p => p.EstadoId).Title("Estado").Width(110).ClientTemplate("#=EstadoNombre#");
+            columns.Bound(p => p.EstadoId).Title("Estado").Width(110).EditorTemplateName("EstadosBonificacion").ClientTemplate("#= EstadoNombre#");
         })
         .Filterable(f => f
         .Operators(o => o
@@ -193,17 +190,17 @@
         .DataSource(dataSource =>
         dataSource
         .WebApi()
-
-        .ServerOperation(true)
+        .ServerOperation(false)
         .Model(model =>
         {
             model.Id(p => p.Id);
             model.Field(p => p.Id).Editable(false);
             model.Field(p => p.EmpleadoId).Editable(true);
-            model.Field(p => p.Monto).Editable(true);
-            model.Field(p => p.EstadoId).DefaultValue(0);
+            model.Field(p => p.Monto).Editable(false);
+            model.Field(p => p.EstadoId).Editable(false).DefaultValue(6);
+            model.Field(p => p.Quincena).DefaultValue(1);
         }).Aggregates(a => a.Add(c => c.Monto).Sum())
-        .Events(events => events.Error("error_handler"))
+        .Events(events => events.Error("error_handler").Sync("RefrescarGrid").RequestEnd("onRequestEnd"))
         .Group(group => group.Add(a => a.EmpleadoNombre))
         .Read(read => read.Action("GetBonificacionesMesPeriodo", "Bonificacion").Data("Parametros"))
         .Update(update => update.Action("Guardar", "Bonificacion").Type(HttpVerbs.Post).Data("Parametros"))
@@ -215,6 +212,8 @@
 
 
 <script>
+
+    
 
     function Calcular(e) {
         debugger;

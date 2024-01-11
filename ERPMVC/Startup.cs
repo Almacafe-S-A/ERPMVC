@@ -262,7 +262,7 @@ namespace ERPMVC
             //ci.NumberFormat.NumberGroupSeparator = ",";
             //ci.NumberFormat.CurrencySymbol = "L";
             //ci.NumberFormat. = "L";
-
+            
             // Configure the Localization middleware
             app.UseRequestLocalization(new RequestLocalizationOptions
             {
