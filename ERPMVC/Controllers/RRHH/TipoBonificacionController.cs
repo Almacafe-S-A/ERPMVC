@@ -71,7 +71,7 @@ namespace ERPMVC.Controllers
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _tipoBonificacion = JsonConvert.DeserializeObject<List<TipoBonificacion>>(valorrespuesta).Where(w => w.EstadoId == 90).ToList();
+                    _tipoBonificacion = JsonConvert.DeserializeObject<List<TipoBonificacion>>(valorrespuesta).Where(w => w.EstadoId == 1).ToList();
                 }
             }
             catch (Exception ex)
