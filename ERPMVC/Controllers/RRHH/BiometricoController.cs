@@ -134,7 +134,7 @@ namespace ERPMVC.Controllers
                       titulos.GetCell(4).StringCellValue.Equals("Dispositivos") &&
                       titulos.GetCell(5).StringCellValue.Equals("Tipo de Registro") &&
                       titulos.GetCell(6).StringCellValue.Equals("Horario") &&
-                      titulos.GetCell(7).StringCellValue.Equals("SalidaPendiente")
+                      titulos.GetCell(7).StringCellValue.Equals("Marca Asistencia")
                       )
                     )
                 {
@@ -190,7 +190,7 @@ namespace ERPMVC.Controllers
                                                     IdBiometrico = (long)IdBiometrico.Value,
                                                     Tipo = tipo,
                                                     IdHorario = IdHorario == null ? 0: (long)IdHorario,
-                                                    SalidaPendiente = salidaPendiente == null ? false: Convert.ToBoolean(salidaPendiente),
+                                                    MarcaAsistencia = salidaPendiente == null ? false: Convert.ToBoolean(salidaPendiente),
                     };
                     biometrico.Detalle.Add(detalle);
                 }
