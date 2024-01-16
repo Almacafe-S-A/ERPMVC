@@ -28,7 +28,9 @@ namespace ERPMVC.Models
         [ForeignKey("TipoDeduccionId")]
         public TipoDeduccion TipoDeduccion { get; set; }
         public DateTime Fecha { get; set; }
-        
+
+        public string FechaBonoString { get; set; }
+
         public int Mes { get; set; }
         
         public int PeriodoId { get; set; }
