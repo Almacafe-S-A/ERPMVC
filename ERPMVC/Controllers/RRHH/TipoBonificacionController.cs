@@ -103,6 +103,21 @@ namespace ERPMVC.Controllers
                 {
                     throw new Exception("El nombre es obligatorio.");
                 }
+                if(registro.CuentaContablePorCobrar != null)
+                {
+                    registro.CuentaContableIdPorCobrar = registro.CuentaContablePorCobrar.AccountId;
+                    registro.CuentaContablePorCobrarNombre = registro.CuentaContablePorCobrar.CodigoNombre;
+                    registro.CuentaContablePorCobrar = null;
+
+                }
+
+                if (registro.CuentaContableIngresos != null)
+                {
+                    registro.CuentaContableIngresosId = registro.CuentaContableIngresos.AccountId;
+                    registro.CuentaContableIngresosNombre = registro.CuentaContableIngresos.CodigoNombre;
+                    registro.CuentaContableIngresos = null;
+
+                }
                 registro.Estado = null;
                 var respuesta = await Utils.HttpPostAsync(HttpContext.Session.GetString("token"),
                     config.Value.urlbase + "api/TipoBonificacion/Guardar", registro);

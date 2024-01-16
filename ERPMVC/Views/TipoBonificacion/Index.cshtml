@@ -57,7 +57,8 @@
                             Nombre: {type:"string", editable:true},
                             Valor: { type: "number", editable: true },
                             EstadoId: { type: "number", editable: true },
-                            Estado: { defaultValue: {IdEstado:90,NombreEstado:"Activo"}, editable: true }
+                            Estado: { defaultValue: {IdEstado:90,NombreEstado:"Activo"}, editable: true },
+                            EnPlanilla: { type: "boolean" ,editable: true },
                         }
                     }
                 },
@@ -81,7 +82,14 @@
                 { field: "Id", title: "Id. ", width: 80, hidden: true },
                 { field: "Nombre", title: "Nombre", width: 200 },
                 { field: "Valor", title: "Valor", width: 50, attributes: { style: "text-align: right;" } },
-                { field: "Estado", title: "Estado", width: 100, editor: editorEstado, template: "#= Estado.NombreEstado #"}
+                { field: "EnPlanilla", title: "EnPlanilla", width: 50, attributes: { style: "text-align: right;" }, template: "#=EnPlanilla? 'Si': 'No' #" },
+                { field: "Estado", title: "Estado", width: 100, editor: editorEstado, template: "#= Estado.NombreEstado #"},
+                { field: "CuentaContableIngresos", title: "Cuenta Contable Ingresos", width: 100, editor: editorCuenta, template: "#=CuentaContableIngresosNombre #" },
+                { field: "CuentaContablePorCobrar", title: "Cuenta Contable Egresos", width: 100, editor: editorCuenta, template: "#= CuentaContablePorCobrarNombre #" }
+
+                    
+    
+
             ],
             noRecords: {
                 template:"No hay Tipos de Bonificaciones"
@@ -91,6 +99,39 @@
             editable: "inline",
             save:Validar
         });
+
+
+        
+    
+
+    function editorCuenta(contenedor, opciones) {
+        $('<input data-bind="value:' + opciones.field + '"/>')
+            .appendTo(contenedor)
+            .kendoDropDownList({
+                index: 0,
+                autoBind: true,
+                    dataTextField: "CodigoNombre",
+                dataValueField: "AccountId",
+                dataSource: {
+                    transport: {
+                        read: {
+                            type: "GET",
+                                url: "@Url.Action("GetCuentasDiariasPatronActivos", "Accounting")?Patron=5&&Patron=6",
+                            dataType: "json",
+                            
+                        }
+                    },
+                    schema: {
+                        model: {
+                            fields: {
+                                    AccountId: { type: "number" },
+                                    CodigoNombre: { type: "string" }
+                            }
+                        }
+                    }
+                }
+            });
+        }
 
         function editorEstado(contenedor, opciones) {
             $('<input data-bind="value:' + opciones.field + '"/>')
