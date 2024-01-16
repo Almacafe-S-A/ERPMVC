@@ -32,6 +32,19 @@ namespace ERPMVC.Models
         public string NombreEstado { get; set; }
         //public bool ? EsPorcentaje { get; set; }
         public string Cantidad { get; set; }
+
+
+        public string CuentaContableIngresosNombre { get; set; }
+        public Int64? CuentaContableIngresosId { get; set; }
+        [ForeignKey("AccountId")]
+        public Accounting CuentaContableIngresos { get; set; }
+
+        public string CuentaContablePorCobrarNombre { get; set; }
+        public Int64? CuentaContableIdPorCobrar { get; set; }
+        [ForeignKey("AccountIdPorCobrar")]
+        public Accounting CuentaContablePorCobrar { get; set; }
+
+
         public DateTime FechaCreacion { get; set; }
         public DateTime FechaModificacion { get; set; }
         public string UsuarioModificacion { get; set; }

@@ -1180,6 +1180,51 @@ namespace ERPMVC.Controllers
             }
         }
 
+        [HttpGet("[action]")]
+        public async Task<List<Accounting>> GetCuentasDiariasPatronActivos([DataSourceRequest] DataSourceRequest request, [FromQuery(Name = "Patron")] string[] patrones)
+        {
+            try
+            {
+                string strpatrones = "?";
+                foreach (var patron in patrones)
+                {
+                    strpatrones += $"Patron={patron}";
+                    if (patron != patrones.Last())
+                    {
+                        strpatrones += "&&";
+                    }
+                }
+                List<Accounting> cuentas = new List<Accounting>();
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + $"api/Accounting/GetCuentasDiariasPatronArray{strpatrones}");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    cuentas = JsonConvert.DeserializeObject<List<Accounting>>(valorrespuesta).Where(w => w.IdEstado == 1).ToList();
+                    cuentas = (from c in cuentas
+                               select new Accounting
+                               {
+                                   AccountId = c.AccountId,
+                                   AccountName = c.AccountName,
+                                   AccountCode = c.AccountCode,
+                                   Description = $"{c.AccountCode} - {c.AccountName}",
+                                   Estado = c.Estado,
+                                   IdEstado = c.IdEstado,
+                               }
+                                   ).ToList();
+                }
+                return cuentas;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: {ex}");
+                throw ex;
+            }
+        }
+
 
         [HttpGet("[action]")]
         public async Task<DataSourceResult> GetCuentaContableCuentaBanco([DataSourceRequest] DataSourceRequest request,
