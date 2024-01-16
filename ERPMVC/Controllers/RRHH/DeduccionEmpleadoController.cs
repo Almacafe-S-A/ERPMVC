@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.Win32;
 using Newtonsoft.Json;
 
 namespace ERPMVC.Controllers 
@@ -171,25 +172,22 @@ namespace ERPMVC.Controllers
             }
         }
 
-        public async Task<ActionResult> GuardarDeduccionEmpleado([DataSourceRequest] DataSourceRequest request, DeduccionesEmpleadoDTO deduccionGuardar,
-            [FromQuery(Name ="Mes")] int mes, [FromQuery(Name = "PeriodoId")] int PeriodoId)
+        public async Task<ActionResult> GuardarDeduccionEmpleado([DataSourceRequest] DataSourceRequest request, 
+            DeduccionesEmpleadoDTO deduccionGuardar,
+            int NoMes,  int IdPeriodo, string Fecha)
         {
             try
             {
+                deduccionGuardar.Fecha = Utils.GetFecha(Fecha);
                 
-                deduccionGuardar.PeriodoId= deduccionGuardar.IdPeriodo;
-                deduccionGuardar.Mes = deduccionGuardar.NoMes;
                     if (deduccionGuardar.Id == 0)
                     {
+                        deduccionGuardar.PeriodoId = IdPeriodo;
+                        deduccionGuardar.Mes = NoMes;
                         deduccionGuardar.UsuarioCreacion = HttpContext.Session.GetString("user");
                         deduccionGuardar.UsuarioModificacion = deduccionGuardar.UsuarioCreacion;
                         deduccionGuardar.FechaCreacion = DateTime.Now;
                         deduccionGuardar.FechaModificacion = deduccionGuardar.FechaCreacion;
-                    }
-                    else
-                    {
-                        deduccionGuardar.UsuarioModificacion = HttpContext.Session.GetString("user");
-                        deduccionGuardar.FechaModificacion = DateTime.Now;
                     }
                     var respuesta = await Utils.HttpPostAsync(HttpContext.Session.GetString("token"),
                         config.Value.urlbase + "api/DeduccionEmpleado/Guardar", deduccionGuardar);

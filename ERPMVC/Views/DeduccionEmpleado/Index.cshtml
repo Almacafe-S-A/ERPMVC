@@ -26,9 +26,9 @@
 
                 </div>
                 <div class="col-md-2">
-                    <kendo-dropdownlist name="PeriodoId" filter="Kendo.Mvc.UI.FilterType.Contains"
+                    <kendo-dropdownlist name="IdPeriodo" id="IdPeriodo" filter="Kendo.Mvc.UI.FilterType.Contains"
                                         option-label="Seleccione el periodo"
-                                        for="PeriodoId"
+                                        
                                         datatextfield="Anio"
                                         value="@ERPMVC.Helpers.Utils.Periodo.Id"
                                         datavaluefield="Id"
@@ -48,8 +48,9 @@
                 <div class="col-md-1">
                     <label class="form-label" for="Mes">Mes:</label>
                 </div>
+                
                 <div class="col-md-2">
-                    <select asp-for="Mes"  name="Mes" class="k-dropdown-wrap k-state-default">
+                    <select name="NoMes" id="NoMes" class="k-dropdown-wrap k-state-default">
                         <option value="1">Enero</option>
                         <option value="2">Febrero</option>
                         <option value="3">Marzo</option>
@@ -93,7 +94,7 @@ Html.Kendo().Grid<ERPMVC.Models.DeduccionEmpleado>()
 
             columns.Bound(p => p.EmpleadoId).Title("Empleado").Width(200).EditorTemplateName("Employeesddl")
             .ClientTemplate("#= NombreEmpleado #");
-            columns.Bound(p => p.Fecha).Title("Fecha").Width(110).Format("{0:dd/MM/yyyy}");
+            columns.Bound(p => p.Fecha).Title("Fecha").Width(110).EditorTemplateName("Date").Format("{0:dd/MM/yyyy}");
 @*columns.Bound(p => p.Empleado).Title("Empleado")
         .ClientTemplate("#=typeof Empleado === 'undefined'||Empleado===null?EmpleadoNombre:Empleado.NombreEmpleado#")
 
@@ -200,13 +201,13 @@ Html.Kendo().Grid<ERPMVC.Models.DeduccionEmpleado>()
             model.Field(p => p.Monto).Editable(true);
             model.Field(p => p.EstadoId).DefaultValue(0);
         }).Aggregates(a => a.Add(c => c.Monto).Sum())
-        .Events(events => events.Error("error_handler"))
+        .Events(events => events.Error("error_handler").Sync("RefrescarGrid").RequestEnd("onRequestEnd"))
         .Group(group => group.Add(a => a.NombreEmpleado))
         .Read(read => read.Action("GetEmpleadosDeducciones", "DeduccionEmpleado", Model).Data("Parametros"))
         .Update(update => update.Action("GuardarDeduccionEmpleado", "DeduccionEmpleado", Model).Type(HttpVerbs.Post).Data("Parametros"))
         .Create(create => create.Action("GuardarDeduccionEmpleado", "DeduccionEmpleado", Model).Type(HttpVerbs.Post).Data("Parametros"))
 
-        ).Events(e => e.DataBound("dataBound").CellClose("Calcular").Save("onsave"))
+        ).Events(e => e.DataBound("dataBound").Save("onsave"))
         .Resizable(resize => resize.Columns(true))
         )
 
@@ -218,8 +219,8 @@ Html.Kendo().Grid<ERPMVC.Models.DeduccionEmpleado>()
 
     function Parametros(data) {
         return {
-            IdPeriodo: $("#PeriodoId").val(),
-            NoMes: $("#Mes").val()
+            IdPeriodo: $("#IdPeriodo").val(),
+            NoMes: $("#NoMes").val()
 
         }
     }
@@ -234,11 +235,9 @@ Html.Kendo().Grid<ERPMVC.Models.DeduccionEmpleado>()
         return;
     }
     $(document).ready(function () {
-        $("#Periodo").kendoNumericTextBox({ spinners: false, decimals: 0, restrictDecimals: true, format: "0000" });
-
-
+        
         // Obtiene el elemento select por su id
-        var selectMes = document.getElementById('Mes');
+        var selectMes = document.getElementById('NoMes');
 
         // Obtiene el mes actual (de 1 a 12, donde enero es 1 y diciembre es 12)
         var mesActual = new Date().getMonth() + 1;
