@@ -276,5 +276,12 @@ namespace ERPMVC.Controllers
             }
         }
 
+
+        public ActionResult SFReporteHorasExtras()
+        {
+
+            return View();
+        }
+
     }
 }
