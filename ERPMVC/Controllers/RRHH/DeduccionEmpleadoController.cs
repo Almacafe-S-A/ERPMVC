@@ -184,10 +184,6 @@ namespace ERPMVC.Controllers
                     {
                         deduccionGuardar.PeriodoId = IdPeriodo;
                         deduccionGuardar.Mes = NoMes;
-                        deduccionGuardar.UsuarioCreacion = HttpContext.Session.GetString("user");
-                        deduccionGuardar.UsuarioModificacion = deduccionGuardar.UsuarioCreacion;
-                        deduccionGuardar.FechaCreacion = DateTime.Now;
-                        deduccionGuardar.FechaModificacion = deduccionGuardar.FechaCreacion;
                     }
                     var respuesta = await Utils.HttpPostAsync(HttpContext.Session.GetString("token"),
                         config.Value.urlbase + "api/DeduccionEmpleado/Guardar", deduccionGuardar);
@@ -195,7 +191,7 @@ namespace ERPMVC.Controllers
                     {
                         var contenido = await respuesta.Content.ReadAsStringAsync();
                         var resultado = JsonConvert.DeserializeObject<DeduccionEmpleado>(contenido);
-                        return Json(new[] { resultado }.ToDataSourceResult(request, ModelState));
+                        return Ok(resultado);
                     }
               
                 return BadRequest();
