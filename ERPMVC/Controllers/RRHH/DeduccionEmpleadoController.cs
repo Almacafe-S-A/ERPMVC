@@ -184,10 +184,6 @@ namespace ERPMVC.Controllers
                     {
                         deduccionGuardar.PeriodoId = IdPeriodo;
                         deduccionGuardar.Mes = NoMes;
-                        deduccionGuardar.UsuarioCreacion = HttpContext.Session.GetString("user");
-                        deduccionGuardar.UsuarioModificacion = deduccionGuardar.UsuarioCreacion;
-                        deduccionGuardar.FechaCreacion = DateTime.Now;
-                        deduccionGuardar.FechaModificacion = deduccionGuardar.FechaCreacion;
                     }
                     var respuesta = await Utils.HttpPostAsync(HttpContext.Session.GetString("token"),
                         config.Value.urlbase + "api/DeduccionEmpleado/Guardar", deduccionGuardar);
