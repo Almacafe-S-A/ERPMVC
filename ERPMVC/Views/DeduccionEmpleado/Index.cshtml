@@ -189,7 +189,7 @@ Html.Kendo().Grid<ERPMVC.Models.DeduccionEmpleado>()
             model.Field(p => p.Id).Editable(false);
             model.Field(p => p.EmpleadoId).Editable(true);
             model.Field(p => p.Monto).Editable(true);
-            model.Field(p => p.EstadoId).DefaultValue(0);
+            model.Field(p => p.EstadoId).Editable(false);
         }).Aggregates(a => a.Add(c => c.Monto).Sum())
         .Events(events => events.Error("error_handler").Sync("RefrescarGrid").RequestEnd("onRequestEnd"))
         .Group(group => group.Add(a => a.NombreEmpleado))
@@ -343,16 +343,24 @@ Html.Kendo().Grid<ERPMVC.Models.DeduccionEmpleado>()
 
     function dataBound(e) {
         var grid = this;
-        debugger;
-        $.each(this.dataSource.data(), function () {
-            if (this.EstadoId !== 8) {
-                $('[data-uid=' + this.uid + ']').find('.k-grid-Aprobar').hide();
-                $('[data-uid=' + this.uid + ']').find('.k-grid-edit').hide();
-                $('[data-uid=' + this.uid + ']').find('.k-grid-Rechazar').hide();
-            }
-
+        var data = grid.dataSource.data();
+        $.each(data, function (index, item) {
+            debugger;
+            
+            // Ocultar todos los botones por defecto
+             $.each(item.items, function (i, fila) {
+                    var estado = fila.EstadoId;
+                    var row = grid.tbody.find("tr[data-uid='" + fila.uid + "']");
+                    // Ocultar todos los botones por defecto
+                    row.find(".k-grid-Aprobar, .k-grid-edit, .k-grid-Rechazar").hide();
+                    // Mostrar botones según el estado
+                    if (estado === 5) {
+                        row.find(".k-grid-Aprobar, .k-grid-Rechazar, .k-grid-edit",).show();
+                    }
+                });
+            
         });
-
+        debugger;
 
         $(".k-grouping-row").each(function (e) {
             //grid.collapseGroup(this);
