@@ -61,6 +61,12 @@ namespace ERPMVC.Models
         [ForeignKey("TipoPlanillaId")]
         public PlanillaTipo TipoPlanilla { get; set; }
 
+        public string TipoPlanillaNombre { get; set; }
+
+        public Int64? JournalEntryId { get; set; }
+        [ForeignKey("JournalEntryId")]
+        public JournalEntry JournalEntry { get; set; }
+
 
         public List<PlanillaDetalle> Detalle { get; set; }
 

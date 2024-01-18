@@ -114,7 +114,7 @@ namespace ERPMVC.Controllers
                 if (respuesta.IsSuccessStatusCode)
                 {
                     var contenido = await respuesta.Content.ReadAsStringAsync();
-                    tipoDeduccion = JsonConvert.DeserializeObject<List<TipoDeduccion>>(contenido);//.Where(w => w.EstadoId == 90).ToList()
+                    tipoDeduccion = JsonConvert.DeserializeObject<List<TipoDeduccion>>(contenido).Where(w => w.IdEstado == 1).ToList();
                 }
             }
             catch (Exception ex)
