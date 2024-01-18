@@ -112,13 +112,13 @@ namespace ERPMVC.Controllers
         }
 
 
-        public async Task<ActionResult> GetPorEmpleadoPlanilla([DataSourceRequest] DataSourceRequest request,int empleadoId, int mes, int periodoId, int planilladetalleId)
-        //[DataSourceRequest] DataSourceRequest request, long empleadoId)
+        public async Task<ActionResult> GetPorEmpleadoPlanilla([DataSourceRequest] DataSourceRequest request,int empleadoId, int mes, 
+            int periodoId, int planilladetalleId,int quincena)
         {
             try
             {
                 var respuesta = await Utils.HttpGetAsync(HttpContext.Session.GetString("token"),
-                    config.Value.urlbase + $"api/Bonificacion/GetEmpleadoPlanilla/{empleadoId}/{mes}/{periodoId}/{planilladetalleId}");
+                    config.Value.urlbase + $"api/Bonificacion/GetEmpleadoPlanilla/{empleadoId}/{mes}/{periodoId}/{planilladetalleId}/{quincena}");
                 if (respuesta.IsSuccessStatusCode)
                 {
                     var contenido = await respuesta.Content.ReadAsStringAsync();

@@ -253,6 +253,38 @@ namespace ERPMVC.Controllers
 
         }
 
+        public async Task<ActionResult<GoodsDeliveryAuthorization>> Rechazar([FromBody] Planilla planilla)
+        {
+            try
+            {
+                if (planilla == null)
+                {
+                    return await Task.Run(() => BadRequest("No llego correctamente el modelo!"));
+                }
+
+                GoodsDeliveryAuthorization goodsDeliveryAuthorization = new GoodsDeliveryAuthorization();
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + $"api/Planilla/ChangeStatus/{planilla.Id}/{3}");
+                string valorrespuesta = "";
+                if (!result.IsSuccessStatusCode)
+                {
+                    return await Task.Run(() => BadRequest("No se Aprobo el documento!"));
+                }
+
+                return await Task.Run(() => Json(goodsDeliveryAuthorization));
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: {ex.ToString()}");
+                throw ex;
+            }
+
+
+        }
+
         public async Task<ActionResult<GoodsDeliveryAuthorization>> Revisar([FromBody] Planilla planilla)
         {
             try
