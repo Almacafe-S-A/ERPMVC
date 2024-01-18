@@ -125,6 +125,7 @@
             }
             if (this.EstadoName != "Revisado") {
                 $('[data-uid=' + this.uid + ']').find('.k-grid-Aprobar').hide();
+                $('[data-uid=' + this.uid + ']').find('.k-grid-Rechazar').hide();
                 
             }
             if (this.EstadoName != "Aprobado") {
@@ -144,7 +145,7 @@
         if (dataItem.Estado == 6) {
                     notification.show({
                     title: "Validación",
-                    message: "la Autorizacion ha sido aprobada"
+                    message: "la Planilla ha sido aprobada"
                 }, "error");
             }
         if (!confirm('Esta seguro de aprobar la Planilla?')) {
@@ -185,6 +186,54 @@
             });
             }
 
+
+
+    function Rechazar(e) {
+        var notification = $("#notification").data("kendoNotification");
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        if (dataItem.Estado == 6) {
+            notification.show({
+                title: "Validación",
+                message: "la Planilla ha sido rechazada"
+            }, "error");
+        }
+        if (!confirm('Esta seguro de rechazar la Planilla?')) {
+            return;
+
+        }
+
+        var dataObject = {
+            Id: dataItem.Id,
+        };
+
+        $.ajax({
+            url: '@Url.Action("Rechazar", "Planilla")',
+            method: 'POST',
+            datatype: "json",
+            contentType: 'application/json',
+            async: false,
+            data: JSON.stringify(dataObject),
+            success: function (result) {
+                $.toast({
+                    heading: 'Satisfactorio',
+                    text: 'La Planilla se ha aprobado correctamente.',
+                    position: 'top-right',
+                    loaderBg: '#ff6849',
+                    icon: 'success',
+                    hideAfter: 7000,
+                    stack: 6
+                });
+                RefreshPlanillas();
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                notification.show({
+                    title: "Validación",
+                    message: textStatus + ": " + XMLHttpRequest.responseText
+                }, "error");
+                alert(textStatus + ": " + XMLHttpRequest.responseText);
+            }
+        });
+    }
 
 
 
@@ -287,6 +336,7 @@ Html.Kendo().Grid<ERPMVC.Models.Planilla>()
                                           if (User.HasClaim("RRHH.Planillas y Operaciones.Planilla.Aprobar", "true"))
                                           {
                                               command.Custom("Aprobar").Text(" ").IconClass("fa fa-thumbs-up").Click("Aprobar");
+                                              command.Custom("Rechazar").Text(" ").IconClass("fa fa-thumbs-down").Click("Rechazar");
                                           }
                                           if (User.HasClaim("RRHH.Planillas y Operaciones.Planilla.Anular", "true"))
                                           {
@@ -414,6 +464,9 @@ Html.Kendo().Grid<ERPMVC.Models.Planilla>()
     setToolbarTooltip(".k-button k-button-icontext k-grid-Agregar k-i-plus-sm", "Agregar un nuevo registro");
     //setRowButtonTooltip(".k-grid-edit", "Tooltip for Edit button");
     setRowButtonTooltip(".k-grid-Anular", "Anular");
+    setRowButtonTooltip(".k-grid-Aprobar", "Aprobar");
+    setRowButtonTooltip(".k-grid-Rechazar", "Rechazar");
+    setRowButtonTooltip(".k-grid-Revisar", "Revisar");
     setRowButtonTooltip(".k-grid-Ver", "Ver");
     setRowButtonTooltip(".k-grid-Imprimir", "Imprimir"); 
     setRowButtonTooltip(".k-grid-Detalles", "Ver Detalle");
