@@ -191,7 +191,7 @@ namespace ERPMVC.Controllers
                     {
                         var contenido = await respuesta.Content.ReadAsStringAsync();
                         var resultado = JsonConvert.DeserializeObject<DeduccionEmpleado>(contenido);
-                        return Json(new[] { resultado }.ToDataSourceResult(request, ModelState));
+                        return Ok(resultado);
                     }
               
                 return BadRequest();
