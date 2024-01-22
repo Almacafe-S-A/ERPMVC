@@ -235,10 +235,10 @@ namespace ERPMVC.Controllers
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
                 var result = await _client.GetAsync(baseadress + $"api/Planilla/ChangeStatus/{planilla.Id}/{2}");
-                string valorrespuesta = "";
+                string valorrespuesta = await result.Content.ReadAsStringAsync();
                 if (!result.IsSuccessStatusCode)
                 {
-                    return await Task.Run(() => BadRequest("No se Aprobo el documento!"));
+                    return await Task.Run(() => BadRequest(valorrespuesta));
                 }
 
                 return await Task.Run(() => Json(goodsDeliveryAuthorization));
