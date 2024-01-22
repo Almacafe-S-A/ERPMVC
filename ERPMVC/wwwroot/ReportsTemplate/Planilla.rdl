@@ -5,9 +5,10 @@
     <DataSource Name="ERP">
       <ConnectionProperties>
         <DataProvider>SQL</DataProvider>
-        <ConnectString>Data Source=192.168.0.3;Initial Catalog=ERP-PRODUCCION</ConnectString>
+        <ConnectString>Data Source=(local);Initial Catalog=ERP-PRODUCCION</ConnectString>
+        <IntegratedSecurity>true</IntegratedSecurity>
       </ConnectionProperties>
-      <rd:SecurityType>DataBase</rd:SecurityType>
+      <rd:SecurityType>Integrated</rd:SecurityType>
       <rd:DataSourceID>3b5dfb76-b0ff-4b12-8671-b2f7c462d141</rd:DataSourceID>
     </DataSource>
   </DataSources>
@@ -43,24 +44,25 @@
       ,pd.[Dias]
       ,pd.[HorasExtras]
       ,pd.[MontoQuincenal]
-      ,pd.[Otros]
+      --,pd.[Otros]
       ,pd.[IHSS]
       ,pd.[ISR]
       ,pd.[RAP]
-      ,pd.[TotalIngreso], e.Identidad
+      ,pd.[TotalIngreso]
+	  , e.Identidad
       ,pr.[Anio]
-      ,CASE WHEN b.TipoBonificacionNombre = 'Transporte' or b.TipoBonificacionNombre = 'Retroactivo'
-	  or b.TipoBonificacionNombre = 'Alimentación' or b.TipoBonificacionNombre = 'Incapacidad'
-	  THEN b.Monto ELSE 0 END AS OtrosIngresos
-      --,pt.[TipoPlanilla]
-	  --,de.TipoDeduccionNombre
-	  --,de.Monto
-	  ,CASE WHEN de.TipoDeduccionNombre = 'Prestamo RAP' THEN de.Monto ELSE 0 END AS PrestamoRAP
-	  ,CASE WHEN de.TipoDeduccionNombre = 'Prestamo Cuscatlan' THEN de.Monto ELSE 0 END AS PrestamoCuscatlan
-                  ,CASE WHEN de.TipoDeduccionNombre = 'Anticipos' THEN de.Monto ELSE 0 END AS Anticipos
-	  ,CASE WHEN de.TipoDeduccionNombre = 'Impuesto Vecinal' or de.TipoDeduccionNombre = 'Embargos'
-	  or de.TipoDeduccionNombre = 'Multas' or de.TipoDeduccionNombre = 'Uniformes '
-	  THEN de.Monto ELSE 0 END AS OtrasDeducciones
+
+	  --,SUM(CASE WHEN b.TipoBonificacionNombre = 'Transporte' or b.TipoBonificacionNombre = 'Retroactivo'
+	  --or b.TipoBonificacionNombre = 'Alimentación' or b.TipoBonificacionNombre = 'Incapacidad'
+	  --THEN b.Monto ELSE NULL END) AS OtrosIngresos
+
+	  ,SUM(CASE WHEN de.TipoDeduccionNombre = 'Prestamo RAP' THEN de.Monto ELSE 0 END) AS PrestamoRAP
+	  ,SUM(CASE WHEN de.TipoDeduccionNombre = 'Prestamo Cuscatlan' THEN de.Monto ELSE 0 END) AS PrestamoCuscatlan
+	  ,SUM(CASE WHEN de.TipoDeduccionNombre = 'Anticipos' THEN de.Monto ELSE 0 END) AS Anticipos
+
+	  ,SUM(CASE WHEN de.TipoDeduccionNombre = 'Impuesto Vecinal' or de.TipoDeduccionNombre = 'Embargos'
+	   or de.TipoDeduccionNombre = 'Multas' or de.TipoDeduccionNombre = 'Uniformes'
+	  THEN de.Monto ELSE 0 END) AS OtrasDeducciones
 from PlanillaDetalles pd 
 inner join Planillas p on p.Id = pd.PlanillaId
 inner join Periodo pr on pr.Id = p.PeriodoId
@@ -68,7 +70,52 @@ left join PlanillaTipos pt on pt.IdTipoPlanilla = p.TipoPlanillaId
 inner join Employees e on e.IdEmpleado = pd.EmpleadoId
 left join Bonificaciones b on b.PlanillaDetalleId = pd.Id
 left join DeduccionesEmpleados de on de.PlanillaDetalleId = pd.Id
-where p.Id = @Id </CommandText>
+where p.Id = @Id 
+GROUP BY 
+p.[Id] 
+,p.TipoPlanillaId
+,p.PeriodoId
+,p.Mes
+,p.TotalEmpleados
+,p.TotalPlanilla
+,p.EstadoId
+,p.FechaCreacion
+,p.FechaModificacion
+,p.UsuarioModificacion
+,p.UsuarioCreacion
+,p.Comentarios
+,p.EstadoName
+,p.FechaPago
+,p.FechaPlanilla
+,p.BankAccountId
+,p.BankAccountNo
+,p.BankId
+,p.BankName
+,p.Quincena
+,p.JournalEntryId
+,p.UsuarioAprobado
+,p.UsuarioRevisado
+,p.pagahorasextra
+,p.TipoPlanillaNombre
+,pd.Id
+,pd.[PlanillaId]
+      ,pd.[EmpleadoId]
+      ,pd.[EmpleadoNombre]
+      ,pd.[MontoBruto]
+      ,pd.[TotalDeducciones]
+      ,pd.[TotalBonificaciones]
+      ,pd.[MontoNeto]
+      ,pd.[Dias]
+      ,pd.[HorasExtras]
+      ,pd.[MontoQuincenal]
+      ,pd.[Otros]
+      ,pd.[IHSS]
+      ,pd.[ISR]
+      ,pd.[RAP]
+      ,pd.[TotalIngreso], e.Identidad
+      ,pr.[Anio]
+	  --,de.TipoDeduccionNombre
+	  --,de.Monto</CommandText>
       </Query>
       <Fields>
         <Field Name="Id">
@@ -215,10 +262,6 @@ where p.Id = @Id </CommandText>
           <DataField>MontoQuincenal</DataField>
           <rd:TypeName>System.Decimal</rd:TypeName>
         </Field>
-        <Field Name="Otros">
-          <DataField>Otros</DataField>
-          <rd:TypeName>System.Decimal</rd:TypeName>
-        </Field>
         <Field Name="IHSS">
           <DataField>IHSS</DataField>
           <rd:TypeName>System.Decimal</rd:TypeName>
@@ -242,10 +285,6 @@ where p.Id = @Id </CommandText>
         <Field Name="Anio">
           <DataField>Anio</DataField>
           <rd:TypeName>System.Int32</rd:TypeName>
-        </Field>
-        <Field Name="OtrosIngresos">
-          <DataField>OtrosIngresos</DataField>
-          <rd:TypeName>System.Double</rd:TypeName>
         </Field>
         <Field Name="PrestamoRAP">
           <DataField>PrestamoRAP</DataField>
@@ -2010,14 +2049,14 @@ where p.Id = @Id </CommandText>
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="OtrosIngresos">
+                        <Textbox Name="TotalBonificaciones">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Fields!OtrosIngresos.Value</Value>
+                                  <Value>=Sum(Fields!TotalBonificaciones.Value)</Value>
                                   <Style>
                                     <FontSize>7pt</FontSize>
                                     <FontWeight>Normal</FontWeight>
@@ -2027,7 +2066,7 @@ where p.Id = @Id </CommandText>
                               <Style />
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>OtrosIngresos</rd:DefaultName>
+                          <rd:DefaultName>TotalBonificaciones</rd:DefaultName>
                           <Style>
                             <Border>
                               <Style>None</Style>
@@ -2636,14 +2675,14 @@ where p.Id = @Id </CommandText>
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="Textbox27">
+                        <Textbox Name="TotalBonificaciones1">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Sum(Fields!OtrosIngresos.Value)</Value>
+                                  <Value>=Sum(Fields!TotalBonificaciones.Value)</Value>
                                   <Style>
                                     <FontSize>7pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
@@ -2655,7 +2694,7 @@ where p.Id = @Id </CommandText>
                               <Style />
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>Textbox27</rd:DefaultName>
+                          <rd:DefaultName>TotalBonificaciones1</rd:DefaultName>
                           <Style>
                             <Border>
                               <Style>None</Style>
@@ -3134,7 +3173,7 @@ where p.Id = @Id </CommandText>
             </Style>
           </Tablix>
         </ReportItems>
-        <Height>1.05278in</Height>
+        <Height>1.14653in</Height>
         <Style>
           <Border />
           <BackgroundColor>White</BackgroundColor>
@@ -3417,7 +3456,7 @@ First(Fields!Mes.Value, "Planilla")=8, "Agosto", First
           </Style>
         </PageHeader>
         <PageFooter>
-          <Height>0.45833in</Height>
+          <Height>0.59792in</Height>
           <PrintOnLastPage>true</PrintOnLastPage>
           <ReportItems>
             <Textbox Name="Textbox47">
@@ -3440,7 +3479,7 @@ First(Fields!Mes.Value, "Planilla")=8, "Agosto", First
                   </Style>
                 </Paragraph>
               </Paragraphs>
-              <Top>0.08333in</Top>
+              <Top>0.29583in</Top>
               <Left>2.41411in</Left>
               <Height>18pt</Height>
               <Width>126.9674pt</Width>
@@ -3480,7 +3519,7 @@ First(Fields!Mes.Value, "Planilla")=8, "Agosto", First
                   </Style>
                 </Paragraph>
               </Paragraphs>
-              <Top>0.08334in</Top>
+              <Top>0.29584in</Top>
               <Left>6.88079in</Left>
               <Height>18pt</Height>
               <Width>126.9674pt</Width>
