@@ -439,6 +439,23 @@ namespace ERPMVC.Controllers
 
         }
 
+
+        [HttpGet]
+        public async Task<ActionResult> SFLibroSueldosySalarios()
+        {
+            try
+            {
+                return await Task.Run(() => View());
+            }
+            catch (Exception)
+            {
+
+                return await Task.Run(() => BadRequest("Ocurrio un error"));
+            }
+
+        }
+        
+
         //--------------------------------------------------------------------------------------
 
     }
