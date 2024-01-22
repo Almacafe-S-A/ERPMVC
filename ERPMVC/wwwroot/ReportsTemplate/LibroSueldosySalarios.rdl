@@ -5,9 +5,10 @@
     <DataSource Name="ERP">
       <ConnectionProperties>
         <DataProvider>SQL</DataProvider>
-        <ConnectString>Data Source=192.168.0.3;Initial Catalog=ERP-PRODUCCION</ConnectString>
+        <ConnectString>Data Source=(local);Initial Catalog=ERP-PRODUCCION</ConnectString>
+        <IntegratedSecurity>true</IntegratedSecurity>
       </ConnectionProperties>
-      <rd:SecurityType>DataBase</rd:SecurityType>
+      <rd:SecurityType>Integrated</rd:SecurityType>
       <rd:DataSourceID>3b5dfb76-b0ff-4b12-8671-b2f7c462d141</rd:DataSourceID>
     </DataSource>
   </DataSources>
@@ -28,12 +29,82 @@
       <Query>
         <DataSourceName>ERP</DataSourceName>
         <QueryParameters>
-          <QueryParameter Name="@Id">
-            <Value>=Parameters!Id.Value</Value>
+          <QueryParameter Name="@FechaInicio">
+            <Value>=Parameters!FechaInicio.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@FechaFin">
+            <Value>=Parameters!FechaFin.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@Empleado">
+            <Value>=Parameters!Empleado.Value</Value>
           </QueryParameter>
         </QueryParameters>
         <CommandText>select p.*, pd.[Id] pdId
       ,pd.[PlanillaId]
+      ,pd.[EmpleadoId]
+      ,pd.[EmpleadoNombre]
+      ,pd.[MontoBruto]
+      ,pd.[TotalDeducciones]
+      ,pd.[TotalBonificaciones]
+      ,pd.[MontoNeto]
+      ,pd.[Dias]
+      ,pd.[HorasExtras]
+      ,pd.[MontoQuincenal]
+      --,pd.[Otros]
+      ,pd.[IHSS]
+      ,pd.[ISR]
+      ,pd.[RAP]
+      ,pd.[TotalIngreso]
+	  , e.Identidad
+      ,pr.[Anio]
+
+	  --,SUM(CASE WHEN b.TipoBonificacionNombre = 'Transporte' or --b.TipoBonificacionNombre = 'Retroactivo'
+	  --or b.TipoBonificacionNombre = 'Alimentación' or --b.TipoBonificacionNombre = 'Incapacidad'
+	  --THEN b.Monto ELSE NULL END) AS OtrosIngresos
+
+	  ,SUM(CASE WHEN de.TipoDeduccionNombre = 'Prestamo RAP' THEN de.Monto ELSE 0 END) AS PrestamoRAP
+	  ,SUM(CASE WHEN de.TipoDeduccionNombre = 'Prestamo Cuscatlan' THEN de.Monto ELSE 0 END) AS PrestamoCuscatlan
+	  ,SUM(CASE WHEN de.TipoDeduccionNombre = 'Anticipos' THEN de.Monto ELSE 0 END) AS Anticipos
+
+	  ,SUM(CASE WHEN de.TipoDeduccionNombre = 'Impuesto Vecinal' or de.TipoDeduccionNombre = 'Embargos'
+	   or de.TipoDeduccionNombre = 'Multas' or de.TipoDeduccionNombre = 'Uniformes'
+	  THEN de.Monto ELSE 0 END) AS OtrasDeducciones
+from PlanillaDetalles pd 
+inner join Planillas p on p.Id = pd.PlanillaId
+inner join Periodo pr on pr.Id = p.PeriodoId
+left join PlanillaTipos pt on pt.IdTipoPlanilla = p.TipoPlanillaId
+inner join Employees e on e.IdEmpleado = pd.EmpleadoId
+left join Bonificaciones b on b.PlanillaDetalleId = pd.Id
+left join DeduccionesEmpleados de on de.PlanillaDetalleId = pd.Id
+WHERE p.FechaPago BETWEEN @FechaInicio AND dateadd(Day,1, @FechaFin) AND p.EstadoName='Aprobado' and pd.EmpleadoId=@Empleado AND (p.Quincena=1 or p.Quincena=2)
+GROUP BY 
+p.[Id] 
+,p.TipoPlanillaId
+,p.PeriodoId
+,p.Mes
+,p.TotalEmpleados
+,p.TotalPlanilla
+,p.EstadoId
+,p.FechaCreacion
+,p.FechaModificacion
+,p.UsuarioModificacion
+,p.UsuarioCreacion
+,p.Comentarios
+,p.EstadoName
+,p.FechaPago
+,p.FechaPlanilla
+,p.BankAccountId
+,p.BankAccountNo
+,p.BankId
+,p.BankName
+,p.Quincena
+,p.JournalEntryId
+,p.UsuarioAprobado
+,p.UsuarioRevisado
+,p.pagahorasextra
+,p.TipoPlanillaNombre
+,pd.Id
+,pd.[PlanillaId]
       ,pd.[EmpleadoId]
       ,pd.[EmpleadoNombre]
       ,pd.[MontoBruto]
@@ -48,27 +119,7 @@
       ,pd.[ISR]
       ,pd.[RAP]
       ,pd.[TotalIngreso], e.Identidad
-      ,pr.[Anio]
-      ,CASE WHEN b.TipoBonificacionNombre = 'Transporte' or b.TipoBonificacionNombre = 'Retroactivo'
-	  or b.TipoBonificacionNombre = 'Alimentación' or b.TipoBonificacionNombre = 'Incapacidad'
-	  THEN b.Monto ELSE 0 END AS OtrosIngresos
-      --,pt.[TipoPlanilla]
-	  --,de.TipoDeduccionNombre
-	  --,de.Monto
-	  ,CASE WHEN de.TipoDeduccionNombre = 'Prestamo RAP' THEN de.Monto ELSE 0 END AS PrestamoRAP
-	  ,CASE WHEN de.TipoDeduccionNombre = 'Prestamo Cuscatlan' THEN de.Monto ELSE 0 END AS PrestamoCuscatlan
-                  ,CASE WHEN de.TipoDeduccionNombre = 'Anticipos' THEN de.Monto ELSE 0 END AS Anticipos
-	  ,CASE WHEN de.TipoDeduccionNombre = 'Impuesto Vecinal' or de.TipoDeduccionNombre = 'Embargos'
-	  or de.TipoDeduccionNombre = 'Multas' or de.TipoDeduccionNombre = 'Uniformes '
-	  THEN de.Monto ELSE 0 END AS OtrasDeducciones
-from PlanillaDetalles pd 
-inner join Planillas p on p.Id = pd.PlanillaId
-inner join Periodo pr on pr.Id = p.PeriodoId
-left join PlanillaTipos pt on pt.IdTipoPlanilla = p.TipoPlanillaId
-inner join Employees e on e.IdEmpleado = pd.EmpleadoId
-left join Bonificaciones b on b.PlanillaDetalleId = pd.Id
-left join DeduccionesEmpleados de on de.PlanillaDetalleId = pd.Id
-where p.Id = @Id </CommandText>
+      ,pr.[Anio]</CommandText>
       </Query>
       <Fields>
         <Field Name="Id">
@@ -215,10 +266,6 @@ where p.Id = @Id </CommandText>
           <DataField>MontoQuincenal</DataField>
           <rd:TypeName>System.Decimal</rd:TypeName>
         </Field>
-        <Field Name="Otros">
-          <DataField>Otros</DataField>
-          <rd:TypeName>System.Decimal</rd:TypeName>
-        </Field>
         <Field Name="IHSS">
           <DataField>IHSS</DataField>
           <rd:TypeName>System.Decimal</rd:TypeName>
@@ -242,10 +289,6 @@ where p.Id = @Id </CommandText>
         <Field Name="Anio">
           <DataField>Anio</DataField>
           <rd:TypeName>System.Int32</rd:TypeName>
-        </Field>
-        <Field Name="OtrosIngresos">
-          <DataField>OtrosIngresos</DataField>
-          <rd:TypeName>System.Double</rd:TypeName>
         </Field>
         <Field Name="PrestamoRAP">
           <DataField>PrestamoRAP</DataField>
@@ -309,6 +352,25 @@ where p.Id = @Id </CommandText>
         </Field>
       </Fields>
     </DataSet>
+    <DataSet Name="Empleados">
+      <Query>
+        <DataSourceName>ERP</DataSourceName>
+        <CommandText>select e.IdEmpleado, e.NombreEmpleado
+from Employees e
+where IdEstado = 1
+--UNION SELECT 0 , 'Todos'</CommandText>
+      </Query>
+      <Fields>
+        <Field Name="IdEmpleado">
+          <DataField>IdEmpleado</DataField>
+          <rd:TypeName>System.Int64</rd:TypeName>
+        </Field>
+        <Field Name="NombreEmpleado">
+          <DataField>NombreEmpleado</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+      </Fields>
+    </DataSet>
   </DataSets>
   <ReportSections>
     <ReportSection>
@@ -318,18 +380,27 @@ where p.Id = @Id </CommandText>
             <TablixBody>
               <TablixColumns>
                 <TablixColumn>
-                  <Width>0.34158in</Width>
+                  <Width>0.91282in</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>1.6in</Width>
-                </TablixColumn>
-                <TablixColumn>
-                  <Width>0.6in</Width>
+                  <Width>0.8in</Width>
                 </TablixColumn>
                 <TablixColumn>
                   <Width>0.32224in</Width>
                 </TablixColumn>
                 <TablixColumn>
+                  <Width>0.8in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>0.6in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>0.6in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>0.7in</Width>
+                </TablixColumn>
+                <TablixColumn>
                   <Width>0.6in</Width>
                 </TablixColumn>
                 <TablixColumn>
@@ -351,22 +422,10 @@ where p.Id = @Id </CommandText>
                   <Width>0.6in</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>0.6in</Width>
+                  <Width>0.7in</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>0.6in</Width>
-                </TablixColumn>
-                <TablixColumn>
-                  <Width>0.6in</Width>
-                </TablixColumn>
-                <TablixColumn>
-                  <Width>0.6in</Width>
-                </TablixColumn>
-                <TablixColumn>
-                  <Width>0.65in</Width>
-                </TablixColumn>
-                <TablixColumn>
-                  <Width>0.65in</Width>
+                  <Width>0.8in</Width>
                 </TablixColumn>
               </TablixColumns>
               <TablixRows>
@@ -396,47 +455,6 @@ where p.Id = @Id </CommandText>
                             </Paragraph>
                           </Paragraphs>
                           <rd:DefaultName>Textbox7</rd:DefaultName>
-                          <Style>
-                            <Border>
-                              <Style>None</Style>
-                            </Border>
-                            <TopBorder>
-                              <Color>Black</Color>
-                              <Style>Solid</Style>
-                              <Width>1pt</Width>
-                            </TopBorder>
-                            <BackgroundColor>White</BackgroundColor>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
-                    <TablixCell>
-                      <CellContents>
-                        <Textbox Name="Textbox9">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value />
-                                  <Style>
-                                    <FontSize>8pt</FontSize>
-                                    <FontWeight>Bold</FontWeight>
-                                    <Color>#666666</Color>
-                                  </Style>
-                                </TextRun>
-                              </TextRuns>
-                              <Style>
-                                <TextAlign>Center</TextAlign>
-                              </Style>
-                            </Paragraph>
-                          </Paragraphs>
-                          <rd:DefaultName>Textbox9</rd:DefaultName>
                           <Style>
                             <Border>
                               <Style>None</Style>
@@ -1084,7 +1102,7 @@ where p.Id = @Id </CommandText>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>Cod.</Value>
+                                  <Value>Fecha</Value>
                                   <Style>
                                     <FontSize>7pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
@@ -1097,46 +1115,6 @@ where p.Id = @Id </CommandText>
                             </Paragraph>
                           </Paragraphs>
                           <rd:DefaultName>Textbox2</rd:DefaultName>
-                          <Style>
-                            <Border>
-                              <Style>None</Style>
-                            </Border>
-                            <BottomBorder>
-                              <Color>Black</Color>
-                              <Style>Solid</Style>
-                              <Width>1pt</Width>
-                            </BottomBorder>
-                            <BackgroundColor>White</BackgroundColor>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
-                    <TablixCell>
-                      <CellContents>
-                        <Textbox Name="Textbox3">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value>Empleado </Value>
-                                  <Style>
-                                    <FontSize>7pt</FontSize>
-                                    <FontWeight>Bold</FontWeight>
-                                  </Style>
-                                </TextRun>
-                              </TextRuns>
-                              <Style>
-                                <TextAlign>Center</TextAlign>
-                              </Style>
-                            </Paragraph>
-                          </Paragraphs>
-                          <rd:DefaultName>Textbox3</rd:DefaultName>
                           <Style>
                             <Border>
                               <Style>None</Style>
@@ -1800,21 +1778,22 @@ where p.Id = @Id </CommandText>
                   </TablixCells>
                 </TablixRow>
                 <TablixRow>
-                  <Height>0.35in</Height>
+                  <Height>0.225in</Height>
                   <TablixCells>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="EmpleadoId">
+                        <Textbox Name="FechaPago">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Fields!EmpleadoId.Value</Value>
+                                  <Value>=Fields!FechaPago.Value</Value>
                                   <Style>
                                     <FontSize>7pt</FontSize>
                                     <FontWeight>Normal</FontWeight>
+                                    <Format>d/M/yyyy</Format>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -1823,40 +1802,7 @@ where p.Id = @Id </CommandText>
                               </Style>
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>EmpleadoId</rd:DefaultName>
-                          <Style>
-                            <Border>
-                              <Style>None</Style>
-                            </Border>
-                            <BackgroundColor>White</BackgroundColor>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
-                    <TablixCell>
-                      <CellContents>
-                        <Textbox Name="EmpleadoNombre">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value>=Fields!EmpleadoNombre.Value</Value>
-                                  <Style>
-                                    <FontSize>7pt</FontSize>
-                                    <FontWeight>Normal</FontWeight>
-                                  </Style>
-                                </TextRun>
-                              </TextRuns>
-                              <Style />
-                            </Paragraph>
-                          </Paragraphs>
-                          <rd:DefaultName>EmpleadoNombre</rd:DefaultName>
+                          <rd:DefaultName>FechaPago</rd:DefaultName>
                           <Style>
                             <Border>
                               <Style>None</Style>
@@ -2010,14 +1956,14 @@ where p.Id = @Id </CommandText>
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="OtrosIngresos">
+                        <Textbox Name="TotalBonificaciones">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Fields!OtrosIngresos.Value</Value>
+                                  <Value>=Sum(Fields!TotalBonificaciones.Value)</Value>
                                   <Style>
                                     <FontSize>7pt</FontSize>
                                     <FontWeight>Normal</FontWeight>
@@ -2027,7 +1973,7 @@ where p.Id = @Id </CommandText>
                               <Style />
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>OtrosIngresos</rd:DefaultName>
+                          <rd:DefaultName>TotalBonificaciones</rd:DefaultName>
                           <Style>
                             <Border>
                               <Style>None</Style>
@@ -2405,46 +2351,6 @@ where p.Id = @Id </CommandText>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value />
-                                  <Style>
-                                    <FontSize>7pt</FontSize>
-                                    <FontWeight>Bold</FontWeight>
-                                  </Style>
-                                </TextRun>
-                              </TextRuns>
-                              <Style>
-                                <TextAlign>Center</TextAlign>
-                              </Style>
-                            </Paragraph>
-                          </Paragraphs>
-                          <rd:DefaultName>Textbox43</rd:DefaultName>
-                          <Style>
-                            <Border>
-                              <Style>None</Style>
-                            </Border>
-                            <TopBorder>
-                              <Color>Black</Color>
-                              <Style>Solid</Style>
-                              <Width>1pt</Width>
-                            </TopBorder>
-                            <BackgroundColor>White</BackgroundColor>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
-                    <TablixCell>
-                      <CellContents>
-                        <Textbox Name="Textbox44">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
                                   <Value>TOTAL</Value>
                                   <Style>
                                     <FontSize>7pt</FontSize>
@@ -2457,7 +2363,7 @@ where p.Id = @Id </CommandText>
                               </Style>
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>Textbox44</rd:DefaultName>
+                          <rd:DefaultName>Textbox43</rd:DefaultName>
                           <Style>
                             <Border>
                               <Style>None</Style>
@@ -2636,14 +2542,14 @@ where p.Id = @Id </CommandText>
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="Textbox27">
+                        <Textbox Name="TotalBonificaciones1">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Sum(Fields!OtrosIngresos.Value)</Value>
+                                  <Value>=Sum(Fields!TotalBonificaciones.Value)</Value>
                                   <Style>
                                     <FontSize>7pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
@@ -2655,7 +2561,7 @@ where p.Id = @Id </CommandText>
                               <Style />
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>Textbox27</rd:DefaultName>
+                          <rd:DefaultName>TotalBonificaciones1</rd:DefaultName>
                           <Style>
                             <Border>
                               <Style>None</Style>
@@ -3096,7 +3002,6 @@ where p.Id = @Id </CommandText>
                 <TablixMember />
                 <TablixMember />
                 <TablixMember />
-                <TablixMember />
               </TablixMembers>
             </TablixColumnHierarchy>
             <TablixRowHierarchy>
@@ -3108,11 +3013,12 @@ where p.Id = @Id </CommandText>
                   <KeepWithGroup>After</KeepWithGroup>
                 </TablixMember>
                 <TablixMember>
-                  <Group Name="Details">
-                    <GroupExpressions>
-                      <GroupExpression>=Fields!EmpleadoId.Value</GroupExpression>
-                    </GroupExpressions>
-                  </Group>
+                  <Group Name="Details" />
+                  <SortExpressions>
+                    <SortExpression>
+                      <Value>=Fields!FechaPago.Value</Value>
+                    </SortExpression>
+                  </SortExpressions>
                   <TablixMembers>
                     <TablixMember />
                   </TablixMembers>
@@ -3124,9 +3030,9 @@ where p.Id = @Id </CommandText>
             </TablixRowHierarchy>
             <DataSetName>Planilla</DataSetName>
             <Top>0.02778in</Top>
-            <Left>0.0375in</Left>
-            <Height>1.025in</Height>
-            <Width>10.76382in</Width>
+            <Left>0.1625in</Left>
+            <Height>0.9in</Height>
+            <Width>10.43506in</Width>
             <Style>
               <Border>
                 <Style>None</Style>
@@ -3143,7 +3049,7 @@ where p.Id = @Id </CommandText>
       <Width>10.82629in</Width>
       <Page>
         <PageHeader>
-          <Height>1.06146in</Height>
+          <Height>1.33229in</Height>
           <PrintOnFirstPage>true</PrintOnFirstPage>
           <PrintOnLastPage>true</PrintOnLastPage>
           <ReportItems>
@@ -3152,7 +3058,7 @@ where p.Id = @Id </CommandText>
               <Value>=First(Fields!imageDir.Value,"CompanyInfo")</Value>
               <Sizing>FitProportional</Sizing>
               <Top>0.08854in</Top>
-              <Left>0.125in</Left>
+              <Left>0.175in</Left>
               <Height>0.88229in</Height>
               <Width>1.35412in</Width>
               <Style>
@@ -3180,9 +3086,9 @@ where p.Id = @Id </CommandText>
                 </Paragraph>
               </Paragraphs>
               <Top>0.10365in</Top>
-              <Left>4.18058in</Left>
+              <Left>4.0035in</Left>
               <Height>0.25in</Height>
-              <Width>2.88679in</Width>
+              <Width>3.06387in</Width>
               <ZIndex>1</ZIndex>
               <Style>
                 <Border />
@@ -3196,40 +3102,7 @@ where p.Id = @Id </CommandText>
                 <Paragraph>
                   <TextRuns>
                     <TextRun>
-                      <Value>Planilla </Value>
-                      <Style>
-                        <FontFamily>Segoe UI Light</FontFamily>
-                        <FontSize>12pt</FontSize>
-                        <FontWeight>Bold</FontWeight>
-                      </Style>
-                    </TextRun>
-                    <TextRun>
-                      <Value>=Switch(First
-
-(Fields!TipoPlanillaNombre.Value, "Planilla")="Todos", "General", 
-First
-
-(Fields!TipoPlanillaNombre.Value, "Planilla")="Administración", "Administración", 
-
-
-
-First(Fields!TipoPlanillaNombre.Value, "Planilla")="Funcionarios", "Funcionarios", 
-
-First
-
-(Fields!TipoPlanillaNombre.Value, "Planilla")="Operativa", "Operativa", 
-
-First
-
-(Fields!TipoPlanillaNombre.Value, "Planilla")="Bodega Habilitada", "Bodega Habilitada")</Value>
-                      <Style>
-                        <FontFamily>Segoe UI Light</FontFamily>
-                        <FontSize>12pt</FontSize>
-                        <FontWeight>Bold</FontWeight>
-                      </Style>
-                    </TextRun>
-                    <TextRun>
-                      <Value xml:space="preserve"> </Value>
+                      <Value>LIBRO DE SUELDOS Y SALARIOS</Value>
                       <Style>
                         <FontFamily>Segoe UI Light</FontFamily>
                         <FontSize>12pt</FontSize>
@@ -3243,10 +3116,10 @@ First
                   </Style>
                 </Paragraph>
               </Paragraphs>
-              <Top>0.36823in</Top>
-              <Left>4.18058in</Left>
+              <Top>0.38073in</Top>
+              <Left>4.0035in</Left>
               <Height>0.22in</Height>
-              <Width>2.88679in</Width>
+              <Width>3.06387in</Width>
               <ZIndex>2</ZIndex>
               <Style>
                 <Border />
@@ -3260,10 +3133,10 @@ First
                 <Paragraph>
                   <TextRuns>
                     <TextRun>
-                      <Value>RG-RH-15</Value>
+                      <Value>RG-RH-XX</Value>
                       <Style>
                         <FontFamily>Segoe UI Light</FontFamily>
-                        <FontSize>12pt</FontSize>
+                        <FontSize>11pt</FontSize>
                         <FontWeight>Bold</FontWeight>
                       </Style>
                     </TextRun>
@@ -3275,9 +3148,9 @@ First
                 </Paragraph>
               </Paragraphs>
               <Top>0.22629in</Top>
-              <Left>9.77327in</Left>
+              <Left>9.52629in</Left>
               <Height>0.25in</Height>
-              <Width>0.82429in</Width>
+              <Width>1.07127in</Width>
               <ZIndex>3</ZIndex>
               <Style>
                 <Border />
@@ -3291,65 +3164,37 @@ First
                 <Paragraph>
                   <TextRuns>
                     <TextRun>
-                      <Value>=Switch(
-First(Fields!Quincena.Value, "Planilla") = 1, "Primera Quincena", 
-First(Fields!Quincena.Value, "Planilla") = 2, "Segunda Quincena", 
-First(Fields!Quincena.Value, "Planilla") = 3, "Mensual", 
-First(Fields!Quincena.Value, "Planilla") = 4, "13avo",
-First(Fields!Quincena.Value, "Planilla") = 5, "14avo",
-First(Fields!Quincena.Value, "Planilla") = 6, "Bonificacion")</Value>
+                      <Value>Del: </Value>
                       <Style>
                         <FontFamily>Segoe UI Light</FontFamily>
-                        <FontSize>12pt</FontSize>
+                        <FontSize>11pt</FontSize>
                         <FontWeight>Bold</FontWeight>
                       </Style>
                     </TextRun>
                     <TextRun>
-                      <Value xml:space="preserve"> </Value>
+                      <Value>=Parameters!FechaInicio.Value</Value>
                       <Style>
                         <FontFamily>Segoe UI Light</FontFamily>
-                        <FontSize>12pt</FontSize>
+                        <FontSize>11pt</FontSize>
+                        <FontWeight>Bold</FontWeight>
+                        <Format>d/M/yyyy</Format>
+                      </Style>
+                    </TextRun>
+                    <TextRun>
+                      <Value> al: </Value>
+                      <Style>
+                        <FontFamily>Segoe UI Light</FontFamily>
+                        <FontSize>11pt</FontSize>
                         <FontWeight>Bold</FontWeight>
                       </Style>
                     </TextRun>
                     <TextRun>
-                      <Value>=Switch(
-
-First(Fields!Mes.Value, "Planilla")=1,"Enero", First
-
-(Fields!Mes.Value, "Planilla")=2,"Febrero", 
-
-First(Fields!Mes.Value, "Planilla")=3,"Marzo", First
-
-(Fields!Mes.Value, "Planilla")=4, "Abril", First
-
-(Fields!Mes.Value, "Planilla")=5,"Mayo", First(Fields!Mes.Value, "Planilla")=6,"Junio", First(Fields!Mes.Value, "Planilla")=7,"Julio", 
-
-First(Fields!Mes.Value, "Planilla")=8, "Agosto", First
-
-(Fields!Mes.Value, "Planilla")=9,"Septiembre", First
-
-(Fields!Mes.Value, "Planilla")=10,"Octubre", First(Fields!Mes.Value, "Planilla")=11,"Noviembre", First(Fields!Mes.Value, "Planilla")=12,"Diciembre")</Value>
+                      <Value>=Parameters!FechaFin.Value</Value>
                       <Style>
                         <FontFamily>Segoe UI Light</FontFamily>
-                        <FontSize>12pt</FontSize>
+                        <FontSize>11pt</FontSize>
                         <FontWeight>Bold</FontWeight>
-                      </Style>
-                    </TextRun>
-                    <TextRun>
-                      <Value xml:space="preserve"> </Value>
-                      <Style>
-                        <FontFamily>Segoe UI Light</FontFamily>
-                        <FontSize>12pt</FontSize>
-                        <FontWeight>Bold</FontWeight>
-                      </Style>
-                    </TextRun>
-                    <TextRun>
-                      <Value>=First(Fields!Anio.Value, "Planilla")</Value>
-                      <Style>
-                        <FontFamily>Segoe UI Light</FontFamily>
-                        <FontSize>12pt</FontSize>
-                        <FontWeight>Bold</FontWeight>
+                        <Format>d/M/yyyy</Format>
                       </Style>
                     </TextRun>
                   </TextRuns>
@@ -3359,10 +3204,10 @@ First(Fields!Mes.Value, "Planilla")=8, "Agosto", First
                   </Style>
                 </Paragraph>
               </Paragraphs>
-              <Top>0.60573in</Top>
-              <Left>4.18058in</Left>
+              <Top>0.63073in</Top>
+              <Left>4.0035in</Left>
               <Height>0.22in</Height>
-              <Width>2.88679in</Width>
+              <Width>3.06387in</Width>
               <ZIndex>4</ZIndex>
               <Style>
                 <Border />
@@ -3370,39 +3215,38 @@ First(Fields!Mes.Value, "Planilla")=8, "Agosto", First
                 <PaddingLeft>2pt</PaddingLeft>
               </Style>
             </Textbox>
-            <Textbox Name="TextBox21">
+            <Textbox Name="TextBox22">
               <KeepTogether>true</KeepTogether>
               <Paragraphs>
                 <Paragraph>
                   <TextRuns>
                     <TextRun>
-                      <Value>Fecha: </Value>
+                      <Value>Empleado: </Value>
                       <Style>
                         <FontFamily>Segoe UI Light</FontFamily>
-                        <FontSize>12pt</FontSize>
+                        <FontSize>11pt</FontSize>
                         <FontWeight>Bold</FontWeight>
                       </Style>
                     </TextRun>
                     <TextRun>
-                      <Value>=First(Fields!FechaPlanilla.Value, "Planilla")</Value>
+                      <Value>=Parameters!Empleado.Label</Value>
                       <Style>
                         <FontFamily>Segoe UI Light</FontFamily>
-                        <FontSize>12pt</FontSize>
+                        <FontSize>11pt</FontSize>
                         <FontWeight>Bold</FontWeight>
-                        <Format>d/M/yyyy</Format>
                       </Style>
                     </TextRun>
                   </TextRuns>
                   <Style>
-                    <TextAlign>Right</TextAlign>
+                    <TextAlign>Left</TextAlign>
                     <LineHeight>10pt</LineHeight>
                   </Style>
                 </Paragraph>
               </Paragraphs>
-              <Top>0.54573in</Top>
-              <Left>9.04715in</Left>
+              <Top>1.05615in</Top>
+              <Left>0.1625in</Left>
               <Height>0.22in</Height>
-              <Width>1.55041in</Width>
+              <Width>4.99512in</Width>
               <ZIndex>5</ZIndex>
               <Style>
                 <Border />
@@ -3417,49 +3261,9 @@ First(Fields!Mes.Value, "Planilla")=8, "Agosto", First
           </Style>
         </PageHeader>
         <PageFooter>
-          <Height>0.45833in</Height>
+          <Height>0.52084in</Height>
           <PrintOnLastPage>true</PrintOnLastPage>
           <ReportItems>
-            <Textbox Name="Textbox47">
-              <CanGrow>true</CanGrow>
-              <KeepTogether>true</KeepTogether>
-              <Paragraphs>
-                <Paragraph>
-                  <TextRuns>
-                    <TextRun>
-                      <Value>Gerente General</Value>
-                      <Style>
-                        <FontSize>8pt</FontSize>
-                        <FontWeight>Bold</FontWeight>
-                      </Style>
-                    </TextRun>
-                  </TextRuns>
-                  <Style>
-                    <TextAlign>Center</TextAlign>
-                    <LineHeight>10pt</LineHeight>
-                  </Style>
-                </Paragraph>
-              </Paragraphs>
-              <Top>0.08333in</Top>
-              <Left>2.41411in</Left>
-              <Height>18pt</Height>
-              <Width>126.9674pt</Width>
-              <Style>
-                <Border>
-                  <Color>#000000</Color>
-                  <Style>None</Style>
-                </Border>
-                <TopBorder>
-                  <Color>Black</Color>
-                  <Style>Solid</Style>
-                  <Width>1pt</Width>
-                </TopBorder>
-                <PaddingLeft>2pt</PaddingLeft>
-                <PaddingRight>2pt</PaddingRight>
-                <PaddingTop>2pt</PaddingTop>
-                <PaddingBottom>2pt</PaddingBottom>
-              </Style>
-            </Textbox>
             <Textbox Name="TextBox6">
               <CanGrow>true</CanGrow>
               <KeepTogether>true</KeepTogether>
@@ -3480,11 +3284,10 @@ First(Fields!Mes.Value, "Planilla")=8, "Agosto", First
                   </Style>
                 </Paragraph>
               </Paragraphs>
-              <Top>0.08334in</Top>
-              <Left>6.88079in</Left>
+              <Top>0.20834in</Top>
+              <Left>4.74329in</Left>
               <Height>18pt</Height>
               <Width>126.9674pt</Width>
-              <ZIndex>1</ZIndex>
               <Style>
                 <Border>
                   <Color>#000000</Color>
@@ -3522,20 +3325,45 @@ First(Fields!Mes.Value, "Planilla")=8, "Agosto", First
     </ReportSection>
   </ReportSections>
   <ReportParameters>
-    <ReportParameter Name="Id">
-      <DataType>String</DataType>
-      <Prompt>Id</Prompt>
+    <ReportParameter Name="FechaInicio">
+      <DataType>DateTime</DataType>
+      <Prompt>Fecha Inicio</Prompt>
+    </ReportParameter>
+    <ReportParameter Name="FechaFin">
+      <DataType>DateTime</DataType>
+      <Prompt>Fecha Fin</Prompt>
+    </ReportParameter>
+    <ReportParameter Name="Empleado">
+      <DataType>Integer</DataType>
+      <Prompt>Empleado</Prompt>
+      <ValidValues>
+        <DataSetReference>
+          <DataSetName>Empleados</DataSetName>
+          <ValueField>IdEmpleado</ValueField>
+          <LabelField>NombreEmpleado</LabelField>
+        </DataSetReference>
+      </ValidValues>
     </ReportParameter>
   </ReportParameters>
   <ReportParametersLayout>
     <GridLayoutDefinition>
-      <NumberOfColumns>1</NumberOfColumns>
+      <NumberOfColumns>4</NumberOfColumns>
       <NumberOfRows>1</NumberOfRows>
       <CellDefinitions>
         <CellDefinition>
           <ColumnIndex>0</ColumnIndex>
           <RowIndex>0</RowIndex>
-          <ParameterName>Id</ParameterName>
+          <ParameterName>FechaInicio</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>1</ColumnIndex>
+          <RowIndex>0</RowIndex>
+          <ParameterName>FechaFin</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>2</ColumnIndex>
+          <RowIndex>0</RowIndex>
+          <ParameterName>Empleado</ParameterName>
         </CellDefinition>
       </CellDefinitions>
     </GridLayoutDefinition>
