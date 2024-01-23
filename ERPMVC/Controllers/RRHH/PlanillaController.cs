@@ -456,6 +456,23 @@ namespace ERPMVC.Controllers
         }
         
 
+
+            [HttpGet]
+        public async Task<ActionResult> SFPlanillaAcumulada()
+        {
+            try
+            {
+                return await Task.Run(() => View());
+            }
+            catch (Exception)
+            {
+
+                return await Task.Run(() => BadRequest("Ocurrio un error"));
+            }
+
+        }
+
+
         //--------------------------------------------------------------------------------------
 
     }
