@@ -74,6 +74,10 @@ namespace ERPMVC.Models
 
         public string AccountName { get; set; }
 
+        [NotMapped]
+        public string AccountCode { get; set; }
+        [NotMapped]
+        public string AccountingName { get; set; }
         public decimal TotalMontoPresupuesto { get; set; }
 
         public decimal TotalMontoEjecucion { get; set; }

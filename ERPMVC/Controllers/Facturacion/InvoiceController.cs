@@ -165,7 +165,7 @@ namespace ERPMVC.Controllers
 
         public async Task<DataSourceResult> GetFacturasPendientesPagoByCustomer([DataSourceRequest] DataSourceRequest request, int CustomerId)
         {
-            List<Invoice> _Invoice = new List<Invoice>();
+            List<DocumentoDTO> _Invoice = new List<DocumentoDTO>();
             try
             {
 
@@ -177,8 +177,22 @@ namespace ERPMVC.Controllers
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _Invoice = JsonConvert.DeserializeObject<List<Invoice>>(valorrespuesta);
-                    _Invoice = _Invoice.OrderByDescending(q => q.InvoiceId).ToList();
+                    _Invoice = JsonConvert.DeserializeObject<List<DocumentoDTO>>(valorrespuesta);
+                    _Invoice = (from c in _Invoice
+                                select new DocumentoDTO{
+                                    DocumentoId = (int)c.DocumentoId,
+                                     CustomerId= (int)c.CustomerId, 
+                                     DocumentType = c.DocumentType,
+                                     DocumentTypeId= c.DocumentTypeId,
+                                     Identificador = new Identificador {
+                                        Id = c.DocumentoId,
+                                        Tipo = c.DocumentTypeId,
+                                     },
+
+                                    NumeroDEI = $"{c.NumeroDEI} - {c.ProductName} - {(c.Saldo + c.SaldoImpuesto).ToString("C2")}",
+
+                                }).OrderByDescending(q => q.DocumentoId).ToList();
+
                 }
 
             }
@@ -190,6 +204,52 @@ namespace ERPMVC.Controllers
 
 
             return _Invoice.ToDataSourceResult(request);
+
+        }
+        
+
+
+        public async Task<DataSourceResult> GetFacturasPendientesVigentesByCustomer([DataSourceRequest] DataSourceRequest request, int CustomerId)
+        {
+            List<Invoice> _Invoice = new List<Invoice>();
+            try
+            {
+
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/Invoice/GetFacturasPendientesVigentesByCustomer/" + CustomerId);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _Invoice = JsonConvert.DeserializeObject<List<Invoice>>(valorrespuesta);
+                    _Invoice = (from c in _Invoice
+                                select new Invoice
+                                {
+                                    InvoiceId = (int)c.InvoiceId,
+                                    CustomerId = (int)c.CustomerId,
+                                    // = c.DocumentType,
+                                    //DocumentTypeId = c.DocumentTypeId,
+                                    
+
+                                    NumeroDEI = $"{c.NumeroDEI} - {c.ProductName} - {(c.Saldo + c.SaldoImpuesto).ToString("C2")}",
+
+                                }).OrderByDescending(q => q.NumeroDEI).ToList();
+
+                }
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: {ex.ToString()}");
+                throw ex;
+            }
+
+            DataSourceResult dataSource= new DataSourceResult();
+            dataSource = _Invoice.ToDataSourceResult(request);
+            dataSource.Data = _Invoice;
+            return dataSource;
 
         }
 
@@ -327,6 +387,39 @@ namespace ERPMVC.Controllers
 
             return Json(_Invoice);
         }
+
+        public async Task<ActionResult> AnularFactura([FromBody] Invoice invoice)
+        //public async Task<ActionResult> GetGoodsDeliveredById([FromBody]dynamic dto)
+        {
+            Invoice _Invoice = new Invoice();
+            try
+            {
+
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + $"api/Invoice/AnularFactura/{invoice.InvoiceId}");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _Invoice = JsonConvert.DeserializeObject<Invoice>(valorrespuesta);
+
+                }
+                else
+                {
+                    throw new Exception(await (result.Content.ReadAsStringAsync()));
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: {ex.ToString()}");
+                return BadRequest(ex.Message);
+            }
+
+            return Json(_Invoice);
+        }
+
 
 
         [HttpPost("[action]")]
@@ -489,6 +582,36 @@ namespace ERPMVC.Controllers
             try
             {
                 InvoiceDTO _invoicedto = new InvoiceDTO { InvoiceId = id, };
+                string baseadress = config.Value.urlbase;
+                Invoice _Invoice = new Invoice();
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/Invoice/GetInvoiceById/" + id);
+                string valorrespuesta = "";
+
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _Invoice = JsonConvert.DeserializeObject<Invoice>(valorrespuesta);
+                    if (_Invoice.Impreso == null)
+                    {
+                        _Invoice.Impreso = "0";
+                    }
+                    else if (_Invoice.Impreso == "0")
+                    {
+                        _Invoice.Impreso = "1";
+                    }
+
+                    var updateresult = await Update(_Invoice.InvoiceId, _Invoice);
+                    
+                }
+
+                
+
+                
+
+
+
                 return await Task.Run(()=> View(_invoicedto));
             }
             catch (Exception)

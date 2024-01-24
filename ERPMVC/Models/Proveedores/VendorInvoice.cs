@@ -10,13 +10,13 @@ namespace ERPMVC.Models
     public class VendorInvoice
     {
         [Display(Name = "Id")]
+        [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int VendorInvoiceId { get; set; }
-        [Display(Name = "Nombre")]
         public string VendorInvoiceName { get; set; }
-        [Display(Name = "Envío")]
+        [Display(Name = "Envio")]
         public int ShipmentId { get; set; }
-        [Display(Name = "Orden de Compra")]
-        public int? PurchaseOrderId { get; set; }
+
+
         [Display(Name = "Fecha de Factura")]
         public DateTime VendorInvoiceDate { get; set; }
         [Display(Name = "Fecha de vencimiento")]
@@ -24,131 +24,92 @@ namespace ERPMVC.Models
 
         [Display(Name = "Fecha de vencimiento")]
         public DateTime ExpirationDate { get; set; }
-
         [Display(Name = "Tipo de Factura")]
         public int VendorInvoiceTypeId { get; set; }
 
-     
-        //[Display(Name = "Sucursal")]
-        //public string Sucursal { get; set; }
 
-
-        [Display(Name = "Número de Factura")]
+        [Display(Name = "Numero de Factura")]
         public string TipoDocumento { get; set; }
 
-        [Display(Name = "Número de Factura")]
+        [Display(Name = "Numero de Factura")]
         public string NumeroDEI { get; set; }
 
-        [Display(Name = "Número de Inicio")]
+        [Display(Name = "Numero de inicio")]
         public string NoInicio { get; set; }
 
-        [Display(Name = "Número Fin")]
+        [Display(Name = "Numero fin")]
         public string NoFin { get; set; }
 
-        [Display(Name = "Fecha Límite")]
+        [Display(Name = "Fecha Limite")]
         public DateTime FechaLimiteEmision { get; set; }
 
-        [Display(Name = "Número de Factura")]
+        [Display(Name = "Numero de Factura")]
         public string CAI { get; set; }
 
-        [Display(Name = "Número de orden de compra exenta")]
+        [Display(Name = "Numero de orden de compra exenta")]
         public string NoOCExenta { get; set; }
 
-        [Display(Name = "Número de constancia de registro de exoneración")]
+        [Display(Name = "Numero de constancia de registro de exoneracion")]
         public string NoConstanciadeRegistro { get; set; }
 
-        [Display(Name = "Número de registro de la SAG")]
+        [Display(Name = "Numero de registro de la SAG")]
         public string NoSAG { get; set; }
 
-        [Display(Name = "RTN")]
-        public string RTN { get; set; }
-        [Display(Name = "Teléfono")]
 
-        //public Int64 CostCenterId { get; set; }
-        //[ForeignKey("CostCenterId")]
-        //public CostCenter CostCenter { get; set; }
-        public string Tefono { get; set; }
-
-        [Display(Name = "Correo")]
-        [EmailAddress]
-        [RegularExpression(@"\w+([-+.']\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*", ErrorMessage = "Correo invalido")]
-        [DataType(DataType.EmailAddress)]
-        public string Correo { get; set; }
-
-        [Display(Name = "Dirección")]
-        public string Direccion { get; set; }
 
         [Display(Name = "Sucursal")]
         public int BranchId { get; set; }
 
-        [Display(Name = "Sucursal")]
+        [Display(Name = "Nombre Sucursal")]
         public string BranchName { get; set; }
 
-        [Display(Name = "Proveedor")]
-        public Int64 VendorId { get; set; }
+        [Display(Name = "Vendor")]
+        public long VendorId { get; set; }
 
-        [Display(Name = "Proveedor")]
+        [ForeignKey("VendorId")]
+        public Vendor Vendor { get; set; }
+
+
+        [Display(Name = "RTN")]
+        public string VendorRTN { get; set; }
+
+        [Display(Name = "Nombre Proveedor")]
         public string VendorName { get; set; }
-        
 
-        [Display(Name = "Fecha Factura")]
+
         public DateTime OrderDate { get; set; }
-        [Display(Name = "Fecha Recibido")]
+
         public DateTime ReceivedDate { get; set; }
 
-        [Display(Name = "Moneda")]
-        public int CurrencyId { get; set; }
 
-        [Display(Name = "Moneda")]
-        public string CurrencyName { get; set; }
 
-        [Display(Name = "Moneda Tasa")]
-        public double Currency { get; set; }
 
-        [Display(Name = "Número de referencia del Proveedor")]
-        public string VendorRefNumber { get; set; }
         [Display(Name = "Tipo de ventas")]
         public int SalesTypeId { get; set; }
 
-        [Display(Name = "Observación")]
+        [Display(Name = "Observacion")]
         public string Remarks { get; set; }
 
-        [Display(Name = "Monto")]
-        public double Amount { get; set; }
-        public double SubTotal { get; set; }
-
-        [Display(Name = "Descuento")]
-        public double Discount { get; set; }
-
-
-        [Display(Name = "Impuesto")]
+        [Column(TypeName = "Money")]
         public double Tax { get; set; }
 
-        [Display(Name = "Impuesto 18%")]
-        public double Tax18 { get; set; }
-
-        [Display(Name = "Flete")]
-        public double Freight { get; set; }
-
-        [Display(Name = "Total Exento")]
+        [Column(TypeName = "Money")]
         public double TotalExento { get; set; }
 
-        [Display(Name = "Total Exonerado")]
-        public double TotalExonerado { get; set; }
-        [Display(Name = "Total Gravado")]
+        [Column(TypeName = "Money")]
         public double TotalGravado { get; set; }
-        [Display(Name = "Total Gravado 18%")]
-        public double TotalGravado18 { get; set; }
-        public double Total { get; set; }
-        public Int64 IdEstado { get; set; }
-        public string Estado { get; set; }
-        public DateTime FechaCreacion { get; set; }
-        public DateTime FechaModificacion { get; set; }
-        public string UsuarioCreacion { get; set; }
-        public string UsuarioModificacion { get; set; }
 
-        public string Impreso { get; set; }
+        [Column(TypeName = "Money")]
+        public double Total { get; set; }
+
+        public string TotalLetras { get; set; }
+
+        public Int64 IdEstado { get; set; }
+
+        public string Estado { get; set; }
+
         public Int64? AccountIdCredito { get; set; }
+
 
         [ForeignKey("AccountIdCredito")]
         public Accounting Accountcredito { get; set; }
@@ -169,8 +130,16 @@ namespace ERPMVC.Models
 
         public string CostCenterName { get; set; }
 
+        public DateTime FechaCreacion { get; set; }
+        public DateTime FechaModificacion { get; set; }
+        public string UsuarioCreacion { get; set; }
+        public string UsuarioModificacion { get; set; }
 
-        public List<VendorInvoiceLine> VendorInvoiceLine { get; set; } = new List<VendorInvoiceLine>();
+        public string Impreso { get; set; }
+
+        public bool AplicaRetencion { get; set; }
+
+        public bool RetecionPendiente { get; set; }
 
     }
 }

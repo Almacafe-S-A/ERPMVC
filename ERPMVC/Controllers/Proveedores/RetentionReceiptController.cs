@@ -207,9 +207,10 @@ namespace ERPMVC.Controllers
                     _RetentionReceiptP.UsuarioModificacion = HttpContext.Session.GetString("user");
                     var insertresult = await Insert(_RetentionReceiptP);
 
-                    if (insertresult is BadRequestObjectResult)
+                    if (insertresult.Result is BadRequestObjectResult)
                     {
-                        return BadRequest(((BadRequestObjectResult)insertresult).Value);
+                        
+                        return await Task.Run(() => BadRequest(insertresult.Result));
                     }
                 }
                 else
@@ -237,7 +238,7 @@ namespace ERPMVC.Controllers
         //--------------------------------------------------------------------------------------
 
         [HttpPost]
-        public async Task<ActionResult> Insert(RetentionReceipt _RetentionReceiptS)
+        public async Task<ActionResult<RetentionReceipt>> Insert(RetentionReceipt _RetentionReceiptS)
         {
             RetentionReceipt _RetentionReceipt = _RetentionReceiptS;
             try
@@ -258,7 +259,7 @@ namespace ERPMVC.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest($"Ocurrio un error{ex.Message}");
+                return BadRequest($"{ex.Message}");
             }
             return new ObjectResult(new DataSourceResult { Data = new[] { _RetentionReceiptS }, Total = 1 });
         }
@@ -321,15 +322,44 @@ namespace ERPMVC.Controllers
         [HttpGet]
         public async Task<ActionResult> SFComprobanteRetencion(Int32 id)
         {
+            RetentionReceipt retentionReceipt = new RetentionReceipt();
             try
             {
                 RetentionReceiptDTO _RetentionReceipt = new RetentionReceiptDTO { RetentionReceiptId = id, };
-                return await Task.Run(() => View(_RetentionReceipt));
+
+                
+                
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/RetentionReceipt/GetRetentionReceiptById/" + id);
+                string valorrespuesta = "";
+
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    retentionReceipt = JsonConvert.DeserializeObject<RetentionReceipt>(valorrespuesta);
+                    if (retentionReceipt.Impreso == null)
+                    {
+                        retentionReceipt.Impreso = 0;
+                    }
+                    else if (retentionReceipt.Impreso == 0)
+                    {
+                        retentionReceipt.Impreso = 1;
+                    }
+
+                    var updateresult = await Update(retentionReceipt.RetentionReceiptId, retentionReceipt);
+
+                    return await Task.Run(() => View(_RetentionReceipt));
+
+                }
             }
             catch (Exception)
             {
                 return await Task.Run(() => BadRequest("Ocurrio un error"));
             }
+
+            return await Task.Run(() => View(retentionReceipt));
         }
     }
 }

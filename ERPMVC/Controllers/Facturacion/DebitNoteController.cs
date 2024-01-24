@@ -77,7 +77,44 @@ namespace ERPMVC.Controllers
             return PartialView(_DebitNote);
 
         }
-        
+
+        public async Task<ActionResult> Anular([FromBody] DebitNote invoice)
+        //public async Task<ActionResult> GetGoodsDeliveredById([FromBody]dynamic dto)
+        {
+            DebitNote _Invoice = new DebitNote();
+            try
+            {
+
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + $"api/DebitNote/Anular/{invoice.DebitNoteId}");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _Invoice = JsonConvert.DeserializeObject<DebitNote>(valorrespuesta);
+
+                }
+                else
+                {
+                    throw new Exception(await (result.Content.ReadAsStringAsync()));
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: {ex.ToString()}");
+                return BadRequest(ex.Message);
+            }
+
+            return Json(_Invoice);
+        }
+
+        public ActionResult SFReporteND()
+        {
+            return View();
+        }
+
         [HttpGet]
         public async Task<DataSourceResult> Get([DataSourceRequest]DataSourceRequest request)
         {
@@ -111,22 +148,22 @@ namespace ERPMVC.Controllers
 
 
 
-        public async Task<ActionResult> GenerarNotaDebito([FromBody] DebitNote debitnote)
+        public async Task<ActionResult> Generar([FromBody] DebitNoteDTO creditnote)
         //public async Task<ActionResult> GetGoodsDeliveredById([FromBody]dynamic dto)
         {
-            DebitNote debitNote = new DebitNote();
+            DebitNote _Invoice = new DebitNote();
             try
             {
 
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + $"api/DebitNote/GenerarNotaDebito/{debitnote.DebitNoteId}");
+                var result = await _client.GetAsync(baseadress + $"api/DebitNote/GenerarNotaDebito/{creditnote.DebitNoteId}/{creditnote.interna}");
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    debitNote = JsonConvert.DeserializeObject<DebitNote>(valorrespuesta);
+                    _Invoice = JsonConvert.DeserializeObject<DebitNote>(valorrespuesta);
 
                 }
                 else
@@ -140,8 +177,73 @@ namespace ERPMVC.Controllers
                 return BadRequest(ex.Message);
             }
 
-            return Json(debitNote);
+            return Json(_Invoice);
         }
+
+        public async Task<ActionResult<DebitNote>> Aprobar([FromBody] DebitNote creditnote)
+        {
+            try
+            {
+                if (creditnote == null)
+                {
+                    return await Task.Run(() => BadRequest("No llego correctamente el modelo!"));
+                }
+
+                GoodsDeliveryAuthorization goodsDeliveryAuthorization = new GoodsDeliveryAuthorization();
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + $"api/DebitNote/ChangeStatus/{creditnote.DebitNoteId}/{2}");
+                string valorrespuesta = "";
+                if (!result.IsSuccessStatusCode)
+                {
+                    return await Task.Run(() => BadRequest("No se Aprobo el documento!"));
+                }
+
+                return await Task.Run(() => Json(goodsDeliveryAuthorization));
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: {ex.ToString()}");
+                throw ex;
+            }
+
+
+        }
+
+        public async Task<ActionResult<DebitNote>> Revisar([FromBody] DebitNote creditnote)
+        {
+            try
+            {
+                if (creditnote == null)
+                {
+                    return await Task.Run(() => BadRequest("No llego correctamente el modelo!"));
+                }
+
+                GoodsDeliveryAuthorization goodsDeliveryAuthorization = new GoodsDeliveryAuthorization();
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + $"api/DebitNote/ChangeStatus/{creditnote.DebitNoteId}/{1}");
+                string valorrespuesta = "";
+                if (!result.IsSuccessStatusCode)
+                {
+                    return await Task.Run(() => BadRequest("No se Aprobo el documento!"));
+                }
+
+                return await Task.Run(() => Json(goodsDeliveryAuthorization));
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: {ex.ToString()}");
+                throw ex;
+            }
+
+
+        }
+
 
 
         [HttpPost("[action]")]
@@ -175,6 +277,10 @@ namespace ERPMVC.Controllers
                     _DebitNote.UsuarioCreacion = HttpContext.Session.GetString("user");
                     var insertresult = await Insert(_DebitNote);
                     var value = (insertresult.Result as ObjectResult).Value;
+                    if ((insertresult.Result is BadRequestObjectResult))
+                    {
+                        return await Task.Run(() => BadRequest(insertresult.Result));
+                    }
 
                     DebitNote resultado = ((DebitNote)(value));
                     

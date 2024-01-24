@@ -26,9 +26,9 @@ namespace ERPMVC.Models
         [Display(Name = "No Correlativo")]
         public string NoCorrelativoDocumento { get; set; }
 
-        public DateTime FechaLimiteDocumento { get; set; }
-
         public string CAIDocumento { get; set; }
+
+        public DateTime FechaLimiteDocumento { get; set; }
 
         [Display(Name = "CAI")]
         public string CAI { get; set; }
@@ -88,6 +88,14 @@ namespace ERPMVC.Models
         [Display(Name = "Importe Total")]
         public double TotalAmount { get; set; }
 
+        public Int64? TaxId { get; set; }
+        [ForeignKey("TaxId")]
+        public Tax Tax { get; set; }
+        public string TaxDescription { get; set; }
+
+        public int? Impreso { get; set; }
+
+        public string VendorInvoice { get; set; }
         public DateTime FechaCreacion { get; set; }
         public DateTime FechaModificacion { get; set; }
         public string UsuarioCreacion { get; set; }

@@ -33,12 +33,21 @@
             success: function (result) {
                 $("#ModalTipoDeduccion").html('');
                 $("#ModalTipoDeduccion").html(result);
+                
                 $('#ModalTipoDeduccionUpload').modal('show');
+                
             },
             error: function (XMLHttpRequest, textStatus, errorThrown) {
                 alert(textStatus + ": " + XMLHttpRequest.responseText);
             }
         });
+        window.RefrescarGridDetalle();
+    }
+
+    function RefrescarGridDetalle() {
+        debugger;
+        var grid = $("#gridDeductionQty").getKendoGrid();
+        grid.dataSource.read();
     }
 
     function RefreshTipoDeduccion() {
@@ -55,11 +64,11 @@
                 schema: {
                     model: {
                         fields: {
-                            DeductionId: { name: "DeductionId", type: "number", editable: false },
+                            Id: { name: "Id", type: "number", editable: false },
                             Description: { name: "Description", type: "string", editable: false },
                             DeductionType: { name: "DeductionType", type: "string", editable: false },
-                            Formula: { name: "Formula", type: "number", editable: false },
-                            Fortnight: { name: "Fortnight", type: "number", editable: false }
+                            Cantidad: { name: "Cantidad", type: "string", editable: false },
+                            NombreEstado: { name: "NombreEstado", type: "string", editable: false }
                         }
                     }
                 }
@@ -70,16 +79,20 @@
             columns: [
                 {
                     command: [
-                        PermisoEditar(),
-                        PermisoVerDetalle()
+                        PermisoEditar()
                     ],
                     width:100
                 },
-                { field: "DeductionId", title: "Id. ", width: 80 },
+                { field: "Id", title: "Id", width: 80 },
                 { field: "Description", title: "Descripción", width: 200},
                 { field: "DeductionType", title: "Tipo", width: 100 },
-                { field: "Formula", title: "Formula/Valor", width: 100 },
-                { field: "Fortnight", title: "Quincena a aplicar", width: 100 }
+                { field: "Cantidad", title: "Quincena", width: 100 },
+                { field: "NombreEstado", title: "Estado", width: 100 },
+                { field: "CuentaContableIngresosNombre", title: "CC Ingresos", width: 100 },
+                { field: "CuentaContablePorCobrarNombre", title: "CC por Cobrar", width: 100 }
+                    
+    
+
             ],
             height: 400,
             scrollable: true,
@@ -89,14 +102,8 @@
 
     function editar_click(e) {
         var registro = this.dataItem($(e.currentTarget).closest('tr'));
-        if (registro.DeductionId >= 1 && registro.DeductionId <= 4) {
-            alert(
-                'No se puede modificar el Tipo de Deducción seleccionada ya que es una formula del sistema. Puede modificar la parametrización de la formula en la opción del sistema especifica para este tipo de deducción.');
-            e.preventDefault();
-            return false;
-        }
         var parametros = {
-            DeductionId: registro.DeductionId
+            DeductionId: registro.Id
         };
         $.ajax({
             url: '@Url.Action("EditarDeduccion", "TipoDeduccion")',

@@ -62,8 +62,8 @@ namespace ERPMVC.Controllers
                 {
                     _SubServicesWareHouse = new SubServicesWareHouseDTO { 
                         SubServicesWareHouseId = 0, 
-                        StartTime = new DateTime(00 - 00 - 00),
-                        EndTime = new DateTime(00 - 00 - 00) , 
+                        StartTime = DateTime.Now.Date,
+                        EndTime = DateTime.Now.Date , 
                         BranchId = _SubServicesWareHousep.BranchId , 
                         DocumentDate = DateTime.Now };
                 }
@@ -130,7 +130,7 @@ namespace ERPMVC.Controllers
                 string valorrespuesta = "";
                 if (!result.IsSuccessStatusCode)
                 {
-                    return await Task.Run(() => BadRequest("No se Aprobo el documento!"));
+                    return await Task.Run(() => BadRequest(result.Content.ReadAsStringAsync().Result));
                 }
 
                 return await Task.Run(() => Json(_listSubServicesWareHouse));
@@ -155,8 +155,8 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                TimeSpan t = _SubServicesWareHouse.EndTime.Subtract(_SubServicesWareHouse.StartTime);
-                _SubServicesWareHouse.QuantityHours = t.TotalHours;
+                //TimeSpan t = _SubServicesWareHouse.EndTime.Subtract(_SubServicesWareHouse.StartTime);
+                //_SubServicesWareHouse.QuantityHours = t.TotalHours;
                 var result = await _client.GetAsync(baseadress + "api/SubServicesWareHouse/GetSubServicesWareHouseById/" + _SubServicesWareHouse.SubServicesWareHouseId);
                 string valorrespuesta = "";
                 _SubServicesWareHouse.FechaModificacion = DateTime.Now;

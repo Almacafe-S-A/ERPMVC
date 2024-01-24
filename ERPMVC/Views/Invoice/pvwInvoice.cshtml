@@ -115,7 +115,8 @@
                                     <form id="frmSalesOrder" kendo-validator="true" kendo-messages="messages" kendo-rules="rules"
                                           data-ajax="true"
                                           data-ajax-method="post"
-                                          method="post" class="validation-wizard wizard-circle">
+                                          method="post" class="validation-wizard wizard-circle"
+                                    >
                                         <div class="row">
                                             <div class="col-md-3">
                                                 <div class="form-group">
@@ -335,6 +336,7 @@
                                                             </transport>
                                                         </datasource>
                                                     </kendo-dropdownlist>
+                                                    <span asp-validation-for="CustomerId" class="text-danger"></span>
                                                 </div>
                                             </div>
                                             <div class="col-md-3">
@@ -397,14 +399,17 @@
                                                     </kendo-switch>
                                                 </div>
                                             </div>
-                                    <div class="col-md-6">
-                                        <label asp-for="Remarks" class="control-label"></label>
 
-                                        <textarea asp-for="Remarks" class="form-control required " style="min-width: 100%;"></textarea>
-
-                                        <span asp-validation-for="Remarks" class="text-danger"></span>
-                                    </div>
                                     <div class="col-md-3">
+                                        <div class="form-group">
+                                            <label class="control-label" style="min-width:100%">Exento</label>
+                                            <kendo-switch name="Exento" for="Exento" checked="@Model.Exento" on-change="onChangeExonerado">
+                                                <messages checked="Si" unchecked="No" />
+                                            </kendo-switch>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-md-6">
                                         <label asp-for="Sinopsis" class="control-label"></label>
 
                                         <textarea asp-for="Sinopsis" class="form-control required " style="min-width: 100%;"></textarea>
@@ -414,7 +419,7 @@
                                            
                                             
                                         </div>
-                                         <div id="datosexonerado" class="row" style="display:none">
+                                         <div id="datosexonerado" class="row" >
                                                 <div class="col-md-3">
                                                 <div class="form-group">
                                                     <label asp-for="NoOCExenta" class="control-label">No. OC Exenta</label>
@@ -443,6 +448,16 @@
                                
                                        
                                     </form>
+
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <label asp-for="Remarks" class="control-label"></label>
+
+                                        <textarea asp-for="Remarks" class="form-control required " style="min-width: 100%;"></textarea>
+
+                                        <span asp-validation-for="Remarks" class="text-danger"></span>
+                                    </div>
+                                </div>
                                 
 
                                 <div id="salesorderdetail">
@@ -485,7 +500,7 @@
 
 
                                 <div class="row">
-                                    @if (Model.InvoiceId == 0 || Model.Estado == "Aprobado")
+                                    @if (Model.InvoiceId == 0 || ( Model.Estado != "Emitido" && Model.Estado != "Anulado" ) )
                                     {
                                         <button id="btnSaveInvoice" type="submit" class="form-control btn-miboton " onclick="SaveCotizacion(this);">Guardar</button>
                                     }
@@ -543,6 +558,9 @@
             $("#datosExonerado").show();
             $("#datosfiscales").show();
         }
+        var exo = $("#Exonerado").data("kendoSwitch");
+        var exonerado = exo.check();
+        
     });
     function SoloNumeros(e) {
         key = e.keyCode || e.which;
@@ -574,15 +592,31 @@
 
     function SaveCotizacion(e) {
         try {
-            $("#btnSaveInvoice").prop("disabled", true);
+            debugger;
+                    var btnSaveInvoice = $("#btnSaveInvoice");
+            if (btnSaveInvoice.prop("disabled")) {
+                return; // Si el botón ya está deshabilitado, no hacer nada
+            }
+            btnSaveInvoice.prop("disabled", true); // Deshabilitar el botón
+
             var validadetalle = true;
             var displayedData = $("#gridInvoiceDetail").data().kendoGrid.dataSource.view();
+            for (var i = 0; i < displayedData.length; i++) {
+                if (displayedData[i].UnitOfMeasure) {
+                displayedData[i].UnitOfMeasureId = displayedData[i].UnitOfMeasure.UnitOfMeasureId;
+                displayedData[i].UnitOfMeasureName = displayedData[i].UnitOfMeasure.UnitOfMeasureName;
+                }
+                if (displayedData[i].SubProduct) {
+                    displayedData[i].SubProductId = displayedData[i].SubProduct.SubproductId;
+                    displayedData[i].SubProductName = displayedData[i].SubProduct.ProductName;
+                }
+            }
             if (displayedData.length <= 0) {
                 MostrarMensaje('Debe agregar los productos!', "Error", "Validación", 6000);
             }
             for (var i = 0; i < displayedData.length; i++) {
                 if (displayedData[i].Total == 0) {
-                    MostrarMensaje('No pueden ir datos vacios en el detalle la factura', "Error", "EValidaciónrror", 6000);
+                    MostrarMensaje('No pueden ir datos vacios en el detalle la factura', "Error", "Error Validación", 6000);
                     return;
                 }
             }
@@ -593,11 +627,14 @@
             if (!validator.validate()) {
                 MostrarMensaje('Datos incorrectos en el formulario!', "Error", "Validación", 6000);
                 $("#btnSaveInvoice").show();
-                $("#btnSaveInvoice").prop("disabled", false);
+                return;
             }
 
             var exo = $("#Exonerado").data("kendoSwitch");
             var exonerado =  exo.check();
+
+            var exe = $("#Exento").data("kendoSwitch");
+            var exento =  exe.check();
 
             var dataObject = {
                 'InvoiceId': $("#InvoiceId").val() === "" ? "0" : $("#InvoiceId").val(),
@@ -633,6 +670,7 @@
                 'Rango': $('#Rango').val(),
                 'DiasVencimiento': $('#DiasVencimiento').val(),
                 'Exonerado': exonerado,
+                'Exento': exento,
                 'InvoiceLine': displayedData,
 
             };
@@ -654,16 +692,16 @@
 
                 },
                 error: function (XMLHttpRequest, textStatus, errorThrown) {
-                    MostrarMensaje(textStatus + ": " + XMLHttpRequest.responseText, "Error", "Error", 6000);
+                    MostrarMensaje(textStatus + ": " + XMLHttpRequest.responseJSON.Value, "Error", "Error", 6000);
                     $("#btnSaveInvoice").show();
-                    $("#btnSaveInvoice").prop("disabled", false);
                 }
             });
         } catch (ex) {
             console.log(ex);
         } finally {
-            $("#btnSaveInvoice").show();
-            $("#btnSaveInvoice").prop("disabled", false);
+            setTimeout(function () {
+                $("#btnSaveInvoice").prop("disabled", false);
+            }, 4000);
         }
             
 

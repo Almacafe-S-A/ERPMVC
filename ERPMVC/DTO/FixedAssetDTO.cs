@@ -12,6 +12,5 @@ namespace ERPMVC.DTO
 
         public int MotivoId { get; set; }
 
-        public DateTime FechaBaja { get; set; }
     }
 }

@@ -1,10 +1,13 @@
 ﻿@model ERPMVC.DTO.SubServicesWareHouseDTO
 
-@{ Layout = null;
+@{
+    Layout = null;
     var messages = new Dictionary<string, string>() { { "custom", "Ingrese un valor correcto." },
     // {"required","Valor requerido" }
 };
     var rules = new Dictionary<string, string>() { { "custom", "customFunction" } };
+
+    bool permisoCalculoManual = User.HasClaim("Inventarios.Servicios Utilizados.Calculo Manual", "true");
 }
 
 <script>
@@ -147,7 +150,7 @@
                                                     <kendo-dropdownlist name="ServiceId" filter="Kendo.Mvc.UI.FilterType.Contains"
                                                                         for="ServiceId"
                                                                         onchange="GetSubProducts()"
-                                                                        option-label="Seleccione el Producto"
+                                                                        option-label="Seleccione el Servicio"
                                                                         datatextfield="ProductName"
                                                                         datavaluefield="ProductId"
                                                                         data-val-required="El servicio es requerido"
@@ -162,7 +165,7 @@
                                                 </div>
                                             </div>
 
-                                            <div class="col-sm-3 col-md-3">
+                                            <div class="col-md-3">
                                                 <div class="form-group">
                                                     <label asp-for="SubServiceId" class=" control-label" style="width:100%">SubServicio</label>
                                                     <div class="form-group">
@@ -174,6 +177,7 @@
                                                                             auto-bind="false"
                                                                             datatextfield="ProductName"
                                                                             datavaluefield="SubproductId"
+                                                                            on-change="VerificarSubservicio"
                                                                             style="width: 100%;">
                                                             <datasource type="DataSourceTagHelperType.WebApi" page-size="99999999">
                                                                 <transport>
@@ -187,17 +191,26 @@
                                                 </div>
                                             </div>
                                             
-                                             <div class=" col-md-3">
-                                                    <div class="form-group">
-                                                        <label asp-for="Solicitante" class="control-label" style="width: 100%;"></label>
-                                                        <input id="Solicitante" required class="k-textbox" style="min-width:100%;" asp-for="Solicitante"/>                                                        
-                                                    </div>
+                                            <div class="col-md-3">
+                                                <div class="form-group">
+                                                    <label class="control-label" style="min-width:100%">Cobro Por Tiempo</label>
+                                                    <kendo-switch name="CobroPorTiempo" for="CobroPorTiempo" checked="@Model.CobroPorTiempo" enabled="permisoCalculoManual" on-change="calculateTotalHours">
+                                                        <messages checked="Si" unchecked="No"  />
+                                                    </kendo-switch>
                                                 </div>
-
+                                            </div>
+                                            
                                         </div>
 
                                             <div class="row">
-                                                <div class="col-md-3">
+                                            <div class=" col-md-6">
+                                                <div class="form-group">
+                                                    <label asp-for="Solicitante" class="control-label" style="width: 100%;"></label>
+                                                    <input id="Solicitante" required class="k-textbox" style="min-width:100%;" asp-for="Solicitante" />
+                                                </div>
+                                            </div>
+
+                                                <div class="col-md-6">
                                                 <div class="form-group">
                                                     <label asp-for="EmployeeId" class="control-label"></label>
                                                     <kendo-dropdownlist name="EmployeeId"
@@ -210,7 +223,7 @@
                                                                         style="width: 100%;">
                                                         <datasource type="DataSourceTagHelperType.WebApi" server-operation="true">
                                                             <transport>
-                                                                <read url="@Url.Action("GetEmployeesByDepartament", "Employees")" data="GetDepartament" />
+                                                                <read url="@Url.Action("GetEmployeesByDepartamentActivos", "Employees")" data="GetDepartament" />
                                                             </transport>
                                                         </datasource>
                                                     </kendo-dropdownlist>
@@ -218,26 +231,32 @@
                                                 </div>
                                             </div>
                                                 
+                                                
+                                                
+
+                                            </div>
+
+                                            <div class="row">
                                                 <div class="col-md-3">
                                                     <div class="form-group">
                                                         <label asp-for="StartTime" class=" control-label" style="width:100%"></label>
-                                                        <kendo-timepicker name="StartTime"
+                                                   
+                                                         <kendo-datetimepicker name="StartTime" for="StartTime"
                                                                           value="Model.StartTime"
                                                                           format="HH:mm:ss"
-                                                                          date-input="false"
-                                                                          interval="30"
                                                                           style="width:100%;"
+                                                                          on-change="calculateTotalHours"
                                                                           data-val-required="La hora inicio es requerida" />
+                                                    <span asp-validation-for="DocumentDate" class="text-danger"></span>
                                                         <span asp-validation-for="StartTime" class="text-danger"></span>
                                                     </div>
                                                     <script>
                                                         $(document).ready(function () {
-                                                            $("#dateinput").kendoDateInput();
-                                                            var timepicker = $("#StartTime").data("kendoTimePicker");
-                                                        if ($("#SubServicesWareHouseId").val()==0) {
-                                                            
-
-                                                            timepicker.enable(false);
+                                                        var timepickerstart = $("#StartTime").data("kendoTimePicker");
+                                                        var timepickerend = $("#EndTime").data("kendoTimePicker");
+                                                        if ($("#SubServicesWareHouseId").val() == 0) {
+                                                            //timepickerstart.enable(false);
+                                                            //timepickerend.enable(false);
                                                         }
                                                         });
                                                     </script>
@@ -246,35 +265,23 @@
                                                 <div class="col-md-3">
                                                     <div class="form-group">
                                                         <label asp-for="EndTime" class=" control-label" style="width:100%"></label>
-                                                        <kendo-timepicker name="EndTime"
+                                                        
+
+                                                         <kendo-datetimepicker name="EndTime" for="EndTime"
                                                                           value="Model.EndTime"
                                                                           format="HH:mm:ss"
-                                                                          date-input="false"
-                                                                          interval="30"
+                                                                          on-change="calculateTotalHours"
                                                                           style="width:100%;"
                                                                           data-val-required="La hora fin es requerida" />
                                                         <span asp-validation-for="EndTime" class="text-danger"></span>
                                                     </div>
-                                                    <script>
-                                                        $(document).ready(function () {
-                                                            $("#dateinput").kendoDateInput();
-                                                        var timepicker = $("#EndTime").data("kendoTimePicker");
-                                                        if ($("#SubServicesWareHouseId").val()==0) {
-                                                            timepicker.enable(false);
-                                                        }
-
-                                                        
-                                                        });
-                                                    </script>
                                                 </div>
                                                 <div class=" col-md-3">
                                                     <div class="form-group">
-                                                        <label asp-for="QuantityHours" class="control-label" style="width: 100%;">Cantidad</label>
-                                                    <input id="QuantityHours" required class="k-textbox" style="min-width:100%;" asp-for="QuantityHours"/>
+                                                        <label asp-for="QuantityHours" class="control-label" style="width: 100%;" readonly>Cantidad</label>
+                                                    <input id="QuantityHours" required class="k-textbox" style="min-width:100%;" asp-for="QuantityHours" min="0"/>
                                                 </div>
                                                 </div>
-                                                
-
                                             </div>
                                        
                                             <div class="row">
@@ -288,11 +295,18 @@
                                             </div>
 
                                         </div>
+
+                                    @if (Model.IdEstado!=6 )
+                                    
+                                    {
                                         <div class="row">
                                             <div class="col-md-12">
                                                 <button id="btnEmployees" class="form-control btn-miboton" onclick="SaveSubServicesWareHouse(this);"> Guardar </button>
                                             </div>
                                         </div>
+                                    
+                                    }
+                                    
 </form>
 
                                
@@ -321,6 +335,80 @@
         }
         else {
             $("#GeneroAlert").hide();
+        }
+    }
+
+    function VerificarSubservicio(){
+        var subservicio = $("#SubServiceId").val();
+        if(subservicio == null){
+            MostrarMensaje("Error: Seleccione un subservicio", "Error", "Error", 60000);
+            return;
+        }
+
+        var dataObject = {
+            SubProductId: subservicio,
+        }
+
+        var cobro = $("#CobroPorTiempo").data("kendoSwitch");
+        var cobroportiempo = cobro.check();
+
+        $.ajax({
+            url: '@Url.Action("GetProductoById", "SubProduct")',
+            method: 'GET',
+            datatype: "json",
+            contentType: 'application/json',
+            async: false,
+            data: dataObject,
+            success: function (subproducto) {
+                cobro.check(subproducto.CobroPorTiempo);
+                
+                debugger;
+                if(subproducto.CobroPorTiempo){
+                    $("#QuantityHours").attr("readonly", true);
+                    calculateTotalHours();
+                    //CalcularTiempo();
+
+
+                }else{
+                    $("#QuantityHours").attr("readonly", false);
+                    $("#QuantityHours").value(0);
+                
+                }      
+             
+            },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                MostrarMensaje(textStatus + ": " + XMLHttpRequest.responseText, "Error", "Error", 6000);
+            }
+        });
+    
+    }
+
+
+    function calculateTotalHours() {
+
+       
+            
+
+        
+        var cobro = $("#CobroPorTiempo").data("kendoSwitch");
+        var cobroportiempo = cobro.check();
+        $("#QuantityHours").attr("readonly", cobroportiempo);
+        if(!cobroportiempo){
+            
+            return;
+        }
+        var startTimePicker = $("#StartTime").data("kendoDateTimePicker");
+        var endTimePicker = $("#EndTime").data("kendoDateTimePicker");
+
+
+        var startTime = startTimePicker.value();
+        var endTime = endTimePicker.value();
+
+        if (startTime && endTime) {
+            var timeDiff = endTime - startTime;
+            var hours = timeDiff / (1000 * 60 * 60);
+
+            $("#QuantityHours").val(hours.toFixed(2));
         }
     }
 
@@ -370,8 +458,17 @@
         //  console.log($("#StartTime").getKendoTimePicker().value().toJSON());
           var today = new Date();
           let fechaactual = String(today.getDate()).padStart(2, '0') + "/" + String(today.getMonth() + 1).padStart(2, '0') + "/" + today.getFullYear();
-        let sttime = $("#StartTime").getKendoTimePicker().value().toJSON();  // fechaactual + " "+$("#StartTime").getKendoTimePicker().value().toJSON();
-        let ettime = $("#EndTime").getKendoTimePicker().value().toJSON();    // fechaactual + " " + $("#EndTime").getKendoTimePicker().value().toJSON();
+        let sttime = $("#StartTime").getKendoDateTimePicker().value().toJSON();  // fechaactual + " "+$("#StartTime").getKendoTimePicker().value().toJSON();
+        let ettime = $("#EndTime").getKendoDateTimePicker().value().toJSON();    // fechaactual + " " + $("#EndTime").getKendoTimePicker().value().toJSON();
+        let hours = $("#QuantityHours").val();
+        var cobro = $("#CobroPorTiempo").data("kendoSwitch");
+        var cobroportiempo = cobro.check();
+        var serviciobrindadoid = $("#SubServicesWareHouseId").val();
+        if (hours <= 0 && serviciobrindadoid !=0) {
+            MostrarMensaje( "Error: La cantidad no puede ser menor o igual a cero " , "Error", "Error", 600000);
+            return;
+        }
+        
 
 				var dataObject = {
                     'SubServicesWareHouseId': $("#SubServicesWareHouseId").val(),
@@ -383,9 +480,9 @@
                     'ServiceName': $("#ServiceId").data("kendoDropDownList").text(),
                     'SubServiceId': $("#SubServiceId").val(),
                     'SubServiceName': $("#SubServiceId").data("kendoDropDownList").text(),
-                    'StartTime': $("#StartTime").val(),
-                    'EndTime': $("#EndTime").val(),
-                    'QuantityHours': $("#QuantityHours").val(),
+                    'StartTime': sttime,
+                    'EndTime': ettime,
+                    'QuantityHours': hours,
                     'EmployeeId': $("#EmployeeId").val(), 
                     'IdEstado': $("#IdEstado").val(),
                     'Estado': $("#IdEstado").data("kendoDropDownList").text(),
@@ -394,6 +491,7 @@
                     'EmployeeId' : $("#EmployeeId").val(),
                     'EmployeeName': $("#EmployeeId").data("kendoDropDownList").text(), 
                     'Motivo' : $("#Motivo").val(),
+                    'CobroPorTiempo':cobroportiempo,
             
 
 

@@ -16,6 +16,7 @@ using Newtonsoft.Json;
 using NPOI.SS.UserModel;
 using NPOI.XSSF.UserModel;
 using System.Security.Claims;
+using Kendo.Mvc.UI;
 
 namespace ERPMVC.Controllers
 {
@@ -37,8 +38,11 @@ namespace ERPMVC.Controllers
         //[Authorize(Policy = "RRHH.Asistencia.Cargar Archivo Biometrico")]
         public IActionResult Index()
         {
+            BiometricoPost biometricoPost = new BiometricoPost();
+            biometricoPost.valid = true;
+            biometricoPost.message = "";
             ViewData["permisos"] = _principal;
-            return View();
+            return View(biometricoPost);
         }
 
         public IActionResult VerDetalle(long idBiometrico)
@@ -48,25 +52,28 @@ namespace ERPMVC.Controllers
         }
 
         [HttpGet("[action]")]
-        public async Task<ActionResult> GetBiometricos()
+        public async Task<DataSourceResult> GetBiometricos([DataSourceRequest] DataSourceRequest request)
         {
+            List<Biometrico> biometricos = new List<Biometrico>();
+
             try
             {
                 var respuesta = await Utils.HttpGetAsync(HttpContext.Session.GetString("token"),
                     config.Value.urlbase + "api/Biometrico/GetBiometricos");
+                string valorrespuesta = "";
                 if (respuesta.IsSuccessStatusCode)
                 {
-                    var contenido = await respuesta.Content.ReadAsStringAsync();
-                    var resultado = JsonConvert.DeserializeObject<List<Biometrico>>(contenido);
-                    return Ok(resultado);
+                    valorrespuesta = await respuesta.Content.ReadAsStringAsync();
+                    biometricos = JsonConvert.DeserializeObject<List<Biometrico>>(valorrespuesta);
+                    biometricos = biometricos.OrderByDescending(x => x.Id).ToList();
                 }
-                return BadRequest();
             }
             catch (Exception ex)
             {
                 logger.LogError(ex,"Error al cargar los archivos biometricos");
-                return BadRequest(ex);
+                throw ex;
             }
+            return biometricos.ToDataSourceResult(request);
         }
 
         [HttpGet("[action]")]
@@ -92,8 +99,9 @@ namespace ERPMVC.Controllers
         }
 
         [HttpPost("[action]")]
-        public async Task<ActionResult> GuardarBiometrico([FromForm]BiometricoPost registro)
+        public async Task<ActionResult<BiometricoPost>> GuardarBiometrico([FromForm]BiometricoPost registro)
         {
+            Exception ex = null;
             try
             {
                 if (registro.Archivo == null)
@@ -119,10 +127,16 @@ namespace ERPMVC.Controllers
                 var hoja = libro.GetSheetAt(0);
                 var titulos = hoja.GetRow(0);
                 //validar titulos
-                if (!(titulos.GetCell(0).StringCellValue.ToUpper().Equals("CODIGO") &&
-                      titulos.GetCell(1).StringCellValue.ToUpper().Equals("FECHA") &&
-                      titulos.GetCell(2).StringCellValue.ToUpper().Equals("HORA") &&
-                      titulos.GetCell(3).StringCellValue.ToUpper().Equals("TIPO")))
+                if (!(titulos.GetCell(0).StringCellValue.Equals("Número") &&
+                      titulos.GetCell(1).StringCellValue.Equals("Nombre") &&
+                      titulos.GetCell(2).StringCellValue.Equals("Tiempo") &&
+                      titulos.GetCell(3).StringCellValue.Equals("Estado") &&
+                      titulos.GetCell(4).StringCellValue.Equals("Dispositivos") &&
+                      titulos.GetCell(5).StringCellValue.Equals("Tipo de Registro") &&
+                      titulos.GetCell(6).StringCellValue.Equals("Horario") &&
+                      titulos.GetCell(7).StringCellValue.Equals("Marca Asistencia")
+                      )
+                    )
                 {
                     libro.Close();
                     throw new Exception("Titulos de hoja de excel no son validos");
@@ -143,38 +157,41 @@ namespace ERPMVC.Controllers
                     var filaRegistro = hoja.GetRow(fila);
 
                     var IdBiometrico = Utils.GetNumeroXLS(filaRegistro.GetCell(0, MissingCellPolicy.RETURN_NULL_AND_BLANK));
-                    var fecha = Utils.GetFechaXLS(filaRegistro.GetCell(1, MissingCellPolicy.RETURN_NULL_AND_BLANK));
-                    var hora = Utils.GetHoraXLS(filaRegistro.GetCell(2, MissingCellPolicy.RETURN_NULL_AND_BLANK));
+                    var fecha = Utils.GetFechaXLS(filaRegistro.GetCell(2, MissingCellPolicy.RETURN_NULL_AND_BLANK));
+                    //var hora = Utils.GetHoraXLS(filaRegistro.GetCell(2, MissingCellPolicy.RETURN_NULL_AND_BLANK));
                     var tipo = filaRegistro.GetCell(3, MissingCellPolicy.RETURN_NULL_AND_BLANK).ToString();
-
+                    var IdHorario = Utils.GetNumeroXLS(filaRegistro.GetCell(6, MissingCellPolicy.RETURN_NULL_AND_BLANK));
+                    var salidaPendiente = Utils.GetNumeroXLS(filaRegistro.GetCell(7, MissingCellPolicy.RETURN_NULL_AND_BLANK));
                     if (fecha.Equals(DateTime.MinValue)) {
                         TempData["Errores"] = "Formato de Fecha No Valido";
-                        return RedirectToAction("Index");
-                        continue;
+                        throw new Exception("Formato de Fecha No Valido");
+
 
                     }
 
-                    if (hora.Equals(DateTime.MinValue)) { 
+                    /*if (hora.Equals(DateTime.MinValue)) { 
                         TempData["Errores"] = "Formato de Fecha No Valido";
                         return RedirectToAction("Index");
                         continue;
-                    }
+                    }*/
 
-                    if (IdBiometrico == null) { 
+                    if (IdBiometrico == null) {
                         TempData["Errores"] = "Formato de Fecha No Valido";
-                        return RedirectToAction("Index");
-                        continue; 
+                        throw new Exception("Formato de Fecha No Valido");
+
                     }
 
-                    var fechaHora = new DateTime(fecha.Year, fecha.Month, fecha.Day, hora.Hour, hora.Minute, 0);
+                    var fechaHora = new DateTime(fecha.Year, fecha.Month, fecha.Day, fecha.Hour, fecha.Minute, fecha.Second);
 
                     DetalleBiometrico detalle = new DetalleBiometrico()
                                                 {
                                                     Encabezado = biometrico,
                                                     FechaHora = fechaHora,
                                                     IdBiometrico = (long)IdBiometrico.Value,
-                                                    Tipo = tipo
-                                                };
+                                                    Tipo = tipo,
+                                                    IdHorario = IdHorario == null ? 0: (long)IdHorario,
+                                                    MarcaAsistencia = salidaPendiente == null ? false: Convert.ToBoolean(salidaPendiente),
+                    };
                     biometrico.Detalle.Add(detalle);
                 }
                 libro.Close();
@@ -183,21 +200,26 @@ namespace ERPMVC.Controllers
                     config.Value.urlbase + "api/Biometrico/Guardar", biometrico);
                 if (respuesta.IsSuccessStatusCode)
                 {
+                    var inasistencia = await Utils.HttpGetAsync(HttpContext.Session.GetString("token"),
+                        config.Value.urlbase + $"api/Inasistencia/GetInasistenciasFecha/{biometrico.Fecha.ToString("yyyy-MM-dd")}");
                     return RedirectToAction("Index");
                 }
-                else {
-                   TempData["Errores"] = await respuesta.Content.ReadAsStringAsync();
-
+                else
+                {
+                    var errorMessage = await respuesta.Content.ReadAsStringAsync();
+                    ex = JsonConvert.DeserializeObject<Exception>(errorMessage);
+                    TempData["Errores"] = ex.Message;
+                    throw ex; // Devuelve el mensaje de error
                 }
-
-                
-                return RedirectToAction("Index");
             }
-            catch (Exception ex)
+            catch (Exception exception)
             {
-                logger.LogError(ex,"Error al guardar el registro biometrico");
-                TempData["Errores"] = ex.Message;
-                return RedirectToAction("Index");
+                var biometricoPost = new BiometricoPost
+                {
+                    message = "Error al guardar el registro biometrico: " + exception.Message,
+                    valid = false
+                };
+                return View("Index", biometricoPost);
             }
         }
 

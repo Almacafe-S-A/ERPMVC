@@ -35,6 +35,10 @@ namespace ERPMVC.Models
 
         public bool Exonerado { get; set; }
 
+
+        public bool Exento { get; set; }
+
+
         [Display(Name = "Sucursal")]
         public string Sucursal { get; set; }
 

@@ -49,6 +49,9 @@ namespace ERPMVC.Models
         public string Motivo { get; set; }
 
         public string Solicitante { get; set; }
+        public bool CobroPorTiempo { get; set; }
+
+
 
         [Display(Name = "Estado")]
         public Int64 IdEstado { get; set; }

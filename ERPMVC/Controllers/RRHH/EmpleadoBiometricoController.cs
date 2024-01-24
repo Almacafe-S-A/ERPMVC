@@ -26,7 +26,7 @@ namespace ERPMVC.Controllers
             _principal = httpContextAccessor.HttpContext.User;
         }
 
-        [Authorize(Policy = "RRHH.Asistencia.Asignacion Empleado Biometrico")]
+        [Authorize(Policy = "RRHH.Asistencia.Asignacion Empleados Biometrico")]
         public IActionResult Index()
         {
             ViewData["permisos"] = _principal;

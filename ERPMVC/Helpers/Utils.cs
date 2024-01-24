@@ -55,6 +55,21 @@ namespace ERPMVC.Helpers
             {
                 return DateTime.MinValue;
             }
+            if(celda.CellType == CellType.String)
+            {
+                string[] formatos = {"d/M/yyyy H:mm:ss tt", "d/M/yyyy H:mm tt",
+                         "dd/MM/yyyy HH:mm:ss", "d/M/yyyy H:mm:ss",
+                         "d/M/yyyy HH:mm tt", "d/M/yyyy HH tt",
+                         "d/M/yyyy H:mm", "d/M/yyyy H:mm",
+                         "dd/MM/yyyy HH:mm", "dd/M/yyyy HH:mm",
+                         "d/MM/yyyy HH:mm:ss.ffffff" };
+               // string[] formatos = {"d/M/yyyy H:mm:ss" };
+                string fecha = celda.StringCellValue;
+                //string formato = celda.CellStyle.GetDataFormatString();
+                //return DateTime.Parse(fecha);
+                return DateTime.ParseExact(fecha, formatos, null);
+            }
+
 
             try
             {
@@ -146,5 +161,60 @@ namespace ERPMVC.Helpers
             }
         }
 
+        public static DateTime GetFecha(string pFecha)
+        {
+            DateTime fecha = new DateTime();
+            if (pFecha != null && pFecha.Length < 23)
+            {
+                int x = 0;
+                int dia = 1;
+                int mes = 1;
+                int anio = 1;
+                string digito = "";
+                foreach (char c in pFecha)
+                {
+                    if (c == '/' || c == ' ')
+                    {
+                        switch (x)
+                        {
+                            case 0:
+                                mes = Convert.ToInt32(digito);
+                                x++;
+                                digito = "";
+                                break;
+                            case 1:
+                                dia = Convert.ToInt32(digito);
+                                digito = "";
+                                x++;
+                                break;
+                            case 2:
+                                anio = Convert.ToInt32(digito);
+                                digito = "";
+                                x++;
+                                break;
+                            default:
+                                break;
+                        }
+                        if (c == ' ')
+                        {
+                            break;
+                        }
+
+                    }
+                    else
+                    {
+
+                        digito = digito + c;
+                    }
+                }
+                 fecha = new DateTime(anio, mes, dia);
+
+
+                return fecha;
+            }
+
+            fecha = DateTime.Parse(pFecha);
+            return fecha;
+        }
     }
 }

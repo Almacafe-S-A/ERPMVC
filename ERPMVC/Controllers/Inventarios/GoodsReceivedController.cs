@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using ERPMVC.DTO;
 using ERPMVC.Helpers;
 using ERPMVC.Models;
+using ERPMVC.Wrappers;
 using Kendo.Mvc.Extensions;
 using Kendo.Mvc.UI;
 using Microsoft.AspNetCore.Authorization;
@@ -476,8 +477,9 @@ namespace ERPMVC.Controllers
 
 
         [HttpPost("[controller]/[action]")]
-       public async Task<ActionResult<GoodsReceived>> SaveGoodsReceived([FromBody] GoodsReceived dto)
+       public async Task<ActionResult<ResponseAPIDTO<GoodsReceived>>> SaveGoodsReceived([FromBody] GoodsReceived dto)
         {
+                ResponseAPIDTO<GoodsReceived> response = new ResponseAPIDTO<GoodsReceived>();
             try
             {
 
@@ -489,7 +491,7 @@ namespace ERPMVC.Controllers
                     return BadRequest("No llego correctamente el modelo!");                   
                 }
 
-                GoodsReceived _listGoodsReceived = new GoodsReceived();
+                //GoodsReceived _listGoodsReceived = new GoodsReceived();
                 // _listGoodsReceived = JsonConvert.DeserializeObject<GoodsReceived>(_GoodsReceived.ToString());
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
@@ -501,34 +503,35 @@ namespace ERPMVC.Controllers
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _listGoodsReceived = JsonConvert.DeserializeObject<GoodsReceived>(valorrespuesta);
+                    response = JsonConvert.DeserializeObject<ResponseAPIDTO<GoodsReceived>>(valorrespuesta);
                 }
 
-                if (_listGoodsReceived == null)
+                if (response == null)
                 {
-                    _listGoodsReceived = new GoodsReceived();
+                    response = new ResponseAPIDTO<GoodsReceived>();
                 }
 
-                if (_listGoodsReceived.GoodsReceivedId == 0)
+                if (response.model == null)
                 {
                     _GoodsReceived.FechaCreacion = DateTime.Now;
                     _GoodsReceived.UsuarioCreacion = HttpContext.Session.GetString("user");
                     var insertresult = await Insert(_GoodsReceived);
                     var value = (insertresult.Result as ObjectResult).Value;
-                    _GoodsReceived = ((GoodsReceived)(value));
+                    
+                    response = ((ResponseAPIDTO<GoodsReceived>)(value));
+                    _GoodsReceived =response.model;
                     if (_GoodsReceived.GoodsReceivedId == 0)
                     {
                         return await Task.Run(() => BadRequest("No se genero el documento!"));
                     }
-
-                    return Ok(_GoodsReceived);
+                    return Ok(response);
                 }
                 else
                 {
                     //var updateresult = await Update(_GoodsReceived.GoodsReceivedId, _GoodsReceived);
                 }
 
-                return Ok(_GoodsReceived);
+                return Ok(response);
 
 
 
@@ -545,8 +548,9 @@ namespace ERPMVC.Controllers
         // POST: GoodsReceived/Insert
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult<GoodsReceived>> Insert(GoodsReceived _GoodsReceived)
+        public async Task<ActionResult<ResponseAPIDTO<GoodsReceived>>> Insert(GoodsReceived _GoodsReceived)
         {
+                ResponseAPIDTO<GoodsReceived> response = new ResponseAPIDTO<GoodsReceived>();
             try
             {
                 // TODO: Add insert logic here
@@ -560,7 +564,7 @@ namespace ERPMVC.Controllers
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _GoodsReceived = JsonConvert.DeserializeObject<GoodsReceived>(valorrespuesta);
+                    response = JsonConvert.DeserializeObject<ResponseAPIDTO<GoodsReceived>>(valorrespuesta);
                 }
 
             }
@@ -570,7 +574,7 @@ namespace ERPMVC.Controllers
                 return BadRequest($"Ocurrio un error{ex.Message}");
             }
 
-            return Ok(_GoodsReceived);
+            return Ok(response);
             //return new ObjectResult(new DataSourceResult { Data = new[] { _GoodsReceived }, Total = 1 });
         }
 

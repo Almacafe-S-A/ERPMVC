@@ -5,7 +5,7 @@
     <DataSource Name="ERP">
       <ConnectionProperties>
         <DataProvider>SQL</DataProvider>
-        <ConnectString>Data Source=RAZERBLADE15\RSUAZO;Initial Catalog=ERP-PRODUCCION</ConnectString>
+        <ConnectString>Data Source=192.168.0.5;Initial Catalog=ERP-PRODUCCION</ConnectString>
         <IntegratedSecurity>true</IntegratedSecurity>
       </ConnectionProperties>
       <rd:SecurityType>Integrated</rd:SecurityType>
@@ -96,6 +96,9 @@ UNION SELECT 0 , 'TODOS'</CommandText>
       <Query>
         <DataSourceName>ERP</DataSourceName>
         <QueryParameters>
+          <QueryParameter Name="@Estado">
+            <Value>=Parameters!Estado.Value</Value>
+          </QueryParameter>
           <QueryParameter Name="@FechaInicio">
             <Value>=Parameters!FechaInicio.Value</Value>
           </QueryParameter>
@@ -118,18 +121,14 @@ UNION SELECT 0 , 'TODOS'</CommandText>
   Invoice.BranchName,
   Invoice.InvoiceDate,
   Invoice.NumeroDEI,
-  InvoiceLine.InvoiceLineId,
   InvoiceLine.ProductId,
   InvoiceLine.ProductName,
-  InvoiceLine.SubProductId,
-  InvoiceLine.SubProductName,
-  InvoiceLine.UnitOfMeasureId,
-  InvoiceLine.UnitOfMeasureName,
   InvoiceLine.SubTotal,
   InvoiceLine.TaxAmount,
   InvoiceLine.Total,
   Invoice.CustomerId,
   Invoice.CustomerName,
+  Invoice.Estado,
   CASE WHEN Invoice.NumeroDEI LIKE '%PROFORMA%' THEN NULL ELSE Invoice.NumeroDEI END AS DEI,
   CASE WHEN InvoiceLine.SubProductName = 'ALMACENAJE' THEN InvoiceLine.SubTotal ELSE NULL END AS Almacenaje,
   CASE WHEN InvoiceLine.SubProductName = 'BASCULA' THEN InvoiceLine.SubTotal ELSE NULL END AS Bascula,
@@ -140,33 +139,30 @@ UNION SELECT 0 , 'TODOS'</CommandText>
   CASE WHEN InvoiceLine.SubProductName = 'MULA HIDRÁULICA' THEN InvoiceLine.SubTotal ELSE NULL END AS Mula,
   CASE WHEN InvoiceLine.SubProductName = 'HORAS EXTRAS' THEN InvoiceLine.SubTotal ELSE NULL END AS Horas,
   CASE WHEN InvoiceLine.SubProductName = 'PAPELERÍA' THEN InvoiceLine.SubTotal ELSE NULL END AS Papelería,
-  CASE WHEN InvoiceLine.SubProductName NOT IN ('Almacenaje', 'Bascula', 'Seguro', 'Fumigacion', 'Montacarga', 'Banda', 'Mula', 'Horas', 'Papelería') THEN InvoiceLine.SubTotal ELSE NULL END AS Otros
+  CASE WHEN InvoiceLine.SubProductName NOT IN ('Almacenaje', 'Bascula', 'Seguro', 'Fumigacion', 'Montacarga', 'Banda Transportadora', 'Mula', 'Horas Extras', 'Papelería') THEN InvoiceLine.SubTotal ELSE NULL END AS Otros
 FROM Invoice
 INNER JOIN InvoiceLine ON Invoice.InvoiceId = InvoiceLine.InvoiceId
 WHERE
-  ESTADO = 'Emitido'
-  AND Invoice.InvoiceDate BETWEEN @FechaInicio AND @FechaFin
+  ((ESTADO = 'Emitido' AND @Estado = '1') OR (ESTADO = 'Anulado' AND @Estado = '2') OR ((ESTADO = 'Emitido' OR ESTADO = 'Anulado') AND @Estado = '0'))
+  AND Invoice.InvoiceDate BETWEEN @FechaInicio AND dateadd(Day,1, @FechaFin)
   AND (Invoice.CustomerId = @CustomerId OR @CustomerId = 0)
   AND (Invoice.ProductId = @ProductId OR @ProductId = 0)
   AND (Invoice.BranchId = @SucursalId OR @SucursalId = 0)
 GROUP BY 
+  Invoice.NumeroDEI,
   Invoice.InvoiceId,
   Invoice.BranchId,
   Invoice.BranchName,
   Invoice.InvoiceDate,
-  Invoice.NumeroDEI,
-  InvoiceLine.InvoiceLineId,
   InvoiceLine.ProductId,
   InvoiceLine.ProductName,
-  InvoiceLine.SubProductId,
   InvoiceLine.SubProductName,
-  InvoiceLine.UnitOfMeasureId,
-  InvoiceLine.UnitOfMeasureName,
   InvoiceLine.SubTotal,
   InvoiceLine.TaxAmount,
   InvoiceLine.Total,
   Invoice.CustomerId,
-  Invoice.CustomerName;</CommandText>
+  Invoice.CustomerName,
+  Invoice.Estado;</CommandText>
         <rd:DesignerState>
           <QueryDefinition xmlns="http://schemas.microsoft.com/ReportingServices/QueryDefinition/Relational">
             <SelectedColumns>
@@ -218,10 +214,6 @@ GROUP BY
           <DataField>NumeroDEI</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
-        <Field Name="InvoiceLineId">
-          <DataField>InvoiceLineId</DataField>
-          <rd:TypeName>System.Int64</rd:TypeName>
-        </Field>
         <Field Name="ProductId">
           <DataField>ProductId</DataField>
           <rd:TypeName>System.Int64</rd:TypeName>
@@ -230,32 +222,8 @@ GROUP BY
           <DataField>ProductName</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
-        <Field Name="SubProductId">
-          <DataField>SubProductId</DataField>
-          <rd:TypeName>System.Int64</rd:TypeName>
-        </Field>
-        <Field Name="SubProductName">
-          <DataField>SubProductName</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
-        </Field>
-        <Field Name="UnitOfMeasureId">
-          <DataField>UnitOfMeasureId</DataField>
-          <rd:TypeName>System.Int32</rd:TypeName>
-        </Field>
-        <Field Name="UnitOfMeasureName">
-          <DataField>UnitOfMeasureName</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
-        </Field>
         <Field Name="SubTotal">
           <DataField>SubTotal</DataField>
-          <rd:TypeName>System.Decimal</rd:TypeName>
-        </Field>
-        <Field Name="TaxAmount">
-          <DataField>TaxAmount</DataField>
-          <rd:TypeName>System.Decimal</rd:TypeName>
-        </Field>
-        <Field Name="Total">
-          <DataField>Total</DataField>
           <rd:TypeName>System.Decimal</rd:TypeName>
         </Field>
         <Field Name="CustomerId">
@@ -265,6 +233,18 @@ GROUP BY
         <Field Name="CustomerName">
           <DataField>CustomerName</DataField>
           <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="TaxAmount">
+          <DataField>TaxAmount</DataField>
+          <rd:TypeName>System.Decimal</rd:TypeName>
+        </Field>
+        <Field Name="Estado">
+          <DataField>Estado</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="Total">
+          <DataField>Total</DataField>
+          <rd:TypeName>System.Decimal</rd:TypeName>
         </Field>
         <Field Name="DEI">
           <DataField>DEI</DataField>
@@ -321,49 +301,49 @@ GROUP BY
             <TablixBody>
               <TablixColumns>
                 <TablixColumn>
-                  <Width>0.62268in</Width>
+                  <Width>1.23in</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>0.64703in</Width>
+                  <Width>0.62in</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>1.15788in</Width>
+                  <Width>1.15in</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>0.70861in</Width>
-                </TablixColumn>
-                <TablixColumn>
-                  <Width>0.62527in</Width>
-                </TablixColumn>
-                <TablixColumn>
-                  <Width>0.72512in</Width>
-                </TablixColumn>
-                <TablixColumn>
-                  <Width>0.625in</Width>
+                  <Width>0.73in</Width>
                 </TablixColumn>
                 <TablixColumn>
                   <Width>0.6in</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>0.5883in</Width>
+                  <Width>0.72512in</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>0.6297in</Width>
+                  <Width>0.6in</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>0.72222in</Width>
+                  <Width>0.6in</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>0.65in</Width>
+                  <Width>0.6in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>0.6in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>0.7in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>0.6in</Width>
                 </TablixColumn>
                 <TablixColumn>
                   <Width>0.725in</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>0.75833in</Width>
+                  <Width>0.6in</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>0.71916in</Width>
+                  <Width>0.8in</Width>
                 </TablixColumn>
               </TablixColumns>
               <TablixRows>
@@ -402,7 +382,6 @@ GROUP BY
                               <Width>1pt</Width>
                             </BottomBorder>
                             <BackgroundColor>Silver</BackgroundColor>
-                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -443,7 +422,6 @@ GROUP BY
                               <Width>1pt</Width>
                             </BottomBorder>
                             <BackgroundColor>Silver</BackgroundColor>
-                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -484,7 +462,6 @@ GROUP BY
                               <Width>1pt</Width>
                             </BottomBorder>
                             <BackgroundColor>Silver</BackgroundColor>
-                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -525,7 +502,6 @@ GROUP BY
                               <Width>1pt</Width>
                             </BottomBorder>
                             <BackgroundColor>Silver</BackgroundColor>
-                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -566,7 +542,6 @@ GROUP BY
                               <Width>1pt</Width>
                             </BottomBorder>
                             <BackgroundColor>Silver</BackgroundColor>
-                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -607,7 +582,6 @@ GROUP BY
                               <Width>1pt</Width>
                             </BottomBorder>
                             <BackgroundColor>Silver</BackgroundColor>
-                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -648,7 +622,6 @@ GROUP BY
                               <Width>1pt</Width>
                             </BottomBorder>
                             <BackgroundColor>Silver</BackgroundColor>
-                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -689,7 +662,6 @@ GROUP BY
                               <Width>1pt</Width>
                             </BottomBorder>
                             <BackgroundColor>Silver</BackgroundColor>
-                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -730,7 +702,6 @@ GROUP BY
                               <Width>1pt</Width>
                             </BottomBorder>
                             <BackgroundColor>Silver</BackgroundColor>
-                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -771,7 +742,6 @@ GROUP BY
                               <Width>1pt</Width>
                             </BottomBorder>
                             <BackgroundColor>Silver</BackgroundColor>
-                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -812,7 +782,6 @@ GROUP BY
                               <Width>1pt</Width>
                             </BottomBorder>
                             <BackgroundColor>Silver</BackgroundColor>
-                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -853,7 +822,6 @@ GROUP BY
                               <Width>1pt</Width>
                             </BottomBorder>
                             <BackgroundColor>Silver</BackgroundColor>
-                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -894,7 +862,6 @@ GROUP BY
                               <Width>1pt</Width>
                             </BottomBorder>
                             <BackgroundColor>Silver</BackgroundColor>
-                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -912,7 +879,7 @@ GROUP BY
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>impuesto</Value>
+                                  <Value>ISV</Value>
                                   <Style>
                                     <FontSize>8pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
@@ -935,7 +902,6 @@ GROUP BY
                               <Width>1pt</Width>
                             </BottomBorder>
                             <BackgroundColor>Silver</BackgroundColor>
-                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -976,7 +942,6 @@ GROUP BY
                               <Width>1pt</Width>
                             </BottomBorder>
                             <BackgroundColor>Silver</BackgroundColor>
-                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -1105,7 +1070,7 @@ GROUP BY
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Fields!Almacenaje.Value</Value>
+                                  <Value>=Sum(Fields!Almacenaje.Value)</Value>
                                   <Style>
                                     <FontSize>8pt</FontSize>
                                     <FontWeight>Normal</FontWeight>
@@ -1141,11 +1106,11 @@ GROUP BY
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Fields!Seguro.Value</Value>
+                                  <Value>=Sum(Fields!Seguro.Value)</Value>
                                   <Style>
                                     <FontSize>8pt</FontSize>
                                     <FontWeight>Normal</FontWeight>
-                                    <Format>#,0.00;(#,0.00)</Format>
+                                    <Format>#,0.00;(#,0.00);''</Format>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -1177,11 +1142,11 @@ GROUP BY
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Fields!Fumigacion.Value</Value>
+                                  <Value>=Sum(Fields!Fumigacion.Value)</Value>
                                   <Style>
                                     <FontSize>8pt</FontSize>
                                     <FontWeight>Normal</FontWeight>
-                                    <Format>#,0.00;(#,0.00)</Format>
+                                    <Format>#,0.00;(#,0.00);''</Format>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -1213,11 +1178,11 @@ GROUP BY
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Fields!Montacarga.Value</Value>
+                                  <Value>=Sum(Fields!Montacarga.Value)</Value>
                                   <Style>
                                     <FontSize>8pt</FontSize>
                                     <FontWeight>Normal</FontWeight>
-                                    <Format>#,0.00;(#,0.00)</Format>
+                                    <Format>#,0.00;(#,0.00);''</Format>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -1249,11 +1214,11 @@ GROUP BY
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Fields!Banda.Value</Value>
+                                  <Value>=Sum(Fields!Banda.Value)</Value>
                                   <Style>
                                     <FontSize>8pt</FontSize>
                                     <FontWeight>Normal</FontWeight>
-                                    <Format>#,0.00;(#,0.00)</Format>
+                                    <Format>#,0.00;(#,0.00);''</Format>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -1285,11 +1250,11 @@ GROUP BY
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Fields!Bascula.Value</Value>
+                                  <Value>=Sum(Fields!Bascula.Value)</Value>
                                   <Style>
                                     <FontSize>8pt</FontSize>
                                     <FontWeight>Normal</FontWeight>
-                                    <Format>#,0.00;(#,0.00)</Format>
+                                    <Format>#,0.00;(#,0.00);''</Format>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -1321,11 +1286,11 @@ GROUP BY
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Fields!Mula.Value</Value>
+                                  <Value>=Sum(Fields!Mula.Value)</Value>
                                   <Style>
                                     <FontSize>8pt</FontSize>
                                     <FontWeight>Normal</FontWeight>
-                                    <Format>#,0.00;(#,0.00)</Format>
+                                    <Format>#,0.00;(#,0.00);''</Format>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -1357,11 +1322,11 @@ GROUP BY
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Fields!Otros.Value</Value>
+                                  <Value>=Sum(Fields!Otros.Value)</Value>
                                   <Style>
                                     <FontSize>8pt</FontSize>
                                     <FontWeight>Normal</FontWeight>
-                                    <Format>#,0.00;(#,0.00)</Format>
+                                    <Format>#,0.00;(#,0.00);''</Format>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -1393,11 +1358,11 @@ GROUP BY
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Fields!Papelería.Value</Value>
+                                  <Value>=Sum(Fields!Papelería.Value)</Value>
                                   <Style>
                                     <FontSize>8pt</FontSize>
                                     <FontWeight>Normal</FontWeight>
-                                    <Format>#,0.00;(#,0.00)</Format>
+                                    <Format>#,0.00;(#,0.00);''</Format>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -1429,11 +1394,11 @@ GROUP BY
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Fields!Horas.Value</Value>
+                                  <Value>=Sum(Fields!Horas.Value)</Value>
                                   <Style>
                                     <FontSize>8pt</FontSize>
                                     <FontWeight>Normal</FontWeight>
-                                    <Format>#,0.00;(#,0.00)</Format>
+                                    <Format>#,0.00;(#,0.00);''</Format>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -1465,11 +1430,11 @@ GROUP BY
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Fields!TaxAmount.Value</Value>
+                                  <Value>=Sum(Fields!TaxAmount.Value)</Value>
                                   <Style>
                                     <FontSize>8pt</FontSize>
                                     <FontWeight>Normal</FontWeight>
-                                    <Format>#,0.00;(#,0.00)</Format>
+                                    <Format>#,0.00;(#,0.00);''</Format>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -1501,11 +1466,11 @@ GROUP BY
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Fields!Total.Value</Value>
+                                  <Value>=Sum(Fields!Total.Value)</Value>
                                   <Style>
                                     <FontSize>8pt</FontSize>
                                     <FontWeight>Normal</FontWeight>
-                                    <Format>#,0.00;(#,0.00)</Format>
+                                    <Format>#,0.00;(#,0.00);''</Format>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -1582,7 +1547,7 @@ GROUP BY
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value />
+                                  <Value>TOTAL </Value>
                                   <Style>
                                     <FontSize>8pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
@@ -1590,7 +1555,7 @@ GROUP BY
                                 </TextRun>
                               </TextRuns>
                               <Style>
-                                <TextAlign>Right</TextAlign>
+                                <TextAlign>Center</TextAlign>
                               </Style>
                             </Paragraph>
                           </Paragraphs>
@@ -1611,48 +1576,10 @@ GROUP BY
                             <PaddingBottom>2pt</PaddingBottom>
                           </Style>
                         </Textbox>
+                        <ColSpan>2</ColSpan>
                       </CellContents>
                     </TablixCell>
-                    <TablixCell>
-                      <CellContents>
-                        <Textbox Name="Textbox25">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value>TOTAL:</Value>
-                                  <Style>
-                                    <FontSize>8pt</FontSize>
-                                    <FontWeight>Bold</FontWeight>
-                                  </Style>
-                                </TextRun>
-                              </TextRuns>
-                              <Style>
-                                <TextAlign>Left</TextAlign>
-                              </Style>
-                            </Paragraph>
-                          </Paragraphs>
-                          <rd:DefaultName>Textbox25</rd:DefaultName>
-                          <Style>
-                            <Border>
-                              <Style>None</Style>
-                            </Border>
-                            <TopBorder>
-                              <Color>Black</Color>
-                              <Style>Solid</Style>
-                              <Width>1pt</Width>
-                            </TopBorder>
-                            <BackgroundColor>Silver</BackgroundColor>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
+                    <TablixCell />
                     <TablixCell>
                       <CellContents>
                         <Textbox Name="Almacenaje">
@@ -1666,7 +1593,7 @@ GROUP BY
                                   <Style>
                                     <FontSize>8pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
-                                    <Format>#,0.00;(#,0.00)</Format>
+                                    <Format>#,0.00;(#,0.00);''</Format>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -1707,7 +1634,7 @@ GROUP BY
                                   <Style>
                                     <FontSize>8pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
-                                    <Format>#,0.00;(#,0.00)</Format>
+                                    <Format>#,0.00;(#,0.00);''</Format>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -1748,7 +1675,7 @@ GROUP BY
                                   <Style>
                                     <FontSize>8pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
-                                    <Format>#,0.00;(#,0.00)</Format>
+                                    <Format>#,0.00;(#,0.00);''</Format>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -1789,7 +1716,7 @@ GROUP BY
                                   <Style>
                                     <FontSize>8pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
-                                    <Format>#,0.00;(#,0.00)</Format>
+                                    <Format>#,0.00;(#,0.00);''</Format>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -1830,7 +1757,7 @@ GROUP BY
                                   <Style>
                                     <FontSize>8pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
-                                    <Format>#,0.00;(#,0.00)</Format>
+                                    <Format>#,0.00;(#,0.00);''</Format>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -1871,7 +1798,7 @@ GROUP BY
                                   <Style>
                                     <FontSize>8pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
-                                    <Format>#,0.00;(#,0.00)</Format>
+                                    <Format>#,0.00;(#,0.00);''</Format>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -1912,7 +1839,7 @@ GROUP BY
                                   <Style>
                                     <FontSize>8pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
-                                    <Format>#,0.00;(#,0.00)</Format>
+                                    <Format>#,0.00;(#,0.00);''</Format>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -1953,7 +1880,7 @@ GROUP BY
                                   <Style>
                                     <FontSize>8pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
-                                    <Format>#,0.00;(#,0.00)</Format>
+                                    <Format>#,0.00;(#,0.00);''</Format>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -1994,7 +1921,7 @@ GROUP BY
                                   <Style>
                                     <FontSize>8pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
-                                    <Format>#,0.00;(#,0.00)</Format>
+                                    <Format>#,0.00;(#,0.00);''</Format>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -2035,7 +1962,7 @@ GROUP BY
                                   <Style>
                                     <FontSize>8pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
-                                    <Format>#,0.00;(#,0.00)</Format>
+                                    <Format>#,0.00;(#,0.00);''</Format>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -2076,7 +2003,7 @@ GROUP BY
                                   <Style>
                                     <FontSize>8pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
-                                    <Format>#,0.00;(#,0.00)</Format>
+                                    <Format>#,0.00;(#,0.00);''</Format>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -2117,7 +2044,7 @@ GROUP BY
                                   <Style>
                                     <FontSize>8pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
-                                    <Format>#,0.00;(#,0.00)</Format>
+                                    <Format>#,0.00;(#,0.00);''</Format>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -2176,9 +2103,14 @@ GROUP BY
                 <TablixMember>
                   <Group Name="Details">
                     <GroupExpressions>
-                      <GroupExpression>=Fields!InvoiceLineId.Value</GroupExpression>
+                      <GroupExpression>=Fields!NumeroDEI.Value</GroupExpression>
                     </GroupExpressions>
                   </Group>
+                  <SortExpressions>
+                    <SortExpression>
+                      <Value>=Fields!DEI.Value</Value>
+                    </SortExpression>
+                  </SortExpressions>
                 </TablixMember>
                 <TablixMember>
                   <KeepWithGroup>Before</KeepWithGroup>
@@ -2186,9 +2118,10 @@ GROUP BY
               </TablixMembers>
             </TablixRowHierarchy>
             <DataSetName>Detalle</DataSetName>
-            <Left>0.04722in</Left>
+            <Top>0.0635cm</Top>
+            <Left>0.03472in</Left>
             <Height>0.95833in</Height>
-            <Width>10.5043in</Width>
+            <Width>10.88012in</Width>
             <Style>
               <Border>
                 <Style>None</Style>
@@ -2196,21 +2129,20 @@ GROUP BY
             </Style>
           </Tablix>
         </ReportItems>
-        <Height>2.25493in</Height>
+        <Height>1.24451in</Height>
         <Style>
           <Border />
           <BackgroundColor>White</BackgroundColor>
         </Style>
       </Body>
-      <Width>10.55152in</Width>
+      <Width>10.94259in</Width>
       <Page>
         <PageHeader>
-          <Height>1.09667in</Height>
+          <Height>1.08625in</Height>
           <PrintOnFirstPage>true</PrintOnFirstPage>
           <PrintOnLastPage>true</PrintOnLastPage>
           <ReportItems>
             <Textbox Name="ExecutionTime">
-              <CanGrow>true</CanGrow>
               <KeepTogether>true</KeepTogether>
               <Paragraphs>
                 <Paragraph>
@@ -2228,8 +2160,8 @@ GROUP BY
                 </Paragraph>
               </Paragraphs>
               <rd:DefaultName>ExecutionTime</rd:DefaultName>
-              <Top>0.30138in</Top>
-              <Left>8.62472in</Left>
+              <Top>0.26388in</Top>
+              <Left>9.01222in</Left>
               <Height>0.17499in</Height>
               <Width>1.82402in</Width>
               <Style>
@@ -2243,7 +2175,6 @@ GROUP BY
               </Style>
             </Textbox>
             <Textbox Name="ExecutionTime3">
-              <CanGrow>true</CanGrow>
               <KeepTogether>true</KeepTogether>
               <Paragraphs>
                 <Paragraph>
@@ -2261,8 +2192,8 @@ GROUP BY
                 </Paragraph>
               </Paragraphs>
               <rd:DefaultName>ExecutionTime</rd:DefaultName>
-              <Top>0.125in</Top>
-              <Left>8.62472in</Left>
+              <Top>0.0875in</Top>
+              <Left>9.01222in</Left>
               <Height>0.17499in</Height>
               <Width>1.82402in</Width>
               <ZIndex>1</ZIndex>
@@ -2280,8 +2211,8 @@ GROUP BY
               <Source>External</Source>
               <Value>=First(Fields!imageDir.Value,"CompanyInfo")</Value>
               <Sizing>FitProportional</Sizing>
-              <Top>0.125in</Top>
-              <Left>0.11333in</Left>
+              <Top>0.0625in</Top>
+              <Left>0.06333in</Left>
               <Height>0.8542in</Height>
               <Width>1.6563in</Width>
               <ZIndex>2</ZIndex>
@@ -2290,7 +2221,6 @@ GROUP BY
               </Style>
             </Image>
             <Textbox Name="Textbox26">
-              <CanGrow>true</CanGrow>
               <KeepTogether>true</KeepTogether>
               <Paragraphs>
                 <Paragraph>
@@ -2298,6 +2228,7 @@ GROUP BY
                     <TextRun>
                       <Value>DEL:</Value>
                       <Style>
+                        <FontFamily>Segoe UI Light</FontFamily>
                         <FontSize>11pt</FontSize>
                         <FontWeight>Bold</FontWeight>
                       </Style>
@@ -2307,15 +2238,16 @@ GROUP BY
                 </Paragraph>
               </Paragraphs>
               <rd:DefaultName>Textbox26</rd:DefaultName>
-              <Top>0.57327in</Top>
+              <Top>0.79827in</Top>
               <Left>3.9966in</Left>
-              <Height>0.2in</Height>
+              <Height>0.229in</Height>
               <Width>0.42026in</Width>
               <ZIndex>3</ZIndex>
               <Style>
                 <Border>
                   <Style>None</Style>
                 </Border>
+                <VerticalAlign>Middle</VerticalAlign>
                 <PaddingLeft>2pt</PaddingLeft>
                 <PaddingRight>2pt</PaddingRight>
                 <PaddingTop>2pt</PaddingTop>
@@ -2323,7 +2255,6 @@ GROUP BY
               </Style>
             </Textbox>
             <Textbox Name="ExecutionTime2">
-              <CanGrow>true</CanGrow>
               <KeepTogether>true</KeepTogether>
               <Paragraphs>
                 <Paragraph>
@@ -2331,6 +2262,7 @@ GROUP BY
                     <TextRun>
                       <Value>=Parameters!FechaInicio.Value</Value>
                       <Style>
+                        <FontFamily>Segoe UI Light</FontFamily>
                         <FontSize>11pt</FontSize>
                         <FontWeight>Bold</FontWeight>
                         <Format>d/M/yyyy</Format>
@@ -2343,15 +2275,16 @@ GROUP BY
                 </Paragraph>
               </Paragraphs>
               <rd:DefaultName>ExecutionTime</rd:DefaultName>
-              <Top>0.57327in</Top>
+              <Top>0.79827in</Top>
               <Left>4.43075in</Left>
-              <Height>0.2in</Height>
+              <Height>0.229in</Height>
               <Width>0.8471in</Width>
               <ZIndex>4</ZIndex>
               <Style>
                 <Border>
                   <Style>None</Style>
                 </Border>
+                <VerticalAlign>Middle</VerticalAlign>
                 <PaddingLeft>2pt</PaddingLeft>
                 <PaddingRight>2pt</PaddingRight>
                 <PaddingTop>2pt</PaddingTop>
@@ -2359,7 +2292,6 @@ GROUP BY
               </Style>
             </Textbox>
             <Textbox Name="Textbox28">
-              <CanGrow>true</CanGrow>
               <KeepTogether>true</KeepTogether>
               <Paragraphs>
                 <Paragraph>
@@ -2367,6 +2299,7 @@ GROUP BY
                     <TextRun>
                       <Value>AL:</Value>
                       <Style>
+                        <FontFamily>Segoe UI Light</FontFamily>
                         <FontSize>11pt</FontSize>
                         <FontWeight>Bold</FontWeight>
                       </Style>
@@ -2376,16 +2309,16 @@ GROUP BY
                 </Paragraph>
               </Paragraphs>
               <rd:DefaultName>Textbox26</rd:DefaultName>
-              <Top>0.57327in</Top>
+              <Top>0.79827in</Top>
               <Left>5.4198in</Left>
-              <Height>0.2in</Height>
+              <Height>0.229in</Height>
               <Width>0.33901in</Width>
               <ZIndex>5</ZIndex>
               <Style>
                 <Border>
                   <Style>None</Style>
                 </Border>
-                <VerticalAlign>Top</VerticalAlign>
+                <VerticalAlign>Middle</VerticalAlign>
                 <PaddingLeft>2pt</PaddingLeft>
                 <PaddingRight>2pt</PaddingRight>
                 <PaddingTop>2pt</PaddingTop>
@@ -2393,7 +2326,6 @@ GROUP BY
               </Style>
             </Textbox>
             <Textbox Name="ExecutionTime4">
-              <CanGrow>true</CanGrow>
               <KeepTogether>true</KeepTogether>
               <Paragraphs>
                 <Paragraph>
@@ -2401,6 +2333,7 @@ GROUP BY
                     <TextRun>
                       <Value>=Parameters!FechaFin.Value</Value>
                       <Style>
+                        <FontFamily>Segoe UI Light</FontFamily>
                         <FontSize>11pt</FontSize>
                         <FontWeight>Bold</FontWeight>
                         <Format>d/M/yyyy</Format>
@@ -2413,15 +2346,16 @@ GROUP BY
                 </Paragraph>
               </Paragraphs>
               <rd:DefaultName>ExecutionTime</rd:DefaultName>
-              <Top>0.57327in</Top>
+              <Top>0.79827in</Top>
               <Left>5.77269in</Left>
-              <Height>0.2in</Height>
+              <Height>0.229in</Height>
               <Width>0.80833in</Width>
               <ZIndex>6</ZIndex>
               <Style>
                 <Border>
                   <Style>None</Style>
                 </Border>
+                <VerticalAlign>Middle</VerticalAlign>
                 <PaddingLeft>2pt</PaddingLeft>
                 <PaddingRight>2pt</PaddingRight>
                 <PaddingTop>2pt</PaddingTop>
@@ -2429,14 +2363,14 @@ GROUP BY
               </Style>
             </Textbox>
             <Textbox Name="ReportTitle">
-              <CanGrow>true</CanGrow>
               <KeepTogether>true</KeepTogether>
               <Paragraphs>
                 <Paragraph>
                   <TextRuns>
                     <TextRun>
-                      <Value>=UCase(Parameters!ProductId.Label) &amp; " - " &amp; UCase(Parameters!SucursalId.Label)</Value>
+                      <Value>=" Servicio: " &amp; UCase(Parameters!ProductId.Label) &amp; " - Sucursal: " &amp; UCase(Parameters!SucursalId.Label)</Value>
                       <Style>
+                        <FontFamily>Segoe UI Light</FontFamily>
                         <FontSize>11pt</FontSize>
                         <FontWeight>Bold</FontWeight>
                       </Style>
@@ -2449,9 +2383,9 @@ GROUP BY
               </Paragraphs>
               <rd:WatermarkTextbox>Title</rd:WatermarkTextbox>
               <rd:DefaultName>ReportTitle</rd:DefaultName>
-              <Top>0.84228cm</Top>
+              <Top>1.41378cm</Top>
               <Left>2.13791in</Left>
-              <Height>0.2in</Height>
+              <Height>0.23in</Height>
               <Width>6.21112in</Width>
               <ZIndex>7</ZIndex>
               <Style>
@@ -2466,7 +2400,6 @@ GROUP BY
               </Style>
             </Textbox>
             <Textbox Name="ReportTitle3">
-              <CanGrow>true</CanGrow>
               <KeepTogether>true</KeepTogether>
               <Paragraphs>
                 <Paragraph>
@@ -2474,6 +2407,7 @@ GROUP BY
                     <TextRun>
                       <Value>REPORTE DE FACTURAS</Value>
                       <Style>
+                        <FontFamily>Segoe UI Light</FontFamily>
                         <FontSize>11pt</FontSize>
                         <FontWeight>Bold</FontWeight>
                       </Style>
@@ -2486,15 +2420,49 @@ GROUP BY
               </Paragraphs>
               <rd:WatermarkTextbox>Title</rd:WatermarkTextbox>
               <rd:DefaultName>ReportTitle</rd:DefaultName>
-              <Top>0.299cm</Top>
+              <Top>0.77525cm</Top>
               <Left>3.12368in</Left>
-              <Height>0.2in</Height>
+              <Height>0.23in</Height>
               <Width>4.23958in</Width>
               <ZIndex>8</ZIndex>
               <Style>
                 <Border>
                   <Style>None</Style>
                 </Border>
+                <VerticalAlign>Middle</VerticalAlign>
+                <PaddingLeft>2pt</PaddingLeft>
+                <PaddingRight>2pt</PaddingRight>
+                <PaddingTop>2pt</PaddingTop>
+                <PaddingBottom>2pt</PaddingBottom>
+              </Style>
+            </Textbox>
+            <Textbox Name="TextBox1">
+              <KeepTogether>true</KeepTogether>
+              <Paragraphs>
+                <Paragraph>
+                  <TextRuns>
+                    <TextRun>
+                      <Value>ALMACAFE, S.A.</Value>
+                      <Style>
+                        <FontFamily>Segoe UI Light</FontFamily>
+                        <FontSize>12pt</FontSize>
+                        <FontWeight>Bold</FontWeight>
+                      </Style>
+                    </TextRun>
+                  </TextRuns>
+                  <Style>
+                    <TextAlign>Center</TextAlign>
+                    <LineHeight>10pt</LineHeight>
+                  </Style>
+                </Paragraph>
+              </Paragraphs>
+              <Top>0.0625in</Top>
+              <Left>3.12368in</Left>
+              <Height>0.24in</Height>
+              <Width>4.23958in</Width>
+              <ZIndex>9</ZIndex>
+              <Style>
+                <Border />
                 <VerticalAlign>Middle</VerticalAlign>
                 <PaddingLeft>2pt</PaddingLeft>
                 <PaddingRight>2pt</PaddingRight>
@@ -2509,8 +2477,22 @@ GROUP BY
             </Border>
           </Style>
         </PageHeader>
+        <PageFooter>
+          <Height>0.34375in</Height>
+          <PrintOnFirstPage>true</PrintOnFirstPage>
+          <PrintOnLastPage>true</PrintOnLastPage>
+          <Style>
+            <Border>
+              <Style>None</Style>
+            </Border>
+          </Style>
+        </PageFooter>
         <PageHeight>8.5in</PageHeight>
         <PageWidth>11in</PageWidth>
+        <LeftMargin>0in</LeftMargin>
+        <RightMargin>0in</RightMargin>
+        <TopMargin>0.25in</TopMargin>
+        <BottomMargin>0.25in</BottomMargin>
         <Style>
           <Border />
           <BackgroundColor>White</BackgroundColor>
@@ -2526,6 +2508,28 @@ GROUP BY
     <ReportParameter Name="FechaFin">
       <DataType>DateTime</DataType>
       <Prompt>Fecha Fin</Prompt>
+    </ReportParameter>
+    <ReportParameter Name="SucursalId">
+      <DataType>Integer</DataType>
+      <Prompt>Sucursal</Prompt>
+      <ValidValues>
+        <DataSetReference>
+          <DataSetName>Sucursal</DataSetName>
+          <ValueField>BranchId</ValueField>
+          <LabelField>BranchName</LabelField>
+        </DataSetReference>
+      </ValidValues>
+    </ReportParameter>
+    <ReportParameter Name="ProductId">
+      <DataType>Integer</DataType>
+      <Prompt>Servicio</Prompt>
+      <ValidValues>
+        <DataSetReference>
+          <DataSetName>Productos</DataSetName>
+          <ValueField>ProductId</ValueField>
+          <LabelField>ProductName</LabelField>
+        </DataSetReference>
+      </ValidValues>
     </ReportParameter>
     <ReportParameter Name="CustomerId">
       <DataType>Integer</DataType>
@@ -2543,33 +2547,31 @@ GROUP BY
         </DataSetReference>
       </ValidValues>
     </ReportParameter>
-    <ReportParameter Name="ProductId">
-      <DataType>Integer</DataType>
-      <Prompt>Producto</Prompt>
+    <ReportParameter Name="Estado">
+      <DataType>String</DataType>
+      <Prompt>Estado</Prompt>
       <ValidValues>
-        <DataSetReference>
-          <DataSetName>Productos</DataSetName>
-          <ValueField>ProductId</ValueField>
-          <LabelField>ProductName</LabelField>
-        </DataSetReference>
-      </ValidValues>
-    </ReportParameter>
-    <ReportParameter Name="SucursalId">
-      <DataType>Integer</DataType>
-      <Prompt>Sucursal</Prompt>
-      <ValidValues>
-        <DataSetReference>
-          <DataSetName>Sucursal</DataSetName>
-          <ValueField>BranchId</ValueField>
-          <LabelField>BranchName</LabelField>
-        </DataSetReference>
+        <ParameterValues>
+          <ParameterValue>
+            <Value>1</Value>
+            <Label>Emitido</Label>
+          </ParameterValue>
+          <ParameterValue>
+            <Value>2</Value>
+            <Label>Anulado</Label>
+          </ParameterValue>
+          <ParameterValue>
+            <Value>0</Value>
+            <Label>TODOS</Label>
+          </ParameterValue>
+        </ParameterValues>
       </ValidValues>
     </ReportParameter>
   </ReportParameters>
   <ReportParametersLayout>
     <GridLayoutDefinition>
-      <NumberOfColumns>2</NumberOfColumns>
-      <NumberOfRows>3</NumberOfRows>
+      <NumberOfColumns>3</NumberOfColumns>
+      <NumberOfRows>2</NumberOfRows>
       <CellDefinitions>
         <CellDefinition>
           <ColumnIndex>0</ColumnIndex>
@@ -2582,19 +2584,24 @@ GROUP BY
           <ParameterName>FechaFin</ParameterName>
         </CellDefinition>
         <CellDefinition>
-          <ColumnIndex>0</ColumnIndex>
+          <ColumnIndex>1</ColumnIndex>
           <RowIndex>1</RowIndex>
           <ParameterName>CustomerId</ParameterName>
         </CellDefinition>
         <CellDefinition>
-          <ColumnIndex>1</ColumnIndex>
+          <ColumnIndex>0</ColumnIndex>
           <RowIndex>1</RowIndex>
           <ParameterName>ProductId</ParameterName>
         </CellDefinition>
         <CellDefinition>
-          <ColumnIndex>0</ColumnIndex>
-          <RowIndex>2</RowIndex>
+          <ColumnIndex>2</ColumnIndex>
+          <RowIndex>0</RowIndex>
           <ParameterName>SucursalId</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>2</ColumnIndex>
+          <RowIndex>1</RowIndex>
+          <ParameterName>Estado</ParameterName>
         </CellDefinition>
       </CellDefinitions>
     </GridLayoutDefinition>

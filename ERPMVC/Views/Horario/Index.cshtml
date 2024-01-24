@@ -12,133 +12,255 @@
         </div>
     </div>
 </div>
-
 <script>
-    $(document).ready(function () {
-        CrearGrid();
-    });
+    function AddHorario() {
+        var dataObject = {
+            Id: 0,
+            editar: 1
+        };
 
-    function CrearGrid() {
-        $("#grdConfiguracion").kendoGrid({
-            dataSource: {
-                transport: {
-                    read: "@Url.Action("GetHorarios", "Horario")",
-                    update: "@Url.Action("Guardar", "Horario")",
-                    create: "@Url.Action("Guardar", "Horario")",
-                    parameterMap: function (datos, tipo) {
-                        if (tipo !== 'read') {
-                            //debugger;
-                            if (datos.HoraInicio.length > 10) {
-                                datos.HoraInicio = kendo.toString(new Date(datos.HoraInicio), "hh:mm tt");
-                            }
-                            if (datos.HoraFinal.length > 10) {
-                                datos.HoraFinal = kendo.toString(new Date(datos.HoraFinal), "hh:mm tt");
-                            }
-                            
-                            datos.IdEstado = datos.Estado.IdEstado;
-                            //debugger;
-                        }
-                        return datos;
-                    }
-                },
-                schema: {
-                    model: {
-                        id:"Id",
-                        fields: {
-                            Id: { type: "number", editable: true },
-                            Nombre: { type: "string", editable: true },
-                            HoraInicio: {type: "string", editable: true },
-                            HoraFinal: { type: "string", editable: true },
-                            IdEstado: { type: "number", editable: true },
-                            Estado: { defaultValue: {IdEstado:1, NombreEstado:"Activo"}, editable: true }
-                        }
-                    }
-                },
-                requestEnd: function(e) {
-                    if (e.type !== "read") {
-                        $("#grdConfiguracion").data("kendoGrid").dataSource.read();
-                    }
-                }
+        $.ajax({
+            url: '@Url.Action("pvwAddHorario", "Horario")',
+            method: 'POST',
+            datatype: "html", // Cambia a "html" para recibir la vista parcial
+            contentType: 'application/json',
+            async: false,
+            data: JSON.stringify(dataObject),
+            success: function (result) {
+                // Actualiza el contenido del elemento con el ID "numHorario" con la vista parcial
+                $("#numHorario").html(result);
+                $('#ModalHorario').modal('show');
+
             },
-            toolbar: [
-                { name: "create", text: "Nuevo Horario" }
-            ],
-            columns: [
-                {
-                    command: [
-                        { name: "edit", text: { edit: "", update: "", cancel: "" }}
-                    ],
-                    width:80
-                },
-                { field: "Id", title: "Id. ", width: 80, hidden: true },
-                { field: "Nombre", title: "Nombre", width: 300 },
-                { field: "HoraInicio", title: "Hora Inicio", width: 100, editor: editorHora},
-                { field: "HoraFinal", title: "Hora Final", width: 100, editor: editorHora},
-                { field: "Idestado", hidden:true},
-                { field: "Estado", title: "Estado", width: 100, editor: editorEstado, template: "#= (typeof Estado ==='undefined'? '': Estado.NombreEstado) #"}
-            ],
-            noRecords: {
-                template:"No hay horarios"
-            },
-            //height: 400,
-            scrollable: true,
-            editable: "inline",
-            save: ValidarIngreso
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                alert(textStatus + ": " + XMLHttpRequest.responseText);
+            }
         });
+    }
 
-        function ValidarIngreso(e) {
-            //debugger;
+    function EditHorario(e) {
+        e.preventDefault();
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        var dataObject = {
+            Id: dataItem.Id,
+            editar: 0
+        };
+
+         $.ajax({
+            url: '@Url.Action("pvwAddHorario", "Horario")',
+            method: 'POST',
+            datatype: "html", // Cambia a "html" para recibir la vista parcial
+            contentType: 'application/json',
+            async: false,
+            data: JSON.stringify(dataObject),
+            success: function (result) {
+                // Actualiza el contenido del elemento con el ID "numHorario" con la vista parcial
+                $("#numHorario").html(result);
+                $('#ModalHorario').modal('show');
+
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                alert(textStatus + ": " + XMLHttpRequest.responseText);
+            }
+        });
+    }
+
+    function EliminarHorario(e) {
+        debugger;
+        e.preventDefault();
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        if (confirm("¿Estás seguro de que deseas eliminar este horario?")) {
+            $.ajax({
+                url: '@Url.Action("Delete", "Horario")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                data: JSON.stringify(dataItem),
+                success: function (data) {
+                    var grid = $("#grdConfiguracion").data("kendoGrid");
+                    grid.dataSource.read();
+
+                    // Agregar la notificación de éxito aquí
+                    $.toast({
+                        heading: 'Satisfactorio',
+                        text: 'Horario eliminado correctamente.',
+                        position: 'top-right',
+                        loaderBg: '#ff6849',
+                        icon: 'success',
+                        hideAfter: 3000, // Cambiado a 3000 para ocultar después de 3 segundos
+                        stack: 6
+                    });
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+                }
+            });
+        }
+    }
+
+
+    function configurarHoraInicioPicker(container, options) {
+        // Configurar el TimePicker
+        container.find(".k-timepicker").kendoTimePicker({
+            format: "HH:mm",
+            interval: 15, // Opcional: define el intervalo de tiempo deseado
+        });
+    }
+
+    function VerificarHora(e){
             var registro = e.model;
             if (new Date(registro.HoraFinal) < new Date(registro.HoraInicio)) {
                 alert('Hora final no puede ser menor a hora de inicio');
                 e.preventDefault();
                 return false;
-            }
-            //debugger;
         }
-
-        function editorHora(contenedor, opciones) {
-            $('<input data-bind="value:' + opciones.field + '"/>')
-                .appendTo(contenedor)
-                .kendoTimePicker({ format:"hh:mm tt"});
-        }
-
-        function editorEstado(contenedor, opciones) {
-            $('<input name="' + opciones.field + '"/>')
-                .appendTo(contenedor)
-                .kendoDropDownList({
-                    index:0,
-                    autoBind: true,
-                    dataTextField: "NombreEstado",
-                    dataValueField: "IdEstado",
-                    dataSource: {
-                        transport: {
-                            read: {
-                                type:"GET",
-                                url: '@Url.Action("GetGrupoEstadoI", "Estados")',
-                                dataType: "json"
-                            }
-                        },
-                        schema: {
-                            model: {
-                                fields: {
-                                    IdEstado: { type: "number" },
-                                    NombreEstado: {type:"string"}
-                                }
-                            }
-                        }
-                    }
-                });
-        }
-
-        //function cambioEstado(e) {
-        //    //debugger;
-        //    var estado = e.sender.dataItem();
-        //    var grid = e.sender.element.closest(".k-grid").data("kendoGrid");
-        //    var fila = e.sender.element.closest("tr");
-        //    var registro = grid.dataItem(fila);
-        //    registro.set("IdEstado", estado.IdEstado);
-        //    registro.set("Estado", estado);
-        //}
     }
+    function onRequestEnd() {
+        var grid = $("#grdConfiguracion").getKendoGrid();
+        grid.dataSource.read();
+    }
+</script>
+@(Html.Kendo().Grid<ERPMVC.Models.Horario>()
+                  .Name("grdConfiguracion").NoRecords()
+
+                  .Columns(columns =>
+                  {
+                      {
+                          columns.Command(command =>
+                          {
+                              command.Custom("Editar").Click("EditHorario").Text(" ").IconClass("fa fa-edit");
+                              command.Custom("Eliminar").Click("EliminarHorario").Text(" ").IconClass("fa fa-trash");
+                          }).Width(200).Title("Acciones");
+                      }
+                      columns.Bound(p => p.Id).Title("No.").Width(80);
+                      columns.Bound(p => p.Nombre).Title("Nombre").Width(180);
+                      columns.Bound(p => p.HoraInicio)
+                          .Title("Hora Inicio")
+                          .Width(130)
+                          .Format("{0:HH:mm}");
+                      columns.Bound(p => p.HoraFinal)
+                          .Title("Fecha Final")
+                          .Width(130)
+                          .Format("{0:HH:mm}");
+                      columns.Bound(p => p.Lunes)
+                            .Title("Lunes")
+                            .Width(130)
+                            .ClientTemplate("<input type='checkbox' #= Lunes ? 'checked' : '' # class='day-checkbox checkbox-no-pointer-events' />");
+                      columns.Bound(p => p.Martes)
+                            .Title("Martes")
+                            .Width(130)
+                            .ClientTemplate("<input type='checkbox' #= Martes ? 'checked' : '' # class='day-checkbox checkbox-no-pointer-events' />");
+                            //do the next days
+                      columns.Bound(p => p.Miercoles)
+                            .Title("Miercoles")
+                            .Width(130)
+                            .ClientTemplate("<input type='checkbox' #= Miercoles ? 'checked' : '' # class='day-checkbox checkbox-no-pointer-events' />");
+                      columns.Bound(p => p.Jueves)
+                            .Title("Jueves")
+                            .Width(130)
+                            .ClientTemplate("<input type='checkbox' #= Jueves ? 'checked' : '' # class='day-checkbox checkbox-no-pointer-events' />");
+                      columns.Bound(p => p.Viernes)
+                            .Title("Viernes")
+                            .Width(130)
+                            .ClientTemplate("<input type='checkbox' #= Viernes ? 'checked' : '' # class='day-checkbox checkbox-no-pointer-events' />");
+                      columns.Bound(p => p.Sabado)
+                            .Title("Sabado")
+                            .Width(130)
+                            .ClientTemplate("<input type='checkbox' #= Sabado ? 'checked' : '' # class='day-checkbox checkbox-no-pointer-events' />");
+                      columns.Bound(p => p.Domingo)
+                            .Title("Domingo")
+                            .Width(130)
+                            .ClientTemplate("<input type='checkbox' #= Domingo ? 'checked' : '' # class='day-checkbox checkbox-no-pointer-events' />");
+                      columns.Bound(p => p.Estado).Title("Estado").Width(150);
+                      columns.Bound(p => p.Factor).Title("Factor").Visible(false);
+                  }).Filterable(f => f.Operators(o => o.ForString(s => s
+                                         .Clear()
+                                         .Contains("Contiene")
+                                         .DoesNotContain("No contiene")
+                                         .EndsWith("Termina con")
+                                         .IsEqualTo("Es igual a")
+                                         .IsNotEqualTo("No es igual a")
+                                         .IsNull("Es nulo")
+                                         .StartsWith("Inicia con")
+                                   )
+                                     .ForNumber(n => n
+                                     .Clear()
+                                     .IsEqualTo("Es igual a")
+                                     .IsGreaterThan("Es mayor que")
+                                     .IsLessThan("Es menor que")
+                                     .IsNull("Es nulo")
+                                     .IsLessThanOrEqualTo("Es menor o igual que")
+                                     .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                   )
+                                   .ForDate(d => d
+                                   .Clear()
+                                   .IsEqualTo("Es igual que")
+                                   .IsGreaterThan("Es mayor que")
+                                   .IsLessThan("Es menor que")
+                                   .IsLessThanOrEqualTo("Es menor o igual que")
+                                   .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                   .IsNotEqualTo("No es igual que")
+                                    )
+                                 ))
+                                 .ToolBar(tools =>
+                              {
+                                   tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+                                      .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddHorario();" });
+                              })
+                    .Editable(e => e.Mode(GridEditMode.PopUp))
+                    .Sortable()
+                    .AutoBind(true)
+                    .Pageable(p => p.Input(true))
+                    .Resizable(s => s.Columns(true))
+                    .Filterable()
+                    .Scrollable()
+                    .DataSource(dataSource =>
+                   dataSource
+                   //.Ajax()
+                   .WebApi()
+                    .ServerOperation(true)
+                    .Model(model =>
+                    {
+                    model.Id(p => p.Id);
+                    model.Field(p => p.Id).Editable(false);
+                    })
+                    .Events(events =>
+                    {
+                        events.Error("error_handler");
+                    })
+                    .Read(read => read.Action("GetHorarios", "Horario"))
+                    .Update(update => update.Action("Guardar", "Horario"))
+                    .Create(create => create.Action("Guardar", "Horario"))
+              )
+)
+<div id="numHorario">
+    @await Html.PartialAsync("pvwAddHorario", new ERPMVC.DTO.HorarioDTO { Id = 0 })
+</div>
+<style>
+    #grdConfiguracion {
+        width: 100%; /* establece un ancho específico en píxeles o porcentaje */
+    }
+
+    /* Estilo para checkbox sin eventos de puntero */
+    .checkbox-no-pointer-events {
+        pointer-events: none; /* Deshabilita las interacciones del mouse */
+    }
+
+</style>
+<script>
+function setToolbarTooltip(btn_cl, btn_tooltip) {
+        $("#grdConfiguracion").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+    function setRowButtonTooltip(btn_cl, btn_tooltip) {
+        $("#grdConfiguracion").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+    setToolbarTooltip(".k-grid-toolbar a.k-grid-Agregar", "Agregar Horario");
+    setRowButtonTooltip(".k-grid-Editar", "Editar Horario");
+    setRowButtonTooltip(".k-grid-Eliminar", "Eliminar Horario");
 </script>

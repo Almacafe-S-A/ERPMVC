@@ -47,25 +47,6 @@
         numeric = null;
     }
 
-
-    formattear = new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'LPS',
-        minimumFractionDigits: 2
-    });
-
-    function formatomiles(numero){
-        debugger;
-        let format = new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'LPS',
-        minimumFractionDigits: 2
-            });
-
-        return format.format(numero).replace(/[a-z]{3}/i, "").trim();
-        
-    }
-
     function calculateField(e) {
         debugger;
         record = 0;
@@ -75,14 +56,15 @@
             var totalSpan = e.container.closest("TR").find(".totalSpan");
             var totalInventario = e.container.closest("TR").find(".totalInventario");
             
-            e.model.InventarioFisicoCantidad = parseFloat( e.model.FactorSacos * e.model.NSacos).toFixed(2);
+            e.model.InventarioFisicoCantidad = parseFloat( e.model.FactorSacos * e.model.NSacos).toFixed(6);
             e.model.Diferencia = parseFloat(e.model.InventarioFisicoCantidad - e.model.SaldoLibros).toFixed(2);
             
-             totalSpan.html(formatomiles(e.model.Diferencia));
-             totalInventario.html(formatomiles(e.model.InventarioFisicoCantidad));
+             totalSpan.html(e.model.Diferencia);
+             totalInventario.html(e.model.InventarioFisicoCantidad);
              
         }
-        
+		$("#gridInventarioFisicoLine").data("kendoGrid").refresh();
+
     }
 
     var record = 0;
@@ -109,156 +91,230 @@
 
 
 <div class="box">
-    <div class="box-body">
+	<div class="box-body">
 
-        @(
-            Html.Kendo().Grid<ERPMVC.Models.InventarioFisicoLine>
-        ()
-        .Name("gridInventarioFisicoLine")
-        .Events(e =>
-        e.CellClose("calculateField").Change("numeracion").DataBound("numeracion")
-
-
-        )
-        .Columns(columns =>
-        {
-
-            columns.Command(command =>
-            {
-                command.Custom("Eliminar").Text(" ").IconClass("fa fa-trash-alt").Click("Delete");
-            }).Width(80).Visible(Model.FechaCompletado==null);
-            columns.Bound(c =>c.No).Width(80).Title("No.").ClientTemplate("#=RowNum()#")
-        .HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" });
-
-            //columns.Bound(p => p.PdaNo).Title("Pda No").ClientTemplate("#= RowNum()#").Width(110);
-            
+		@(
+			Html.Kendo().Grid<ERPMVC.Models.InventarioFisicoLine>
+			()
+			.Name("gridInventarioFisicoLine")
+			.Events(e =>
+			e.CellClose("calculateField").Change("numeracion").DataBound("numeracion")
 
 
-            columns.Bound(p => p.Warehouse).Title("Bodega")
-        .ClientTemplate("#=typeof Warehouse === 'undefined'||Warehouse===null?WarehouseName:Warehouse.WarehouseName#").Width(150)
-                .HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" });
+			)
+			.Columns(columns =>
+			{
 
-            columns.Bound(p => p.Product).Title("Producto")
-                .ClientTemplate("#=typeof Product === 'undefined'||Product===null?ProductoNombre:GoodsDelivered.SubProductName#").Width(150)
-                .HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" });
+				columns.Command(command =>
+				{
+					command.Custom("Eliminar").Text(" ").IconClass("fa fa-trash-alt").Click("Delete");
+				}).Width(80).Visible(Model.FechaCompletado == null);
+				columns.Bound(c => c.No).Width(80).Title("No.").ClientTemplate("#=RowNum()#")
+				.HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" });
 
-                columns.Bound(p => p.UnitOfMeasure).Title("Unidad de Medida")
-                .Width(180)
-                .ClientTemplate("#=typeof UnitOfMeasure === 'undefined'||UnitOfMeasure===null?UnitOfMeasureName:UnitOfMeasure.UnitOfMeasureName#")
-           .HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" });
-
-            columns.Bound(p => p.NSacos).Title("Cantidad").Width(120)
-        .HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" })
-            .Format("{0:N4}");
-
-        columns.Bound(p => p.FactorSacos).Title("Factor Peso").Width(140)
-        .HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" })
-            .Format("{0:N4}");  
-
-        columns.Bound(p => p.InventarioFisicoCantidad).Title("Inventario Fisico")
-        .ClientTemplate("<div style='text-align: right'><span class='totalInventario'>#= NSacos * FactorSacos #</span></div>") 
-        .Width(180)
-        .HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" })
-            .Format("{0:N4}");
-
-        columns.Bound(p => p.SaldoLibros).Title("Saldo Libros").Width(140)
-        .HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" })
-            .Format("{0:N4}");  
-            
-        columns.Bound(p => p.Diferencia).Title("Diferencia")
-        .ClientTemplate("<div style='text-align: right'><span class='totalSpan'>#= InventarioFisicoCantidad - SaldoLibros #</span></div>")
-        .Format("{0:N4}")
-        .HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" })
-        .Width(120);
-
-        columns.Bound(p => p.Estiba).Width(100)
-        .HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" });
-      
-    })
-    .Editable(e => e.Mode(GridEditMode.InCell))
-    .Filterable(f => f.Operators(o => o.ForString(s => s
-    .Clear()
-    
-    .Contains("Contiene")
-    .DoesNotContain("No contiene")
-    .EndsWith("Termina con")
-    .IsEqualTo("Es igual a")
-    .IsNotEqualTo("No es igual a")
-    .IsNull("Es nulo")
-    .StartsWith("Inicia con")
+				//columns.Bound(p => p.PdaNo).Title("Pda No").ClientTemplate("#= RowNum()#").Width(110);
 
 
-    )
-    .ForNumber(n => n
-    .Clear()
-    .IsEqualTo("Es igual a")
-    .IsGreaterThan("Es mayor que")
-    .IsLessThan("Es menor que")
-    .IsNull("Es nulo")
-    .IsLessThanOrEqualTo("Es menor o igual que")
-    .IsGreaterThanOrEqualTo("Es mayor o igual que")
-    )
-    .ForDate(d => d
-    .Clear()
-    .IsEqualTo("Es igual que")
-    .IsGreaterThan("Es mayor que")
-    .IsLessThan("Es menor que")
-    .IsLessThanOrEqualTo("Es menor o igual que")
-    .IsGreaterThanOrEqualTo("Es mayor o igual que")
-    .IsNotEqualTo("No es igual que")
-    )
-    ))
-     .ToolBar(tools =>
-        {
-            tools.Create().Text("Agregar Producto");
-            tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" }).Text("Exportar a excel");
-        })
+
+				columns.Bound(p => p.Warehouse).Title("Bodega")
+				.ClientTemplate("#=typeof Warehouse === 'undefined'||Warehouse===null?WarehouseName:Warehouse.WarehouseName#").Width(150)
+				.HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" });
+
+				columns.Bound(p => p.Product).Title("Producto")
+				.ClientTemplate("#=typeof Product === 'undefined'||Product===null?ProductoNombre:GoodsDelivered.SubProductName#").Width(150)
+				.HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" });
+
+				columns.Bound(p => p.UnitOfMeasure).Title("Unidad de Medida")
+				.Width(180)
+				.ClientTemplate("#=typeof UnitOfMeasure === 'undefined'||UnitOfMeasure===null?UnitOfMeasureName:UnitOfMeasure.UnitOfMeasureName#")
+				.HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" });
+
+				columns.Bound(p => p.NSacos).Title("Inventario Físico").Width(120)
+				.HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" })
+
+				.ClientFooterTemplate("<div style='text-align: right'>#=totalColumnasIF(1,0)#</div>")
+
+				.Format("{0:N6}");
+
+				columns.Bound(p => p.FactorSacos).Title("Factor Peso").Width(140)
+				.HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" })
+				.Format("{0:N6}");
+
+				columns.Bound(p => p.InventarioFisicoCantidad).Title("Saldo Físico")
+				.ClientTemplate("<div style='text-align: right'><span class='totalInventario'>#= kendo.toString(NSacos * FactorSacos, 'n6') #</span></div>")
+				.Width(180)
+
+				.ClientFooterTemplate("<div style='text-align: right'>#=totalColumnasIF(2,0)#</div>")
+
+				.HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" });
+
+				columns.Bound(p => p.SaldoLibros).Title("Saldo Libros").Width(140)
+				.HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" })
+
+				.ClientFooterTemplate("<div style='text-align: right'>#=totalColumnasIF(3,1)#</div>")
+
+				.Format("{0:C2}");
+
+				columns.Bound(p => p.Diferencia).Title("Diferencia")
+				.ClientTemplate("<div style='text-align: right'><span class='totalSpan'>#= kendo.toString(InventarioFisicoCantidad - SaldoLibros, 'c2') #</span></div>")
+				.HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" })
+
+				.ClientFooterTemplate("<div style='text-align: right'>#=totalColumnasIF(4,1)#</div>")
+
+				.Width(120);
+
+				columns.Bound(p => p.Estiba).Width(100)
+				.HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" });
+
+			})
+			.Editable(e => e.Mode(GridEditMode.InCell))
+			.Filterable(f => f.Operators(o => o.ForString(s => s
+			.Clear()
+
+			.Contains("Contiene")
+			.DoesNotContain("No contiene")
+			.EndsWith("Termina con")
+			.IsEqualTo("Es igual a")
+			.IsNotEqualTo("No es igual a")
+			.IsNull("Es nulo")
+			.StartsWith("Inicia con")
 
 
-    .Sortable()
-    .Resizable(s => s.Columns(true))
-    .AutoBind(true)
-    //.Pageable()
-    .Filterable()
-    .Scrollable()
-    .Pdf(pdf => pdf.FileName("CertificadoDepositoDetalleReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-    + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
-    .ProxyURL(Url.Action("Export", "Home")).AllPages())
-    .Excel(excel => excel.FileName("CertificadoDepositoDetalleReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-    + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
-    .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
-    .DataSource(dataSource =>
-
-    dataSource
-    //.Ajax()
-    .WebApi()
-    .Batch(true)
-
-    .ServerOperation(false)
-    .Model(model =>
-    {
-        model.Id(p => p.Id);
-        //model.Field(p => p.InventarioFisicoId).DefaultValue(Model.InventarioFisicoId);
-        model.Field(p => p.No).Editable(false);
-        model.Field(p => p.Id).Editable(false);
-        model.Field(p => p.ProductoNombre).Editable(true);
-        model.Field(p => p.SaldoLibros).Editable(false);
-        model.Field(p => p.InventarioFisicoCantidad).Editable(false);
-        model.Field(p => p.Diferencia).Editable(false);
-
-       
-
-    })
-    .Sort(s => s.Add(a => a.Id).Ascending())
-    .Events(events =>
-    {
-        events.Error("error_handler");
+			)
+			.ForNumber(n => n
+			.Clear()
+			.IsEqualTo("Es igual a")
+			.IsGreaterThan("Es mayor que")
+			.IsLessThan("Es menor que")
+			.IsNull("Es nulo")
+			.IsLessThanOrEqualTo("Es menor o igual que")
+			.IsGreaterThanOrEqualTo("Es mayor o igual que")
+			)
+			.ForDate(d => d
+			.Clear()
+			.IsEqualTo("Es igual que")
+			.IsGreaterThan("Es mayor que")
+			.IsLessThan("Es menor que")
+			.IsLessThanOrEqualTo("Es menor o igual que")
+			.IsGreaterThanOrEqualTo("Es mayor o igual que")
+			.IsNotEqualTo("No es igual que")
+			)
+			))
+			.ToolBar(tools =>
+			{
+				tools.Create().Text("Agregar Producto");
+				tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" }).Text("Exportar a excel");
+			})
 
 
-    })
-    .Read(read => read.Action("GetInventarioFisicoLines", "InventarioFisicoLine").Data("GetparamDetalle"))
-    )
-    )
+			.Sortable()
+			.Resizable(s => s.Columns(true))
+			.AutoBind(true)
+			//.Pageable()
+			.Filterable()
+			.Scrollable()
+			.Pdf(pdf => pdf.FileName("CertificadoDepositoDetalleReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+			+ DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+			.ProxyURL(Url.Action("Export", "Home")).AllPages())
+			.Excel(excel => excel.FileName("CertificadoDepositoDetalleReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+			+ DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+			.ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+			.DataSource(dataSource =>
 
+			dataSource
+			//.Ajax()
+			.WebApi()
+			.Batch(true)
+
+			.ServerOperation(false)
+			.Model(model =>
+			{
+				model.Id(p => p.Id);
+				//model.Field(p => p.InventarioFisicoId).DefaultValue(Model.InventarioFisicoId);
+				model.Field(p => p.No).Editable(false);
+				model.Field(p => p.Id).Editable(false);
+				model.Field(p => p.ProductoNombre).Editable(true);
+				model.Field(p => p.SaldoLibros).Editable(false);
+				model.Field(p => p.InventarioFisicoCantidad).Editable(false);
+				model.Field(p => p.Diferencia).Editable(false);
+
+
+
+			})
+			.Sort(s => s.Add(a => a.Id).Ascending())
+			.Events(events =>
+			{
+				events.Error("error_handler");
+
+
+			})
+			.Read(read => read.Action("GetInventarioFisicoLines", "InventarioFisicoLine").Data("GetparamDetalle"))
+			)
+			)
+
+	</div>
 </div>
-</div>
+<script>
+	function totalColumnasIF(tiporesultado, moneda) {
+		debugger;
+
+		var data = $("#gridInventarioFisicoLine").getKendoGrid().dataSource.data();
+		var total = 0;
+
+		console.log("Cantidad de elementos en data:", data.length); // Verifica la cantidad de elementos en los datos
+
+		switch (tiporesultado) {
+			case 1: ///////Calcular el Total
+				data.forEach(r => {
+					total += r.NSacos;
+					console.log("Valor de Inventario Fisico:", r.NSacos);
+				});
+				break;
+			case 2:
+				data.forEach(r => {
+					total += r.InventarioFisicoCantidad;
+					console.log("Valor de Saldo Fisico:", r.InventarioFisicoCantidad);
+				});
+				break;
+			case 3:
+				data.forEach(r => {
+					total += r.SaldoLibros;
+					console.log("Valor de Saldo Fisico:", r.SaldoLibros);
+				});
+				break;
+			case 4:
+				data.forEach(r => {
+					total += r.Diferencia;
+					console.log("Valor de Saldo Fisico:", r.Diferencia);
+				});
+				break;
+			default:
+				break;
+		}
+		var formatter = new Intl.NumberFormat('es-HN', {
+			style: 'currency',
+			currency: 'LPS',
+			minimumFractionDigits: 2
+		});
+		if (moneda == 1) {
+			return formatter.format(total);
+		}
+		if (moneda == 2) {
+			formatter = new Intl.NumberFormat('en-US', {
+				style: 'currency',
+				currency: 'USD',
+				minimumFractionDigits: 2
+			});
+			return formatter.format(total);
+		}
+		if (moneda == 0) {
+			formatter = new Intl.NumberFormat('en-US', {
+				style: 'currency',
+				currency: 'LPS',
+				minimumFractionDigits: 2
+			});
+			return formatter.format(total).replace(/[a-z]{3}/i, "").trim();
+		}
+		return total;
+	}
+</script>

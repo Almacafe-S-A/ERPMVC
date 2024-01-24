@@ -2,16 +2,23 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Net.Http;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using ERPMVC.DTO;
 using ERPMVC.Helpers;
 using ERPMVC.Models;
+using Kendo.Mvc.Extensions;
+using Kendo.Mvc.UI;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using NPOI.HPSF;
+using NPOI.SS.Formula.Functions;
 
 namespace ERPMVC.Controllers
 {
@@ -34,45 +41,154 @@ namespace ERPMVC.Controllers
             return View();
         }
 
-        [HttpPost]
-        public async Task<IActionResult> PostFecha([FromForm] string Fecha, bool Todos)
+    
+
+        [HttpGet("[action]")]
+        public async Task<DataSourceResult> GetHorasExtra([DataSourceRequest] DataSourceRequest request, DateTime Fecha, bool Todos)
         {
-            try
-            {
-                DateTime fecha = DateTime.ParseExact(Fecha, "dd/MM/yyyy", CultureInfo.InvariantCulture);
-                TempData["Fecha"] = fecha;
-                TempData["Todos"] = Todos;
-                return RedirectToAction("Index");
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "Error con formato de fecha");
-                TempData["Error"] = ex.Message;
-                return RedirectToAction("Index");
-            }
-        }
-[HttpGet("[action]")]
-        public async Task<ActionResult> GetHorasExtra(DateTime fecha, bool todos)
-        {
+            List<HoraExtra> horasExtra = new List<HoraExtra>();
             try
             {
                 var respuesta = await Utils.HttpGetAsync(HttpContext.Session.GetString("token"),
-                    config.Value.urlbase + $"api/HorasExtra/GetHorasExtrasFecha/{fecha.ToString("yyyy-MM-dd")}/" + (todos ? 1 : 0));
+                    config.Value.urlbase + $"api/HorasExtra/GetHorasExtrasFecha/{Fecha.ToString("yyyy-MM-dd")}/" + (Todos ? 1 : 0));
+                string valorrespuesta = "";
                 if (respuesta.IsSuccessStatusCode)
                 {
-                    var contenido = await respuesta.Content.ReadAsStringAsync();
-                    var resultado = JsonConvert.DeserializeObject<List<HoraExtra>>(contenido);
-                    return Ok(resultado);
+                    valorrespuesta = await respuesta.Content.ReadAsStringAsync();
+                    horasExtra = JsonConvert.DeserializeObject<List<HoraExtra>>(valorrespuesta);
+                    horasExtra = horasExtra.OrderByDescending(x => x.Id).ToList();
+                    foreach (var item in horasExtra)
+                    {
+                        item.HorasExtras += item.HoraAlumerzo;
+
+                    }
                 }
-                return BadRequest(await respuesta.Content.ReadAsStringAsync());
             }
             catch (Exception ex)
             {
                 logger.LogError(ex, "Error al cargar las horas extra");
-                return BadRequest(ex.Message);
+                throw ex;
+            }
+            return horasExtra.ToDataSourceResult(request);
+        }
+
+        public async Task<DataSourceResult> GetHorasExtraDistribucion([DataSourceRequest] DataSourceRequest request,int IdHoraExtra)
+        {
+            List<HorasExtrasDistribucion> horasExtrasDistribucions = new List<HorasExtrasDistribucion>();
+            try
+            {
+                var respuesta = await Utils.HttpGetAsync(HttpContext.Session.GetString("token"),
+                    config.Value.urlbase + $"api/HorasExtra/GetDistribucionByHoraExtraId/{IdHoraExtra}");
+                string valorrespuesta = "";
+                if (respuesta.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await respuesta.Content.ReadAsStringAsync();
+                    horasExtrasDistribucions = JsonConvert.DeserializeObject<List<HorasExtrasDistribucion>>(valorrespuesta);
+                    horasExtrasDistribucions = horasExtrasDistribucions.OrderByDescending(x => x.Id).ToList();
+                    if (horasExtrasDistribucions.Count>0)
+                    {
+                        horasExtrasDistribucions.Add(new HorasExtrasDistribucion
+                        {
+                            CantidadHoras = horasExtrasDistribucions.Sum(s => s.CantidadHoras),
+                            TotalaAPagar = horasExtrasDistribucions.Sum(s => s.TotalaAPagar),
+                             
+                        }); 
+                    }
+                    
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Error al cargar la distribucion hora extra");
+                throw ex;
+            }
+            return horasExtrasDistribucions.ToDataSourceResult(request);
+        }
+
+        [HttpPost("[action]")]
+        public async Task<ActionResult> Revisar(long idHoraExtra)
+        {
+            try
+            {
+                if (idHoraExtra == 0)
+                {
+                    return await Task.Run(() => BadRequest("No llego correctamente el modelo!"));
+                }
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + $"api/HorasExtra/ChangeStatus/{idHoraExtra}/{1}");
+                string valorrespuesta = "";
+                if (!result.IsSuccessStatusCode)
+                {
+                    return await Task.Run(() => BadRequest("No se Aprobo el documento!"));
+                }
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                logger.LogError($"Ocurrio un error: {ex.ToString()}");
+                throw ex;
             }
         }
 
+        [HttpPost("[action]")]
+        public async Task<ActionResult> Aprobar(long idHoraExtra)
+        {
+            try
+            {
+                if (idHoraExtra == 0)
+                {
+                    return await Task.Run(() => BadRequest("No llego correctamente el modelo!"));
+                }
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + $"api/HorasExtra/ChangeStatus/{idHoraExtra}/{2}");
+                string valorrespuesta = "";
+                if (!result.IsSuccessStatusCode)
+                {
+                    return await Task.Run(() => BadRequest("No se Aprobo el documento!"));
+                }
+
+                return Ok();
+
+            }
+            catch (Exception ex)
+            {
+                logger.LogError($"Ocurrio un error: {ex.ToString()}");
+                throw ex;
+            }
+        }
+
+        [HttpPost("[action]")]
+        public async Task<ActionResult> Rechazar(long idHoraExtra)
+        {
+            try
+            {
+                if (idHoraExtra == 0)
+                {
+                    return await Task.Run(() => BadRequest("No llego correctamente el modelo!"));
+                }
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + $"api/HorasExtra/ChangeStatus/{idHoraExtra}/{3}");
+                string valorrespuesta = "";
+                if (!result.IsSuccessStatusCode)
+                {
+                    return await Task.Run(() => BadRequest("No se Aprobo el documento!"));
+                }
+
+                return Ok();
+
+            }
+            catch (Exception ex)
+            {
+                logger.LogError($"Ocurrio un error: {ex.ToString()}");
+                throw ex;
+            }
+        }
         [HttpPost("[action]")]
         public async Task<ActionResult> AprobarHorasExtra(long idHoraExtra)
         {
@@ -112,5 +228,60 @@ namespace ERPMVC.Controllers
                 return BadRequest(ex.Message);
             }
         }
+
+        [HttpPost]
+        public async Task<ActionResult<HoraExtra>> Update(HoraExtra _horaextra)
+        {
+            try
+            {
+                // TODO: Add insert logic here
+                string baseAddress = config.Value.urlbase;
+                HttpClient httpClient = new HttpClient();
+                httpClient.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await httpClient.PutAsJsonAsync(baseAddress + "api/HorasExtra/Update", _horaextra);
+                string valorRespuesta = "";
+
+                if (result.IsSuccessStatusCode)
+                {
+                    valorRespuesta = await result.Content.ReadAsStringAsync();
+                    _horaextra = JsonConvert.DeserializeObject<HoraExtra>(valorRespuesta);
+                }
+                else
+                {
+                    valorRespuesta = await result.Content.ReadAsStringAsync();
+                    return BadRequest(valorRespuesta);
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.LogError($"Ocurrió un error: {ex.ToString()}");
+                return await Task.Run(() => BadRequest($"Ocurrió un error: {ex.Message}"));
+            }
+
+            return new ObjectResult(new DataSourceResult { Data = new[] { _horaextra }, Total = 1 });
+        }
+
+        public IActionResult fechaexcel(string contentType, string base64, string fileName, string fechaSeleccionada)
+        {
+            if (DateTime.TryParseExact(fechaSeleccionada, "dd/MM/yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime fecha))
+            {
+                fileName = "HoraExtraReport_" + fecha.ToString("dd/M/yyyy") + ".xlsx";
+
+                var fileContents = Convert.FromBase64String(base64);
+                return File(fileContents, contentType, fileName);
+            }
+            else
+            {
+                return BadRequest("Fecha seleccionada no válida");
+            }
+        }
+
+
+        public ActionResult SFReporteHorasExtras()
+        {
+
+            return View();
+        }
+
     }
 }

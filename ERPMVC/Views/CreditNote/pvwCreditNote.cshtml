@@ -107,7 +107,7 @@
                                                     
                                                         <kendo-datetimepicker name="CreditNoteDate"
                                                                               style="min-width: 86%;color:black;font-weight:600" 
-                                                                              format="dd/MM/yyyy hh:mm:ss" disabled
+                                                                              format="dd/MM/yyyy hh:mm:ss" 
                                                                               time-format="hh:mm:ss"
                                                                               data-val-required="La Fecha de pedido es requerida."
                                                                           value="Model.CreditNoteDate"></kendo-datetimepicker>
@@ -191,9 +191,9 @@
 
                                                 
 
-                                            <div class="col-md-3">
+                                            <div class="col-md-6">
                                                 <div class="form-group">                                                  
-                                                    <label asp-for="CustomerId" class="control-label"></label>
+                                                    <label asp-for="CustomerId" class="control-label">Cliente</label>
                                                         <kendo-dropdownlist name="CustomerId" for="@Model.CustomerId" filter="Kendo.Mvc.UI.FilterType.Contains"
                                                                             option-label="Seleccione el cliente"
                                                                             datatextfield="CustomerName"
@@ -216,7 +216,7 @@
                                                 
                                             
                                             </div>
-                                            <div class="col-md-3" id="FacturaFiscal">
+                                            <div class="col-md-6" id="FacturaFiscal">
                                                 
                                                     <div class="form-group">
                                                         <label asp-for="InvoiceId" class="control-label" style="width:100%"></label>
@@ -224,26 +224,25 @@
                                                         {
                                                         <kendo-dropdownlist name="InvoiceId" filter="Kendo.Mvc.UI.FilterType.Contains"
                                                                             for="InvoiceId"
-                                                                            value="@Model.InvoiceId"
+                                                                            data-val-required="La Factura es requerida"
                                                                             option-label="Seleccione la Factura"
                                                                             datatextfield="NumeroDEI"
                                                                             datavaluefield="InvoiceId"
                                                                             cascade-from="CustomerId"
-                                                                        enable="editable"
+                                                                            enable="editable"
                                                                             on-change="RefreshInvoiceDetail"
-                                                                            data-val-required="La Factura es requerida"
                                                                             style="width: 100%;">
                                                             <datasource type="DataSourceTagHelperType.WebApi" page-size="9999999">
                                                                 <sorts>
                                                                     <sort field="NumeroDEI" direction="asc" />
                                                                 </sorts>
                                                                 <transport>
-                                                                    <read url="@Url.Action("GetFacturasByCustomer", "Invoice")" data="GetCustomerId" />
+                                                                    <read url="@Url.Action("GetFacturasPendientesVigentesByCustomer", "Invoice")" data="GetCustomerId" />
                                                                 </transport>
                                                             </datasource>
                                                         </kendo-dropdownlist>
                                                         }else{
-                                                        <input type="text" asp-for="InvoiceId" disabled class="k-textbox" style="min-width: 100%;color:black;font-weight:500" />
+                                                        <input type="text" asp-for="NumeroDEIDocumentoAsociado" disabled class="k-textbox" style="min-width: 100%;color:black;font-weight:500" />
                                                         }
                                                         <span asp-validation-for="InvoiceId" class="text-danger"></span>
 
@@ -252,7 +251,7 @@
                                             </div>
                                             
 
-                                            <div class="col-md-3">
+                                            <div class="col-md-3" hidden >
                                                 <script>
                                                     function SubProductPrincipal() {
                                                         $("#SubProductPrincipal").data("kendoDropDownList").dataSource.read();
@@ -260,28 +259,13 @@
                                                 </script>
                                                 <div class="form-group">
                                                     <label asp-for="ProductId" class="control-label" style="width:100%">Servicios</label>                                                   
-                                                        <kendo-dropdownlist name="ProductId" filter="Kendo.Mvc.UI.FilterType.Contains"
-                                                                            for="ProductId"
-                                                                            option-label="Seleccione el Servicio"
-                                                                            datatextfield="ProductName"
-                                                                            datavaluefield="ProductId"
-                                                                            enable="editable"
-                                                                            data-val-required="El Servicio es requerido."
-                                                                            style="width: 100%;">
-                                                            <datasource type="DataSourceTagHelperType.WebApi" page-size="9999999">
-                                                                <sorts>
-                                                                    <sort field="ProductName" direction="asc" />
-                                                                </sorts>
-                                                                <transport>
-                                                                    <read url="@Url.Action("GetProductActivos", "Common")" />
-                                                                </transport>
-                                                            </datasource>
-                                                        </kendo-dropdownlist>                                                    
+                                                        <input type="text" asp-for="ProductId" hidden readonly />
+                                                    <input type="text" asp-for="ProductName" hidden class="k-textbox"  readonly />
                                                     <span asp-validation-for="ProductId" class="text-danger"></span>
                                                 </div>
                                             </div>
 
-
+                                            
 
                                             
                                         </div>
@@ -387,7 +371,7 @@
 
 
 
-                                        @if (Convert.ToBoolean(Model.editar))
+                                        @if (Convert.ToBoolean(Model.editar) && (Model.Estado != "Emitido" && Model.Estado != "Anulado"))
                                         {<div class="row">
                                                 <button id="btnSaveCreditNote" type="submit" class="form-control btn-miboton " onclick="SaveCotizacion(this);">Guardar</button>
                                             </div>
@@ -437,13 +421,9 @@
                 },
                 error: function (XMLHttpRequest, textStatus, errorThrown) {
                     ////debugger;;
-                    if (XMLHttpRequest.responseText == 'Ya exíste una Nota de Crédito creada con el mismo RTN') {
-                         MostrarMensaje(textStatus + ": " + XMLHttpRequest.responseText, "Error", "Validación", 6000);
-                        //$("#RTN").val(null);
-                    }
-                    else {
-                         MostrarMensaje(textStatus + ": " + XMLHttpRequest.responseText, "Error", "Error", 6000);
-                    }
+
+                    MostrarMensaje(textStatus + ": " + XMLHttpRequest.XMLHttpRequest.responseJSON.Value, "Error", "Error", 6000);
+                    
                 }
             });
         }
@@ -503,7 +483,7 @@
 
         try{
             debugger;
-             $("#btnSaveCreditNote").prop("disabled", true);    
+            $("#btnSaveCreditNote").prop("disabled", true);
             var validadetalle = true;
             var displayedData = $("#gridCreditNoteDetail").data().kendoGrid.dataSource.view();
             for (var i = 0; i < displayedData.length; i++) {
@@ -542,12 +522,13 @@
                 'BranchName': $("#BranchId").data("kendoDropDownList").text(),
                 'CustomerId': $("#CustomerId").val(),
                 'CustomerName': $("#CustomerId").data("kendoDropDownList").text(),
-                'ProductId': $("#ProductId").val(),
-                'ProductName': $("#ProductId").data("kendoDropDownList").text(),
+                'ProductId': $("#ProductId").val() == null ? 0 : $("#ProductId").val(),
+                'ProductName': $("#ProductIdName").val(),
                 'CreditNoteDate': $("#CreditNoteDate").getKendoDateTimePicker().value().toJSON(),
                 'SalesTypeId': $("#SalesTypeId").val(),
                 'Remarks': $("#Remarks").val(),
                 'NumeroDEI': $("#NumeroDEI").val(),
+                'NumeroDEIDocumentoAsociado': $("#InvoiceId").data("kendoDropDownList").text(),
                 'InvoiceId': $("#InvoiceId").val(),
                 'Correo': $("#Correo").val(),
                 'Direccion': $("#Direccion").val(),
@@ -582,8 +563,9 @@
         }catch (ex) {
             console.log(ex);
         } finally {
-            $("#btnSaveCreditNote").show();
-            $("#btnSaveCreditNote").prop("disabled", false);
+            setTimeout(function () {
+                $("#btnSaveCreditNote").prop("disabled", false);
+            }, 4000);
         }
         
                

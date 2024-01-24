@@ -45,7 +45,6 @@
                         if (tipo !== 'read') {
                             //debugger;
                             datos.EstadoId = datos.Estado.IdEstado;
-                            //debugger;
                         }
                         return datos;
                     }
@@ -54,10 +53,12 @@
                     model: {
                         id:"Id",
                         fields: {
-                            Id: { type: "number", editable: true },
+                            Id: { type: "number", editable: false },
                             Nombre: {type:"string", editable:true},
+                            Valor: { type: "number", editable: true },
                             EstadoId: { type: "number", editable: true },
-                            Estado: { defaultValue: {IdEstado:90,NombreEstado:"Activo"}, editable: true }
+                            Estado: { defaultValue: {IdEstado:90,NombreEstado:"Activo"}, editable: true },
+                            EnPlanilla: { type: "boolean" ,editable: true },
                         }
                     }
                 },
@@ -74,13 +75,21 @@
             columns: [
                 {
                     command: [
-                        { name: "edit", text: { edit: "", update: "", cancel: "" }, visible: function (dataItem) { return dataItem.Id !== 1 }}
+                        { name: "edit", text: { edit: "", update: "", cancel: "" }, visible: function (dataItem) { return dataItem.Id !== 0 }}
                     ],
                     width:30
                 },
                 { field: "Id", title: "Id. ", width: 80, hidden: true },
                 { field: "Nombre", title: "Nombre", width: 200 },
-                { field: "Estado", title: "Estado", width: 100, editor: editorEstado, template: "#= Estado.NombreEstado #"}
+                { field: "Valor", title: "Valor", width: 50, attributes: { style: "text-align: right;" } },
+                { field: "EnPlanilla", title: "EnPlanilla", width: 50, attributes: { style: "text-align: right;" }, template: "#=EnPlanilla? 'Si': 'No' #" },
+                { field: "Estado", title: "Estado", width: 100, editor: editorEstado, template: "#= Estado.NombreEstado #"},
+                { field: "CuentaContableIngresos", title: "Cuenta Contable Ingresos", width: 100, editor: editorCuenta, template: "#=CuentaContableIngresosNombre #" },
+                { field: "CuentaContablePorCobrar", title: "Cuenta Contable Egresos", width: 100, editor: editorCuenta, template: "#= CuentaContablePorCobrarNombre #" }
+
+                    
+    
+
             ],
             noRecords: {
                 template:"No hay Tipos de Bonificaciones"
@@ -90,6 +99,39 @@
             editable: "inline",
             save:Validar
         });
+
+
+        
+    
+
+    function editorCuenta(contenedor, opciones) {
+        $('<input data-bind="value:' + opciones.field + '"/>')
+            .appendTo(contenedor)
+            .kendoDropDownList({
+                index: 0,
+                autoBind: true,
+                    dataTextField: "CodigoNombre",
+                dataValueField: "AccountId",
+                dataSource: {
+                    transport: {
+                        read: {
+                            type: "GET",
+                                url: "@Url.Action("GetCuentasDiariasPatronActivos", "Accounting")?Patron=5&&Patron=6",
+                            dataType: "json",
+                            
+                        }
+                    },
+                    schema: {
+                        model: {
+                            fields: {
+                                    AccountId: { type: "number" },
+                                    CodigoNombre: { type: "string" }
+                            }
+                        }
+                    }
+                }
+            });
+        }
 
         function editorEstado(contenedor, opciones) {
             $('<input data-bind="value:' + opciones.field + '"/>')
@@ -106,7 +148,7 @@
                                 url: '@Url.Action("GetEstadoByGrupo2", "Estados")',
                                 dataType: "json",
                                 data: {
-                                    GrupoEstadoId:30
+                                    GrupoEstadoId:1
                                 }
                             }
                         },
@@ -124,14 +166,29 @@
     }
 
     function errorGrid(e) {
-        $.toast({
-            heading: 'Error',
-            text: ' Error:' + e.status + " " + e.errorThrown + " " + e.xhr,
-            position: 'top-right',
-            loaderBg: '#ff6849',
-            icon: 'error',
-            hideAfter: 2000,
-            stack: 6
-        });
+        debugger;
+        if (e.responseJSON && e.responseJSON.errorMessage) {
+            $.toast({
+                heading: 'Error',
+                text: 'Error: ' + e.responseJSON.errorMessage,
+                position: 'top-right',
+                loaderBg: '#ff6849',
+                icon: 'error',
+                hideAfter: 2000,
+                stack: 6
+            });
+        } else {
+            // Si no se recibe un mensaje personalizado del servidor, muestra un mensaje genérico.
+            $.toast({
+                heading: 'Error',
+                text: 'Error en el guardado del Tipo de Bonificación',
+                position: 'top-right',
+                loaderBg: '#ff6849',
+                icon: 'error',
+                hideAfter: 2000,
+                stack: 6
+            });
+        }
     }
+
 </script>

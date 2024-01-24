@@ -20,6 +20,7 @@ namespace ERPMVC.Models
         public int InsuranceId { get; set; }
         [ForeignKey("InsuranceId")]
         public Insurances Insurace { get; set; }
+        public string InsuranceName { get; set; }
 
         public decimal Amount { get; set; }
 
@@ -43,7 +44,11 @@ namespace ERPMVC.Models
         public DateTime FechaModificacion { get; set; }
         public string UsuarioCreacion { get; set; }
         public string UsuarioModificacion { get; set; }
+        public Int64? ServicioId { get; set; }
+        [ForeignKey("ServicioId")]
+        public Product Servicio { get; set; }
 
+        public string ServicioName { get; set; }
 
 
         public List<InsuranceCertificateLine> InsuranceCertificaLines { get; set; }

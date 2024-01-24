@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
 using ERPMVC.DTO;
 using ERPMVC.Helpers;
 using ERPMVC.Models;
+using Kendo.Mvc.Extensions;
+using Kendo.Mvc.UI;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -54,26 +57,29 @@ namespace ERPMVC.Controllers
             }
         }
 
-        public async Task<ActionResult> GetTiposBonificacionesActivos()
+        [HttpGet("[controller]/[action]")]
+        public async Task<DataSourceResult> GetTiposBonificacionesActivos([DataSourceRequest] DataSourceRequest request)
         {
+            List<TipoBonificacion> _tipoBonificacion = new List<TipoBonificacion>();
             try
             {
-                var respuesta = await Utils.HttpGetAsync(HttpContext.Session.GetString("token"),
-                    config.Value.urlbase + "api/TipoBonificacion/GetTiposBonificacion");
-                if (respuesta.IsSuccessStatusCode)
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/TipoBonificacion/GetTiposBonificacion");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
                 {
-                    var contenido = await respuesta.Content.ReadAsStringAsync();
-                    var resultado = JsonConvert.DeserializeObject<List<TipoBonificacion>>(contenido).Where(w => w.EstadoId== 90).ToList();
-                    return Ok(resultado);
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _tipoBonificacion = JsonConvert.DeserializeObject<List<TipoBonificacion>>(valorrespuesta).Where(w => w.EstadoId == 1).ToList();
                 }
-
-                return BadRequest(await respuesta.Content.ReadAsStringAsync());
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, "Ocurrio un error al cargar los tipos de bonificaciones.");
-                return BadRequest(ex.Message);
+                logger.LogError($"Ocurrio un error: {ex.ToString()}");
+                throw ex;
             }
+            return await Task.Run(() => _tipoBonificacion.ToDataSourceResult(request));
         }
 
         public async Task<ActionResult> Guardar(TipoBonificacion registro)
@@ -96,6 +102,21 @@ namespace ERPMVC.Controllers
                 if (string.IsNullOrEmpty(registro.Nombre))
                 {
                     throw new Exception("El nombre es obligatorio.");
+                }
+                if(registro.CuentaContablePorCobrar != null)
+                {
+                    registro.CuentaContableIdPorCobrar = registro.CuentaContablePorCobrar.AccountId;
+                    registro.CuentaContablePorCobrarNombre = registro.CuentaContablePorCobrar.CodigoNombre;
+                    registro.CuentaContablePorCobrar = null;
+
+                }
+
+                if (registro.CuentaContableIngresos != null)
+                {
+                    registro.CuentaContableIngresosId = registro.CuentaContableIngresos.AccountId;
+                    registro.CuentaContableIngresosNombre = registro.CuentaContableIngresos.CodigoNombre;
+                    registro.CuentaContableIngresos = null;
+
                 }
                 registro.Estado = null;
                 var respuesta = await Utils.HttpPostAsync(HttpContext.Session.GetString("token"),

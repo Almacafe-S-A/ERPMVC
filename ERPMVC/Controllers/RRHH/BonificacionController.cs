@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
 using ERPMVC.Helpers;
 using ERPMVC.Models;
+using Kendo.Mvc.Extensions;
+using Kendo.Mvc.UI;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -29,17 +32,21 @@ namespace ERPMVC.Controllers
         //[Authorize(Policy = "RRHH.Bonos y Deducciones.Bonificaciones")]
         public IActionResult Index()
         {
-            return View();
+            Bonificacion bonificacion= new Bonificacion();
+            bonificacion.Periodo = Utils.Periodo;
+            bonificacion.PeriodoId = Utils.PeriodoActualId;
+            bonificacion.Mes = DateTime.Now.Month;
+            return View(bonificacion);
         }
 
         [HttpPost]
-        public async Task<IActionResult> PostFiltro([FromForm] int Periodo, int Mes, string Inactivo)
+        public async Task<IActionResult> PostFiltro([FromForm] int Periodo, int Mes, bool Inactivo)
         {
             try
             {
                 TempData["Periodo"] = Periodo;
                 TempData["Mes"] = Mes;
-                TempData["Inactivo"] = Inactivo.Equals("on");
+                TempData["Inactivo"] = Inactivo;
                 return RedirectToAction("Index");
             }
             catch (Exception ex)
@@ -50,32 +57,97 @@ namespace ERPMVC.Controllers
             }
         }
 
-        public async Task<ActionResult> GetBonificacionesMesPeriodo(int Periodo, int Mes, bool inactivos)
+        public async Task<DataSourceResult> GetBonificacionesMesPeriodo([DataSourceRequest] DataSourceRequest request, BonificacionDTO bonificacion)
+        {
+            List<Bonificacion> bonificaciones = new List<Bonificacion>();
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + $"api/Bonificacion/GetBonificacionesMesPeriodo/{bonificacion.IdPeriodo}/{bonificacion.NoMes}");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    bonificaciones = JsonConvert.DeserializeObject<List<Bonificacion>>(valorrespuesta);
+                    bonificaciones = bonificaciones.OrderByDescending(x => x.Id).ToList();
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.LogError($"Ocurrio un error: {ex.ToString()}");
+                throw ex;
+            }
+            return bonificaciones.ToDataSourceResult(request);
+        }
+
+        public async Task<ActionResult> GetPorEmpleado([DataSourceRequest] DataSourceRequest request, long empleadoId)
+        //[DataSourceRequest] DataSourceRequest request, long empleadoId)
         {
             try
             {
                 var respuesta = await Utils.HttpGetAsync(HttpContext.Session.GetString("token"),
-                    config.Value.urlbase + $"api/Bonificacion/GetBonificacionesMesPeriodo/{Periodo}/{Mes}/{inactivos}");
+                    config.Value.urlbase + $"api/Bonificacion/GetBonificacionesEmpleado/{empleadoId}/{1}");
                 if (respuesta.IsSuccessStatusCode)
                 {
                     var contenido = await respuesta.Content.ReadAsStringAsync();
                     var resultado = JsonConvert.DeserializeObject<List<Bonificacion>>(contenido);
-                    return Ok(resultado);
+                    if (resultado.Count == 0)
+                    {
+                        return Ok();
+                    }
+
+                    return Ok(resultado.ToDataSourceResult(request));
+
                 }
 
-                return BadRequest(await respuesta.Content.ReadAsStringAsync());
+                return BadRequest();
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, "Error al cargar las bonificaciones.");
-                return BadRequest(ex.Message);
+                logger.LogError(ex, "Error al cargar deducciones del empleado");
+                return BadRequest();
             }
         }
 
-        public async Task<ActionResult> Guardar(Bonificacion registro)
+
+        public async Task<ActionResult> GetPorEmpleadoPlanilla([DataSourceRequest] DataSourceRequest request,int empleadoId, int mes, 
+            int periodoId, int planilladetalleId,int quincena)
         {
             try
             {
+                var respuesta = await Utils.HttpGetAsync(HttpContext.Session.GetString("token"),
+                    config.Value.urlbase + $"api/Bonificacion/GetEmpleadoPlanilla/{empleadoId}/{mes}/{periodoId}/{planilladetalleId}/{quincena}");
+                if (respuesta.IsSuccessStatusCode)
+                {
+                    var contenido = await respuesta.Content.ReadAsStringAsync();
+                    var resultado = JsonConvert.DeserializeObject<List<Bonificacion>>(contenido);
+                    if (resultado.Count == 0)
+                    {
+                        return Ok();
+                    }
+
+                    return Ok(resultado.ToDataSourceResult(request));
+
+                }
+
+                return BadRequest();
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Error al cargar deducciones del empleado");
+                return BadRequest();
+            }
+        }
+
+        public async Task<ActionResult> Guardar(Bonificacion registro,  int NoMes,  int IdPeriodo, string FechaBono)
+        {
+            try
+            {
+                registro.FechaBono = Utils.GetFecha(FechaBono);
+                registro.PeriodoId = IdPeriodo;
+                registro.Mes = NoMes; 
                 if (registro.Id == 0)
                 {
                     registro.UsuarioCreacion = HttpContext.Session.GetString("user");
@@ -89,23 +161,35 @@ namespace ERPMVC.Controllers
                     registro.FechaModificacion = DateTime.Now;
                 }
 
-                if (registro.EmpleadoId == 0)
-                    throw new Exception("Debe seleccionar a un empleado.");
+                //if (registro.Empleado.IdEmpleado == 0)
+                //    throw new Exception("Debe seleccionar a un empleado.");
 
-                if (registro.Monto <= 0)
-                    throw new Exception("Monto de bonificación es invalido.");
-
-                if (registro.TipoId == 0)
+                if (registro.Tipo.Id == 0)
                     throw new Exception("Debe seleccionar un tipo de bonificación");
 
-                if (registro.TipoId == 1)
-                    throw new Exception(
-                        "El bono educativo no puede ser otorgado de forma manual, debe utilizar la opción del sistema designada para este efecto.");
-
+               
+                if (registro.Quincena == 1)
+                {
+                    registro.NombreQuincena = "Primera";
+                }
+                if (registro.Quincena == 2)
+                {
+                    registro.NombreQuincena = "Segunda";
+                }
+                if (registro.Quincena == 3)
+                {
+                    registro.NombreQuincena = "Ambas";
+                }
+                //registro.FechaBono = new DateTime(Periodo, Mes, 1);
+                //registro.EmpleadoId = registro.Empleado.IdEmpleado;
+                registro.TipoId = registro.Tipo.Id;
+               
+                registro.Monto = registro.Cantidad * registro.Tipo.Valor;
+                //registro.EstadoId = registro.Estado.IdEstado;
+                //registro.EmpleadoNombre = registro.Empleado.NombreEmpleado;
                 registro.Estado = null;
                 registro.Empleado = null;
                 registro.Tipo = null;
-
                 var respuesta = await Utils.HttpPostAsync(HttpContext.Session.GetString("token"),
                     config.Value.urlbase + "api/Bonificacion/Guardar", registro);
                 if (respuesta.IsSuccessStatusCode)
@@ -123,6 +207,64 @@ namespace ERPMVC.Controllers
             {
                 logger.LogError(ex, "Error al guardar una bonificación");
                 return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPost("[action]")]
+        public async Task<ActionResult> AprobarBonificacion(long idBonificacion)
+        {
+            try
+            {
+                if (idBonificacion == 0)
+                {
+                    return await Task.Run(() => BadRequest("No llego correctamente el modelo!"));
+                }
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + $"api/Bonificacion/ChangeStatus/{idBonificacion}/{1}");
+                string valorrespuesta = "";
+                if (!result.IsSuccessStatusCode)
+                {
+                    return await Task.Run(() => BadRequest("No se Aprobo el documento!"));
+                }
+
+                return Ok();
+
+            }
+            catch (Exception ex)
+            {
+                logger.LogError($"Ocurrio un error: {ex.ToString()}");
+                throw ex;
+            }
+        }
+
+        [HttpPost("[action]")]
+        public async Task<ActionResult> RechazarBonificacion(long idBonificacion)
+        {
+            try
+            {
+                if (idBonificacion == 0)
+                {
+                    return await Task.Run(() => BadRequest("No llego correctamente el modelo!"));
+                }
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + $"api/Bonificacion/ChangeStatus/{idBonificacion}/{2}");
+                string valorrespuesta = "";
+                if (!result.IsSuccessStatusCode)
+                {
+                    return await Task.Run(() => BadRequest("No se Rechazo el documento!"));
+                }
+
+                return Ok();
+
+            }
+            catch (Exception ex)
+            {
+                logger.LogError($"Ocurrio un error: {ex.ToString()}");
+                throw ex;
             }
         }
     }

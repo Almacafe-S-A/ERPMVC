@@ -16,6 +16,7 @@ namespace ERPMVC.Models
         public int Horas { get; set; }
 
         public int Minutos { get; set; }
+        public string HoraLlegada { get; set; }
 
         public Biometrico Encabezado { get; set; }
 

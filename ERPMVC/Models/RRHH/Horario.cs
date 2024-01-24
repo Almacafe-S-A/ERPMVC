@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Kendo.Mvc.UI;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -13,20 +14,25 @@ namespace ERPMVC.Models
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public long Id { get; set; }
 
-        [Required]
         public string Nombre { get; set; }
 
-        [Required]
         public string HoraInicio { get; set; }
-
-        [Required]
+        
         public string HoraFinal { get; set; }
 
-        [Required]
         public long IdEstado { get; set; }
+        public string Estado { get; set; }
 
-        public Estados Estado { get; set; }
-
+        public bool activo { get; set; }
+        public bool Lunes { get; set; }
+        public bool Martes { get; set; }
+        public bool Miercoles { get; set; }
+        public bool Jueves { get; set; }
+        public bool Viernes { get; set; }
+        public bool Sabado { get; set; }
+        public bool Domingo { get; set; }
+        public bool Almuerzo { get; set; }
+        public double Factor { get; set; }
         public DateTime FechaCreacion { get; set; }
         public DateTime FechaModificacion { get; set; }
         public string UsuarioModificacion { get; set; }

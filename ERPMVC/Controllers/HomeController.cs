@@ -13,6 +13,10 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using ERPMVC.Models;
 using Newtonsoft.Json;
+using ERPMVC.DTO;
+using NLog;
+using static Microsoft.AspNetCore.Hosting.Internal.HostingApplication;
+using System.Text;
 
 namespace ERPMVC.Controllers
 {
@@ -26,7 +30,7 @@ namespace ERPMVC.Controllers
         // [Authorize(Policy ="Admin")]
 
         private readonly IOptions<MyConfig> _config;
-        private readonly ILogger _logger;
+        private readonly ILogger<HomeController> _logger;
 
         public HomeController(ILogger<HomeController> logger, IOptions<MyConfig> config)
         {
@@ -38,7 +42,10 @@ namespace ERPMVC.Controllers
         public async Task<IActionResult> Index()
         {
             ViewData["AccountManagements"] = await AccountManagementCampos();
-
+            HomeViewModel model = new HomeViewModel();
+            // model.Notificaciones = await GetNotifications();
+            //return View(model);
+            ViewData["Notifications"] = await GetNotifications();
             return View();
         }
 
@@ -64,6 +71,68 @@ namespace ERPMVC.Controllers
 
             return View();
         }
+
+		[HttpGet("[controller]/[action]")]
+		public async Task<List<Notifications>> GetNotifications()
+		{
+			List<Notifications> notificationsList = new List<Notifications>();
+			try
+			{
+				string baseAddress = _config.Value.urlbase;
+				HttpClient client = new HttpClient();
+				client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+
+				var result = await client.GetAsync($"{baseAddress}api/Notifications/GetNotifications");
+				string responseValue = "";
+				if (result.IsSuccessStatusCode)
+				{
+					responseValue = await result.Content.ReadAsStringAsync();
+					notificationsList = JsonConvert.DeserializeObject<List<Notifications>>(responseValue);
+				}
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError($"Ocurrió un error: {ex.ToString()}");
+				throw ex;
+			}
+
+			return notificationsList;
+		}
+
+        [HttpGet("[action]/{Id}")]
+        public async Task<ActionResult> MarkNotificationAsRead(int Id)
+        {
+            try
+            {
+                string baseAddress = _config.Value.urlbase;
+                HttpClient client = new HttpClient();
+                client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+
+                var result = await client.GetAsync($"{baseAddress}api/Notifications/MarkNotificationAsRead/{Id}");
+
+                if (result.IsSuccessStatusCode)
+                {
+                    var responseValue = await result.Content.ReadAsStringAsync();
+                    var existingNotification = JsonConvert.DeserializeObject<Notifications>(responseValue);
+
+                    // Actualizar la notificación como leída en el proyecto MVC
+                    existingNotification.Leido = true;
+                    existingNotification.FechaLectura = DateTime.Now;
+
+                    return RedirectToAction(existingNotification.Action, existingNotification.Controller);
+                }
+                else
+                {
+                    return BadRequest("No se pudo marcar la notificación como leída en la API");
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al marcar la notificación como leída");
+                return BadRequest(ex);
+            }
+        }
+
 
         public IActionResult Error()
         {

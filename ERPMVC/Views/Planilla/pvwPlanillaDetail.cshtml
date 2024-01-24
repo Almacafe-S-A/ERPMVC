@@ -1,0 +1,440 @@
+﻿@model ERPMVC.Models.Planilla
+@using System.Security.Claims
+<script>
+
+    
+    function setearvalor(nombrenumerico, valor) {
+        var numeric = $("#" + nombrenumerico).data("kendoNumericTextBox");
+        numeric.value(valor);
+        numeric.trigger('change');
+        numeric = null;
+    }
+
+
+    function GetPlanillaId() {
+            var PlanillaId = $("#Id").val();
+        var TipoPlanillaId = $("#TipoPlanillaId").val();
+            var mes = $("#Mes").val();
+        var periodoId = $("#PeriodoId").val();
+        var quincena = $("#Quincena").val();
+        var pagahorasextra = $("#pagahorasextra").data("kendoSwitch");
+        var pagahorasextracheck = pagahorasextra.check();
+            return {
+                Id: PlanillaId,
+            TipoPlanillaId: TipoPlanillaId,
+                Mes: mes,
+                PeriodoId: periodoId,
+                Quincena: quincena,
+                pagahorasextra: pagahorasextracheck,
+
+            };
+    }
+
+
+
+    function RefreshPlanillaDetail() {
+        var grid = $("#gridPlanillaDetalle").getKendoGrid();
+        grid.dataSource.read();
+    }
+
+    function onChangeExonerado(){
+        debugger;
+        var exo = $("#Exonerado").data("kendoSwitch");
+        var exonerado = exo.check();
+
+         var exe = $("#Exento").data("kendoSwitch");
+        var exento = exe.check();
+        
+        var displayedData = $("#gridPlanillaDetalle").getKendoGrid().dataSource.data();
+
+        if (displayedData.length <= 0) {
+            return;
+        }
+        for (var i = 0; i < displayedData.length; i++) {
+            //displayedData[i].set('TaxAmount' , exonerado ? 0 : displayedData[i].SubTotal * 0.15);
+            displayedData[i].TaxAmount = exonerado || exento ? 0 : displayedData[i].SubTotal * 0.15;
+        }
+        $("#gridPlanillaDetalle").data("kendoGrid").refresh();
+    }
+
+        
+
+    
+    
+    
+
+    function totalColumnas(tiporesultado, moneda) {
+        var data = $("#gridPlanillaDetalle").getKendoGrid().dataSource.data();
+        var total = 0;
+
+        switch (tiporesultado) {
+            case 1: 
+                data.forEach(r => total += r.MontoBruto);
+                break;
+            case 2: /// Calcular el total CIB
+                data.forEach(r => total += r.MontoQuincenal);
+                break;
+            case 3: ////Calcular el total CIF LPS
+                data.forEach(r => total += r.TotalBonificaciones);
+                break;
+            case 4://///Calcular el total de Valor de derechos importacion
+                data.forEach(r => total += r.TotalDeducciones);
+                break;
+            case 5:
+                data.forEach(r => total += r.TotalIngreso);
+                break;
+            case 6:
+                data.forEach(r => total += r.MontoNeto);
+                break;
+            case 7:
+                data.forEach(r => total += r.HorasExtras);
+                break;
+            case 8:
+                data.forEach(r => total += r.ISR);
+                break;
+            case 9:
+                data.forEach(r => total += r.IHSS);
+                break;
+            case 10:
+                data.forEach(r => total += r.RAP);
+                break;
+
+            case 11:
+                data.forEach(r => total += r.Otros);
+                break;
+
+
+                
+                
+                
+
+            default:
+                break;
+        }
+        var formatter = new Intl.NumberFormat('es-HN', {
+            style: 'currency',
+            currency: 'LPS',
+            minimumFractionDigits: 2
+        });
+        if (moneda == 1) {
+            return formatter.format(total);
+        }
+        if (moneda == 2) {
+            formatter = new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD',
+                minimumFractionDigits: 2
+            });
+            return formatter.format(total);
+        }
+        if (moneda == 0) {
+            formatter = new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'LPS',
+                minimumFractionDigits: 2
+            });
+            return formatter.format(total).replace(/[a-z]{3}/i, "").trim();
+        }
+        return total;
+    }
+
+
+    function ImprimirVoucher(e) {
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        var url = '@Url.Action("SFVoucherPago", "Planilla")/' + dataItem.Id;
+        var win = window.open(url, '_blank');
+        win.focus();
+    }
+
+
+    function Calcular(e) {
+        debugger;
+        e.model.MontoQuincenal = e.model.SueldoDiario * e.model.Dias;
+        e.model.TotalDeducciones = e.model.ISR + e.model.IHSS + e.model.RAP + e.model.Otros;
+        e.model.TotalIngreso =  e.model.MontoQuincenal + e.model.HorasExtras + e.model.TotalBonificaciones;
+        e.model.MontoNeto = e.model.TotalIngreso - e.model.TotalDeducciones;
+        $("#gridPlanillaDetalle").data("kendoGrid").refresh();
+
+        return;
+    }
+
+    const formatter = new Intl.NumberFormat("en-US");
+    formattear = new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'LPS',
+        minimumFractionDigits: 2
+    });
+
+    
+
+</script>
+
+
+
+@(
+Html.Kendo().Grid<ERPMVC.Models.PlanillaDetalle>()
+                                                                  .Name("gridPlanillaDetalle")
+                                                                  .Events(e =>
+                                                                    e.CellClose("Calcular")
+                                                                    //.DataBound("Calcular")
+                                                                    )
+                                                                  .Columns(columns =>
+                                                                  {
+
+                                                                      columns.Command(command =>
+                                                                    {
+                                                                        if (Model.EstadoName == "Borrador" || Model.Id == 0) { 
+                                                                            command.Destroy().Text(" ").IconClass("far fa-trash-alt");
+                                                                        }
+                                                                        if (Model.EstadoName == "Aprobado")
+                                                                        {
+                                                                            command.Custom("ImprimirVoucher").Text(" ").IconClass("far fa-print").Click("ImprimirVoucher");
+
+                                                                        }
+                                                                        
+                                                                    }).Title("").Width(120);
+                                                                      columns.Bound(p => p.Id).Title("Id").Width(130).Visible(false);
+                                                                      columns.Bound(p => p.EmpleadoId).Title("Codigo").Width(130);
+                                                                      columns.Bound(p => p.EmpleadoNombre).Title("Empleado").Width(180);
+                                                                      columns.Bound(p => p.SueldoDiario).Title("Sueldo Diario").Width(150).Visible(false);
+                                                                      columns.Bound(p => p.MontoBruto).Title("Sueldo").Width(150)
+                                                                      .ClientFooterTemplate("<div style='text-align: right'>#= totalColumnas(1,1)#</div>").Format("{0:c2}")
+                                                                        .HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" });
+                                                                      columns.Bound(p => p.Dias).Title("Días Laborados").Width(120);
+
+                                                                      columns.Bound(p => p.MontoQuincenal).Title("Valor Devengado").Width(150)
+                                                                      .ClientFooterTemplate("<div style='text-align: right'>#= totalColumnas(2,1)#</div>").Format("{0:c2}")
+                                                                        .HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" });
+                                                                      columns.Bound(p => p.HorasExtras).Title("Horas Extras").Width(150).Format("{0:c2}")
+                                                                       .ClientFooterTemplate("<div style='text-align: right'>#= totalColumnas(7,1)#</div>").Format("{0:c2}")
+                                                                  .HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" });
+                                                                      columns.Bound(p => p.TotalBonificaciones).Title("Otros Ingresos").Width(150)
+                                                                    .ClientFooterTemplate("<div style='text-align: right'>#= totalColumnas(3,1)#</div>").Format("{0:c2}")
+                                                                  .HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" });
+                                                                      columns.Bound(p => p.TotalIngreso).Title("Total Ingresos").Width(180)
+                                                                      .ClientFooterTemplate("<div style='text-align: right'>#= totalColumnas(5,1)#</div>").Format("{0:c2}")
+                                                                        .HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" }); ;
+                                                                      columns.Bound(p => p.ISR).Title("ISR").Width(180)
+                                                                      .ClientFooterTemplate("<div style='text-align: right'>#= totalColumnas(8,1)#</div>").Format("{0:c2}")
+                                                                        .HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" }); ;
+                                                                      columns.Bound(p => p.IHSS).Title("IHSS").Width(180)
+                                                                .ClientFooterTemplate("<div style='text-align: right'>#= totalColumnas(9,1)#</div>").Format("{0:c2}")
+                                                                  .HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" }); ;
+                                                                      columns.Bound(p => p.RAP).Title("RAP").Width(180)
+                                                                      .ClientFooterTemplate("<div style='text-align: right'>#= totalColumnas(10,1)#</div>").Format("{0:c2}")
+                                                                        .HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" }); ;
+
+                                                                      columns.Bound(p => p.Otros).Title("Otras Deducciones").Width(180)
+                                                               .ClientFooterTemplate("<div style='text-align: right'>#= totalColumnas(11,1)#</div>").Format("{0:c2}")
+                                                                 .HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" });
+
+                                                                      columns.Bound(p => p.TotalDeducciones).Title("Total Deducciones").Width(180)
+                                                                      .ClientFooterTemplate("<div style='text-align: right'>#= totalColumnas(4,1)#</div>").Format("{0:c2}")
+                                                                        .HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" }); ;
+
+                                                                      columns.Bound(p => p.MontoNeto).Title("Total a Pagar").Width(180)
+                                                                      .ClientFooterTemplate("<div style='text-align: right'>#= totalColumnas(6,1)#</div>").Format("{0:c2}")
+                                                                        .HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" }); ;
+
+                                                                  })
+                                                                      .Filterable(f => f.Operators(o => o.ForString(s => s
+                                                               .Clear()
+                                                               .Contains("Contiene")
+                                                               .DoesNotContain("No contiene")
+                                                               .EndsWith("Termina con")
+                                                               .IsEqualTo("Es igual a")
+                                                               .IsNotEqualTo("No es igual a")
+                                                               .IsNull("Es nulo")
+                                                               .StartsWith("Inicia con")
+
+
+                                                         )
+                                                         .ForNumber(n => n
+                                                           .Clear()
+                                                           .IsEqualTo("Es igual a")
+                                                           .IsGreaterThan("Es mayor que")
+                                                           .IsLessThan("Es menor que")
+                                                           .IsNull("Es nulo")
+                                                           .IsLessThanOrEqualTo("Es menor o igual que")
+                                                           .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                                         )
+                                                         .ForDate(d => d
+                                                         .Clear()
+                                                         .IsEqualTo("Es igual que")
+                                                         .IsGreaterThan("Es mayor que")
+                                                         .IsLessThan("Es menor que")
+                                                         .IsLessThanOrEqualTo("Es menor o igual que")
+                                                         .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                                         .IsNotEqualTo("No es igual que")
+                                                          )
+                                                       ))
+
+                                                                  .ToolBar(tools =>
+                                                                  {
+                                                                      if ( Model.EstadoId != 7)
+                                                                      {
+                                                                         tools.Custom().Text("Recargar").IconClass("k-icon k-i-refresh")
+                                                                          .HtmlAttributes(new { @class = "k-i-plus-sm", @onclick = "RefreshPlanillaDetail()" });
+                                                                      }
+                                                                     
+                                                                      
+
+                                                                  })
+                                                                   .Editable(e => e.Mode(GridEditMode.InCell).CreateAt(GridInsertRowPosition.Bottom))
+                                                                    .Sortable(false)
+                                                                    .AutoBind(true)
+                                                                    .Navigatable(true)
+                                                                    .Filterable()
+                                                                    .Scrollable(s => s.Height("auto"))
+                                                                    .Reorderable(r => r.Columns(true))
+                                                                    
+                                                                    .ClientDetailTemplateId("template")
+                                                                    .Resizable(r => r.Columns(true))
+                                                                    //.Events(e => e.DataBound("CalcularTotalDocumento"))
+                                                                    .DataSource(dataSource =>
+
+                                                                   dataSource
+                                                                   //.Ajax()
+                                                                   .WebApi()
+
+                                                                    .ServerOperation(true)
+                                                                    .Model(model =>
+                                                                    {
+                                                                        model.Id(p => p.Id);
+                                                                        model.Field(p => p.Id).Editable(false);
+                                                                        model.Field(p => p.EmpleadoNombre).Editable(false);
+                                                                        model.Field(p => p.MontoBruto).Editable(false);
+                                                                        model.Field(p => p.TotalDeducciones).Editable(false);
+                                                                        model.Field(p => p.TotalIngreso).Editable(false);
+                                                                        model.Field(p => p.TotalBonificaciones).Editable(false);
+                                                                        model.Field(p => p.MontoQuincenal).Editable(false);
+                                                                        model.Field(p => p.HorasExtras).Editable(false);
+                                                                        model.Field(p => p.MontoNeto).Editable(false);
+                                                                        model.Field(p => p.ISR).Editable(true);
+                                                                        model.Field(p => p.RAP).Editable(true);
+                                                                        model.Field(p => p.IHSS).Editable(true);
+                                                                        model.Field(p => p.Otros).Editable(false);
+
+                                                                    })
+                                                                    .Events(events =>
+                                                                    {
+                                                                        events.Error("error_handler");
+
+                                                                    })
+                                                                    //.Sort(s => s.Add(m => m.EmpleadoId).Descending())
+                                                                    .Read(read => read.Action("GetDetalleById", "Planilla").Data("GetPlanillaId"))
+                                                              )
+        )
+
+
+<script id="template" type="text/kendo-tmpl">
+    @(Html.Kendo().TabStrip()
+                    .Name("tabStrip_#=EmpleadoId#")
+                .SelectedIndex(0)
+                .Animation(animation => animation.Open(open => open.Fade(FadeDirection.In)))
+                .Items(items =>
+                {
+                    items.Add().Text("Otras Deducciones").Content(@<text>
+                        @(Html.Kendo().Grid<ERPMVC.Models.DeduccionesEmpleadoDTO>()
+                        .Name("gridDeduccion_#=EmpleadoId#") // template expression, to be evaluated in the master context
+                        .Columns(columns =>
+                        {
+                                    columns.Bound(o => o.Fecha).Width(100).Title("Fecha").Format("{0:dd/MM/yyyy}")
+                                            .HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" });
+                                    columns.Bound(o => o.TipoDeduccionNombre).Title("Descripción").Width(150);
+                                    columns.Bound(o => o.Cantidad).Title("Cantidad").Width(100).Format("{0:n2}").Visible(false)
+                                    .HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" }); ;
+                                    columns.Bound(o => o.Valor).Width(150).Title("Valor").Format("{0:c2}").Visible(false)
+                                    .HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" }); ;
+                                    columns.Bound(o => o.Monto).Width(150).Title("Total").Format("{0:c2}")
+                                    .HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" }); ;
+                                    
+                                })
+                        .DataSource(dataSource => dataSource
+                            .Ajax()
+                            .PageSize(5)
+                            .Read(read => read.Action("GetDeduccionesEmpleadoPlanilla", "DeduccionEmpleado",
+                                new { empleadoId = "#=EmpleadoId#", planilladetalleId = "#=Id#" }).Data("GetParametros"))
+                        )
+                        .Pageable()
+                        .Sortable()
+                        .ToClientTemplate())
+                        </text>
+                    );
+                    items.Add().Text("Otros Ingresos").Content(
+                            @<text>
+                                @(Html.Kendo().Grid<ERPMVC.Models.Bonificacion>()
+                            .Name("gridBonificacion_#=EmpleadoId#") // template expression, to be evaluated in the master context
+                            .Columns(columns =>
+                            {
+                                        columns.Bound(o => o.FechaBono).Width(100).Title("Fecha").Format("{0:dd/MM/yyyy}")
+                                                    .HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" });
+                                        columns.Bound(o => o.TipoBonificacionNombre).Title("Descripción").Width(150);
+                                        columns.Bound(o => o.Cantidad).Title("Cantidad").Width(100).Format("{0:n2}").Visible(false)
+                                        .HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" }); ;
+                                        columns.Bound(o => o.Valor).Width(150).Title("Valor").Format("{0:c2}").Visible(false)
+                                        .HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" }); ;
+                                        columns.Bound(o => o.Monto).Width(150).Title("Total").Format("{0:C2}")
+                                        //.ClientFooterTemplate("#=sum#")
+                                        .HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" }); ;
+                                        
+
+                                })
+                            .DataSource(dataSource => dataSource
+                                .Ajax()
+                                .PageSize(5)
+                                .Aggregates(a => a.Add(s =>s.Monto).Sum())
+                                .Read(read => read.Action("GetPorEmpleadoPlanilla", "Bonificacion", 
+                                new { empleadoId = "#=EmpleadoId#", planilladetalleId = "#=Id#" }).Data("GetParametros"))
+                            )
+                            .Pageable()
+                            .Sortable()
+                            .ToClientTemplate())
+                                </text>
+                    );
+                })
+                .ToClientTemplate())
+</script>
+
+<script>
+    function dataBound() {
+        this.expandRow(this.tbody.find("tr.k-master-row").first());
+    }
+</script>
+
+<script>
+
+    function GetParametros(){
+    
+        return {
+            mes : $("#Mes").val(),
+            periodoId: $("#PeriodoId").val(),
+            quincena: $("#Quincena").val(),
+        
+        
+        }
+    }
+
+
+
+    function setToolbarTooltip(btn_cl, btn_tooltip) {
+        $("#gridPlanillaDetalle").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+
+    function setRowButtonTooltip(btn_cl, btn_tooltip) {
+        $("#gridPlanillaDetalle").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+
+    //setRowButtonTooltip(".k-grid-GenerarFactura", "Generar una factura fiscal!");
+    setRowButtonTooltip(".k-grid-Eliminar", "Eliminar registro");
+    setRowButtonTooltip(".k-grid-Editar", "Ver Detalle");
+    setRowButtonTooltip(".k-grid-Editar", "Editar registro");
+    setRowButtonTooltip(".k-grid-Agregar", "Agregar nuevo registro");
+    setRowButtonTooltip(".k-grid-ImprimirVoucher", "Imprimir Voucher");
+</script>

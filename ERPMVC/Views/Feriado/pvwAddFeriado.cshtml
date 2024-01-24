@@ -1,0 +1,199 @@
+﻿@model ERPMVC.DTO.FeriadoDTO
+
+@{ Layout = null;
+    var messages = new Dictionary<string, string>() { { "custom", "Ingrese un valor correcto." },
+           // {"required","Valor requerido" }
+        };
+}
+
+<div id="ModalFeriado" class="modal fade" role="dialog">
+    <!-- Modal content-->
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Feriado</h4>
+                <button type="button" name="btnprueba" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="row" id="validation">
+                    <div class="col-lg-12">
+                        <div class="card">
+                            <div class="card-body">
+                                <form id="frmFeriado" kendo-validator="true"
+                                      data-ajax="true"
+                                      data-ajax-method="post"
+                                      data-ajax-begin="SaveFeriado"
+                                      class="validation-wizard wizard-circle">
+                                    <div class="form-body">
+                                        <h3 class="card-title">Feriado</h3>
+                                        <hr>
+                                        <div class="row">
+                                            <div class="col-md-1">
+                                                <div class="form-group">
+                                                    <label asp-for="Id" class=" control-label" style="width:100%">Id Feriado</label>
+                                                    <input type="text" asp-for="Id" name="Idferiado" class="form-control" disabled="disabled" style="width:100%" />
+                                                    <span asp-validation-for="Id" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="form-group">
+                                                    <label asp-for="Nombre" class=" control-label" style="width:100%">Feriado</label>
+                                                    <input type="text" asp-for="Nombre" name="NombreFeriado" data-val-required="El Nombre es requerido" class="form-control" style="width:100%" onkeypress="return soloLetras(event)"/>
+                                                    <span asp-validation-for="Nombre" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-2">
+                                                <div class="form-group">
+                                                    <label asp-for="FechaInicio" class="control-label" style="width:100%">Fecha de Inicio</label>
+                                                    <input type="datetime-local" asp-for="FechaInicio" name="FechaInicio" data-val-required="El Fecha es requerida" class="form-control" style="width:100%" />
+                                                    <span asp-validation-for="FechaInicio" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-2">
+                                                <div class="form-group">
+                                                    <label asp-for="FechaFin" class="control-label" style="width:100%">Fecha de Fin</label>
+                                                    <input type="datetime-local" asp-for="FechaFin" name="FechaFin" data-val-required="El Fecha es requerida" class="form-control" style="width:100%" />
+                                                    <span asp-validation-for="FechaFin" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-2">
+                                                <div class="form-group">
+                                                    <label asp-for="IdEstado" class="control-label">Estado</label>
+                                                    <kendo-dropdownlist name="IdEstado"
+                                                                        for="@Model.IdEstado"
+                                                                        filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                                        option-label="Seleccionar Estado"
+                                                                        datatextfield="NombreEstado"
+                                                                        datavaluefield="IdEstado"
+                                                                        data-val-required="El Estado es requerido"
+                                                                        style="min-width: 100%;">
+                                                        <datasource type="DataSourceTagHelperType.WebApi" server-operation="true">
+                                                            <transport>
+                                                                <read url="@Url.Action("GetGrupoEstadoUno", "Estados")" />
+                                                            </transport>
+                                                        </datasource>
+                                                    </kendo-dropdownlist>
+                                                    <span asp-validation-for="IdEstado" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-2">
+                                                <div class="form-group">
+                                                    <label asp-for="PeriodoId" class="control-label" style="width:100%">Periodo</label>
+                                                    <kendo-dropdownlist name="PeriodoId" filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                                        id="PeriodoId"
+                                                                        option-label="Seleccione el periodo"
+                                                                        for="PeriodoId"
+                                                                        datatextfield="Anio"
+                                                                        datavaluefield="Id"
+                                                                        auto-bind="true"
+                                                                        style="width: 100%;">
+                                                        <datasource type="DataSourceTagHelperType.WebApi">
+                                                            <transport>
+                                                                <read url="@Url.Action("Get", "Periodo")" />
+                                                            </transport>
+                                                        </datasource>
+
+                                                    </kendo-dropdownlist>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-12">
+                                                <button id="btnFeriado" class="form-control btn-miboton" type="submit"> Guardar </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function RefrescarGrid() {
+        var grid = $("#gridFeriado").getKendoGrid();
+        grid.dataSource.read();
+    }
+    function SaveFeriado(e) {
+
+        var notification = $("#notification").data("kendoNotification");
+        // e.preventDefault();
+        $("#btnFeriado").hide();
+        $("#btnFeriado").prop("disabled", true);
+
+        var displayedData = $("#gridFeriado").data().kendoGrid.dataSource.view();
+
+        var dataObject = {
+            'Id': $("#Id").val() === "" ? "0" : $("#Id").val(),
+            'Nombre': $("#Nombre").val(),
+            'FechaInicio': $("#FechaInicio").val(),
+            'FechaFin': $("#FechaFin").val(),
+            'IdEstado': $("#IdEstado").val(),
+            'FechaCreacion': $("#FechaCreacion").val(),
+            'FechaModificacion': $("#FechaModificacion").val(),
+            'UsuarioCreacion': $("#UsuarioCreacion").val(),
+            'UsuarioModificacion': $("#UsuarioModificacion").val(),
+            'PeriodoId': $("#PeriodoId").val(),
+            '_Feriado': displayedData
+        };
+
+        // console.log(JSON.stringify(dataObject));
+        //var form = $("#frmNumeracion");
+        // form.validate();
+
+        var validator = $("#frmFeriado").data("kendoValidator");
+        var status = $(".status");
+
+
+        if (validator.validate()) {
+
+            $.ajax({
+                url: '@Url.Action("SaveFeriado", "Feriado")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (data) {
+                    $.toast({
+                        heading: 'Satisfactorio',
+                        text: 'Datos guardados correctamente.',
+                        position: 'top-right',
+                        loaderBg: '#ff6849',
+                        icon: 'success',
+                        hideAfter: 30000,
+                        stack: 6
+                    });
+
+                    RefrescarGrid();
+
+                    $('#ModalFeriado').modal('hide');
+
+
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+
+                    notification.show({
+                        title: "Validacion",
+                        message: textStatus + ": " + XMLHttpRequest.responseText
+                    }, "error");
+
+                }
+            });
+
+        }
+        else {
+            status.text("Oops! There is invalid data in the form.")
+                .removeClass("valid")
+                .addClass("invalid");
+        }
+
+
+        $("#btnFeriado").show();
+        $("#btnFeriado").prop("disabled", false);
+    }
+</script>

@@ -18,9 +18,15 @@ namespace ERPMVC.Models
 
         public string Tipo { get; set; }
 
+        public long IdHorario { get; set; }
+
+        public bool? MarcaAsistencia { get; set; }
+
         [JsonIgnore]
         public Biometrico Encabezado { get; set; }
 
         public Employees Empleado { get; set; }
+
+        
     }
 }

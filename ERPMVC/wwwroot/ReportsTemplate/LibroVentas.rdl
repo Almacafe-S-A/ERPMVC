@@ -5,7 +5,7 @@
     <DataSource Name="ERP">
       <ConnectionProperties>
         <DataProvider>SQL</DataProvider>
-        <ConnectString>Data Source=RAZERBLADE15\RSUAZO;Initial Catalog=ERP-PRODUCCION</ConnectString>
+        <ConnectString>Data Source=192.168.0.5;Initial Catalog=ERP-PRODUCCION</ConnectString>
         <IntegratedSecurity>true</IntegratedSecurity>
       </ConnectionProperties>
       <rd:SecurityType>Integrated</rd:SecurityType>
@@ -17,52 +17,84 @@
       <Query>
         <DataSourceName>ERP</DataSourceName>
         <QueryParameters>
-          <QueryParameter Name="@FechaInicial">
-            <Value>=Parameters!FechaInicial.Value</Value>
+          <QueryParameter Name="@Sucursal">
+            <Value>=Parameters!Sucursal.Value</Value>
           </QueryParameter>
-          <QueryParameter Name="@FechaFinal">
-            <Value>=Parameters!FechaFinal.Value</Value>
+          <QueryParameter Name="@Mes">
+            <Value>=Parameters!Mes.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@Anio">
+            <Value>=Parameters!Anio.Value</Value>
           </QueryParameter>
         </QueryParameters>
         <CommandText>SELECT
-   [InvoiceId]
-      ,[InvoiceDate]
-      ,[Sucursal]
-      ,[Caja]
-      ,[TipoDocumento]
-      ,[NumeroDEI]
-      ,[BranchId]
-      ,[BranchName]
-      ,[CustomerId]
-      ,[CustomerName]
-      ,[OrderDate]
-   ,[SubTotal]
-   ,[Tax]
-   ,[Total]
-,CASE WHEN Invoice.NumeroDEI LIKE '%PROFORMA%' THEN NULL ELSE Invoice.NumeroDEI END AS DEI
+   Invoice.[InvoiceId]
+   ,Invoice.[InvoiceDate]
+   ,Invoice.[NumeroDEI]
+   ,Invoice.[BranchId]
+   ,Invoice.[BranchName]
+   ,Invoice.[CustomerId]
+   ,Invoice.[CustomerName]
+   ,Invoice.[SubTotal]
+   ,Invoice.[Tax]
+   ,Invoice.[Total]
+   ,Invoice.[Estado]
+  ,CASE WHEN Invoice.NumeroDEI LIKE '%PROFORMA%' THEN NULL ELSE Invoice.NumeroDEI END AS DEI
+  ,CASE WHEN Invoice.Estado LIKE '%Anulado%' THEN Invoice.CustomerName+' ###ANULADO###' ELSE Invoice.CustomerName END AS CLIENTE
+  ,CASE WHEN Invoice.Estado LIKE '%Anulado%' THEN 0 ELSE Invoice.SubTotal END AS SUBTOTAL
+  ,CASE WHEN Invoice.Estado LIKE '%Anulado%' THEN 0 ELSE Invoice.Tax END AS TAX
+  ,CASE WHEN Invoice.Estado LIKE '%Anulado%' THEN 0 ELSE Invoice.Total END AS TOTAL
   FROM [dbo].[Invoice]
-  WHERE [Invoice].[InvoiceDate] BETWEEN @FechaInicial AND   @FechaFinal</CommandText>
+  WHERE Invoice.NumeroDEI &lt;&gt; 'PROFORMA' AND (Invoice.BranchId = @Sucursal OR @Sucursal = 0) AND MONTH([Invoice].[InvoiceDate]) = @Mes AND YEAR([Invoice].[InvoiceDate]) = @Anio AND ([Invoice].Estado='Emitido' OR [Invoice].Estado='Anulado')
+UNION ALL
+  SELECT 
+       DebitNote.[DebitNoteId] AS InvoiceId
+      ,DebitNote.[DebitNoteDate] AS InvoiceDate
+      ,DebitNote.[NumeroDEI]
+      ,DebitNote.[BranchId]
+      ,DebitNote.[BranchName]
+      ,DebitNote.[CustomerId]
+      ,DebitNote.[CustomerName]
+      ,DebitNote.[Amount] as SubTotal
+      ,DebitNote.[Tax]
+      ,DebitNote.[Total]
+      ,DebitNote.[Estado]
+	  ,CASE WHEN DebitNote.NumeroDEI LIKE '%Interna%' THEN NULL ELSE DebitNote.NumeroDEI END AS DEI
+	  ,CASE WHEN DebitNote.Estado LIKE '%Anulado%' THEN DebitNote.CustomerName+' ###ANULADO###' ELSE DebitNote.CustomerName END AS CLIENTE
+      ,CASE WHEN DebitNote.Estado LIKE '%Anulado%' THEN 0 ELSE DebitNote.Amount END AS SUBTOTAL
+      ,CASE WHEN DebitNote.Estado LIKE '%Anulado%' THEN 0 ELSE DebitNote.Tax END AS TAX
+      ,CASE WHEN DebitNote.Estado LIKE '%Anulado%' THEN 0 ELSE DebitNote.Amount-DebitNote.Tax END AS TOTAL
+      FROM DebitNote
+	  WHERE DebitNote.NumeroDEI &lt;&gt; 'Interna' AND (DebitNote.BranchId = @Sucursal OR @Sucursal = 0) AND MONTH([DebitNote].[DebitNoteDate]) = @Mes AND YEAR([DebitNote].[DebitNoteDate]) = @Anio AND ([DebitNote].Estado='Emitido' OR [DebitNote].Estado='Anulado')
+  UNION ALL
+  SELECT 
+       CreditNote.[CreditNoteId] AS InvoiceId
+      ,CreditNote.[CreditNoteDate] AS InvoiceDate
+      ,CreditNote.[NumeroDEI]
+      ,CreditNote.[BranchId]
+      ,CreditNote.[BranchName]
+      ,CreditNote.[CustomerId]
+      ,CreditNote.[CustomerName]
+      ,CreditNote.[Amount] as SubTotal
+      ,CreditNote.[Tax]
+      ,CreditNote.[Total]
+      ,CreditNote.[Estado]
+	  ,CASE WHEN CreditNote.NumeroDEI LIKE '%Interna%' THEN NULL ELSE CreditNote.NumeroDEI END AS DEI
+	  ,CASE WHEN CreditNote.Estado LIKE '%Anulado%' THEN CreditNote.CustomerName+' ###ANULADO###' ELSE CreditNote.CustomerName END AS CLIENTE
+      ,CASE WHEN CreditNote.Estado LIKE '%Anulado%' THEN 0 ELSE -CreditNote.Total END AS SUBTOTAL
+      ,CASE WHEN CreditNote.Estado LIKE '%Anulado%' THEN 0 ELSE -CreditNote.Tax END AS TAX
+      ,CASE WHEN CreditNote.Estado LIKE '%Anulado%' THEN 0 ELSE -(CreditNote.Total - CreditNote.Tax) END AS TOTAL
+      FROM CreditNote
+	  WHERE CreditNote.NumeroDEI &lt;&gt; 'Interna' AND (CreditNote.BranchId = @Sucursal OR @Sucursal = 0) AND MONTH([CreditNote].[CreditNoteDate]) = @Mes AND YEAR([CreditNote].[CreditNoteDate]) = @Anio AND ([CreditNote].Estado='Emitido' OR [CreditNote].Estado='Anulado')</CommandText>
       </Query>
       <Fields>
         <Field Name="InvoiceId">
           <DataField>InvoiceId</DataField>
-          <rd:TypeName>System.Int32</rd:TypeName>
+          <rd:TypeName>System.Int64</rd:TypeName>
         </Field>
         <Field Name="InvoiceDate">
           <DataField>InvoiceDate</DataField>
           <rd:TypeName>System.DateTime</rd:TypeName>
-        </Field>
-        <Field Name="Sucursal">
-          <DataField>Sucursal</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
-        </Field>
-        <Field Name="Caja">
-          <DataField>Caja</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
-        </Field>
-        <Field Name="TipoDocumento">
-          <DataField>TipoDocumento</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
         </Field>
         <Field Name="NumeroDEI">
           <DataField>NumeroDEI</DataField>
@@ -78,15 +110,11 @@
         </Field>
         <Field Name="CustomerId">
           <DataField>CustomerId</DataField>
-          <rd:TypeName>System.Int32</rd:TypeName>
+          <rd:TypeName>System.Int64</rd:TypeName>
         </Field>
         <Field Name="CustomerName">
           <DataField>CustomerName</DataField>
           <rd:TypeName>System.String</rd:TypeName>
-        </Field>
-        <Field Name="OrderDate">
-          <DataField>OrderDate</DataField>
-          <rd:TypeName>System.DateTime</rd:TypeName>
         </Field>
         <Field Name="SubTotal">
           <DataField>SubTotal</DataField>
@@ -100,9 +128,29 @@
           <DataField>Total</DataField>
           <rd:TypeName>System.Decimal</rd:TypeName>
         </Field>
+        <Field Name="Estado">
+          <DataField>Estado</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
         <Field Name="DEI">
           <DataField>DEI</DataField>
           <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="CLIENTE">
+          <DataField>CLIENTE</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="SUBTOTAL">
+          <DataField>SUBTOTAL</DataField>
+          <rd:TypeName>System.Decimal</rd:TypeName>
+        </Field>
+        <Field Name="TAX">
+          <DataField>TAX</DataField>
+          <rd:TypeName>System.Decimal</rd:TypeName>
+        </Field>
+        <Field Name="TOTAL">
+          <DataField>TOTAL</DataField>
+          <rd:TypeName>System.Decimal</rd:TypeName>
         </Field>
       </Fields>
     </DataSet>
@@ -159,6 +207,25 @@ FROM
         </Field>
       </Fields>
     </DataSet>
+    <DataSet Name="Sucursal">
+      <Query>
+        <DataSourceName>ERP</DataSourceName>
+        <CommandText>SELECT BranchId, BranchName 
+From BRANCH
+Where IdEstado =1
+UNION SELECT 0 , 'TODOS'</CommandText>
+      </Query>
+      <Fields>
+        <Field Name="BranchId">
+          <DataField>BranchId</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="BranchName">
+          <DataField>BranchName</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+      </Fields>
+    </DataSet>
   </DataSets>
   <ReportSections>
     <ReportSection>
@@ -168,13 +235,13 @@ FROM
             <TablixBody>
               <TablixColumns>
                 <TablixColumn>
-                  <Width>0.9101in</Width>
+                  <Width>0.8in</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>1.10802in</Width>
+                  <Width>1.4in</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>2.26427in</Width>
+                  <Width>3.83729in</Width>
                 </TablixColumn>
                 <TablixColumn>
                   <Width>1.36124in</Width>
@@ -219,13 +286,13 @@ FROM
                               <Style>Solid</Style>
                             </Border>
                             <BackgroundColor>LightGrey</BackgroundColor>
-                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
                             <PaddingBottom>2pt</PaddingBottom>
                           </Style>
                         </Textbox>
+                        <rd:Selected>true</rd:Selected>
                       </CellContents>
                     </TablixCell>
                     <TablixCell>
@@ -257,7 +324,6 @@ FROM
                               <Style>Solid</Style>
                             </Border>
                             <BackgroundColor>LightGrey</BackgroundColor>
-                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -295,7 +361,6 @@ FROM
                               <Style>Solid</Style>
                             </Border>
                             <BackgroundColor>LightGrey</BackgroundColor>
-                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -313,7 +378,7 @@ FROM
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>VENTA BRUTA</Value>
+                                  <Value>VENTA NETA</Value>
                                   <Style>
                                     <FontFamily>Segoe UI</FontFamily>
                                     <FontSize>9pt</FontSize>
@@ -333,7 +398,6 @@ FROM
                               <Style>Solid</Style>
                             </Border>
                             <BackgroundColor>LightGrey</BackgroundColor>
-                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -371,7 +435,6 @@ FROM
                               <Style>Solid</Style>
                             </Border>
                             <BackgroundColor>LightGrey</BackgroundColor>
-                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -389,7 +452,7 @@ FROM
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>VENTA NETA</Value>
+                                  <Value>VENTA BRUTA</Value>
                                   <Style>
                                     <FontFamily>Segoe UI</FontFamily>
                                     <FontSize>9pt</FontSize>
@@ -409,7 +472,6 @@ FROM
                               <Style>Solid</Style>
                             </Border>
                             <BackgroundColor>LightGrey</BackgroundColor>
-                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -421,7 +483,7 @@ FROM
                   </TablixCells>
                 </TablixRow>
                 <TablixRow>
-                  <Height>0.26037in</Height>
+                  <Height>0.25in</Height>
                   <TablixCells>
                     <TablixCell>
                       <CellContents>
@@ -435,13 +497,13 @@ FROM
                                   <Value>=Fields!InvoiceDate.Value</Value>
                                   <Style>
                                     <FontFamily>Segoe UI</FontFamily>
-                                    <FontSize>9.75pt</FontSize>
+                                    <FontSize>9pt</FontSize>
                                     <Format>d</Format>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
                               <Style>
-                                <TextAlign>Center</TextAlign>
+                                <TextAlign>Right</TextAlign>
                                 <LineHeight>10pt</LineHeight>
                               </Style>
                             </Paragraph>
@@ -471,12 +533,12 @@ FROM
                                   <Value>=Fields!DEI.Value</Value>
                                   <Style>
                                     <FontFamily>Segoe UI</FontFamily>
-                                    <FontSize>9.75pt</FontSize>
+                                    <FontSize>9pt</FontSize>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
                               <Style>
-                                <TextAlign>Center</TextAlign>
+                                <TextAlign>Left</TextAlign>
                                 <LineHeight>10pt</LineHeight>
                               </Style>
                             </Paragraph>
@@ -503,15 +565,16 @@ FROM
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Fields!CustomerName.Value</Value>
+                                  <Value>=Fields!CLIENTE.Value</Value>
+                                  <MarkupType>HTML</MarkupType>
                                   <Style>
                                     <FontFamily>Segoe UI</FontFamily>
-                                    <FontSize>9.75pt</FontSize>
+                                    <FontSize>9pt</FontSize>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
                               <Style>
-                                <TextAlign>Center</TextAlign>
+                                <TextAlign>Left</TextAlign>
                                 <LineHeight>10pt</LineHeight>
                               </Style>
                             </Paragraph>
@@ -538,10 +601,10 @@ FROM
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Fields!SubTotal.Value</Value>
+                                  <Value>=Fields!SUBTOTAL.Value</Value>
                                   <Style>
                                     <FontFamily>Segoe UI</FontFamily>
-                                    <FontSize>9.75pt</FontSize>
+                                    <FontSize>9pt</FontSize>
                                     <Format>'L'#,0.00;('L'#,0.00)</Format>
                                   </Style>
                                 </TextRun>
@@ -574,10 +637,10 @@ FROM
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Fields!Tax.Value</Value>
+                                  <Value>=Fields!TAX.Value</Value>
                                   <Style>
                                     <FontFamily>Segoe UI</FontFamily>
-                                    <FontSize>9.75pt</FontSize>
+                                    <FontSize>9pt</FontSize>
                                     <Format>'L'#,0.00;('L'#,0.00)</Format>
                                   </Style>
                                 </TextRun>
@@ -610,10 +673,10 @@ FROM
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Fields!Total.Value</Value>
+                                  <Value>=Fields!TOTAL.Value</Value>
                                   <Style>
                                     <FontFamily>Segoe UI</FontFamily>
-                                    <FontSize>9.75pt</FontSize>
+                                    <FontSize>9pt</FontSize>
                                     <Format>'L'#,0.00;('L'#,0.00)</Format>
                                   </Style>
                                 </TextRun>
@@ -640,7 +703,7 @@ FROM
                   </TablixCells>
                 </TablixRow>
                 <TablixRow>
-                  <Height>0.25in</Height>
+                  <Height>0.27in</Height>
                   <TablixCells>
                     <TablixCell>
                       <CellContents>
@@ -678,7 +741,6 @@ FROM
                               <Color>#808080</Color>
                               <Style>Solid</Style>
                             </Border>
-                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -699,8 +761,9 @@ FROM
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Sum(Fields!SubTotal.Value)</Value>
+                                  <Value>=Sum(Fields!SUBTOTAL.Value)</Value>
                                   <Style>
+                                    <FontSize>9pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
                                     <Format>'L'#,0.00;('L'#,0.00)</Format>
                                     <rd:FormatSymbolCulture>ro-MD</rd:FormatSymbolCulture>
@@ -735,8 +798,9 @@ FROM
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Sum(Fields!Tax.Value)</Value>
+                                  <Value>=Sum(Fields!TAX.Value)</Value>
                                   <Style>
+                                    <FontSize>9pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
                                     <Format>'L'#,0.00;('L'#,0.00)</Format>
                                     <rd:FormatSymbolCulture>ro-MD</rd:FormatSymbolCulture>
@@ -771,8 +835,9 @@ FROM
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Sum(Fields!Total.Value)</Value>
+                                  <Value>=Sum(Fields!TOTAL.Value)</Value>
                                   <Style>
+                                    <FontSize>9pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
                                     <Format>'L'#,0.00;('L'#,0.00)</Format>
                                     <rd:FormatSymbolCulture>ro-MD</rd:FormatSymbolCulture>
@@ -801,7 +866,7 @@ FROM
                   </TablixCells>
                 </TablixRow>
                 <TablixRow>
-                  <Height>0.325in</Height>
+                  <Height>0.27in</Height>
                   <TablixCells>
                     <TablixCell>
                       <CellContents>
@@ -828,15 +893,29 @@ FROM
                           <rd:DefaultName>Textbox3</rd:DefaultName>
                           <Style>
                             <Border>
-                              <Style>None</Style>
+                              <Style>Solid</Style>
                             </Border>
+                            <TopBorder>
+                              <Color>Black</Color>
+                              <Style>Solid</Style>
+                              <Width>1pt</Width>
+                            </TopBorder>
                             <BottomBorder>
                               <Color>Black</Color>
                               <Style>Solid</Style>
                               <Width>1pt</Width>
                             </BottomBorder>
+                            <LeftBorder>
+                              <Color>Black</Color>
+                              <Style>Solid</Style>
+                              <Width>1pt</Width>
+                            </LeftBorder>
+                            <RightBorder>
+                              <Color>Black</Color>
+                              <Style>Solid</Style>
+                              <Width>1pt</Width>
+                            </RightBorder>
                             <BackgroundColor>LightGrey</BackgroundColor>
-                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -850,14 +929,14 @@ FROM
                     <TablixCell />
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="Textbox25">
+                        <Textbox Name="SUBTOTAL">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Sum(Fields!SubTotal.Value)</Value>
+                                  <Value>=Sum(Fields!SUBTOTAL.Value)</Value>
                                   <Style>
                                     <FontFamily>Segoe UI</FontFamily>
                                     <FontSize>9pt</FontSize>
@@ -871,7 +950,7 @@ FROM
                               </Style>
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>Textbox25</rd:DefaultName>
+                          <rd:DefaultName>SUBTOTAL</rd:DefaultName>
                           <Style>
                             <Border>
                               <Style>Solid</Style>
@@ -897,7 +976,6 @@ FROM
                               <Width>1pt</Width>
                             </RightBorder>
                             <BackgroundColor>LightGrey</BackgroundColor>
-                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -908,14 +986,14 @@ FROM
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="Textbox26">
+                        <Textbox Name="TAX">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Sum(Fields!Tax.Value)</Value>
+                                  <Value>=Sum(Fields!TAX.Value)</Value>
                                   <Style>
                                     <FontFamily>Segoe UI</FontFamily>
                                     <FontSize>9pt</FontSize>
@@ -929,7 +1007,7 @@ FROM
                               </Style>
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>Textbox26</rd:DefaultName>
+                          <rd:DefaultName>TAX</rd:DefaultName>
                           <Style>
                             <Border>
                               <Style>Solid</Style>
@@ -955,7 +1033,6 @@ FROM
                               <Width>1pt</Width>
                             </RightBorder>
                             <BackgroundColor>LightGrey</BackgroundColor>
-                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -966,14 +1043,14 @@ FROM
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="Textbox27">
+                        <Textbox Name="TOTAL">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Sum(Fields!Total.Value)</Value>
+                                  <Value>=Sum(Fields!TOTAL.Value)</Value>
                                   <Style>
                                     <FontFamily>Segoe UI</FontFamily>
                                     <FontSize>9pt</FontSize>
@@ -987,7 +1064,7 @@ FROM
                               </Style>
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>Textbox27</rd:DefaultName>
+                          <rd:DefaultName>TOTAL</rd:DefaultName>
                           <Style>
                             <Border>
                               <Style>Solid</Style>
@@ -1013,7 +1090,6 @@ FROM
                               <Width>1pt</Width>
                             </RightBorder>
                             <BackgroundColor>LightGrey</BackgroundColor>
-                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -1040,7 +1116,7 @@ FROM
               <TablixMembers>
                 <TablixMember>
                   <TablixHeader>
-                    <Size>1.29287in</Size>
+                    <Size>0.03125in</Size>
                     <CellContents>
                       <Textbox Name="TextBox88">
                         <CanGrow>true</CanGrow>
@@ -1063,13 +1139,15 @@ FROM
                             </Style>
                           </Paragraph>
                         </Paragraphs>
+                        <Visibility>
+                          <Hidden>true</Hidden>
+                        </Visibility>
                         <Style>
                           <Border>
                             <Color>Gray</Color>
                             <Style>Solid</Style>
                           </Border>
                           <BackgroundColor>LightGrey</BackgroundColor>
-                          <VerticalAlign>Middle</VerticalAlign>
                           <PaddingLeft>2pt</PaddingLeft>
                           <PaddingRight>2pt</PaddingRight>
                           <PaddingTop>2pt</PaddingTop>
@@ -1089,7 +1167,7 @@ FROM
                     </GroupExpressions>
                   </Group>
                   <TablixHeader>
-                    <Size>1.29287in</Size>
+                    <Size>0.03125in</Size>
                     <CellContents>
                       <Textbox Name="TextBox86">
                         <CanGrow>true</CanGrow>
@@ -1099,7 +1177,9 @@ FROM
                             <TextRuns>
                               <TextRun>
                                 <Value>=Fields!BranchName.Value</Value>
-                                <Style />
+                                <Style>
+                                  <FontSize>9pt</FontSize>
+                                </Style>
                               </TextRun>
                             </TextRuns>
                             <Style>
@@ -1108,12 +1188,14 @@ FROM
                             </Style>
                           </Paragraph>
                         </Paragraphs>
+                        <Visibility>
+                          <Hidden>true</Hidden>
+                        </Visibility>
                         <Style>
                           <Border>
                             <Color>Gray</Color>
                             <Style>Solid</Style>
                           </Border>
-                          <VerticalAlign>Middle</VerticalAlign>
                           <PaddingLeft>2pt</PaddingLeft>
                           <PaddingRight>2pt</PaddingRight>
                           <PaddingTop>2pt</PaddingTop>
@@ -1125,13 +1207,18 @@ FROM
                   <TablixMembers>
                     <TablixMember>
                       <Group Name="Details25671" />
+                      <SortExpressions>
+                        <SortExpression>
+                          <Value>=Fields!NumeroDEI.Value</Value>
+                        </SortExpression>
+                      </SortExpressions>
                     </TablixMember>
                     <TablixMember />
                   </TablixMembers>
                 </TablixMember>
                 <TablixMember>
                   <TablixHeader>
-                    <Size>1.29287in</Size>
+                    <Size>0.03125in</Size>
                     <CellContents>
                       <Textbox Name="Textbox28">
                         <CanGrow>true</CanGrow>
@@ -1152,6 +1239,9 @@ FROM
                           </Paragraph>
                         </Paragraphs>
                         <rd:DefaultName>Textbox28</rd:DefaultName>
+                        <Visibility>
+                          <Hidden>true</Hidden>
+                        </Visibility>
                         <Style>
                           <Border>
                             <Style>None</Style>
@@ -1162,7 +1252,6 @@ FROM
                             <Width>1pt</Width>
                           </BottomBorder>
                           <BackgroundColor>LightGrey</BackgroundColor>
-                          <VerticalAlign>Middle</VerticalAlign>
                           <PaddingLeft>2pt</PaddingLeft>
                           <PaddingRight>2pt</PaddingRight>
                           <PaddingTop>2pt</PaddingTop>
@@ -1177,22 +1266,22 @@ FROM
             </TablixRowHierarchy>
             <DataSetName>LibroDeVentas</DataSetName>
             <Top>0.06944in</Top>
-            <Left>0.11146in</Left>
-            <Height>1.09574in</Height>
-            <Width>9.74271in</Width>
+            <Left>0.06146in</Left>
+            <Height>1.05037in</Height>
+            <Width>10.23599in</Width>
             <Style />
           </Tablix>
         </ReportItems>
-        <Height>2.6874in</Height>
+        <Height>1.52981in</Height>
         <Style>
           <Border />
           <BackgroundColor>White</BackgroundColor>
         </Style>
       </Body>
-      <Width>10.3719in</Width>
+      <Width>10.35167in</Width>
       <Page>
         <PageHeader>
-          <Height>1.1489in</Height>
+          <Height>1.32598in</Height>
           <PrintOnFirstPage>true</PrintOnFirstPage>
           <PrintOnLastPage>true</PrintOnLastPage>
           <ReportItems>
@@ -1202,22 +1291,24 @@ FROM
                 <Paragraph>
                   <TextRuns>
                     <TextRun>
-                      <Value>ALMACENES GENERALES DE DEPOSITO DE CAFÉ, S.A. </Value>
+                      <Value>ALMACENES GENERALES DE DEPOSITO DE CAFE, S.A. </Value>
                       <Style>
+                        <FontFamily>Segoe UI Light</FontFamily>
                         <FontSize>12pt</FontSize>
                         <FontWeight>Bold</FontWeight>
                       </Style>
                     </TextRun>
                   </TextRuns>
                   <Style>
+                    <TextAlign>Center</TextAlign>
                     <LineHeight>10pt</LineHeight>
                   </Style>
                 </Paragraph>
               </Paragraphs>
-              <Top>0.04921in</Top>
-              <Left>2.72916in</Left>
-              <Height>0.22in</Height>
-              <Width>4.6771in</Width>
+              <Top>0.12421in</Top>
+              <Left>2.54468in</Left>
+              <Height>0.25in</Height>
+              <Width>4.94656in</Width>
               <Style>
                 <Border />
                 <PaddingLeft>2pt</PaddingLeft>
@@ -1234,20 +1325,22 @@ FROM
                     <TextRun>
                       <Value>LIBRO AUXILIAR DE VENTAS </Value>
                       <Style>
+                        <FontFamily>Segoe UI Light</FontFamily>
                         <FontSize>11pt</FontSize>
                         <FontWeight>Bold</FontWeight>
                       </Style>
                     </TextRun>
                   </TextRuns>
                   <Style>
+                    <TextAlign>Center</TextAlign>
                     <LineHeight>10pt</LineHeight>
                   </Style>
                 </Paragraph>
               </Paragraphs>
-              <Top>0.30224in</Top>
-              <Left>3.89166in</Left>
-              <Height>0.22in</Height>
-              <Width>2.3521in</Width>
+              <Top>0.40224in</Top>
+              <Left>3.65926in</Left>
+              <Height>0.24in</Height>
+              <Width>2.72288in</Width>
               <ZIndex>1</ZIndex>
               <Style>
                 <Border />
@@ -1263,37 +1356,63 @@ FROM
                 <Paragraph>
                   <TextRuns>
                     <TextRun>
-                      <Value>Del: </Value>
+                      <Value>MES DE: </Value>
                       <Style>
+                        <FontFamily>Segoe UI Light</FontFamily>
                         <FontSize>11pt</FontSize>
+                        <FontWeight>Bold</FontWeight>
                       </Style>
                     </TextRun>
                     <TextRun>
-                      <Value>=Parameters!FechaInicial.Value</Value>
+                      <Value>=Switch(Parameters!Mes.Value=1,"ENERO", Parameters!Mes.Value=2,"FEBRERO", Parameters!Mes.Value=3,"MARZO", Parameters!Mes.Value=4, "ABRIL", Parameters!Mes.Value=5,"MAYO", Parameters!Mes.Value=6,"JUNIO", Parameters!Mes.Value=7,"JULIO", Parameters!Mes.Value=8, "AGOSTO", Parameters!Mes.Value=9,"SEPTIEMBRE", Parameters!Mes.Value=10,"OCTUBRE", Parameters!Mes.Value=11,"NOVIEMBRE", Parameters!Mes.Value=12,"DICIEMBRE")</Value>
                       <Style>
+                        <FontFamily>Segoe UI Light</FontFamily>
                         <FontSize>11pt</FontSize>
+                        <FontWeight>Bold</FontWeight>
+                        <Format>d</Format>
+                      </Style>
+                    </TextRun>
+                    <TextRun>
+                      <Value xml:space="preserve"> </Value>
+                      <Style>
+                        <FontFamily>Segoe UI Light</FontFamily>
+                        <FontSize>11pt</FontSize>
+                        <FontWeight>Bold</FontWeight>
+                        <Format>d</Format>
+                      </Style>
+                    </TextRun>
+                    <TextRun>
+                      <Value>=Parameters!Anio.Value</Value>
+                      <Style>
+                        <FontFamily>Segoe UI Light</FontFamily>
+                        <FontSize>11pt</FontSize>
+                        <FontWeight>Bold</FontWeight>
                         <Format>d</Format>
                       </Style>
                     </TextRun>
                     <TextRun>
                       <Value />
                       <Style>
+                        <FontFamily>Segoe UI Light</FontFamily>
                         <FontSize>11pt</FontSize>
+                        <FontWeight>Bold</FontWeight>
                       </Style>
                     </TextRun>
                   </TextRuns>
                   <Style>
+                    <TextAlign>Center</TextAlign>
                     <LineHeight>10pt</LineHeight>
                   </Style>
                 </Paragraph>
               </Paragraphs>
-              <Top>0.57779in</Top>
-              <Left>3.67176in</Left>
-              <Height>0.22in</Height>
-              <Width>1.39996in</Width>
+              <Top>0.67779in</Top>
+              <Left>3.65926in</Left>
+              <Height>0.24in</Height>
+              <Width>2.72288in</Width>
               <ZIndex>2</ZIndex>
               <Style>
                 <Border />
+                <VerticalAlign>Middle</VerticalAlign>
                 <PaddingLeft>2pt</PaddingLeft>
                 <PaddingRight>2pt</PaddingRight>
                 <PaddingTop>2pt</PaddingTop>
@@ -1304,7 +1423,8 @@ FROM
               <Source>External</Source>
               <Value>=First(Fields!imageDir.Value,"CompanyInfo")</Value>
               <Sizing>FitProportional</Sizing>
-              <Left>0.11145in</Left>
+              <Top>0.22225cm</Top>
+              <Left>0.08645in</Left>
               <Height>0.89945in</Height>
               <Width>1.49809in</Width>
               <ZIndex>3</ZIndex>
@@ -1312,117 +1432,6 @@ FROM
                 <Border />
               </Style>
             </Image>
-            <Textbox Name="TextBox105">
-              <KeepTogether>true</KeepTogether>
-              <Paragraphs>
-                <Paragraph>
-                  <TextRuns>
-                    <TextRun>
-                      <Value>al: </Value>
-                      <Style>
-                        <FontSize>11pt</FontSize>
-                      </Style>
-                    </TextRun>
-                    <TextRun>
-                      <Value>=Parameters!FechaFinal.Value</Value>
-                      <Style>
-                        <FontSize>11pt</FontSize>
-                        <Format>d</Format>
-                      </Style>
-                    </TextRun>
-                    <TextRun>
-                      <Value />
-                      <Style>
-                        <FontSize>11pt</FontSize>
-                      </Style>
-                    </TextRun>
-                  </TextRuns>
-                  <Style>
-                    <LineHeight>10pt</LineHeight>
-                  </Style>
-                </Paragraph>
-              </Paragraphs>
-              <Top>0.57365in</Top>
-              <Left>5.08908in</Left>
-              <Height>0.22in</Height>
-              <Width>1.26715in</Width>
-              <ZIndex>4</ZIndex>
-              <Style>
-                <Border />
-                <PaddingLeft>2pt</PaddingLeft>
-                <PaddingRight>2pt</PaddingRight>
-                <PaddingTop>2pt</PaddingTop>
-                <PaddingBottom>2pt</PaddingBottom>
-              </Style>
-            </Textbox>
-            <Textbox Name="ExecutionTime2">
-              <CanGrow>true</CanGrow>
-              <KeepTogether>true</KeepTogether>
-              <Paragraphs>
-                <Paragraph>
-                  <TextRuns>
-                    <TextRun>
-                      <Value>=Globals!ExecutionTime</Value>
-                      <Style>
-                        <FontSize>8pt</FontSize>
-                      </Style>
-                    </TextRun>
-                  </TextRuns>
-                  <Style>
-                    <TextAlign>Right</TextAlign>
-                  </Style>
-                </Paragraph>
-              </Paragraphs>
-              <rd:DefaultName>ExecutionTime</rd:DefaultName>
-              <Top>0.26831in</Top>
-              <Left>8.43643in</Left>
-              <Height>0.17499in</Height>
-              <Width>1.82402in</Width>
-              <ZIndex>5</ZIndex>
-              <Style>
-                <Border>
-                  <Style>None</Style>
-                </Border>
-                <PaddingLeft>2pt</PaddingLeft>
-                <PaddingRight>2pt</PaddingRight>
-                <PaddingTop>2pt</PaddingTop>
-                <PaddingBottom>2pt</PaddingBottom>
-              </Style>
-            </Textbox>
-            <Textbox Name="ExecutionTime3">
-              <CanGrow>true</CanGrow>
-              <KeepTogether>true</KeepTogether>
-              <Paragraphs>
-                <Paragraph>
-                  <TextRuns>
-                    <TextRun>
-                      <Value>="Pagina "&amp;Globals!PageNumber &amp;" de "&amp;Globals!TotalPages</Value>
-                      <Style>
-                        <FontSize>8pt</FontSize>
-                      </Style>
-                    </TextRun>
-                  </TextRuns>
-                  <Style>
-                    <TextAlign>Right</TextAlign>
-                  </Style>
-                </Paragraph>
-              </Paragraphs>
-              <rd:DefaultName>ExecutionTime</rd:DefaultName>
-              <Top>0.09193in</Top>
-              <Left>8.43643in</Left>
-              <Height>0.17499in</Height>
-              <Width>1.82402in</Width>
-              <ZIndex>6</ZIndex>
-              <Style>
-                <Border>
-                  <Style>None</Style>
-                </Border>
-                <PaddingLeft>2pt</PaddingLeft>
-                <PaddingRight>2pt</PaddingRight>
-                <PaddingTop>2pt</PaddingTop>
-                <PaddingBottom>2pt</PaddingBottom>
-              </Style>
-            </Textbox>
             <Textbox Name="ReportTitle3">
               <KeepTogether>true</KeepTogether>
               <Paragraphs>
@@ -1432,16 +1441,16 @@ FROM
                       <Value>RTN: </Value>
                       <Style>
                         <FontFamily>Segoe UI Light</FontFamily>
-                        <FontSize>8pt</FontSize>
-                        <FontWeight>Normal</FontWeight>
+                        <FontSize>9pt</FontSize>
+                        <FontWeight>Bold</FontWeight>
                       </Style>
                     </TextRun>
                     <TextRun>
                       <Value>=First(Fields!Tax_Id.Value, "CompanyInfo")</Value>
                       <Style>
                         <FontFamily>Segoe UI Light</FontFamily>
-                        <FontSize>8pt</FontSize>
-                        <FontWeight>Normal</FontWeight>
+                        <FontSize>9pt</FontSize>
+                        <FontWeight>Bold</FontWeight>
                       </Style>
                     </TextRun>
                   </TextRuns>
@@ -1450,11 +1459,11 @@ FROM
               </Paragraphs>
               <rd:WatermarkTextbox>Title</rd:WatermarkTextbox>
               <rd:DefaultName>ReportTitle</rd:DefaultName>
-              <Top>2.34661cm</Top>
-              <Left>0.11719in</Left>
-              <Height>0.18in</Height>
-              <Width>2in</Width>
-              <ZIndex>7</ZIndex>
+              <Top>2.63236cm</Top>
+              <Left>0.08645in</Left>
+              <Height>0.22851in</Height>
+              <Width>2.35782in</Width>
+              <ZIndex>4</ZIndex>
               <Style>
                 <Border>
                   <Style>None</Style>
@@ -1473,7 +1482,7 @@ FROM
           </Style>
         </PageHeader>
         <PageFooter>
-          <Height>0.7712in</Height>
+          <Height>0.32328in</Height>
           <PrintOnFirstPage>true</PrintOnFirstPage>
           <PrintOnLastPage>true</PrintOnLastPage>
           <Style>
@@ -1483,6 +1492,10 @@ FROM
         </PageFooter>
         <PageHeight>8.5in</PageHeight>
         <PageWidth>11in</PageWidth>
+        <LeftMargin>0.25in</LeftMargin>
+        <RightMargin>0.25in</RightMargin>
+        <TopMargin>0.25in</TopMargin>
+        <BottomMargin>0.25in</BottomMargin>
         <Style>
           <Border />
           <BackgroundColor>White</BackgroundColor>
@@ -1491,29 +1504,97 @@ FROM
     </ReportSection>
   </ReportSections>
   <ReportParameters>
-    <ReportParameter Name="FechaInicial">
-      <DataType>DateTime</DataType>
-      <Prompt>Desde</Prompt>
+    <ReportParameter Name="Mes">
+      <DataType>String</DataType>
+      <Prompt>Mes</Prompt>
+      <ValidValues>
+        <ParameterValues>
+          <ParameterValue>
+            <Value>1</Value>
+            <Label>ENERO</Label>
+          </ParameterValue>
+          <ParameterValue>
+            <Value>2</Value>
+            <Label>FEBRERO</Label>
+          </ParameterValue>
+          <ParameterValue>
+            <Value>3</Value>
+            <Label>MARZO</Label>
+          </ParameterValue>
+          <ParameterValue>
+            <Value>4</Value>
+            <Label>ABRIL</Label>
+          </ParameterValue>
+          <ParameterValue>
+            <Value>5</Value>
+            <Label>MAYO</Label>
+          </ParameterValue>
+          <ParameterValue>
+            <Value>6</Value>
+            <Label>JUNIO</Label>
+          </ParameterValue>
+          <ParameterValue>
+            <Value>7</Value>
+            <Label>JULIO</Label>
+          </ParameterValue>
+          <ParameterValue>
+            <Value>8</Value>
+            <Label>AGOSTO</Label>
+          </ParameterValue>
+          <ParameterValue>
+            <Value>9</Value>
+            <Label>SEPTIEMBRE</Label>
+          </ParameterValue>
+          <ParameterValue>
+            <Value>10</Value>
+            <Label>OCTUBRE</Label>
+          </ParameterValue>
+          <ParameterValue>
+            <Value>11</Value>
+            <Label>NOVIEMBRE</Label>
+          </ParameterValue>
+          <ParameterValue>
+            <Value>12</Value>
+            <Label>DICIEMBRE</Label>
+          </ParameterValue>
+        </ParameterValues>
+      </ValidValues>
     </ReportParameter>
-    <ReportParameter Name="FechaFinal">
-      <DataType>DateTime</DataType>
-      <Prompt>Hasta</Prompt>
+    <ReportParameter Name="Anio">
+      <DataType>String</DataType>
+      <Prompt>Año</Prompt>
+    </ReportParameter>
+    <ReportParameter Name="Sucursal">
+      <DataType>Integer</DataType>
+      <Prompt>Sucursal</Prompt>
+      <ValidValues>
+        <DataSetReference>
+          <DataSetName>Sucursal</DataSetName>
+          <ValueField>BranchId</ValueField>
+          <LabelField>BranchName</LabelField>
+        </DataSetReference>
+      </ValidValues>
     </ReportParameter>
   </ReportParameters>
   <ReportParametersLayout>
     <GridLayoutDefinition>
-      <NumberOfColumns>2</NumberOfColumns>
+      <NumberOfColumns>3</NumberOfColumns>
       <NumberOfRows>1</NumberOfRows>
       <CellDefinitions>
         <CellDefinition>
           <ColumnIndex>0</ColumnIndex>
           <RowIndex>0</RowIndex>
-          <ParameterName>FechaInicial</ParameterName>
+          <ParameterName>Mes</ParameterName>
         </CellDefinition>
         <CellDefinition>
           <ColumnIndex>1</ColumnIndex>
           <RowIndex>0</RowIndex>
-          <ParameterName>FechaFinal</ParameterName>
+          <ParameterName>Anio</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>2</ColumnIndex>
+          <RowIndex>0</RowIndex>
+          <ParameterName>Sucursal</ParameterName>
         </CellDefinition>
       </CellDefinitions>
     </GridLayoutDefinition>

@@ -10,43 +10,16 @@ namespace ERPMVC.DTO
     public class ControlAsistenciasDTO : ControlAsistencias
     {
         public List<ControlAsistencias> _ControlAsistencias { get; set; }
-
         public int editar { get; set; } = 1;
-
+        public bool Revisado { get; set; }
         public string token { get; set; }
-
         public long EmployeesId { get; set; }
+
+        public int Mes { get; set; }
+
+        public int Anio { get; set; }
         public DateTime Dia1 { get; set; }
-        //public DateTime Dia2 { get; set; }
-        //public DateTime Dia3 { get; set; }
-        //public DateTime Dia4 { get; set; }
-        //public DateTime Dia5 { get; set; }
-        //public DateTime Dia6 { get; set; }
-        //public DateTime Dia7 { get; set; }
-        //public DateTime Dia8 { get; set; }
-        //public DateTime Dia9 { get; set; }
-        //public DateTime Dia10 { get; set; }
-        //public DateTime Dia11 { get; set; }
-        //public DateTime Dia12 { get; set; }
-        //public DateTime Dia13 { get; set; }
-        //public DateTime Dia14 { get; set; }
-        //public DateTime Dia15 { get; set; }
-        //public DateTime Dia16 { get; set; }
-        //public DateTime Dia17 { get; set; }
-        //public DateTime Dia18 { get; set; }
-        //public DateTime Dia19 { get; set; }
-        //public DateTime Dia20 { get; set; }
-        //public DateTime Dia21 { get; set; }
-        //public DateTime Dia22 { get; set; }
-        //public DateTime Dia23 { get; set; }
-        //public DateTime Dia24 { get; set; }
-        //public DateTime Dia25 { get; set; }
-        //public DateTime Dia26 { get; set; }
-        //public DateTime Dia27 { get; set; }
-        //public DateTime Dia28 { get; set; }
-        //public DateTime Dia29 { get; set; }
-        //public DateTime Dia30 { get; set; }
-        //public DateTime Dia31 { get; set; }
+        
 
         [UIHint("ElementoConfiguracionDL")]
         public Int64 Dia1TA { get; set; }
@@ -112,39 +85,6 @@ namespace ERPMVC.DTO
         public Int64 Dia31TA { get; set; }
 
 
-        //public string LetraD1 { get; set; }
-        //public string LetraD2 { get; set; }
-        //public string LetraD3 { get; set; }
-        //public string LetraD4 { get; set; }
-        //public string LetraD5 { get; set; }
-        //public string LetraD6 { get; set; }
-        //public string LetraD7 { get; set; }
-        //public string LetraD8 { get; set; }
-        //public string LetraD9 { get; set; }
-        //public string LetraD10 { get; set; }
-        //public string LetraD11 { get; set; }
-        //public string LetraD12 { get; set; }
-        //public string LetraD13 { get; set; }
-        //public string LetraD14 { get; set; }
-        //public string LetraD15 { get; set; }
-        //public string LetraD16 { get; set; }
-        //public string LetraD17 { get; set; }
-        //public string LetraD18 { get; set; }
-        //public string LetraD19 { get; set; }
-        //public string LetraD20 { get; set; }
-        //public string LetraD21 { get; set; }
-        //public string LetraD22 { get; set; }
-        //public string LetraD23 { get; set; }
-        //public string LetraD24 { get; set; }
-        //public string LetraD25 { get; set; }
-        //public string LetraD26 { get; set; }
-        //public string LetraD27 { get; set; }
-        //public string LetraD28 { get; set; }
-        //public string LetraD29 { get; set; }
-        //public string LetraD30 { get; set; }
-        //public string LetraD31 { get; set; }
-
-
         public string ColorD1 { get; set; }
         public string ColorD2 { get; set; }
         public string ColorD3 { get; set; }
@@ -181,6 +121,13 @@ namespace ERPMVC.DTO
 
         public int LlegadasTarde { get; set; }
         public int DiasLaborales { get; set; }
+        public int Domingo { get; set; }
+        public int Feriado { get; set; }
+        public int Incapacidad { get; set; }
+        public int Vacaciones { get; set; }
+        public int Permisos { get; set; }
+        public int TeleTrabajo { get; set; }
+        public int Inasistencia { get; set; }
         public String PorcentajeLlegadasTarde { get; set; }
 
         [UIHint("ElementoConfiguracion")]

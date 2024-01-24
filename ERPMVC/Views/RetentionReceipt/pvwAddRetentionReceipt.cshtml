@@ -49,7 +49,7 @@
                                                 <div class="form-group">
                                                     <label asp-for="BranchId" class="control-label"></label>
                                                     <kendo-dropdownlist name="BranchId" for="BranchId" filter="Kendo.Mvc.UI.FilterType.Contains"
-                                                                        option-label="Seleccione la Sucursal!"
+                                                                        option-label="Seleccione la Sucursal"
                                                                         datatextfield="BranchName"
                                                                         datavaluefield="BranchId"
                                                                         onchange="GetPuntoEmision();" data-val-required="La Sucursal es requerida."
@@ -85,9 +85,8 @@
                                                     <kendo-dropdownlist name="VendorId" required data-required-msg="El Proveedor es requerido."
                                                                         for="@Model.VendorId"
                                                                         on-data-bound="databoundRetencion"
-
                                                                         filter="Kendo.Mvc.UI.FilterType.Contains"
-                                                                        option-label="Seleccione el Proveedor!"
+                                                                        option-label="Seleccione el Proveedor"
                                                                         datatextfield="VendorName"
                                                                         datavaluefield="VendorId"
                                                                         style="width: 100%;">
@@ -105,6 +104,8 @@
                                             </div>
                                             </div>
                                                 <div class="row" id="datosfiscales">
+
+                                                    
 
                                                     <div class="col-md-3">
                                                         <div class="form-group">
@@ -142,38 +143,61 @@
 
 
                                             <div class="row">
+                                            @if (Model.RetentionReceiptId == 0)
+                                                {
                                             <div class="col-md-3">
+                                                    <div class="form-group">
+                                                        <label class="control-label" style="min-width:100%">Retencion Pendiente</label>
+                                                        <kendo-switch name="RetecionPendiente" for="RetecionPendiente" checked="@Model.RetecionPendiente">
+                                                            <messages checked="Si" unchecked="No" />
+                                                        </kendo-switch>
+                                                    </div>
+                                                    </div>
+                                                }
+                                                <div class="col-md-3">
                                                 <div class="form-group">
                                                     <label asp-for="RTN" class=" control-label" style="min-width:100%"></label>
                                                     <input type="text" maxlength="14" asp-for="RTN" name="RTN" required data-required-msg="El RTN es requerido." class="k-textbox" autocomplete="off" style="min-width:100%" />
                                                     <span asp-validation-for="RTN" class="text-danger"></span>
                                                 </div>
                                             </div>
-                                            <div class="col-md-9">
-                                                <div class="form-group">
-                                                    <label class=" control-label" style="min-width:100%">Factura de Proveedor</label>
-                                                   
+                                             @if (Model.RetentionReceiptId == 0)
+                                            {
+                                                <div class="col-md-9">
+                                                    <div class="form-group">
+                                                        <label class=" control-label" style="min-width:100%">Factura de Proveedor</label>
+
                                                         <kendo-dropdownlist name="VendorInvoiceId" required data-required-msg="La Factura de Proveedor es requerida."
-                                                                            filter="Kendo.Mvc.UI.FilterType.Contains" enable="false"
-                                                                            option-label="Seleccione la Factura de Proveedor!"
-                                                                            datatextfield="VendorInvoiceName"
-                                                                            datavaluefield="VendorInvoiceId"
-                                                                            style="min-width: 100%;">
+                                                        filter="Kendo.Mvc.UI.FilterType.Contains" enable="false"
+                                                        option-label="Seleccione la Factura de Proveedor"
+                                                        datatextfield="VendorInvoiceName"
+                                                        datavaluefield="VendorInvoiceId"
+                                                        style="min-width: 100%;">
                                                             <datasource type="DataSourceTagHelperType.WebApi" server-operation="true" page-size="9999999">
                                                                 <sorts>
                                                                     <sort field="VendorInvoiceName" direction="asc" />
                                                                 </sorts>
                                                                 <transport>
-                                                                    <read url="@Url.Action("GetVendorInvoiceByVendorId", "VendorInvoice")" data="GetVendorId" />
+                                                                    <read url="@Url.Action("GetVendorInvoiceByVendorPendienteRetencion", "VendorInvoice")" data="GetVendorId" />
                                                                 </transport>
                                                             </datasource>
                                                         </kendo-dropdownlist>
-                                                    
-                                                    <span class="text-danger"></span>
+
+                                                        <span class="text-danger"></span>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                            
-                                               
+                                            }
+                                            else
+                                            {
+                                                <div class="col-md-9">
+                                                    <div class="form-group">
+                                                        <label class=" control-label" style="min-width:100%">Factura de Proveedor</label>
+                                                        <input type="text" maxlength="14" asp-for="VendorInvoice" name="VendorInvoice" class="k-textbox" autocomplete="off" style="min-width:100%" />
+                                                        <span asp-validation-for="VendorInvoice" class="text-danger"></span>
+                                                    </div>
+                                                </div>
+                                            }
+
                                             
                                         </div>
 
@@ -188,32 +212,7 @@
                                             </div>
                                         </div>
                                         <div class="row">
-                                           
                                             <div class="col-md-3">
-                                                <div class="form-group">
-                                                    <label asp-for="Percentage" class=" control-label" style="min-width:100%">Impuesto de Retención</label>
-                                                    @(Html.Kendo().DropDownList()
-                                                        .Name("Percentage")
-                                                        .OptionLabel("Seleccione el Impuesto de Retención!")
-                                                        .Value(Convert.ToString(Model.Percentage))
-                                                        .DataTextField("Text")
-                                                        .DataValueField("Value")
-                                                        .BindTo(new List<SelectListItem>() {
-                                                              new SelectListItem() {
-                                                                  Text = "1%",
-                                                                  Value = "1"
-                                                              },
-                                                              new SelectListItem() {
-                                                                  Text = "12.5%",
-                                                                  Value = "12.5"
-                                                              }
-                                                          })
-                                                        .HtmlAttributes(new { style = "width: 100%" })
-                                                    )
-                                                    <span asp-validation-for="Percentage" class="text-danger"></span>
-                                                </div>
-                                            </div>
-                                            <div class="col-md-3" >
                                                 <div class="form-group">
                                                     <label asp-for="TaxableBase" class=" control-label" style="min-width:100%">Base Imponible</label>
                                                     <kendo-numerictextbox name="TaxableBase"
@@ -221,9 +220,34 @@
                                                                           min="0" data-val-required="La Base Imponible es requerida." data-min-msg="La Base Imponible no puede ser negativo."
                                                                           style="min-width: 100%;text-align:right;padding-right: 3px"
                                                                           max="999999999"
+                                                                          on-change="CalcularTotalImporte"
                                                                           step="1"
                                                                           value="Model.TaxableBase" />
                                                     <span asp-validation-for="TaxableBase" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="form-group">
+                                                    <label asp-for="Percentage" class=" control-label" style="min-width:100%">Impuesto de Retención</label>
+                                                    <kendo-dropdownlist name="Percentage" required data-required-msg="El impuesto de retención es requerido."
+                                                                        for="TaxId"
+                                                                        value="@Model.TaxId"
+                                                                        filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                                        option-label="Seleccione Impuesto de Retención"
+                                                                        on-change="CalcularTotalImporte"
+                                                                        datatextfield="TaxPercentage"
+                                                                        datavaluefield="TaxId"
+                                                                        style="width: 100%;">
+                                                                        <datasource type="DataSourceTagHelperType.WebApi" server-operation="true">
+                                                                            <sorts>
+                                                                                 <sort field="TaxPercentage" direction="asc"/>
+                                                                            </sorts>
+                                                                            <transport>
+                                                                                <read url="@Url.Action("Get", "Tax")" />
+                                                                            </transport>
+                                                                        </datasource>
+                                                                    </kendo-dropdownlist>
+                                                    <span asp-validation-for="Percentage" class="text-danger"></span>
                                                 </div>
                                             </div>
                                             <div class="col-md-3">
@@ -261,13 +285,7 @@
     </div>
 </div>
 <script>
-    $(document).ready(function () {
-        
 
-        $("#Percentage").attr("required", "required");
-        $("#Percentage").attr("data-required-msg", "El Porcentaje Retención es requerido.");
-
-    });
 
 
     function databoundRetencion(){
@@ -382,7 +400,7 @@
                        
                         
                         $("#DocumentId").val(result.VendorInvoiceId);
-                        $("#TaxableBase").data("kendoNumericTextBox").value(result.Total);
+                       // $("#TaxableBase").data("kendoNumericTextBox").value(result.Total);
                         CalcularTotalImporte();
                     }
                 },
@@ -426,6 +444,7 @@
     });
 
     $("#btnComprobanteRetencion").click(function () {
+        debugger;
         validarNoCorrelativo();
         if ($('#CorrelativoAlert').is(':hidden')) {
             return true;
@@ -433,6 +452,9 @@
         else {
             return false;
         }
+    }); 
+    $(document).ready(function () {
+            validarNoCorrelativo();
     });
 
     $("#NoCorrelativo").change(function () {
@@ -440,10 +462,17 @@
     })
 
     function SaveComprobanteRetencion() {
+        // Display a confirmation dialog
+        if (!confirm("¿Está seguro que desea guardar los datos?")) {
+            return; // User canceled the operation
+        }
         debugger;
+        var ret = $("#RetecionPendiente").data("kendoSwitch");
+        var retencion = ret.check();
+
         var validator = $("#frmComprobanteRetencion").data("kendoValidator");
         var status = $(".status");
-        
+
         if (!validator.validate()) {
             status.text("Oops! There is invalid data in the form.")
                 .removeClass("valid")
@@ -451,12 +480,13 @@
             return;
         }
 
-        try{
+        try {
+            debugger;
             $("#btnComprobanteRetencion").hide();
             $("#btnComprobanteRetencion").prop("disabled", true);
 
             var fechalimite = $("#FechaLimiteEmision").getKendoDatePicker().value() == null? null:  $("#FechaLimiteEmision").getKendoDatePicker().value().toJSON();
-
+            
             var dataObject = {
                 'RetentionReceiptId': $("#RetentionReceiptId").val() === "" ? "0" : $("#RetentionReceiptId").val(),
                 'FechaEmision': $("#FechaEmision").getKendoDatePicker().value().toJSON(),
@@ -467,21 +497,18 @@
                 'BranchName': $("#BranchId").data("kendoDropDownList").text(),
                 'RetentionTaxDescription': $("#RetentionTaxDescription").val(),
                 'TaxableBase': $("#TaxableBase").val(),
-                'Percentage': $("#Percentage").val(),
+                'Percentage': parseFloat($("#TaxId").data("kendoDropDownList").text(), 2),
                 'TotalAmount': $("#TotalAmount").val(),
                 'NumeroDEI': $("#NumeroDEI").val(),
                 'CAI': $("#CAI").val(),
+                'TaxId': $("#TaxId").data("kendoDropDownList").value(),
                 'FechaLimiteEmision': fechalimite,
                 'RangoEmision': $("#RangoEmision").val(),
                 'VendorInvoiceId': $("#VendorInvoiceId").val(),
-
-                
-
-
-
-
+                'RetecionPendiente': retencion,
+                'VendorInvoice': $("#VendorInvoiceId").data("kendoDropDownList").text()
             };
-
+            
 
             $.ajax({
                 url: '@Url.Action("SaveComprobanteRetencion", "RetentionReceipt")',
@@ -505,44 +532,31 @@
                     $('#ModalComprobanteRetencion').modal('hide');
                 },
                 error: function (XMLHttpRequest, textStatus, errorThrown) {
-                    $.toast({
-                        heading: 'Validación',
-                        text: textStatus + ": " + XMLHttpRequest.responseText,
-                        position: 'top-right',
-                        loaderBg: '#ff6849',
-                        icon: 'error',
-                        hideAfter: 30000,
-                        stack: 6
-                    });
+                    debugger;
+                    MostrarMensaje(textStatus + ": " + XMLHttpRequest.responseJSON.Value.Result, "Error", "Error", 6000);
                 }
             });
 
-        
-        }catch(e){
+
+        } catch (e) {
             MostrarMensaje(e, "Error", "Error", 6000);
-        }finally{
-             $("#btnComprobanteRetencion").show();
+        } finally {
+            $("#btnComprobanteRetencion").show();
             $("#btnComprobanteRetencion").prop("disabled", false);
         }
-        
     }
 
     function CalcularTotalImporte() {
+        debugger;
         var ImpuestoValue = 0;
         var ImpuestoText = "";
         var BaseImponible = $("#TaxableBase").data("kendoNumericTextBox").value();
         var ImporteTotal = 0;
-        ImpuestoValue = $("#Percentage").data("kendoDropDownList").value();
+        ImpuestoValue = $("#TaxId").data("kendoDropDownList").text();
         if (ImpuestoValue > 0) {
-            ImpuestoText = $("#Percentage").data("kendoDropDownList").text();
-            if (ImpuestoText == "1%") {
-                ImporteTotal = BaseImponible * (1 / 100);
+            ImpuestoText = $("#TaxId").data("kendoDropDownList").text();
+            ImporteTotal = BaseImponible * (ImpuestoValue / 100);
                 $("#TotalAmount").data("kendoNumericTextBox").value(ImporteTotal);
-            }
-            else if (ImpuestoText == "12.5%") {
-                ImporteTotal = BaseImponible * (12.5 / 100);
-                $("#TotalAmount").data("kendoNumericTextBox").value(ImporteTotal);
-            }
         }
         else {
             $("#TotalAmount").data("kendoNumericTextBox").value(0);
@@ -551,12 +565,13 @@
 
     function validarNoCorrelativo() {
         debugger;
-        var cadena = $("#NoCorrelativo").val();
-        if (cadena.indexOf("_") > -1 == true) {
+        var cadena = $("#NumeroDEI").val();
+        if (!cadena || cadena.trim() === "") {
             $("#CorrelativoAlert").show();
-        }
-        else {
+        } else {
             $("#CorrelativoAlert").hide();
         }
     }
+
+
 </script>

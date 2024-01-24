@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
-using System.Security.Claims;
+using System.Net.Http;
 using System.Threading.Tasks;
 using ERPMVC.DTO;
 using ERPMVC.Helpers;
@@ -14,7 +13,9 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.Win32;
 using Newtonsoft.Json;
+
 namespace ERPMVC.Controllers 
 {
     [Authorize]
@@ -23,19 +24,20 @@ namespace ERPMVC.Controllers
     {
         private readonly IOptions<MyConfig> config;
         private readonly ILogger logger;
-        private readonly ClaimsPrincipal _principal;
         public DeduccionEmpleadoController(IOptions<MyConfig> config, ILogger<DeduccionEmpleadoController> logger, IHttpContextAccessor httpContextAccessor)
         {
             this.config = config;
             this.logger = logger;
-            _principal = httpContextAccessor.HttpContext.User;
         }
 
         //[Authorize(Policy = "RRHH.Bonos y Deducciones.Deducciones por Empleado")]
         public ActionResult Index()
         {
-            ViewData["permisos"] = _principal;
-            return View();
+           DeduccionEmpleado deduccionEmpleado = new DeduccionEmpleado {
+            PeriodoId = Utils.PeriodoActualId,
+            Mes = DateTime.Now.Month
+           };
+            return View(deduccionEmpleado);
         }
 
         //[Authorize(Policy = "RRHH.Planillas y Operaciones.Calculo General ISR")]
@@ -63,46 +65,37 @@ namespace ERPMVC.Controllers
 
         public ActionResult EditarDeducciones(long codigoEmpleado, string nombreEmpleado, double salarioEmpleado)
         {
-            ViewData["permisos"] = _principal;
-            ViewData["Editar"] = 1;
-            ViewData["CodigoEmpleado"] = codigoEmpleado;
-            ViewData["NombreEmpleado"] = nombreEmpleado;
-            ViewData["SalarioEmpleado"] = salarioEmpleado;
+            
             return PartialView("pvwAgregarDeduccionEmpleado");
         }
 
         public ActionResult VerDeducciones(long codigoEmpleado, string nombreEmpleado, double salarioEmpleado)
         {
-            ViewData["permisos"] = _principal;
-            ViewData["Editar"] = 0;
-            ViewData["CodigoEmpleado"] = codigoEmpleado;
-            ViewData["NombreEmpleado"] = nombreEmpleado;
-            ViewData["SalarioEmpleado"] = salarioEmpleado;
             return PartialView("pvwAgregarDeduccionEmpleado");
         }
 
 
-        public async Task<ActionResult<List<DeduccionesEmpleadoDTO>>> GetEmpleadosDeducciones()
-        {
+        public async Task<ActionResult<List<DeduccionesEmpleadoDTO>>> GetEmpleadosDeducciones([DataSourceRequest] DataSourceRequest request,DeduccionesEmpleadoDTO deduccionesEmpleadoDTO)
+            {
             var respuesta = await Utils.HttpGetAsync(HttpContext.Session.GetString("token"),
-                config.Value.urlbase + "api/DeduccionEmpleado/GetDeduccionesEmpleados");
+                config.Value.urlbase + $"api/DeduccionEmpleado/GetDeduccionesEmpleados/{deduccionesEmpleadoDTO.IdPeriodo}/{deduccionesEmpleadoDTO.NoMes}");
             if (respuesta.IsSuccessStatusCode)
             {
                 var contenido = await respuesta.Content.ReadAsStringAsync();
                 var resultado = JsonConvert.DeserializeObject<List<DeduccionesEmpleadoDTO>>(contenido);
-                return Ok(resultado);
+                return Ok(resultado.ToDataSourceResult(request));
             }
 
             return BadRequest();
         }
 
-        public async Task<ActionResult> GetDeduccionesEmpleado(long empleadoId)
+        public async Task<ActionResult> GetDeduccionesEmpleado([DataSourceRequest] DataSourceRequest request, long empleadoId)
         //[DataSourceRequest] DataSourceRequest request, long empleadoId)
         {
             try
             {
                 var respuesta = await Utils.HttpGetAsync(HttpContext.Session.GetString("token"),
-                    config.Value.urlbase + "api/DeduccionEmpleado/GetDeduccionesPorEmpleado/"+empleadoId);
+                    config.Value.urlbase + "api/DeduccionEmpleado/GetDeduccionesPorEmpleado/" + empleadoId);
                 if (respuesta.IsSuccessStatusCode)
                 {
                     var contenido = await respuesta.Content.ReadAsStringAsync();
@@ -112,7 +105,7 @@ namespace ERPMVC.Controllers
                         return Ok();
                     }
 
-                    return Ok(resultado);
+                    return Ok(resultado.ToDataSourceResult(request));
 
                 }
 
@@ -121,6 +114,37 @@ namespace ERPMVC.Controllers
             catch (Exception ex)
             {
                 logger.LogError(ex,"Error al cargar deducciones del empleado");
+                return BadRequest();
+            }
+        }
+
+
+        public async Task<ActionResult> GetDeduccionesEmpleadoPlanilla([DataSourceRequest] DataSourceRequest request,
+            int empleadoId, int mes, int periodoId, int planilladetalleId, int quincena)
+        //[DataSourceRequest] DataSourceRequest request, long empleadoId)
+        {
+            try
+            {
+                var respuesta = await Utils.HttpGetAsync(HttpContext.Session.GetString("token"),
+                    config.Value.urlbase + $"api/DeduccionEmpleado/GetDeduccionesEmpleadosPlanilla/{empleadoId}/{mes}/{periodoId}/{planilladetalleId}/{quincena}");
+                if (respuesta.IsSuccessStatusCode)
+                {
+                    var contenido = await respuesta.Content.ReadAsStringAsync();
+                    var resultado = JsonConvert.DeserializeObject<List<DeduccionEmpleado>>(contenido);
+                    if (resultado.Count == 0)
+                    {
+                        return Ok();
+                    }
+
+                    return Ok(resultado.ToDataSourceResult(request));
+
+                }
+
+                return BadRequest();
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Error al cargar deducciones del empleado");
                 return BadRequest();
             }
         }
@@ -148,24 +172,18 @@ namespace ERPMVC.Controllers
             }
         }
 
-        public async Task<ActionResult> GuardarDeduccionEmpleado([DataSourceRequest] DataSourceRequest request, DeduccionEmpleado deduccionGuardar)
+        public async Task<ActionResult> GuardarDeduccionEmpleado([DataSourceRequest] DataSourceRequest request, 
+            DeduccionesEmpleadoDTO deduccionGuardar,
+            int NoMes,  int IdPeriodo, string Fecha)
         {
             try
             {
-                //if (ModelState.IsValid)
-                //{
-                deduccionGuardar.Deduccion = null;
+                deduccionGuardar.Fecha = Utils.GetFecha(Fecha);
+                
                     if (deduccionGuardar.Id == 0)
                     {
-                        deduccionGuardar.UsuarioCreacion = HttpContext.Session.GetString("user");
-                        deduccionGuardar.UsuarioModificacion = deduccionGuardar.UsuarioCreacion;
-                        deduccionGuardar.FechaCreacion = DateTime.Now;
-                        deduccionGuardar.FechaModificacion = deduccionGuardar.FechaCreacion;
-                    }
-                    else
-                    {
-                        deduccionGuardar.UsuarioModificacion = HttpContext.Session.GetString("user");
-                        deduccionGuardar.FechaModificacion = DateTime.Now;
+                        deduccionGuardar.PeriodoId = IdPeriodo;
+                        deduccionGuardar.Mes = NoMes;
                     }
                     var respuesta = await Utils.HttpPostAsync(HttpContext.Session.GetString("token"),
                         config.Value.urlbase + "api/DeduccionEmpleado/Guardar", deduccionGuardar);
@@ -173,9 +191,9 @@ namespace ERPMVC.Controllers
                     {
                         var contenido = await respuesta.Content.ReadAsStringAsync();
                         var resultado = JsonConvert.DeserializeObject<DeduccionEmpleado>(contenido);
-                        return Json(new[] { resultado }.ToDataSourceResult(request, ModelState));
+                        return Ok(resultado);
                     }
-               // }
+              
                 return BadRequest();
             }
             catch (Exception ex)
@@ -294,6 +312,65 @@ namespace ERPMVC.Controllers
             {
                 logger.LogError(ex, $"Error al cargar el ISR para los empleados en periodo {pPeriodo.Periodo} y mes {pPeriodo.Mes}");
                 return BadRequest(ex.Message);
+            }
+        }
+
+
+        [HttpPost]
+        public async Task<ActionResult> Aprobar(long idBonificacion)
+        {
+            try
+            {
+                if (idBonificacion == 0)
+                {
+                    return await Task.Run(() => BadRequest("No llego correctamente el modelo!"));
+                }
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + $"api/DeduccionEmpleado/ChangeStatus/{idBonificacion}/{1}");
+                string valorrespuesta = "";
+                if (!result.IsSuccessStatusCode)
+                {
+                    return await Task.Run(() => BadRequest("No se Aprobo el documento!"));
+                }
+
+                return Ok();
+
+            }
+            catch (Exception ex)
+            {
+                logger.LogError($"Ocurrio un error: {ex.ToString()}");
+                throw ex;
+            }
+        }
+
+        [HttpPost]
+        public async Task<ActionResult> Rechazar(long idBonificacion)
+        {
+            try
+            {
+                if (idBonificacion == 0)
+                {
+                    return await Task.Run(() => BadRequest("No llego correctamente el modelo!"));
+                }
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + $"api/DeduccionEmpleado/ChangeStatus/{idBonificacion}/{2}");
+                string valorrespuesta = "";
+                if (!result.IsSuccessStatusCode)
+                {
+                    return await Task.Run(() => BadRequest("No se Rechazo el documento!"));
+                }
+
+                return Ok();
+
+            }
+            catch (Exception ex)
+            {
+                logger.LogError($"Ocurrio un error: {ex.ToString()}");
+                throw ex;
             }
         }
 

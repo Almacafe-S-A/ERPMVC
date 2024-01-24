@@ -2,17 +2,24 @@
 
 @using Kendo.Mvc.UI
 @{
-    ViewData["Title"] = "Control Aistencias";
+    ViewData["Title"] = "Control Asistencias";
     ClaimsPrincipal permisos = (ClaimsPrincipal)ViewData["permisos"];
     var ElementoConfiguracion = ViewData["ElementoConfiguracion"] as IEnumerable<ERPMVC.Models.ElementoConfiguracion>;
     var today = DateTime.Now.ToString("dd/MM/yyyy 00:00", new System.Globalization.CultureInfo("es-ES"));
 }
 
-
+<style>
+    .green-header {
+        background-color: green;
+        color: black; /* Ajusta el color de la fuente si es necesario */
+    }
+</style>
 <script>
 
-    function onsave(e) {
-        //No se utiliza
+    function onsave() {
+        debugger;
+        var grid = $("#gridControlAsistencia").getKendoGrid();
+        grid.dataSource.read();
     }
 
 
@@ -46,7 +53,6 @@
     });
 
     function InicialesDias() {
-
         var nombres_dias = new Array("Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado")
         var nombres_meses = new Array("Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre")
         var titulogrid = $("#monthpicker").getKendoDatePicker().value().toJSON()
@@ -60,7 +66,6 @@
         // $("#TituloControl").html("Control de Asistencias de " + nombres_meses[parseInt(monthpikertitle)-1] + " de " + yearPikertitle);
 
         for (i = 1; i <= dias; i++) {
-
             var dbDate = "" + yearPikertitle + "/" + monthpikertitle + "/" + i + "";
             var date = new Date(dbDate);
             dia_mes = date.getDate() //dia del mes
@@ -69,36 +74,42 @@
             anio = date.getFullYear()
 
             var tes = (nombres_dias[dia_semana] + ", " + dia_mes + " de " + nombres_meses[mes - 1] + " de " + anio)
+                var headerCell = $("#gridControlAsistencia thead [data-field=Dia" + i + "TA] .k-link");
+            if (dia_semana === 0) {
+                headerCell.addClass("green-header"); // Agrega la clase para el fondo verde
+            } else {
+                headerCell.removeClass("green-header"); // Asegura que no tenga fondo verde si no es domingo
+            }
+            headerCell.html(tes.substring(0, 2) + "<br />" + i);
 
-
-            $("#gridControlAsistencia thead [data-field=Dia" + i + "TA] .k-link").html(tes.substring(0, 1) + "<br />" + " " + i)
+           // $("#gridControlAsistencia thead [data-field=Dia" + i + "TA] .k-link").html(tes.substring(0, 2) + "<br />" + " " + i)
 
         }
 
         //Ocultar segun la cantidad de dias del mes
         var grids = $("#gridControlAsistencia").data("kendoGrid");
         if (dias == 28) {
-            grids.hideColumn(30);
             grids.hideColumn(31);
             grids.hideColumn(32);
+            grids.hideColumn(33);
         } else if (dias == 29) {
-            grids.showColumn(29);
-            grids.showColumn(30);
-            grids.hideColumn(31);
-            grids.hideColumn(32);
-        } else if (dias == 30) {
-            grids.showColumn(29);
             grids.showColumn(30);
             grids.showColumn(31);
             grids.hideColumn(32);
+            grids.hideColumn(33);
+        } else if (dias == 30) {
+            grids.showColumn(30);
+            grids.showColumn(31);
+            grids.showColumn(32);
+            grids.hideColumn(33);
 
 
         } if (dias == 31) {
             //alert("Rock");
-            grids.showColumn(29);
             grids.showColumn(30);
             grids.showColumn(31);
             grids.showColumn(32);
+            grids.showColumn(33);
         }
 
 
@@ -321,444 +332,322 @@
 
 
 
-<div class="modal-dialog modal-lg">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h4 id="TituloControl" class="modal-title"> </h4>
-        </div>
-        <div class="modal-body">
-            <div class="col-lg-12">
-                <div class="row">
-                    <div class="col-md-3">
-                        <div class="form-group">
-                            <label style="width:100%">Seleccione Mes y Año </label>
-                            @(Html.Kendo().DatePicker()
-                                                  .Name("monthpicker")
-                                                  .Start(CalendarView.Year)
-                                                  .Depth(CalendarView.Year)
-                                                  .Format("MMMM yyyy")
-                                                  .Value(@today)
-                                                  .DateInput()
-                                                  .HtmlAttributes(new { style = "width: 100%", title = "monthpicker" })
 
-                                    /*.Events(e => e.Change("monthpicker_change"))*/
+<h4 id="TituloControl" class="text-themecolor"> </h4>
+<div class="col-lg-12">
+    <div class="row">
+        <div class="col-md-3">
+            <div class="form-group">
+                <label style="width:100%">Seleccione Mes y Año </label>
+                @(Html.Kendo().DatePicker()
+                    .Name("monthpicker")
+                    .Start(CalendarView.Year)
+                    .Depth(CalendarView.Year)
+                    .Format("MMMM yyyy")
+                    .Value(@today)
+                    .DateInput()
+                    .HtmlAttributes(new { style = "width: 100%", title = "monthpicker" })
 
-                            )
-                            <input id="FechaActual" type="text" value="@today" style="visibility:hidden" />
+                    /*.Events(e => e.Change("monthpicker_change"))*/
 
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="form-group">
-                            <label style="width:100%"></label>
-                            <button type="button" id="GetAsistencias" name="GetAsistencias" onclick="AsistenciaPorDatepker();" class="form-control btn-miboton">Listar Asistencia</button>
-                        </div>
-                    </div>
-                </div>
+                    )
+                <input id="FechaActual" type="text" value="@today" style="visibility:hidden" />
+
             </div>
-
-            <h3 class="text-themecolor"></h3>
-
-            @* Grid *@
-
-            <br />
-
-            @(Html.Kendo().Grid<ERPMVC.DTO.ControlAsistenciasDTO>
-                                                                                ()
-                                                                                .Name("gridControlAsistencia")
-                                                                                .Columns(columns =>
-                                                                                {
-                                                                                    DateTime c = DateTime.Now;
-                                                                                    DateTime hoy = DateTime.Now;
-                                                                                    if (permisos.HasClaim("RRHH.Control Asistencias.Editar Control Asistencias", "true"))
-                                                                                    {
-                                                                                        columns.Command(command =>
-                                                                                        {
-                                                                                            command.Edit().Text(" ").IconClass("fa fa-edit").UpdateText(" ").CancelText(" ");
-                                                                                        }).Width(150).Title("Acciones").Locked(true).Lockable(false);
-                                                                                    }
-                                                                                    columns.Bound(p => p.EmployeesId).Width(50).Locked(true).Lockable(false).Title("Id").Visible(false);
-                                                                                    columns.Bound(p => p.Empleado.NombreEmpleado).Width(250).Title("Empleado").Locked(true).Lockable(false);
-                                                                                    columns.ForeignKey(p => p.Dia1TA, (System.Collections.IEnumerable)ViewData["ElementoConfiguracion"], "Id", "Valorstring").Title("1").Width(50).HtmlAttributes(new { @style = "background:#=ColorD1#;color:black;" });
-                                                                                    columns.ForeignKey(p => p.Dia2TA, (System.Collections.IEnumerable)ViewData["ElementoConfiguracion"], "Id", "Valorstring").Title("2").Width(50).HtmlAttributes(new { @style = "background:#=ColorD2#;color:black;" });
-                                                                                    columns.ForeignKey(p => p.Dia3TA, (System.Collections.IEnumerable)ViewData["ElementoConfiguracion"], "Id", "Valorstring").Title("3").Width(50).HtmlAttributes(new { @style = "background:#=ColorD3#;color:black;" });
-                                                                                    columns.ForeignKey(p => p.Dia4TA, (System.Collections.IEnumerable)ViewData["ElementoConfiguracion"], "Id", "Valorstring").Title("4").Width(50).HtmlAttributes(new { @style = "background:#=ColorD4#;color:black;" });
-                                                                                    columns.ForeignKey(p => p.Dia5TA, (System.Collections.IEnumerable)ViewData["ElementoConfiguracion"], "Id", "Valorstring").Title("5").Width(50).HtmlAttributes(new { @style = "background:#=ColorD5#;color:black;" });
-                                                                                    columns.ForeignKey(p => p.Dia6TA, (System.Collections.IEnumerable)ViewData["ElementoConfiguracion"], "Id", "Valorstring").Title("6").Width(50).HtmlAttributes(new { @style = "background:#=ColorD6#;color:black;" });
-                                                                                    columns.ForeignKey(p => p.Dia7TA, (System.Collections.IEnumerable)ViewData["ElementoConfiguracion"], "Id", "Valorstring").Title("7").Width(50).HtmlAttributes(new { @style = "background:#=ColorD7#;color:black;" });
-                                                                                    columns.ForeignKey(p => p.Dia8TA, (System.Collections.IEnumerable)ViewData["ElementoConfiguracion"], "Id", "Valorstring").Title("8").Width(50).HtmlAttributes(new { @style = "background:#=ColorD8#;color:black;" });
-                                                                                    columns.ForeignKey(p => p.Dia9TA, (System.Collections.IEnumerable)ViewData["ElementoConfiguracion"], "Id", "Valorstring").Title("9").Width(50).HtmlAttributes(new { @style = "background:#=ColorD9#;color:black;" });
-                                                                                    columns.ForeignKey(p => p.Dia10TA, (System.Collections.IEnumerable)ViewData["ElementoConfiguracion"], "Id", "Valorstring").Title("10").Width(50).HtmlAttributes(new { @style = "background:#=ColorD10#;color:black;" });
-                                                                                    columns.ForeignKey(p => p.Dia11TA, (System.Collections.IEnumerable)ViewData["ElementoConfiguracion"], "Id", "Valorstring").Title("11").Width(50).HtmlAttributes(new { @style = "background:#=ColorD11#;color:black;" });
-                                                                                    columns.ForeignKey(p => p.Dia12TA, (System.Collections.IEnumerable)ViewData["ElementoConfiguracion"], "Id", "Valorstring").Title("12").Width(50).HtmlAttributes(new { @style = "background:#=ColorD12#;color:black;" });
-                                                                                    columns.ForeignKey(p => p.Dia13TA, (System.Collections.IEnumerable)ViewData["ElementoConfiguracion"], "Id", "Valorstring").Title("13").Width(50).HtmlAttributes(new { @style = "background:#=ColorD13#;color:black;" });
-                                                                                    columns.ForeignKey(p => p.Dia14TA, (System.Collections.IEnumerable)ViewData["ElementoConfiguracion"], "Id", "Valorstring").Title("14").Width(50).HtmlAttributes(new { @style = "background:#=ColorD14#;color:black;" });
-                                                                                    columns.ForeignKey(p => p.Dia15TA, (System.Collections.IEnumerable)ViewData["ElementoConfiguracion"], "Id", "Valorstring").Title("15").Width(50).HtmlAttributes(new { @style = "background:#=ColorD15#;color:black;" });
-                                                                                    columns.ForeignKey(p => p.Dia16TA, (System.Collections.IEnumerable)ViewData["ElementoConfiguracion"], "Id", "Valorstring").Title("16").Width(50).HtmlAttributes(new { @style = "background:#=ColorD16#;color:black;" });
-                                                                                    columns.ForeignKey(p => p.Dia17TA, (System.Collections.IEnumerable)ViewData["ElementoConfiguracion"], "Id", "Valorstring").Title("17").Width(50).HtmlAttributes(new { @style = "background:#=ColorD17#;color:black;" });
-                                                                                    columns.ForeignKey(p => p.Dia18TA, (System.Collections.IEnumerable)ViewData["ElementoConfiguracion"], "Id", "Valorstring").Title("18").Width(50).HtmlAttributes(new { @style = "background:#=ColorD18#;color:black;" });
-                                                                                    columns.ForeignKey(p => p.Dia19TA, (System.Collections.IEnumerable)ViewData["ElementoConfiguracion"], "Id", "Valorstring").Title("19").Width(50).HtmlAttributes(new { @style = "background:#=ColorD19#;color:black;" });
-                                                                                    columns.ForeignKey(p => p.Dia20TA, (System.Collections.IEnumerable)ViewData["ElementoConfiguracion"], "Id", "Valorstring").Title("20").Width(50).HtmlAttributes(new { @style = "background:#=ColorD20#;color:black;" });
-                                                                                    columns.ForeignKey(p => p.Dia21TA, (System.Collections.IEnumerable)ViewData["ElementoConfiguracion"], "Id", "Valorstring").Title("21").Width(50).HtmlAttributes(new { @style = "background:#=ColorD21#;color:black;" });
-                                                                                    columns.ForeignKey(p => p.Dia22TA, (System.Collections.IEnumerable)ViewData["ElementoConfiguracion"], "Id", "Valorstring").Title("22").Width(50).HtmlAttributes(new { @style = "background:#=ColorD22#;color:black;" });
-                                                                                    columns.ForeignKey(p => p.Dia23TA, (System.Collections.IEnumerable)ViewData["ElementoConfiguracion"], "Id", "Valorstring").Title("23").Width(50).HtmlAttributes(new { @style = "background:#=ColorD23#;color:black;" });
-                                                                                    columns.ForeignKey(p => p.Dia24TA, (System.Collections.IEnumerable)ViewData["ElementoConfiguracion"], "Id", "Valorstring").Title("24").Width(50).HtmlAttributes(new { @style = "background:#=ColorD24#;color:black;" });
-                                                                                    columns.ForeignKey(p => p.Dia25TA, (System.Collections.IEnumerable)ViewData["ElementoConfiguracion"], "Id", "Valorstring").Title("25").Width(50).HtmlAttributes(new { @style = "background:#=ColorD25#;color:black;" });
-                                                                                    columns.ForeignKey(p => p.Dia26TA, (System.Collections.IEnumerable)ViewData["ElementoConfiguracion"], "Id", "Valorstring").Title("26").Width(50).HtmlAttributes(new { @style = "background:#=ColorD26#;color:black;" });
-                                                                                    columns.ForeignKey(p => p.Dia27TA, (System.Collections.IEnumerable)ViewData["ElementoConfiguracion"], "Id", "Valorstring").Title("27").Width(50).HtmlAttributes(new { @style = "background:#=ColorD27#;color:black;" });
-                                                                                    columns.ForeignKey(p => p.Dia28TA, (System.Collections.IEnumerable)ViewData["ElementoConfiguracion"], "Id", "Valorstring").Title("28").Width(50).HtmlAttributes(new { @style = "background:#=ColorD28#;color:black;" });
-                                                                                    columns.ForeignKey(p => p.Dia29TA, (System.Collections.IEnumerable)ViewData["ElementoConfiguracion"], "Id", "Valorstring").Title("29").Width(50).HtmlAttributes(new { @style = "background:#=ColorD29#;color:black;" });
-                                                                                    columns.ForeignKey(p => p.Dia30TA, (System.Collections.IEnumerable)ViewData["ElementoConfiguracion"], "Id", "Valorstring").Title("30").Width(50).HtmlAttributes(new { @style = "background:#=ColorD30#;color:black;" });
-                                                                                    columns.ForeignKey(p => p.Dia31TA, (System.Collections.IEnumerable)ViewData["ElementoConfiguracion"], "Id", "Valorstring").Title("31").Width(50).HtmlAttributes(new { @style = "background:#=ColorD31#;color:black;" });
-
-
-
-
-
-                                                                                    //Letras dias
-                                                                                    //columns.Bound(p => p.LetraD1).Width(150).Hidden();
-                                                                                    //columns.Bound(p => p.LetraD2).Width(150).Hidden();
-                                                                                    //columns.Bound(p => p.LetraD3).Width(150).Hidden();
-                                                                                    //columns.Bound(p => p.LetraD4).Width(150).Hidden();
-                                                                                    //columns.Bound(p => p.LetraD5).Width(150).Hidden();
-                                                                                    //columns.Bound(p => p.LetraD6).Width(150).Hidden();
-                                                                                    //columns.Bound(p => p.LetraD7).Width(150).Hidden();
-                                                                                    //columns.Bound(p => p.LetraD8).Width(150).Hidden();
-                                                                                    //columns.Bound(p => p.LetraD9).Width(150).Hidden();
-                                                                                    //columns.Bound(p => p.LetraD10).Width(150).Hidden();
-                                                                                    //columns.Bound(p => p.LetraD11).Width(150).Hidden();
-                                                                                    //columns.Bound(p => p.LetraD12).Width(150).Hidden();
-                                                                                    //columns.Bound(p => p.LetraD13).Width(150).Hidden();
-                                                                                    //columns.Bound(p => p.LetraD14).Width(150).Hidden();
-                                                                                    //columns.Bound(p => p.LetraD15).Width(150).Hidden();
-                                                                                    //columns.Bound(p => p.LetraD16).Width(150).Hidden();
-                                                                                    //columns.Bound(p => p.LetraD17).Width(150).Hidden();
-                                                                                    //columns.Bound(p => p.LetraD18).Width(150).Hidden();
-                                                                                    //columns.Bound(p => p.LetraD19).Width(150).Hidden();
-                                                                                    //columns.Bound(p => p.LetraD20).Width(150).Hidden();
-                                                                                    //columns.Bound(p => p.LetraD21).Width(150).Hidden();
-                                                                                    //columns.Bound(p => p.LetraD22).Width(150).Hidden();
-                                                                                    //columns.Bound(p => p.LetraD23).Width(150).Hidden();
-                                                                                    //columns.Bound(p => p.LetraD24).Width(150).Hidden();
-                                                                                    //columns.Bound(p => p.LetraD25).Width(150).Hidden();
-                                                                                    //columns.Bound(p => p.LetraD26).Width(150).Hidden();
-                                                                                    //columns.Bound(p => p.LetraD27).Width(150).Hidden();
-                                                                                    //columns.Bound(p => p.LetraD28).Width(150).Hidden();
-                                                                                    //columns.Bound(p => p.LetraD29).Width(150).Hidden();
-                                                                                    //columns.Bound(p => p.LetraD30).Width(150).Hidden();
-                                                                                    //columns.Bound(p => p.LetraD31).Width(150).Hidden();
-
-                                                                                    //Columnas para Color
-                                                                                    columns.Bound(p => p.ColorD1).Width(150).Hidden();
-                                                                                    columns.Bound(p => p.ColorD2).Width(150).Hidden();
-                                                                                    columns.Bound(p => p.ColorD3).Width(150).Hidden();
-                                                                                    columns.Bound(p => p.ColorD4).Width(150).Hidden();
-                                                                                    columns.Bound(p => p.ColorD5).Width(150).Hidden();
-                                                                                    columns.Bound(p => p.ColorD6).Width(150).Hidden();
-                                                                                    columns.Bound(p => p.ColorD7).Width(150).Hidden();
-                                                                                    columns.Bound(p => p.ColorD8).Width(150).Hidden();
-                                                                                    columns.Bound(p => p.ColorD9).Width(150).Hidden();
-                                                                                    columns.Bound(p => p.ColorD10).Width(150).Hidden();
-                                                                                    columns.Bound(p => p.ColorD11).Width(150).Hidden();
-                                                                                    columns.Bound(p => p.ColorD12).Width(150).Hidden();
-                                                                                    columns.Bound(p => p.ColorD13).Width(150).Hidden();
-                                                                                    columns.Bound(p => p.ColorD14).Width(150).Hidden();
-                                                                                    columns.Bound(p => p.ColorD15).Width(150).Hidden();
-                                                                                    columns.Bound(p => p.ColorD16).Width(150).Hidden();
-                                                                                    columns.Bound(p => p.ColorD17).Width(150).Hidden();
-                                                                                    columns.Bound(p => p.ColorD18).Width(150).Hidden();
-                                                                                    columns.Bound(p => p.ColorD19).Width(150).Hidden();
-                                                                                    columns.Bound(p => p.ColorD20).Width(150).Hidden();
-                                                                                    columns.Bound(p => p.ColorD21).Width(150).Hidden();
-                                                                                    columns.Bound(p => p.ColorD22).Width(150).Hidden();
-                                                                                    columns.Bound(p => p.ColorD23).Width(150).Hidden();
-                                                                                    columns.Bound(p => p.ColorD24).Width(150).Hidden();
-                                                                                    columns.Bound(p => p.ColorD25).Width(150).Hidden();
-                                                                                    columns.Bound(p => p.ColorD26).Width(150).Hidden();
-                                                                                    columns.Bound(p => p.ColorD27).Width(150).Hidden();
-                                                                                    columns.Bound(p => p.ColorD28).Width(150).Hidden();
-                                                                                    columns.Bound(p => p.ColorD29).Width(150).Hidden();
-                                                                                    columns.Bound(p => p.ColorD20).Width(150).Hidden();
-                                                                                    columns.Bound(p => p.ColorD31).Width(150).Hidden();
-
-
-                                                                                    //columns.Bound(p => p.Dia1).Width(200).Visible(false);
-                                                                                    //columns.Bound(p => p.Dia2).Width(200).Visible(false);
-                                                                                    //columns.Bound(p => p.Dia3).Width(200).Visible(false);
-                                                                                    //columns.Bound(p => p.Dia4).Width(200).Visible(false);
-                                                                                    //columns.Bound(p => p.Dia5).Width(200).Visible(false);
-                                                                                    //columns.Bound(p => p.Dia6).Width(200).Visible(false);
-                                                                                    //columns.Bound(p => p.Dia7).Width(200).Visible(false);
-                                                                                    //columns.Bound(p => p.Dia8).Width(200).Visible(false);
-                                                                                    //columns.Bound(p => p.Dia9).Width(200).Visible(false);
-                                                                                    //columns.Bound(p => p.Dia11).Width(50).Visible(false);
-                                                                                    //columns.Bound(p => p.Dia12).Width(50).Visible(false);
-                                                                                    //columns.Bound(p => p.Dia10).Width(50).Visible(false);
-                                                                                    //columns.Bound(p => p.Dia13).Width(50).Visible(false);
-                                                                                    //columns.Bound(p => p.Dia14).Width(50).Visible(false);
-                                                                                    //columns.Bound(p => p.Dia15).Width(50).Visible(false);
-                                                                                    //columns.Bound(p => p.Dia16).Width(50).Visible(false);
-                                                                                    //columns.Bound(p => p.Dia17).Width(50).Visible(false);
-                                                                                    //columns.Bound(p => p.Dia18).Width(50).Visible(false);
-                                                                                    //columns.Bound(p => p.Dia19).Width(50).Visible(false);
-                                                                                    //columns.Bound(p => p.Dia20).Width(50).Visible(false);
-                                                                                    //columns.Bound(p => p.Dia21).Width(50).Visible(false);
-                                                                                    //columns.Bound(p => p.Dia22).Width(50).Visible(false);
-                                                                                    //columns.Bound(p => p.Dia23).Width(50).Visible(false);
-                                                                                    //columns.Bound(p => p.Dia24).Width(50).Visible(false);
-                                                                                    //columns.Bound(p => p.Dia25).Width(50).Visible(false);
-                                                                                    //columns.Bound(p => p.Dia26).Width(50).Visible(false);
-                                                                                    //columns.Bound(p => p.Dia27).Width(50).Visible(false);
-                                                                                    //columns.Bound(p => p.Dia28).Width(50).Visible(false);
-                                                                                    //columns.Bound(p => p.Dia29).Width(50).Visible(false);
-                                                                                    //columns.Bound(p => p.Dia30).Width(50).Visible(false);
-                                                                                    //columns.Bound(p => p.Dia31).Width(50).Visible(false);
-
-                                                                                    columns.Bound(p => p.LlegadasTarde).Width(150).Title("Llegadas Tarde");
-                                                                                    columns.Bound(p => p.DiasLaborales).Width(150).Title("Dias Laborales");
-                                                                                    columns.Bound(p => p.PorcentajeLlegadasTarde).Width(150).Title("%Llgadas Tarde");
-
-
-
-
-                                                                                })
-
-
-
-                                                                                .Events(events => events.Cancel("Cancel").DataBound("DataBound"))
-                                                                                .ToolBar(tools =>
-                                                                                {
-                                                                                        tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
-                                                                                        tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
-                                                                                 
-                                                                                })
-
-                                                                                .Editable(e => e.Mode(GridEditMode.InLine).ConfirmDelete("¿Esta seguro que desea eliminar este registro?"))
-                                                                                .Sortable()
-                                                                                .Pageable()
-                                                                                //.Selectable(selectable => selectable.Type(GridSelectionType.Cell))
-                                                                                .Scrollable()
-                                                                                .Pdf(pdf => pdf.FileName("EstadosReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-                                                                                + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
-                                                                                .ProxyURL(Url.Action("Export", "Home")).AllPages())
-                                                                                    .Excel(excel => excel.FileName("EstadosReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-                                                                                + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
-                                                                                .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
-                                                                                .DataSource(dataSource =>
-                                                                                    dataSource
-                                                                                    .WebApi()
-
-                                                                                    .ServerOperation(true)
-                                                                                    .Model(model =>
-                                                                                    {
-                                                                                        model.Id(p => p.EmployeesId);
-                                                                                        model.Field(p => p.Empleado.NombreEmpleado).Editable(false);
-                                                                                        model.Field(p => p.Dia1TA).DefaultValue(1).Editable(true);
-                                                                                        model.Field(p => p.Dia2TA).DefaultValue(1).Editable(true);
-                                                                                        model.Field(p => p.Dia3TA).DefaultValue(1).Editable(true);
-                                                                                        model.Field(p => p.Dia4TA).DefaultValue(1).Editable(true);
-                                                                                        model.Field(p => p.Dia5TA).DefaultValue(1).Editable(true);
-                                                                                        model.Field(p => p.Dia6TA).DefaultValue(1).Editable(true);
-                                                                                        model.Field(p => p.Dia7TA).DefaultValue(1).Editable(true);
-                                                                                        model.Field(p => p.Dia8TA).DefaultValue(1).Editable(true);
-                                                                                        model.Field(p => p.Dia9TA).DefaultValue(1).Editable(true);
-                                                                                        model.Field(p => p.Dia10TA).DefaultValue(1).Editable(false);
-                                                                                        model.Field(p => p.Dia11TA).DefaultValue(1).Editable(false);
-                                                                                        model.Field(p => p.Dia12TA).DefaultValue(1).Editable(false);
-                                                                                        model.Field(p => p.Dia13TA).DefaultValue(1).Editable(false);
-                                                                                        model.Field(p => p.Dia14TA).DefaultValue(1).Editable(false);
-                                                                                        model.Field(p => p.Dia15TA).DefaultValue(1).Editable(false);
-                                                                                        model.Field(p => p.Dia16TA).DefaultValue(1).Editable(false);
-                                                                                        model.Field(p => p.Dia17TA).DefaultValue(1).Editable(false);
-                                                                                        model.Field(p => p.Dia18TA).DefaultValue(1).Editable(false);
-                                                                                        model.Field(p => p.Dia19TA).DefaultValue(1).Editable(false);
-                                                                                        model.Field(p => p.Dia20TA).DefaultValue(1).Editable(false);
-                                                                                        model.Field(p => p.Dia21TA).DefaultValue(1).Editable(false);
-                                                                                        model.Field(p => p.Dia22TA).DefaultValue(1).Editable(false);
-                                                                                        model.Field(p => p.Dia23TA).DefaultValue(1).Editable(false);
-                                                                                        model.Field(p => p.Dia24TA).DefaultValue(1).Editable(false);
-                                                                                        model.Field(p => p.Dia25TA).DefaultValue(1).Editable(false);
-                                                                                        model.Field(p => p.Dia26TA).DefaultValue(1).Editable(false);
-                                                                                        model.Field(p => p.Dia27TA).DefaultValue(1).Editable(false);
-                                                                                        model.Field(p => p.Dia28TA).DefaultValue(1).Editable(false);
-                                                                                        model.Field(p => p.Dia29TA).DefaultValue(1).Editable(false);
-                                                                                        model.Field(p => p.Dia30TA).DefaultValue(1).Editable(false);
-                                                                                        model.Field(p => p.Dia31TA).DefaultValue(1).Editable(false);
-
-
-                                                                                        // dia letras
-                                                                                        //model.Field(p => p.LetraD1);
-                                                                                        //model.Field(p => p.LetraD2);
-                                                                                        //model.Field(p => p.LetraD3);
-                                                                                        //model.Field(p => p.LetraD4);
-                                                                                        //model.Field(p => p.LetraD5);
-                                                                                        //model.Field(p => p.LetraD6);
-                                                                                        //model.Field(p => p.LetraD7);
-                                                                                        //model.Field(p => p.LetraD8);
-                                                                                        //model.Field(p => p.LetraD9);
-                                                                                        //model.Field(p => p.LetraD10);
-                                                                                        //model.Field(p => p.LetraD11);
-                                                                                        //model.Field(p => p.LetraD12);
-                                                                                        //model.Field(p => p.LetraD13);
-                                                                                        //model.Field(p => p.LetraD14);
-                                                                                        //model.Field(p => p.LetraD15);
-                                                                                        //model.Field(p => p.LetraD16);
-                                                                                        //model.Field(p => p.LetraD17);
-                                                                                        //model.Field(p => p.LetraD18);
-                                                                                        //model.Field(p => p.LetraD19);
-                                                                                        //model.Field(p => p.LetraD20);
-                                                                                        //model.Field(p => p.LetraD21);
-                                                                                        //model.Field(p => p.LetraD22);
-                                                                                        //model.Field(p => p.LetraD23);
-                                                                                        //model.Field(p => p.LetraD24);
-                                                                                        //model.Field(p => p.LetraD25);
-                                                                                        //model.Field(p => p.LetraD26);
-                                                                                        //model.Field(p => p.LetraD27);
-                                                                                        //model.Field(p => p.LetraD28);
-                                                                                        //model.Field(p => p.LetraD29);
-                                                                                        //model.Field(p => p.LetraD30);
-                                                                                        //model.Field(p => p.LetraD31);
-
-                                                                                        // Color
-                                                                                        model.Field(p => p.ColorD1);
-                                                                                        model.Field(p => p.ColorD2);
-                                                                                        model.Field(p => p.ColorD3);
-                                                                                        model.Field(p => p.ColorD4);
-                                                                                        model.Field(p => p.ColorD5);
-                                                                                        model.Field(p => p.ColorD6);
-                                                                                        model.Field(p => p.ColorD7);
-                                                                                        model.Field(p => p.ColorD8);
-                                                                                        model.Field(p => p.ColorD9);
-                                                                                        model.Field(p => p.ColorD10);
-                                                                                        model.Field(p => p.ColorD11);
-                                                                                        model.Field(p => p.ColorD12);
-                                                                                        model.Field(p => p.ColorD13);
-                                                                                        model.Field(p => p.ColorD14);
-                                                                                        model.Field(p => p.ColorD15);
-                                                                                        model.Field(p => p.ColorD16);
-                                                                                        model.Field(p => p.ColorD17);
-                                                                                        model.Field(p => p.ColorD18);
-                                                                                        model.Field(p => p.ColorD19);
-                                                                                        model.Field(p => p.ColorD20);
-                                                                                        model.Field(p => p.ColorD21);
-                                                                                        model.Field(p => p.ColorD22);
-                                                                                        model.Field(p => p.ColorD23);
-                                                                                        model.Field(p => p.ColorD24);
-                                                                                        model.Field(p => p.ColorD25);
-                                                                                        model.Field(p => p.ColorD26);
-                                                                                        model.Field(p => p.ColorD27);
-                                                                                        model.Field(p => p.ColorD28);
-                                                                                        model.Field(p => p.ColorD29);
-                                                                                        model.Field(p => p.ColorD30);
-                                                                                        model.Field(p => p.ColorD31);
-
-
-
-                                                                                        //model.Field(p => p.Dia1);
-                                                                                        //model.Field(p => p.Dia2);
-                                                                                        //model.Field(p => p.Dia3);
-                                                                                        //model.Field(p => p.Dia4);
-                                                                                        //model.Field(p => p.Dia5);
-                                                                                        //model.Field(p => p.Dia6);
-                                                                                        //model.Field(p => p.Dia7);
-                                                                                        //model.Field(p => p.Dia8);
-                                                                                        //model.Field(p => p.Dia9);
-                                                                                        //model.Field(p => p.Dia10);
-                                                                                        //model.Field(p => p.Dia11);
-                                                                                        //model.Field(p => p.Dia12);
-                                                                                        //model.Field(p => p.Dia13);
-                                                                                        //model.Field(p => p.Dia14);
-                                                                                        //model.Field(p => p.Dia15);
-                                                                                        //model.Field(p => p.Dia16);
-                                                                                        //model.Field(p => p.Dia17);
-                                                                                        //model.Field(p => p.Dia18);
-                                                                                        //model.Field(p => p.Dia19);
-                                                                                        //model.Field(p => p.Dia20);
-                                                                                        //model.Field(p => p.Dia21);
-                                                                                        //model.Field(p => p.Dia22);
-                                                                                        //model.Field(p => p.Dia23);
-                                                                                        //model.Field(p => p.Dia24);
-                                                                                        //model.Field(p => p.Dia25);
-                                                                                        //model.Field(p => p.Dia26);
-                                                                                        //model.Field(p => p.Dia27);
-                                                                                        //model.Field(p => p.Dia28);
-                                                                                        //model.Field(p => p.Dia29);
-                                                                                        //model.Field(p => p.Dia30);
-                                                                                        //model.Field(p => p.Dia31);
-                                                                                        model.Field(p => p.LlegadasTarde).Editable(false);
-                                                                                        model.Field(p => p.DiasLaborales).Editable(false);
-                                                                                        model.Field(p => p.PorcentajeLlegadasTarde).Editable(false);
-
-                                                                                    })
-                                                                                    .Events(events => events.Error("error_handler"))
-                                                                                    //.Read(read => read.Action("GetGetControlAsistencias", "ControlAsistencias"))
-                                                                                    .Read(read => read.Action("GetGetControlAsistencias", "ControlAsistencias").Data("ParametroDatepikere"))
-                                                                                    .Update(update => update.Action("PostControlAsistencias", "ControlAsistencias", new { Id = "{0}" }).Type(HttpVerbs.Post))
-
-
-                                                                                )
-                                                                                .Events(e =>
-                                                                                {
-                                                                                    e.Save("onsave");
-
-                                                                                })
-            )
-
-
-
-            <br />
-
-            <div class="col-xs-12 col-sm-6">
-                <div class="wrapper wrapper-content animated fadeInRight">
-                    <div class="row">
-                        <div class="col-lg-12">
-                            <div class="ibox float-e-margins">
-                                <div class="ibox-title">
-                                    @*<h5>Observaciones </h5>*@
-                                </div>
-                                <div class="ibox-content">
-                                    <div class="table-responsive">
-                                        <table class="table-bordered" style="border-color:black">
-                                            <thead>
+        </div>
+        <div class="col-md-3">
+            <div class="form-group">
+                <label style="width:100%"></label>
+                <button type="button" id="GetAsistencias" name="GetAsistencias" onclick="AsistenciaPorDatepker();" class="form-control btn-miboton">Listar Asistencia</button>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="wrapper wrapper-content animated fadeInRight">
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="ibox float-e-margins">
+                            <div class="ibox-title">
+                                @*<h5>Observaciones </h5>*@
+                            </div>
+                            <div class="ibox-content">
+                                <div class="table-responsive">
+                                    <table class="table-bordered" style="border-color:black">
+                                        <thead>
+                                            <tr>
+                                                <td colspan="2" ; style="background-color:#007bff;color:black;border-collapse:separate;border-spacing:2px;border-color:black" align="center">
+                                                    Observaciones
+                                                </td>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach (var item in (ViewData["ElementoConfiguracion"] as IEnumerable<ERPMVC.Models.ElementoConfiguracion>))
+                                            {
                                                 <tr>
-                                                    <td colspan="2" ; style="background-color:#007bff;color:black;border-collapse:separate;border-spacing:2px;border-color:black" align="center">
-                                                        Observaciones
+                                                    <td style="background-color: @item.Formula; color:black;border:5px;" align="center">
+                                                        @Html.DisplayFor(modelItem => item.Valorstring)
+                                                    </td>
+                                                    <td style="color:black;border-collapse:separate;border-spacing:5px;border-color:black">
+                                                        @Html.DisplayFor(modelItem => item.Descripcion)
                                                     </td>
                                                 </tr>
-                                            </thead>
-                                            <tbody>
-                                                @foreach (var item in (ViewData["ElementoConfiguracion"] as IEnumerable<ERPMVC.Models.ElementoConfiguracion>))
-                                                {
-                                                    <tr>
-                                                        <td style="background-color: @item.Formula; color:black;border:5px;" align="center">
-                                                            @Html.DisplayFor(modelItem => item.Valorstring)
-                                                        </td>
-                                                        <td style="color:black;border-collapse:separate;border-spacing:5px;border-color:black">
-                                                            @Html.DisplayFor(modelItem => item.Descripcion)
-                                                        </td>
-                                                    </tr>
 
 
-                                                }
+                                            }
 
 
 
-                                            </tbody>
-                                        </table>
+                                        </tbody>
+                                    </table>
 
-                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-
-
-
         </div>
+
+
     </div>
 </div>
+
+<h3 class="text-themecolor"></h3>
+
+@* Grid *@
+
+<br />
+
+
+
+@(Html.Kendo().Grid<ERPMVC.DTO.ControlAsistenciasDTO>
+                                                                        ()
+                                                                        .Name("gridControlAsistencia")
+                                                                        .Columns(columns =>
+                                                                        {
+                                                                            DateTime c = DateTime.Now;
+                                                                            DateTime hoy = DateTime.Now;
+
+                                                                            columns.Command(command =>
+                                                                            {
+                                                                                command.Custom("Revisar").Text(" ").IconClass("fa fa-check").Click("Revisar");
+                                                                                command.Edit().Text(" ").IconClass("fa fa-edit").UpdateText(" ").CancelText(" ");
+                                                                            }).Width(100).Title("Acciones").Locked(true).Lockable(false);
+                                                                            columns.Bound(p => p.EmployeesId).Width(120).Locked(true).Lockable(false).Title("Código").Visible(true);
+                                                                            columns.Bound(p => p.Empleado.NombreEmpleado).Width(300).Title("Empleado").Locked(true).Lockable(false);
+                                                                            columns.ForeignKey(p => p.Dia1TA, (System.Collections.IEnumerable)ViewData["ElementoConfiguracion"], "Id", "Valorstring").Title("1").Width(65).HtmlAttributes(new { @style = "background:#=ColorD1#;color:black;" });
+                                                                            columns.ForeignKey(p => p.Dia2TA, (System.Collections.IEnumerable)ViewData["ElementoConfiguracion"], "Id", "Valorstring").Title("2").Width(65).HtmlAttributes(new { @style = "background:#=ColorD2#;color:black;" });
+                                                                            columns.ForeignKey(p => p.Dia3TA, (System.Collections.IEnumerable)ViewData["ElementoConfiguracion"], "Id", "Valorstring").Title("3").Width(65).HtmlAttributes(new { @style = "background:#=ColorD3#;color:black;" });
+                                                                            columns.ForeignKey(p => p.Dia4TA, (System.Collections.IEnumerable)ViewData["ElementoConfiguracion"], "Id", "Valorstring").Title("4").Width(65).HtmlAttributes(new { @style = "background:#=ColorD4#;color:black;" });
+                                                                            columns.ForeignKey(p => p.Dia5TA, (System.Collections.IEnumerable)ViewData["ElementoConfiguracion"], "Id", "Valorstring").Title("5").Width(65).HtmlAttributes(new { @style = "background:#=ColorD5#;color:black;" });
+                                                                            columns.ForeignKey(p => p.Dia6TA, (System.Collections.IEnumerable)ViewData["ElementoConfiguracion"], "Id", "Valorstring").Title("6").Width(65).HtmlAttributes(new { @style = "background:#=ColorD6#;color:black;" });
+                                                                            columns.ForeignKey(p => p.Dia7TA, (System.Collections.IEnumerable)ViewData["ElementoConfiguracion"], "Id", "Valorstring").Title("7").Width(65).HtmlAttributes(new { @style = "background:#=ColorD7#;color:black;" });
+                                                                            columns.ForeignKey(p => p.Dia8TA, (System.Collections.IEnumerable)ViewData["ElementoConfiguracion"], "Id", "Valorstring").Title("8").Width(65).HtmlAttributes(new { @style = "background:#=ColorD8#;color:black;" });
+                                                                            columns.ForeignKey(p => p.Dia9TA, (System.Collections.IEnumerable)ViewData["ElementoConfiguracion"], "Id", "Valorstring").Title("9").Width(65).HtmlAttributes(new { @style = "background:#=ColorD9#;color:black;" });
+                                                                            columns.ForeignKey(p => p.Dia10TA, (System.Collections.IEnumerable)ViewData["ElementoConfiguracion"], "Id", "Valorstring").Title("10").Width(65).HtmlAttributes(new { @style = "background:#=ColorD10#;color:black;" });
+                                                                            columns.ForeignKey(p => p.Dia11TA, (System.Collections.IEnumerable)ViewData["ElementoConfiguracion"], "Id", "Valorstring").Title("11").Width(65).HtmlAttributes(new { @style = "background:#=ColorD11#;color:black;" });
+                                                                            columns.ForeignKey(p => p.Dia12TA, (System.Collections.IEnumerable)ViewData["ElementoConfiguracion"], "Id", "Valorstring").Title("12").Width(65).HtmlAttributes(new { @style = "background:#=ColorD12#;color:black;" });
+                                                                            columns.ForeignKey(p => p.Dia13TA, (System.Collections.IEnumerable)ViewData["ElementoConfiguracion"], "Id", "Valorstring").Title("13").Width(65).HtmlAttributes(new { @style = "background:#=ColorD13#;color:black;" });
+                                                                            columns.ForeignKey(p => p.Dia14TA, (System.Collections.IEnumerable)ViewData["ElementoConfiguracion"], "Id", "Valorstring").Title("14").Width(65).HtmlAttributes(new { @style = "background:#=ColorD14#;color:black;" });
+                                                                            columns.ForeignKey(p => p.Dia15TA, (System.Collections.IEnumerable)ViewData["ElementoConfiguracion"], "Id", "Valorstring").Title("15").Width(65).HtmlAttributes(new { @style = "background:#=ColorD15#;color:black;" });
+                                                                            columns.ForeignKey(p => p.Dia16TA, (System.Collections.IEnumerable)ViewData["ElementoConfiguracion"], "Id", "Valorstring").Title("16").Width(65).HtmlAttributes(new { @style = "background:#=ColorD16#;color:black;" });
+                                                                            columns.ForeignKey(p => p.Dia17TA, (System.Collections.IEnumerable)ViewData["ElementoConfiguracion"], "Id", "Valorstring").Title("17").Width(65).HtmlAttributes(new { @style = "background:#=ColorD17#;color:black;" });
+                                                                            columns.ForeignKey(p => p.Dia18TA, (System.Collections.IEnumerable)ViewData["ElementoConfiguracion"], "Id", "Valorstring").Title("18").Width(65).HtmlAttributes(new { @style = "background:#=ColorD18#;color:black;" });
+                                                                            columns.ForeignKey(p => p.Dia19TA, (System.Collections.IEnumerable)ViewData["ElementoConfiguracion"], "Id", "Valorstring").Title("19").Width(65).HtmlAttributes(new { @style = "background:#=ColorD19#;color:black;" });
+                                                                            columns.ForeignKey(p => p.Dia20TA, (System.Collections.IEnumerable)ViewData["ElementoConfiguracion"], "Id", "Valorstring").Title("20").Width(65).HtmlAttributes(new { @style = "background:#=ColorD20#;color:black;" });
+                                                                            columns.ForeignKey(p => p.Dia21TA, (System.Collections.IEnumerable)ViewData["ElementoConfiguracion"], "Id", "Valorstring").Title("21").Width(65).HtmlAttributes(new { @style = "background:#=ColorD21#;color:black;" });
+                                                                            columns.ForeignKey(p => p.Dia22TA, (System.Collections.IEnumerable)ViewData["ElementoConfiguracion"], "Id", "Valorstring").Title("22").Width(65).HtmlAttributes(new { @style = "background:#=ColorD22#;color:black;" });
+                                                                            columns.ForeignKey(p => p.Dia23TA, (System.Collections.IEnumerable)ViewData["ElementoConfiguracion"], "Id", "Valorstring").Title("23").Width(65).HtmlAttributes(new { @style = "background:#=ColorD23#;color:black;" });
+                                                                            columns.ForeignKey(p => p.Dia24TA, (System.Collections.IEnumerable)ViewData["ElementoConfiguracion"], "Id", "Valorstring").Title("24").Width(65).HtmlAttributes(new { @style = "background:#=ColorD24#;color:black;" });
+                                                                            columns.ForeignKey(p => p.Dia25TA, (System.Collections.IEnumerable)ViewData["ElementoConfiguracion"], "Id", "Valorstring").Title("25").Width(65).HtmlAttributes(new { @style = "background:#=ColorD25#;color:black;" });
+                                                                            columns.ForeignKey(p => p.Dia26TA, (System.Collections.IEnumerable)ViewData["ElementoConfiguracion"], "Id", "Valorstring").Title("26").Width(65).HtmlAttributes(new { @style = "background:#=ColorD26#;color:black;" });
+                                                                            columns.ForeignKey(p => p.Dia27TA, (System.Collections.IEnumerable)ViewData["ElementoConfiguracion"], "Id", "Valorstring").Title("27").Width(65).HtmlAttributes(new { @style = "background:#=ColorD27#;color:black;" });
+                                                                            columns.ForeignKey(p => p.Dia28TA, (System.Collections.IEnumerable)ViewData["ElementoConfiguracion"], "Id", "Valorstring").Title("28").Width(65).HtmlAttributes(new { @style = "background:#=ColorD28#;color:black;" });
+                                                                            columns.ForeignKey(p => p.Dia29TA, (System.Collections.IEnumerable)ViewData["ElementoConfiguracion"], "Id", "Valorstring").Title("29").Width(65).HtmlAttributes(new { @style = "background:#=ColorD29#;color:black;" });
+                                                                            columns.ForeignKey(p => p.Dia30TA, (System.Collections.IEnumerable)ViewData["ElementoConfiguracion"], "Id", "Valorstring").Title("30").Width(65).HtmlAttributes(new { @style = "background:#=ColorD30#;color:black;" });
+                                                                            columns.ForeignKey(p => p.Dia31TA, (System.Collections.IEnumerable)ViewData["ElementoConfiguracion"], "Id", "Valorstring").Title("31").Width(65).HtmlAttributes(new { @style = "background:#=ColorD31#;color:black;" });
+
+
+
+
+                                                                            //Columnas para Color
+                                                                            columns.Bound(p => p.ColorD1).Width(150).Hidden();
+                                                                            columns.Bound(p => p.ColorD2).Width(150).Hidden();
+                                                                            columns.Bound(p => p.ColorD3).Width(150).Hidden();
+                                                                            columns.Bound(p => p.ColorD4).Width(150).Hidden();
+                                                                            columns.Bound(p => p.ColorD5).Width(150).Hidden();
+                                                                            columns.Bound(p => p.ColorD6).Width(150).Hidden();
+                                                                            columns.Bound(p => p.ColorD7).Width(150).Hidden();
+                                                                            columns.Bound(p => p.ColorD8).Width(150).Hidden();
+                                                                            columns.Bound(p => p.ColorD9).Width(150).Hidden();
+                                                                            columns.Bound(p => p.ColorD10).Width(150).Hidden();
+                                                                            columns.Bound(p => p.ColorD11).Width(150).Hidden();
+                                                                            columns.Bound(p => p.ColorD12).Width(150).Hidden();
+                                                                            columns.Bound(p => p.ColorD13).Width(150).Hidden();
+                                                                            columns.Bound(p => p.ColorD14).Width(150).Hidden();
+                                                                            columns.Bound(p => p.ColorD15).Width(150).Hidden();
+                                                                            columns.Bound(p => p.ColorD16).Width(150).Hidden();
+                                                                            columns.Bound(p => p.ColorD17).Width(150).Hidden();
+                                                                            columns.Bound(p => p.ColorD18).Width(150).Hidden();
+                                                                            columns.Bound(p => p.ColorD19).Width(150).Hidden();
+                                                                            columns.Bound(p => p.ColorD20).Width(150).Hidden();
+                                                                            columns.Bound(p => p.ColorD21).Width(150).Hidden();
+                                                                            columns.Bound(p => p.ColorD22).Width(150).Hidden();
+                                                                            columns.Bound(p => p.ColorD23).Width(150).Hidden();
+                                                                            columns.Bound(p => p.ColorD24).Width(150).Hidden();
+                                                                            columns.Bound(p => p.ColorD25).Width(150).Hidden();
+                                                                            columns.Bound(p => p.ColorD26).Width(150).Hidden();
+                                                                            columns.Bound(p => p.ColorD27).Width(150).Hidden();
+                                                                            columns.Bound(p => p.ColorD28).Width(150).Hidden();
+                                                                            columns.Bound(p => p.ColorD29).Width(150).Hidden();
+                                                                            columns.Bound(p => p.ColorD20).Width(150).Hidden();
+                                                                            columns.Bound(p => p.ColorD31).Width(150).Hidden();
+
+
+                                                                            columns.Bound(p => p.LlegadasTarde).Width(150).Title("Llegadas Tarde");
+                                                                            columns.Bound(p => p.Feriado).Width(150).Title("Feriado");
+                                                                            columns.Bound(p => p.Incapacidad).Width(150).Title("Incapacidad");
+                                                                            columns.Bound(p => p.Vacaciones).Width(150).Title("Vacaciones");
+                                                                            columns.Bound(p => p.Permisos).Width(150).Title("Permisos");
+                                                                            columns.Bound(p => p.TeleTrabajo).Width(150).Title("Teletrabajo");
+                                                                            columns.Bound(p => p.DiasLaborales).Width(150).Title("Dias Laborados");
+                                                                            columns.Bound(p => p.Inasistencia).Width(150).Title("Inasistencia");
+                                                                            columns.Bound(p => p.PorcentajeLlegadasTarde).Width(150).Title("%Llegadas Tarde");
+
+
+
+
+                                                                        })
+
+
+
+                                                                        .Events(events => events.Cancel("Cancel").DataBound("DataBound"))
+                                                                        .ToolBar(tools =>
+                                                                        {
+                                                                            tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
+                                                                            tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
+
+                                                                        })
+
+                                                                        .Editable(e => e.Mode(GridEditMode.InLine).ConfirmDelete("¿Esta seguro que desea eliminar este registro?"))
+                                                                        .Sortable()
+                                                                        
+                                                                        //.Selectable(selectable => selectable.Type(GridSelectionType.Cell))
+                                                                        .Scrollable(s => s.Height("auto"))
+                                                                        .Pdf(pdf => pdf.FileName("ControlAsistencias" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                                                        + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+                                                                        .ProxyURL(Url.Action("Export", "Home")).AllPages())
+                                                                            .Excel(excel => excel.FileName("ControlAsistencias" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                                                        + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+                                                                        .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+                                                                        .DataSource(dataSource =>
+                                                                            dataSource
+                                                                            .WebApi()
+
+                                                                            .ServerOperation(true)
+                                                                            .Model(model =>
+                                                                            {
+                                                                                model.Id(p => p.EmployeesId);
+                                                                                model.Field(p => p.EmployeesId).Editable(false);
+                                                                                model.Field(p => p.Empleado.NombreEmpleado).Editable(false);
+                                                                                model.Field(p => p.Dia1TA).DefaultValue(1).Editable(true);
+                                                                                model.Field(p => p.Dia2TA).DefaultValue(1).Editable(true);
+                                                                                model.Field(p => p.Dia3TA).DefaultValue(1).Editable(true);
+                                                                                model.Field(p => p.Dia4TA).DefaultValue(1).Editable(true);
+                                                                                model.Field(p => p.Dia5TA).DefaultValue(1).Editable(true);
+                                                                                model.Field(p => p.Dia6TA).DefaultValue(1).Editable(true);
+                                                                                model.Field(p => p.Dia7TA).DefaultValue(1).Editable(true);
+                                                                                model.Field(p => p.Dia8TA).DefaultValue(1).Editable(true);
+                                                                                model.Field(p => p.Dia9TA).DefaultValue(1).Editable(true);
+                                                                                model.Field(p => p.Dia10TA).DefaultValue(1).Editable(false);
+                                                                                model.Field(p => p.Dia11TA).DefaultValue(1).Editable(false);
+                                                                                model.Field(p => p.Dia12TA).DefaultValue(1).Editable(false);
+                                                                                model.Field(p => p.Dia13TA).DefaultValue(1).Editable(false);
+                                                                                model.Field(p => p.Dia14TA).DefaultValue(1).Editable(false);
+                                                                                model.Field(p => p.Dia15TA).DefaultValue(1).Editable(false);
+                                                                                model.Field(p => p.Dia16TA).DefaultValue(1).Editable(false);
+                                                                                model.Field(p => p.Dia17TA).DefaultValue(1).Editable(false);
+                                                                                model.Field(p => p.Dia18TA).DefaultValue(1).Editable(false);
+                                                                                model.Field(p => p.Dia19TA).DefaultValue(1).Editable(false);
+                                                                                model.Field(p => p.Dia20TA).DefaultValue(1).Editable(false);
+                                                                                model.Field(p => p.Dia21TA).DefaultValue(1).Editable(false);
+                                                                                model.Field(p => p.Dia22TA).DefaultValue(1).Editable(false);
+                                                                                model.Field(p => p.Dia23TA).DefaultValue(1).Editable(false);
+                                                                                model.Field(p => p.Dia24TA).DefaultValue(1).Editable(false);
+                                                                                model.Field(p => p.Dia25TA).DefaultValue(1).Editable(false);
+                                                                                model.Field(p => p.Dia26TA).DefaultValue(1).Editable(false);
+                                                                                model.Field(p => p.Dia27TA).DefaultValue(1).Editable(false);
+                                                                                model.Field(p => p.Dia28TA).DefaultValue(1).Editable(false);
+                                                                                model.Field(p => p.Dia29TA).DefaultValue(1).Editable(false);
+                                                                                model.Field(p => p.Dia30TA).DefaultValue(1).Editable(false);
+                                                                                model.Field(p => p.Dia31TA).DefaultValue(1).Editable(false);
+
+
+                                                                                // Color
+                                                                                model.Field(p => p.ColorD1);
+                                                                                model.Field(p => p.ColorD2);
+                                                                                model.Field(p => p.ColorD3);
+                                                                                model.Field(p => p.ColorD4);
+                                                                                model.Field(p => p.ColorD5);
+                                                                                model.Field(p => p.ColorD6);
+                                                                                model.Field(p => p.ColorD7);
+                                                                                model.Field(p => p.ColorD8);
+                                                                                model.Field(p => p.ColorD9);
+                                                                                model.Field(p => p.ColorD10);
+                                                                                model.Field(p => p.ColorD11);
+                                                                                model.Field(p => p.ColorD12);
+                                                                                model.Field(p => p.ColorD13);
+                                                                                model.Field(p => p.ColorD14);
+                                                                                model.Field(p => p.ColorD15);
+                                                                                model.Field(p => p.ColorD16);
+                                                                                model.Field(p => p.ColorD17);
+                                                                                model.Field(p => p.ColorD18);
+                                                                                model.Field(p => p.ColorD19);
+                                                                                model.Field(p => p.ColorD20);
+                                                                                model.Field(p => p.ColorD21);
+                                                                                model.Field(p => p.ColorD22);
+                                                                                model.Field(p => p.ColorD23);
+                                                                                model.Field(p => p.ColorD24);
+                                                                                model.Field(p => p.ColorD25);
+                                                                                model.Field(p => p.ColorD26);
+                                                                                model.Field(p => p.ColorD27);
+                                                                                model.Field(p => p.ColorD28);
+                                                                                model.Field(p => p.ColorD29);
+                                                                                model.Field(p => p.ColorD30);
+                                                                                model.Field(p => p.ColorD31);
+
+
+                                                                                model.Field(p => p.LlegadasTarde).Editable(false);
+                                                                                model.Field(p => p.Feriado).Editable(false);
+                                                                                model.Field(p => p.Incapacidad).Editable(false);
+                                                                                model.Field(p => p.Vacaciones).Editable(false);
+                                                                                model.Field(p => p.Permisos).Editable(false);
+                                                                                model.Field(p => p.TeleTrabajo).Editable(false);
+                                                                                model.Field(p => p.DiasLaborales).Editable(false);
+                                                                                model.Field(p => p.Inasistencia).Editable(false);
+                                                                                model.Field(p => p.PorcentajeLlegadasTarde).Editable(false);
+
+                                                                            })
+                                                                            .Events(events => events.Error("error_handler"))
+                                                                            //.Read(read => read.Action("GetGetControlAsistencias", "ControlAsistencias"))
+                                                                            .Read(read => read.Action("GetGetControlAsistencias", "ControlAsistencias").Data("ParametroDatepikere"))
+                                                                            .Update(update => update.Action("PostControlAsistencias", "ControlAsistencias", new { Id = "{0}" }).Type(HttpVerbs.Post))
+
+
+                                                                        )
+                                                                        .Events(e =>
+                                                                        {
+                                                                           // e.Save("onsave");
+                                                                            e.SaveChanges("onsave");
+                                                   
+                                                                        })
+    )
+
+
+
+<br />
+
+
+
 
 
 
@@ -771,14 +660,54 @@
         this.refresh();
     }
 
-    function DataBound() {
+
+    function DataBound(e) {
         enables()
         AsistenciaTitle()
         InicialesDias()
-
+        $.each(this.dataSource.data(), function () {
+            if (Number(this.Revisado) == 1) {
+                $('[data-uid=' + this.uid + ']').find('.k-grid-Revisar').hide();
+                $('[data-uid=' + this.uid + ']').find('.k-grid-edit').hide();
+            }
+        })
     }
 
 
+    function Revisar(e) {
+        if (!confirm('Esta seguro de marcar como revisado este Control de Asistencia?')) return;
+        var registro = this.dataItem($(e.currentTarget).closest('tr'));
+        var parametros = parseFloat(registro.id);
+        var parametros = {
+            IdEmpleado: registro.id,
+            Fecha : registro.Fecha,
+            Anio: registro.Fecha.getFullYear(),
+            Mes: registro.Fecha.getMonth(),
+        };
+        debugger;
+        $.ajax({
+            url: '@Url.Action("Revisar", "ControlAsistencias")',
+            method: 'POST',
+            datatype: "json",
+            async: false,
+            data: parametros,
+            success: function (result) {
+                $.toast({
+                    heading: 'Satisfactorio',
+                    text: 'El Control de Asistencia se ha revisado correctamente.',
+                    position: 'top-right',
+                    loaderBg: '#ff6849',
+                    icon: 'success',
+                    hideAfter: 7000,
+                    stack: 6
+                });
+                onsave();
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                alert(textStatus + ": " + XMLHttpRequest.responseText);
+            }
+        });
+    }
 
 
 
@@ -799,9 +728,4 @@
     //setRowButtonTooltip(".k-grid-delete", "Eliminar");
     setRowButtonTooltip(".k-grid-update", "Guardar Registro");
     setRowButtonTooltip(".k-grid-cancel", "Cancelar");
-
-
-
-
-
 </script>

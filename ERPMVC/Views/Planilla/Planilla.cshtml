@@ -1,0 +1,487 @@
+﻿@using System.Security.Claims
+
+@{
+    ViewBag.Title = "Planillas";
+    ClaimsPrincipal permisos = (ClaimsPrincipal)ViewData["permisos"];
+    bool permisoagregar = User.HasClaim("Cuentas por Cobrar.Planilla.Generar", "true");
+}
+<script>
+
+
+    function AddPlanilla() {
+       
+         var dataObject = {
+             Id: 0,
+            editar : 1
+        };
+
+        $.ajax({
+            url: '@Url.Action("pvwPlanilla","Planilla")',
+            method: 'POST',
+            datatype: "json",
+            contentType: 'application/json',
+            async: false,
+            data: JSON.stringify(dataObject),
+            success: function (result) {
+              //  console.log(result);
+                $("#divPlanilla").html('');
+                $("#divPlanilla").html(result);
+
+                RefreshPlanillaDetail();
+                 $("#btnSavePlanilla").show();
+                 $('#PlanillaModal').modal('show');
+            },
+             error: function (XMLHttpRequest, textStatus, errorThrown) {
+                 //alert(textStatus + ": " + XMLHttpRequest.responseText);
+                  MostrarMensaje(textStatus + ": " + XMLHttpRequest.responseText, "Error", "Error", 6000);
+              }
+        });
+    }
+
+    function EditPlanilla(e) {
+        e.preventDefault();
+
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        var dataObject = {
+            Id: dataItem.Id,
+            editar : 0
+        };
+
+        $.ajax({
+            url: '@Url.Action("pvwPlanilla", "Planilla")',
+            method: 'POST',
+            datatype: "json",
+            contentType: 'application/json',
+            async: false,
+            data: JSON.stringify(dataObject),
+            success: function (result) {
+                $("#divPlanilla").html('');
+                $("#divPlanilla").html(result);
+
+                RefreshPlanillaDetail();
+                 $("#btnSavePlanilla").show();
+                 $('#PlanillaModal').modal('show');
+            },
+             error: function (XMLHttpRequest, textStatus, errorThrown) {
+                  MostrarMensaje(textStatus + ": " + XMLHttpRequest.responseText, "Error", "Error", 6000);
+              }
+        });
+    }
+
+    function Imprimir(e) {
+        e.preventDefault();
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+
+        window.location.href = '@Url.Action("SFPlanilla", "Planilla")/' + dataItem.Id;
+
+
+    }
+
+
+
+    function Anular(e) {
+        if (confirm('Esta seguro de anular una Planilla?')) {
+            e.preventDefault();
+            debugger;
+            var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+            var dataObject = {
+                PlanillaId: dataItem.PlanillaId,
+            };
+
+            $.ajax({
+                url: '@Url.Action("Anular", "Planilla")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (result) {
+                    MostrarMensaje('Planilla Anulada!', "success", "Satisfactorio", 6000);
+                    RefreshPlanillaes();
+                    return;
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    MostrarMensaje(textStatus + ": " + XMLHttpRequest.responseText, "Error", "Error", 6000);
+                }
+            });
+        }
+    }
+
+    function closecondition() {
+        $('#myModalConditions').modal('hide');
+    }
+
+    function ReportePlanilla(e) {
+        var url = '@Url.Action("SFReportePlanilla", "Planilla")/';
+        var win = window.open(url, '_blank');
+        win.focus();
+    }
+	
+    function dataBounds(e) {
+        $.each(this.dataSource.data(), function () {
+            debugger;
+            if (this.EstadoName != "Borrador") {
+                $('[data-uid=' + this.uid + ']').find('.k-grid-Revisar').hide();
+                $('[data-uid=' + this.uid + ']').find('.k-grid-Rechazar').hide();
+            }
+            if (this.EstadoName != "Revisado") {
+                $('[data-uid=' + this.uid + ']').find('.k-grid-Aprobar').hide();
+              
+                
+            }
+            if (this.EstadoName != "Aprobado") {
+                $('[data-uid=' + this.uid + ']').find('.k-grid-Imprimir').hide();
+            }
+            if (this.EstadoName != "Anulado") {
+               // $('[data-uid=' + this.uid + ']').find('.k-grid-Imprimir').hide();
+            }
+
+
+        })
+    }
+
+    function Aprobar(e) {
+        var notification = $("#notification").data("kendoNotification");
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        if (dataItem.Estado == 6) {
+                    notification.show({
+                    title: "Validación",
+                    message: "la Planilla ha sido aprobada"
+                }, "error");
+            }
+        if (!confirm('Esta seguro de aprobar la Planilla?')) {
+            return;
+
+        }
+
+        var dataObject = {
+                Id: dataItem.Id,
+            };
+
+            $.ajax({
+                url: '@Url.Action("Aprobar", "Planilla")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (result) {
+                    
+                    MostrarMensaje('La Planilla se ha aprobado correctamente.', "success", "Satisfactorio", 6000);
+                RefreshPlanillas();
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                        MostrarMensaje(XMLHttpRequest.responseText, "error", "Error", 6000);
+                        
+                }
+            });
+            }
+
+
+
+    function Rechazar(e) {
+        var notification = $("#notification").data("kendoNotification");
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        if (dataItem.Estado == 6) {
+            notification.show({
+                title: "Validación",
+                message: "la Planilla ha sido rechazada"
+            }, "error");
+        }
+        if (!confirm('Esta seguro de rechazar la Planilla?')) {
+            return;
+
+        }
+
+        var dataObject = {
+            Id: dataItem.Id,
+        };
+
+        $.ajax({
+            url: '@Url.Action("Rechazar", "Planilla")',
+            method: 'POST',
+            datatype: "json",
+            contentType: 'application/json',
+            async: false,
+            data: JSON.stringify(dataObject),
+            success: function (result) {
+                $.toast({
+                    heading: 'Satisfactorio',
+                    text: 'La Planilla se ha aprobado correctamente.',
+                    position: 'top-right',
+                    loaderBg: '#ff6849',
+                    icon: 'success',
+                    hideAfter: 7000,
+                    stack: 6
+                });
+                RefreshPlanillas();
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                notification.show({
+                    title: "Validación",
+                    message: textStatus + ": " + XMLHttpRequest.responseText
+                }, "error");
+                alert(textStatus + ": " + XMLHttpRequest.responseText);
+            }
+        });
+    }
+
+
+
+    function Revisar(e) {
+        var notification = $("#notification").data("kendoNotification");
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        if (dataItem.Estado == 6) {
+                    notification.show({
+                    title: "Validación",
+                    message: "la Planilla ha sido aprobada"
+                }, "error");
+            }
+        if (!confirm('Esta seguro de marcar como revisada esta Planilla?')) {
+            return;
+
+        }
+
+        var dataObject = {
+            Id: dataItem.Id,
+            };
+
+            $.ajax({
+                url: '@Url.Action("Revisar", "Planilla")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (result) {
+                    $.toast({
+                        heading: 'Satisfactorio',
+                        text: 'La Planilla se ha revisado correctamente.',
+                        position: 'top-right',
+                        loaderBg: '#ff6849',
+                        icon: 'success',
+                        hideAfter: 7000,
+                        stack: 6
+                    });
+                RefreshPlanillas();
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    notification.show({
+                        title: "Validación",
+                        message: textStatus + ": " + XMLHttpRequest.responseText
+                    }, "error");
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+                }
+            });
+            }
+
+
+    function periodopago(quincena){
+        switch(quincena){
+            case 1:
+                return 'Primera Quincena';
+                break;
+            case 2:
+                return 'Segunda Quincena';
+                break;
+            case 3:
+                return 'Mensual';
+                break;
+            case 4:
+                return '13vo';
+                break;
+            case 5:
+                return '14vo';
+                break;
+            case 6:
+                return 'Bono';
+                break;
+        
+        }
+    }
+
+
+
+
+</script>
+
+<h3 class="text-themecolor">Planillas</h3>
+
+@(
+Html.Kendo().Grid<ERPMVC.Models.Planilla>()
+                              .Name("gridPlanillas")
+                              .Columns(columns =>
+                              {
+
+                                  columns.Command(command =>
+                                      {
+                                          if (User.HasClaim("RRHH.Planillas y Operaciones.Planilla.Ver", "true"))
+                                          {
+                                              command.Custom("Ver").Text(" ").IconClass("far fa-eye").Click("EditPlanilla");
+                                          }
+                                          //.Visible(permisoagregar.ToString());
+                                          if (User.HasClaim("RRHH.Planillas y Operaciones.Planilla.Revisar", "true"))
+                                          {
+                                              command.Custom("Revisar").Text(" ").IconClass("fa fa-check").Click("Revisar");
+                                              command.Custom("Rechazar").Text(" ").IconClass("fa fa-thumbs-down").Click("Rechazar");
+                                          }
+                                          if (User.HasClaim("RRHH.Planillas y Operaciones.Planilla.Aprobar", "true"))
+                                          {
+                                              command.Custom("Aprobar").Text(" ").IconClass("fa fa-thumbs-up").Click("Aprobar");
+                                              
+                                          }
+                                          if (User.HasClaim("RRHH.Planillas y Operaciones.Planilla.Anular", "true"))
+                                          {
+                                              command.Custom("Anular").Text(" ").IconClass("fa fa-ban").Click("Anular");
+                                          }
+                                          command.Custom("Imprimir").Text(" ").IconClass("fa fa-print").Click("Imprimir");
+                                          
+                                      }).Title("Acciones").Width(180);
+
+                                  columns.Bound(p => p.Id).Title("No").Width(80);
+                                  columns.Bound(p => p.Mes).Title("Mes").Width(100);
+                                  columns.Bound(p => p.Quincena).Title("Tipo de Pago").ClientTemplate("#= periodopago(Quincena)#").Width(120);
+                                  columns.Bound(p => p.FechaPlanilla).Format("{0:dd/MM/yyyy}").Title("Fecha Planilla").Width(170);
+                                  columns.Bound(p => p.FechaPago).Format("{0:dd/MM/yyyy}").Title("Fecha Pago").Width(170);
+                                  columns.Bound(p => p.TipoPlanillaNombre).Title("Tipo Planilla").Width(170);
+                                   columns.Bound(p => p.TotalPlanilla).Format("{0:c2}").Title("Total Planilla").Width(170)
+                                                                        .HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" });;
+                                    columns.Bound(p => p.TotalEmpleados).Format("{0:c2}").Title("Total Empleados").Width(170)
+                                  .HtmlAttributes(new Dictionary<string, object> { ["style"] = " text-align: right;" });
+                                  columns.Bound(p => p.Comentarios).Title("Comentarios").Width(250);
+                                  columns.Bound(p => p.JournalEntryId).Title("No Asiento").Width(120);
+                                 
+                                  columns.Bound(p => p.EstadoName).Title("Estado").Width(200);
+
+                              })
+                                  .Filterable(f => f.Operators(o => o.ForString(s => s
+                                           .Clear()
+                                           .Contains("Contiene")
+                                           .DoesNotContain("No contiene")
+                                           .EndsWith("Termina con")
+                                           .IsEqualTo("Es igual a")
+                                           .IsNotEqualTo("No es igual a")
+                                           .IsNull("Es nulo")
+                                           .StartsWith("Inicia con")
+
+                                     )
+                                     .ForNumber(n => n
+                                       .Clear()
+                                       .IsEqualTo("Es igual a")
+                                       .IsGreaterThan("Es mayor que")
+                                       .IsLessThan("Es menor que")
+                                       .IsNull("Es nulo")
+                                       .IsLessThanOrEqualTo("Es menor o igual que")
+                                       .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                     )
+                                     .ForDate(d => d
+                                     .Clear()
+                                     .IsEqualTo("Es igual que")
+                                     .IsGreaterThan("Es mayor que")
+                                     .IsLessThan("Es menor que")
+                                     .IsLessThanOrEqualTo("Es menor o igual que")
+                                     .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                     .IsNotEqualTo("No es igual que")
+                                      )
+                                   ))
+                              .ToolBar(tools =>
+                              {
+                                  // tools.Create();
+                                  if(User.HasClaim("RRHH.Planillas y Operaciones.Planilla.Agregar","true")){
+                                  tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+                                                  .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddPlanilla();" });
+                                  }
+                                      tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
+                                      tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
+                                      tools.Custom().Text("Libro de Sueldos y Salarios").IconClass("k-icon k-i-file")
+                                            .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "ImprimirLibroSueldos();" }); 
+                                      tools.Custom().Text("Planilla Acumulada").IconClass("k-icon k-i-file")
+                                        .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "ImprimirPlanillaAcumulada();" });
+
+                              })
+                               .Editable(e => e.Mode(GridEditMode.PopUp))
+                                .Sortable()
+                                .AutoBind(true)
+                                .Pageable()
+                                .Filterable()
+                                .Scrollable()
+                                .Resizable(r => r.Columns(true))
+                                // .ClientDetailTemplateId("template")
+                                .Pdf(pdf => pdf.FileName("Planilla_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+                                .ProxyURL(Url.Action("Export", "Home")).AllPages())
+                                  .Excel(excel => excel.FileName("Planilla_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+                                .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+                                //.Events(e=>e.Save("onsave"))
+                                .DataSource(dataSource =>
+
+                               dataSource
+                               //.Ajax()
+                               .WebApi()
+                                .ServerOperation(true)
+                                .Model(model =>
+                                {
+                                    model.Id(p => p.Id);
+                                })
+                                .Events(events =>
+                                {
+                                    events.Error("error_handler");
+                                    //events.upda("EditHandler");
+
+                                })
+                                .Read(read => read.Action("Get", "Planilla"))
+                                .Create(create => create.Action("Insert", "Planilla"))
+                                .Update(update => update.Action("Update", "Planilla", new { id = "{0}" }))
+                                .Destroy(destroy => destroy.Action("Delete", "Planilla", new { id = "{0}" }))
+                          ).Events(e => e.DataBound("dataBounds"))
+)
+
+<div id="divPlanilla">
+    @await Html.PartialAsync("pvwPlanilla", new ERPMVC.Models.Planilla { Id = 0, FechaPlanilla = DateTime.Now, FechaPago = null })
+</div>
+
+
+<script>
+
+    function ImprimirLibroSueldos(e) {
+        var url = '@Url.Action("SFLibroSueldosySalarios", "Planilla")/';
+        var win = window.open(url, '_blank');
+        win.focus();
+    }
+
+    function ImprimirPlanillaAcumulada(e) {
+        var url = '@Url.Action("SFPlanillaAcumulada", "Planilla")/';
+        var win = window.open(url, '_blank');
+        win.focus();
+    }
+
+    
+
+    function setToolbarTooltip(btn_cl, btn_tooltip) {
+        $("#gridPlanillas").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+
+    function setRowButtonTooltip(btn_cl, btn_tooltip) {
+        $("#gridPlanillas").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+
+    setToolbarTooltip(".k-button k-button-icontext k-grid-Agregar k-i-plus-sm", "Agregar un nuevo registro");
+    //setRowButtonTooltip(".k-grid-edit", "Tooltip for Edit button");
+    setRowButtonTooltip(".k-grid-Anular", "Anular");
+    setRowButtonTooltip(".k-grid-Aprobar", "Aprobar");
+    setRowButtonTooltip(".k-grid-Rechazar", "Rechazar");
+    setRowButtonTooltip(".k-grid-Revisar", "Revisar");
+    setRowButtonTooltip(".k-grid-Ver", "Ver");
+    setRowButtonTooltip(".k-grid-Imprimir", "Imprimir"); 
+    setRowButtonTooltip(".k-grid-Detalles", "Ver Detalle");
+    setRowButtonTooltip(".k-grid-Agregar", "Nueva Planilla"); 
+</script>
+
+

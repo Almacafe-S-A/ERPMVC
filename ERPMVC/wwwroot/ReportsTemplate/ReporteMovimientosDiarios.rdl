@@ -5,9 +5,10 @@
     <DataSource Name="ERP">
       <ConnectionProperties>
         <DataProvider>SQL</DataProvider>
-        <ConnectString>Data Source=192.168.0.5;Initial Catalog=ERP-Produccion</ConnectString>
+        <ConnectString>Data Source=192.168.0.5;Initial Catalog=ERP-PRODUCCION</ConnectString>
+        <IntegratedSecurity>true</IntegratedSecurity>
       </ConnectionProperties>
-      <rd:SecurityType>DataBase</rd:SecurityType>
+      <rd:SecurityType>Integrated</rd:SecurityType>
       <rd:DataSourceID>49745f74-0977-4e9a-a681-e323019e2e70</rd:DataSourceID>
     </DataSource>
   </DataSources>
@@ -43,7 +44,7 @@ CASE
 WHEN bs.DocumentoTipo = 'Recibo de Mercaderías' then bs.DocumentoId
 END Recibo,
 CASE 
-WHEN bs.DocumentoTipo = 'Entrega de Mercaderías' then bs.DocumentoId
+WHEN bs.DocumentoTipo = 'E/M' then bs.DocumentoId
 END Entrega,
 bs.ARNo,
 bs.DocumentDate,
@@ -62,7 +63,7 @@ CASE
 WHEN bs.DocumentoTipo = 'Recibo de Mercaderías' and bs.CargadoId=14 then Sum(bsl.Quantity)
 END CantidadRM,
 CASE
-WHEN bs.DocumentoTipo = 'Entrega de Mercaderías' and bs.CargadoId=13 then Sum(bsl.Quantity)
+WHEN bs.DocumentoTipo = 'E/M' and bs.CargadoId=13 then Sum(bsl.Quantity)
 END CantidadEM,
 CASE 
 WHEN bs.DocumentoTipo is null and bs.CargadoId=14 then Sum(bsl.Quantity) 
@@ -75,7 +76,7 @@ INNER JOIN BoletaDeSalida bs on bs.BoletaDeSalidaId=bsl.BoletaSalidaId
 INNER JOIN SubProduct pr on pr.SubproductId = bsl.SubproductId
 INNER JOIN Customer cu on cu.CustomerId = bs.CustomerId
 INNER JOIN CustomerProduct cp on cp.CustomerId = bs.CustomerId and cp.SubProductId = bsl.SubProductId
-Where bs.DocumentDate Between @FechaInicio and dateadd(Day,1, @FechaFin) and bs.branchId = @Sucursal and bs.Producto = @Servicio and (bs.CustomerId = @CustomerId or  @CustomerId = 0)
+Where bs.DocumentDate Between @FechaInicio and dateadd(Day,1, @FechaFin) and bs.branchId = @Sucursal and (bs.Producto = @Servicio or @Servicio = 0) and (bs.CustomerId = @CustomerId or  @CustomerId = 0)
 and (bsl.SubProductId = @Producto or  @Producto = 0) 
 group by bs.BoletaDeSalidaId,
 bs.CustomerId,
@@ -259,7 +260,7 @@ UNION SELECT 0 , 'TODOS'</CommandText>
         <CommandText>SELECT ProductId, ProductName 
 From PRODUCT
 Where IdEstado =1
-</CommandText>
+UNION SELECT 0 , 'TODOS'</CommandText>
       </Query>
       <Fields>
         <Field Name="ProductId">
@@ -281,10 +282,10 @@ Where IdEstado =1
             <TablixBody>
               <TablixColumns>
                 <TablixColumn>
-                  <Width>2.3in</Width>
+                  <Width>2.22525in</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>1.69642in</Width>
+                  <Width>2.20508in</Width>
                 </TablixColumn>
                 <TablixColumn>
                   <Width>0.7in</Width>
@@ -293,7 +294,7 @@ Where IdEstado =1
                   <Width>0.6in</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>0.86614in</Width>
+                  <Width>0.75in</Width>
                 </TablixColumn>
                 <TablixColumn>
                   <Width>0.6in</Width>
@@ -302,21 +303,21 @@ Where IdEstado =1
                   <Width>0.6in</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>0.86614in</Width>
+                  <Width>0.75in</Width>
                 </TablixColumn>
                 <TablixColumn>
                   <Width>0.6in</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>0.86614in</Width>
+                  <Width>0.75in</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>0.86614in</Width>
+                  <Width>0.75in</Width>
                 </TablixColumn>
               </TablixColumns>
               <TablixRows>
                 <TablixRow>
-                  <Height>0.39792in</Height>
+                  <Height>0.35626in</Height>
                   <TablixCells>
                     <TablixCell>
                       <CellContents>
@@ -354,7 +355,6 @@ Where IdEstado =1
                               <Style>Solid</Style>
                               <Width>1pt</Width>
                             </BottomBorder>
-                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -399,7 +399,6 @@ Where IdEstado =1
                               <Style>Solid</Style>
                               <Width>1pt</Width>
                             </BottomBorder>
-                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -444,7 +443,6 @@ Where IdEstado =1
                               <Style>Solid</Style>
                               <Width>1pt</Width>
                             </BottomBorder>
-                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -489,7 +487,6 @@ Where IdEstado =1
                               <Style>Solid</Style>
                               <Width>1pt</Width>
                             </BottomBorder>
-                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -507,21 +504,7 @@ Where IdEstado =1
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>Cantidad</Value>
-                                  <Style>
-                                    <FontSize>9pt</FontSize>
-                                    <FontWeight>Bold</FontWeight>
-                                  </Style>
-                                </TextRun>
-                              </TextRuns>
-                              <Style>
-                                <TextAlign>Center</TextAlign>
-                              </Style>
-                            </Paragraph>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value>Recibida</Value>
+                                  <Value>Cantidad Recibida</Value>
                                   <Style>
                                     <FontSize>9pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
@@ -548,7 +531,6 @@ Where IdEstado =1
                               <Style>Solid</Style>
                               <Width>1pt</Width>
                             </BottomBorder>
-                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -593,7 +575,6 @@ Where IdEstado =1
                               <Style>Solid</Style>
                               <Width>1pt</Width>
                             </BottomBorder>
-                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -638,7 +619,6 @@ Where IdEstado =1
                               <Style>Solid</Style>
                               <Width>1pt</Width>
                             </BottomBorder>
-                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -656,21 +636,7 @@ Where IdEstado =1
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>Cantidad</Value>
-                                  <Style>
-                                    <FontSize>9pt</FontSize>
-                                    <FontWeight>Bold</FontWeight>
-                                  </Style>
-                                </TextRun>
-                              </TextRuns>
-                              <Style>
-                                <TextAlign>Center</TextAlign>
-                              </Style>
-                            </Paragraph>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value>Entregada</Value>
+                                  <Value>Cantidad Entregada</Value>
                                   <Style>
                                     <FontSize>9pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
@@ -697,7 +663,6 @@ Where IdEstado =1
                               <Style>Solid</Style>
                               <Width>1pt</Width>
                             </BottomBorder>
-                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -742,7 +707,6 @@ Where IdEstado =1
                               <Style>Solid</Style>
                               <Width>1pt</Width>
                             </BottomBorder>
-                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -760,21 +724,7 @@ Where IdEstado =1
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>Cantidad</Value>
-                                  <Style>
-                                    <FontSize>9pt</FontSize>
-                                    <FontWeight>Bold</FontWeight>
-                                  </Style>
-                                </TextRun>
-                              </TextRuns>
-                              <Style>
-                                <TextAlign>Center</TextAlign>
-                              </Style>
-                            </Paragraph>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value>Recibida</Value>
+                                  <Value>Cantidad Recibida</Value>
                                   <Style>
                                     <FontSize>9pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
@@ -801,7 +751,6 @@ Where IdEstado =1
                               <Style>Solid</Style>
                               <Width>1pt</Width>
                             </BottomBorder>
-                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -819,21 +768,7 @@ Where IdEstado =1
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>Cantidad</Value>
-                                  <Style>
-                                    <FontSize>9pt</FontSize>
-                                    <FontWeight>Bold</FontWeight>
-                                  </Style>
-                                </TextRun>
-                              </TextRuns>
-                              <Style>
-                                <TextAlign>Center</TextAlign>
-                              </Style>
-                            </Paragraph>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value>Entregada</Value>
+                                  <Value>Cantidad Entregada</Value>
                                   <Style>
                                     <FontSize>9pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
@@ -860,7 +795,6 @@ Where IdEstado =1
                               <Style>Solid</Style>
                               <Width>1pt</Width>
                             </BottomBorder>
-                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -899,7 +833,6 @@ Where IdEstado =1
                             <Border>
                               <Style>None</Style>
                             </Border>
-                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -917,13 +850,15 @@ Where IdEstado =1
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=LSet(Fields!Producto.Value,25)</Value>
+                                  <Value>=LSet(Fields!Producto.Value,35)</Value>
                                   <Style>
                                     <FontSize>8pt</FontSize>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
-                              <Style />
+                              <Style>
+                                <TextAlign>Left</TextAlign>
+                              </Style>
                             </Paragraph>
                           </Paragraphs>
                           <rd:DefaultName>Producto1</rd:DefaultName>
@@ -931,7 +866,6 @@ Where IdEstado =1
                             <Border>
                               <Style>None</Style>
                             </Border>
-                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -956,7 +890,7 @@ Where IdEstado =1
                                 </TextRun>
                               </TextRuns>
                               <Style>
-                                <TextAlign>Left</TextAlign>
+                                <TextAlign>Center</TextAlign>
                               </Style>
                             </Paragraph>
                           </Paragraphs>
@@ -965,7 +899,6 @@ Where IdEstado =1
                             <Border>
                               <Style>None</Style>
                             </Border>
-                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -990,7 +923,7 @@ Where IdEstado =1
                                 </TextRun>
                               </TextRuns>
                               <Style>
-                                <TextAlign>Right</TextAlign>
+                                <TextAlign>Center</TextAlign>
                               </Style>
                             </Paragraph>
                           </Paragraphs>
@@ -999,7 +932,6 @@ Where IdEstado =1
                             <Border>
                               <Style>None</Style>
                             </Border>
-                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -1034,7 +966,6 @@ Where IdEstado =1
                             <Border>
                               <Style>None</Style>
                             </Border>
-                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -1059,7 +990,7 @@ Where IdEstado =1
                                 </TextRun>
                               </TextRuns>
                               <Style>
-                                <TextAlign>Right</TextAlign>
+                                <TextAlign>Center</TextAlign>
                               </Style>
                             </Paragraph>
                           </Paragraphs>
@@ -1068,7 +999,6 @@ Where IdEstado =1
                             <Border>
                               <Style>None</Style>
                             </Border>
-                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -1093,7 +1023,7 @@ Where IdEstado =1
                                 </TextRun>
                               </TextRuns>
                               <Style>
-                                <TextAlign>Right</TextAlign>
+                                <TextAlign>Center</TextAlign>
                               </Style>
                             </Paragraph>
                           </Paragraphs>
@@ -1102,7 +1032,6 @@ Where IdEstado =1
                             <Border>
                               <Style>None</Style>
                             </Border>
-                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -1137,7 +1066,6 @@ Where IdEstado =1
                             <Border>
                               <Style>None</Style>
                             </Border>
-                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -1161,7 +1089,9 @@ Where IdEstado =1
                                   </Style>
                                 </TextRun>
                               </TextRuns>
-                              <Style />
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
                             </Paragraph>
                           </Paragraphs>
                           <rd:DefaultName>BoletaDeSalidaId1</rd:DefaultName>
@@ -1169,7 +1099,6 @@ Where IdEstado =1
                             <Border>
                               <Style>None</Style>
                             </Border>
-                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -1204,7 +1133,6 @@ Where IdEstado =1
                             <Border>
                               <Style>None</Style>
                             </Border>
-                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -1239,7 +1167,6 @@ Where IdEstado =1
                             <Border>
                               <Style>None</Style>
                             </Border>
-                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -1251,7 +1178,7 @@ Where IdEstado =1
                   </TablixCells>
                 </TablixRow>
                 <TablixRow>
-                  <Height>0.3in</Height>
+                  <Height>0.25in</Height>
                   <TablixCells>
                     <TablixCell>
                       <CellContents>
@@ -1264,14 +1191,14 @@ Where IdEstado =1
                                 <TextRun>
                                   <Value>Total </Value>
                                   <Style>
-                                    <FontSize>8pt</FontSize>
+                                    <FontSize>9pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
                                   </Style>
                                 </TextRun>
                                 <TextRun>
-                                  <Value>=" ("&amp; Count(Fields!BoletaDeSalidaId.Value) &amp;" BS)"</Value>
+                                  <Value>=" ("&amp; Count(Fields!BoletaDeSalidaId.Value) &amp;" Documentos)"</Value>
                                   <Style>
-                                    <FontSize>8pt</FontSize>
+                                    <FontSize>9pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
                                   </Style>
                                 </TextRun>
@@ -1286,7 +1213,11 @@ Where IdEstado =1
                             <Border>
                               <Style>None</Style>
                             </Border>
-                            <VerticalAlign>Middle</VerticalAlign>
+                            <TopBorder>
+                              <Color>Black</Color>
+                              <Style>Solid</Style>
+                              <Width>1pt</Width>
+                            </TopBorder>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -1309,7 +1240,7 @@ Where IdEstado =1
                                 <TextRun>
                                   <Value />
                                   <Style>
-                                    <FontSize>8pt</FontSize>
+                                    <FontSize>9pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
                                   </Style>
                                 </TextRun>
@@ -1324,7 +1255,11 @@ Where IdEstado =1
                             <Border>
                               <Style>None</Style>
                             </Border>
-                            <VerticalAlign>Middle</VerticalAlign>
+                            <TopBorder>
+                              <Color>Black</Color>
+                              <Style>Solid</Style>
+                              <Width>1pt</Width>
+                            </TopBorder>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -1344,9 +1279,9 @@ Where IdEstado =1
                                 <TextRun>
                                   <Value>=Sum(Fields!CantidadRM.Value)</Value>
                                   <Style>
-                                    <FontSize>8pt</FontSize>
+                                    <FontSize>9pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
-                                    <Format>#,0.00;(#,0.00)</Format>
+                                    <Format>#,0.00;(#,0.00);''</Format>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -1360,7 +1295,11 @@ Where IdEstado =1
                             <Border>
                               <Style>None</Style>
                             </Border>
-                            <VerticalAlign>Middle</VerticalAlign>
+                            <TopBorder>
+                              <Color>Black</Color>
+                              <Style>Solid</Style>
+                              <Width>1pt</Width>
+                            </TopBorder>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -1380,7 +1319,7 @@ Where IdEstado =1
                                 <TextRun>
                                   <Value />
                                   <Style>
-                                    <FontSize>8pt</FontSize>
+                                    <FontSize>9pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
                                   </Style>
                                 </TextRun>
@@ -1395,7 +1334,11 @@ Where IdEstado =1
                             <Border>
                               <Style>None</Style>
                             </Border>
-                            <VerticalAlign>Middle</VerticalAlign>
+                            <TopBorder>
+                              <Color>Black</Color>
+                              <Style>Solid</Style>
+                              <Width>1pt</Width>
+                            </TopBorder>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -1415,7 +1358,7 @@ Where IdEstado =1
                                 <TextRun>
                                   <Value />
                                   <Style>
-                                    <FontSize>8pt</FontSize>
+                                    <FontSize>9pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
                                   </Style>
                                 </TextRun>
@@ -1430,7 +1373,11 @@ Where IdEstado =1
                             <Border>
                               <Style>None</Style>
                             </Border>
-                            <VerticalAlign>Middle</VerticalAlign>
+                            <TopBorder>
+                              <Color>Black</Color>
+                              <Style>Solid</Style>
+                              <Width>1pt</Width>
+                            </TopBorder>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -1450,9 +1397,9 @@ Where IdEstado =1
                                 <TextRun>
                                   <Value>=Sum(Fields!CantidadEM.Value)</Value>
                                   <Style>
-                                    <FontSize>8pt</FontSize>
+                                    <FontSize>9pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
-                                    <Format>#,0.00;(#,0.00)</Format>
+                                    <Format>#,0.00;(#,0.00);''</Format>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -1466,7 +1413,11 @@ Where IdEstado =1
                             <Border>
                               <Style>None</Style>
                             </Border>
-                            <VerticalAlign>Middle</VerticalAlign>
+                            <TopBorder>
+                              <Color>Black</Color>
+                              <Style>Solid</Style>
+                              <Width>1pt</Width>
+                            </TopBorder>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -1486,7 +1437,7 @@ Where IdEstado =1
                                 <TextRun>
                                   <Value />
                                   <Style>
-                                    <FontSize>8pt</FontSize>
+                                    <FontSize>9pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
                                   </Style>
                                 </TextRun>
@@ -1501,7 +1452,11 @@ Where IdEstado =1
                             <Border>
                               <Style>None</Style>
                             </Border>
-                            <VerticalAlign>Middle</VerticalAlign>
+                            <TopBorder>
+                              <Color>Black</Color>
+                              <Style>Solid</Style>
+                              <Width>1pt</Width>
+                            </TopBorder>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -1521,9 +1476,9 @@ Where IdEstado =1
                                 <TextRun>
                                   <Value>=Sum(Fields!CantidadBSI.Value)</Value>
                                   <Style>
-                                    <FontSize>8pt</FontSize>
+                                    <FontSize>9pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
-                                    <Format>#,0.00;(#,0.00)</Format>
+                                    <Format>#,0.00;(#,0.00);''</Format>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -1537,7 +1492,11 @@ Where IdEstado =1
                             <Border>
                               <Style>None</Style>
                             </Border>
-                            <VerticalAlign>Middle</VerticalAlign>
+                            <TopBorder>
+                              <Color>Black</Color>
+                              <Style>Solid</Style>
+                              <Width>1pt</Width>
+                            </TopBorder>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -1557,9 +1516,9 @@ Where IdEstado =1
                                 <TextRun>
                                   <Value>=Sum(Fields!CantidadBSE.Value)</Value>
                                   <Style>
-                                    <FontSize>8pt</FontSize>
+                                    <FontSize>9pt</FontSize>
                                     <FontWeight>Bold</FontWeight>
-                                    <Format>#,0.00;(#,0.00)</Format>
+                                    <Format>#,0.00;(#,0.00);''</Format>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -1573,7 +1532,11 @@ Where IdEstado =1
                             <Border>
                               <Style>None</Style>
                             </Border>
-                            <VerticalAlign>Middle</VerticalAlign>
+                            <TopBorder>
+                              <Color>Black</Color>
+                              <Style>Solid</Style>
+                              <Width>1pt</Width>
+                            </TopBorder>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -1615,7 +1578,7 @@ Where IdEstado =1
                   </Group>
                   <SortExpressions>
                     <SortExpression>
-                      <Value>=Fields!Cliente.Value</Value>
+                      <Value>=Fields!BoletaDeSalidaId.Value</Value>
                     </SortExpression>
                   </SortExpressions>
                   <TablixMembers>
@@ -1650,31 +1613,159 @@ Where IdEstado =1
             <FixedRowHeaders>true</FixedRowHeaders>
             <DataSetName>BSDetalle</DataSetName>
             <Top>0.06125in</Top>
-            <Left>0.11333in</Left>
-            <Height>0.89792in</Height>
-            <Width>10.56098in</Width>
+            <Left>0.03833in</Left>
+            <Height>0.80626in</Height>
+            <Width>10.53033in</Width>
             <Style>
               <Border>
                 <Style>None</Style>
               </Border>
             </Style>
           </Tablix>
+          <Textbox Name="ReportTitle4">
+            <CanGrow>true</CanGrow>
+            <KeepTogether>true</KeepTogether>
+            <Paragraphs>
+              <Paragraph>
+                <TextRuns>
+                  <TextRun>
+                    <Value>Guardalmacen</Value>
+                    <Style>
+                      <FontFamily>Segoe UI Light</FontFamily>
+                      <FontSize>8pt</FontSize>
+                      <FontWeight>Bold</FontWeight>
+                    </Style>
+                  </TextRun>
+                </TextRuns>
+                <Style>
+                  <TextAlign>Center</TextAlign>
+                </Style>
+              </Paragraph>
+            </Paragraphs>
+            <rd:WatermarkTextbox>Title</rd:WatermarkTextbox>
+            <rd:DefaultName>ReportTitle</rd:DefaultName>
+            <Top>3.34539cm</Top>
+            <Left>1.82335in</Left>
+            <Height>0.2in</Height>
+            <Width>2.125in</Width>
+            <ZIndex>1</ZIndex>
+            <Style>
+              <Border>
+                <Style>None</Style>
+              </Border>
+              <TopBorder>
+                <Color>Black</Color>
+                <Style>Solid</Style>
+                <Width>1pt</Width>
+              </TopBorder>
+              <VerticalAlign>Middle</VerticalAlign>
+              <PaddingLeft>2pt</PaddingLeft>
+              <PaddingRight>2pt</PaddingRight>
+              <PaddingTop>2pt</PaddingTop>
+              <PaddingBottom>2pt</PaddingBottom>
+            </Style>
+          </Textbox>
+          <Textbox Name="ReportTitle5">
+            <CanGrow>true</CanGrow>
+            <KeepTogether>true</KeepTogether>
+            <Paragraphs>
+              <Paragraph>
+                <TextRuns>
+                  <TextRun>
+                    <Value>Operaciones</Value>
+                    <Style>
+                      <FontFamily>Segoe UI Light</FontFamily>
+                      <FontSize>8pt</FontSize>
+                      <FontWeight>Bold</FontWeight>
+                    </Style>
+                  </TextRun>
+                </TextRuns>
+                <Style>
+                  <TextAlign>Center</TextAlign>
+                </Style>
+              </Paragraph>
+            </Paragraphs>
+            <rd:WatermarkTextbox>Title</rd:WatermarkTextbox>
+            <rd:DefaultName>ReportTitle</rd:DefaultName>
+            <Top>3.34539cm</Top>
+            <Left>4.25472in</Left>
+            <Height>0.2in</Height>
+            <Width>2.125in</Width>
+            <ZIndex>2</ZIndex>
+            <Style>
+              <Border>
+                <Style>None</Style>
+              </Border>
+              <TopBorder>
+                <Color>Black</Color>
+                <Style>Solid</Style>
+                <Width>1pt</Width>
+              </TopBorder>
+              <VerticalAlign>Middle</VerticalAlign>
+              <PaddingLeft>2pt</PaddingLeft>
+              <PaddingRight>2pt</PaddingRight>
+              <PaddingTop>2pt</PaddingTop>
+              <PaddingBottom>2pt</PaddingBottom>
+            </Style>
+          </Textbox>
+          <Textbox Name="ReportTitle6">
+            <CanGrow>true</CanGrow>
+            <KeepTogether>true</KeepTogether>
+            <Paragraphs>
+              <Paragraph>
+                <TextRuns>
+                  <TextRun>
+                    <Value>Contabilidad</Value>
+                    <Style>
+                      <FontFamily>Segoe UI Light</FontFamily>
+                      <FontSize>8pt</FontSize>
+                      <FontWeight>Bold</FontWeight>
+                    </Style>
+                  </TextRun>
+                </TextRuns>
+                <Style>
+                  <TextAlign>Center</TextAlign>
+                </Style>
+              </Paragraph>
+            </Paragraphs>
+            <rd:WatermarkTextbox>Title</rd:WatermarkTextbox>
+            <rd:DefaultName>ReportTitle</rd:DefaultName>
+            <Top>3.34539cm</Top>
+            <Left>6.70039in</Left>
+            <Height>0.2in</Height>
+            <Width>2.125in</Width>
+            <ZIndex>3</ZIndex>
+            <Style>
+              <Border>
+                <Style>None</Style>
+              </Border>
+              <TopBorder>
+                <Color>Black</Color>
+                <Style>Solid</Style>
+                <Width>1pt</Width>
+              </TopBorder>
+              <VerticalAlign>Middle</VerticalAlign>
+              <PaddingLeft>2pt</PaddingLeft>
+              <PaddingRight>2pt</PaddingRight>
+              <PaddingTop>2pt</PaddingTop>
+              <PaddingBottom>2pt</PaddingBottom>
+            </Style>
+          </Textbox>
         </ReportItems>
-        <Height>1.87993in</Height>
+        <Height>1.58417in</Height>
         <Style>
           <Border />
           <BackgroundColor>White</BackgroundColor>
         </Style>
       </Body>
-      <Width>10.80499in</Width>
+      <Width>10.64874in</Width>
       <Page>
         <PageHeader>
-          <Height>1.08334in</Height>
+          <Height>1.13543in</Height>
           <PrintOnFirstPage>true</PrintOnFirstPage>
           <PrintOnLastPage>true</PrintOnLastPage>
           <ReportItems>
             <Textbox Name="ExecutionTime">
-              <CanGrow>true</CanGrow>
               <KeepTogether>true</KeepTogether>
               <Paragraphs>
                 <Paragraph>
@@ -1693,7 +1784,7 @@ Where IdEstado =1
               </Paragraphs>
               <rd:DefaultName>ExecutionTime</rd:DefaultName>
               <Top>0.30138in</Top>
-              <Left>8.87472in</Left>
+              <Left>8.74972in</Left>
               <Height>0.17499in</Height>
               <Width>1.82402in</Width>
               <Style>
@@ -1707,7 +1798,6 @@ Where IdEstado =1
               </Style>
             </Textbox>
             <Textbox Name="ExecutionTime3">
-              <CanGrow>true</CanGrow>
               <KeepTogether>true</KeepTogether>
               <Paragraphs>
                 <Paragraph>
@@ -1726,7 +1816,7 @@ Where IdEstado =1
               </Paragraphs>
               <rd:DefaultName>ExecutionTime</rd:DefaultName>
               <Top>0.125in</Top>
-              <Left>8.87472in</Left>
+              <Left>8.74972in</Left>
               <Height>0.17499in</Height>
               <Width>1.82402in</Width>
               <ZIndex>1</ZIndex>
@@ -1754,7 +1844,6 @@ Where IdEstado =1
               </Style>
             </Image>
             <Textbox Name="Textbox26">
-              <CanGrow>true</CanGrow>
               <KeepTogether>true</KeepTogether>
               <Paragraphs>
                 <Paragraph>
@@ -1772,9 +1861,9 @@ Where IdEstado =1
                 </Paragraph>
               </Paragraphs>
               <rd:DefaultName>Textbox26</rd:DefaultName>
-              <Top>0.66862in</Top>
-              <Left>4.40215in</Left>
-              <Height>0.2in</Height>
+              <Top>0.83807in</Top>
+              <Left>4.15215in</Left>
+              <Height>0.22555in</Height>
               <Width>0.37026in</Width>
               <ZIndex>3</ZIndex>
               <Style>
@@ -1788,7 +1877,6 @@ Where IdEstado =1
               </Style>
             </Textbox>
             <Textbox Name="ExecutionTime2">
-              <CanGrow>true</CanGrow>
               <KeepTogether>true</KeepTogether>
               <Paragraphs>
                 <Paragraph>
@@ -1809,9 +1897,9 @@ Where IdEstado =1
                 </Paragraph>
               </Paragraphs>
               <rd:DefaultName>ExecutionTime</rd:DefaultName>
-              <Top>0.67557in</Top>
-              <Left>4.79186in</Left>
-              <Height>0.2in</Height>
+              <Top>0.83807in</Top>
+              <Left>4.54186in</Left>
+              <Height>0.22in</Height>
               <Width>0.8471in</Width>
               <ZIndex>4</ZIndex>
               <Style>
@@ -1825,7 +1913,6 @@ Where IdEstado =1
               </Style>
             </Textbox>
             <Textbox Name="Textbox28">
-              <CanGrow>true</CanGrow>
               <KeepTogether>true</KeepTogether>
               <Paragraphs>
                 <Paragraph>
@@ -1843,9 +1930,9 @@ Where IdEstado =1
                 </Paragraph>
               </Paragraphs>
               <rd:DefaultName>Textbox26</rd:DefaultName>
-              <Top>0.66862in</Top>
-              <Left>5.62507in</Left>
-              <Height>0.2in</Height>
+              <Top>0.83807in</Top>
+              <Left>5.37507in</Left>
+              <Height>0.22555in</Height>
               <Width>0.33901in</Width>
               <ZIndex>5</ZIndex>
               <Style>
@@ -1860,7 +1947,6 @@ Where IdEstado =1
               </Style>
             </Textbox>
             <Textbox Name="ExecutionTime4">
-              <CanGrow>true</CanGrow>
               <KeepTogether>true</KeepTogether>
               <Paragraphs>
                 <Paragraph>
@@ -1881,9 +1967,9 @@ Where IdEstado =1
                 </Paragraph>
               </Paragraphs>
               <rd:DefaultName>ExecutionTime</rd:DefaultName>
-              <Top>0.66862in</Top>
-              <Left>5.97576in</Left>
-              <Height>0.2in</Height>
+              <Top>0.83807in</Top>
+              <Left>5.72576in</Left>
+              <Height>0.22555in</Height>
               <Width>0.90208in</Width>
               <ZIndex>6</ZIndex>
               <Style>
@@ -1897,7 +1983,6 @@ Where IdEstado =1
               </Style>
             </Textbox>
             <Textbox Name="ReportTitle">
-              <CanGrow>true</CanGrow>
               <KeepTogether>true</KeepTogether>
               <Paragraphs>
                 <Paragraph>
@@ -1918,9 +2003,9 @@ Where IdEstado =1
               </Paragraphs>
               <rd:WatermarkTextbox>Title</rd:WatermarkTextbox>
               <rd:DefaultName>ReportTitle</rd:DefaultName>
-              <Top>0.77524cm</Top>
-              <Left>3.50458in</Left>
-              <Height>0.2in</Height>
+              <Top>0.90224cm</Top>
+              <Left>3.25458in</Left>
+              <Height>0.23in</Height>
               <Width>4.23958in</Width>
               <ZIndex>7</ZIndex>
               <Style>
@@ -1935,7 +2020,6 @@ Where IdEstado =1
               </Style>
             </Textbox>
             <Textbox Name="ReportTitle2">
-              <CanGrow>true</CanGrow>
               <KeepTogether>true</KeepTogether>
               <Paragraphs>
                 <Paragraph>
@@ -1944,7 +2028,7 @@ Where IdEstado =1
                       <Value>ALMACAFE, S.A.</Value>
                       <Style>
                         <FontFamily>Segoe UI Light</FontFamily>
-                        <FontSize>14pt</FontSize>
+                        <FontSize>12pt</FontSize>
                         <FontWeight>Bold</FontWeight>
                       </Style>
                     </TextRun>
@@ -1956,9 +2040,9 @@ Where IdEstado =1
               </Paragraphs>
               <rd:WatermarkTextbox>Title</rd:WatermarkTextbox>
               <rd:DefaultName>ReportTitle</rd:DefaultName>
-              <Top>0.26724cm</Top>
-              <Left>3.50458in</Left>
-              <Height>0.21249in</Height>
+              <Top>0.22491cm</Top>
+              <Left>3.25458in</Left>
+              <Height>0.25in</Height>
               <Width>4.23958in</Width>
               <ZIndex>8</ZIndex>
               <Style>
@@ -1973,7 +2057,6 @@ Where IdEstado =1
               </Style>
             </Textbox>
             <Textbox Name="ReportTitle3">
-              <CanGrow>true</CanGrow>
               <KeepTogether>true</KeepTogether>
               <Paragraphs>
                 <Paragraph>
@@ -1994,9 +2077,9 @@ Where IdEstado =1
               </Paragraphs>
               <rd:WatermarkTextbox>Title</rd:WatermarkTextbox>
               <rd:DefaultName>ReportTitle</rd:DefaultName>
-              <Top>1.2515cm</Top>
-              <Left>3.50458in</Left>
-              <Height>0.2in</Height>
+              <Top>1.5055cm</Top>
+              <Left>3.25458in</Left>
+              <Height>0.23in</Height>
               <Width>4.23958in</Width>
               <ZIndex>9</ZIndex>
               <Style>
@@ -2011,7 +2094,6 @@ Where IdEstado =1
               </Style>
             </Textbox>
             <Textbox Name="ExecutionTime5">
-              <CanGrow>true</CanGrow>
               <KeepTogether>true</KeepTogether>
               <Paragraphs>
                 <Paragraph>
@@ -2031,7 +2113,7 @@ Where IdEstado =1
               </Paragraphs>
               <rd:DefaultName>ExecutionTime</rd:DefaultName>
               <Top>0.50417in</Top>
-              <Left>8.86964in</Left>
+              <Left>8.74464in</Left>
               <Height>0.18854in</Height>
               <Width>1.82402in</Width>
               <ZIndex>10</ZIndex>
@@ -2053,12 +2135,21 @@ Where IdEstado =1
             </Border>
           </Style>
         </PageHeader>
+        <PageFooter>
+          <Height>0.27082in</Height>
+          <PrintOnLastPage>true</PrintOnLastPage>
+          <Style>
+            <Border>
+              <Style>None</Style>
+            </Border>
+          </Style>
+        </PageFooter>
         <PageHeight>8.5in</PageHeight>
         <PageWidth>11in</PageWidth>
         <LeftMargin>0in</LeftMargin>
         <RightMargin>0in</RightMargin>
-        <TopMargin>0in</TopMargin>
-        <BottomMargin>0in</BottomMargin>
+        <TopMargin>0.15in</TopMargin>
+        <BottomMargin>0.15in</BottomMargin>
         <Style>
           <Border />
           <BackgroundColor>White</BackgroundColor>
@@ -2088,6 +2179,11 @@ Where IdEstado =1
     </ReportParameter>
     <ReportParameter Name="Servicio">
       <DataType>Integer</DataType>
+      <DefaultValue>
+        <Values>
+          <Value>0</Value>
+        </Values>
+      </DefaultValue>
       <Prompt>Servicio</Prompt>
       <ValidValues>
         <DataSetReference>

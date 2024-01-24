@@ -1,5 +1,6 @@
 ﻿@using Kendo.Mvc.UI
 @using System.Security.Claims
+@model ERPMVC.Models.BiometricoPost
 @{
     var errores = TempData.Keys.Contains("Errores") ? TempData["Errores"].ToString() : "";
     ClaimsPrincipal permisos = (ClaimsPrincipal)ViewData["permisos"];
@@ -12,8 +13,11 @@
 }
 <h3 class="text-themecolor">Carga de Archivo Biometrico</h3>
 
-<form id="frmBiometrico" enctype="multipart/form-data" kendo-validator="true" method="post" action="@Url.Action("GuardarBiometrico","Biometrico")" kendo-messages="messages" >
-    
+<form id="frmBiometrico" enctype="multipart/form-data" kendo-validator="true" method="post" kendo-messages="messages"
+      asp-action="GuardarBiometrico" asp-controller="Biometrico"
+      data-ajax-begin="onBegin" data-ajax-complete="onComplete"
+      data-ajax-failure="onFailed" data-ajax-success="onSuccess">
+
     <div class="card">
         <div class="card-body">
             <div class="row">
@@ -26,7 +30,6 @@
                                           required
                                           data-val-required="La fecha es requerida" />
                     </div>
-
                 </div>
 
 
@@ -43,21 +46,97 @@
                 <div class="col-md-4">
                     <div class="form-group">
                         <label for="Archivo" style="min-width:100%">Archivo:</label>
-                        <input id="Archivo" name="Archivo" type="file" style="min-width:100%" required  accept=".xlsx"/>
+                        <input id="Archivo" name="Archivo" type="file" style="min-width:100%" required accept=".xlsx" />
+                        <div class="text-muted">El archivo debe de ser *.xlsx y tener 8 columnas llamadas Número, Nombre, Tiempo (Formato 24H), Estado, Dispositivos, Tipo de Registro, Horario y Marca Asistencia.</div>
                     </div>
                 </div>
                 <div class="col-md-3">
                     <label style="min-width:100%"></label>
-                    
-                    <button class="btn btn-primary" type="submit">Cargar Archivo</button>
+
+                    <button id="btncargar" class="btn btn-primary" type="submit">Cargar Archivo</button>
                 </div>
 
-                <div class="col-md-3">
+                <div class="col-md-5">
+                 @if(!Model.valid){
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            @Model.message
+                            <button type="button" class="close custom-button" data-dismiss="alert" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                    }
                 </div>
             </div>
         </div>
     </div>
 </form>
+
+<script>
+
+
+    var onBegin = function () {
+        //alert("Begin");
+        debugger;
+        $("#btncargar").prop("disabled", true);
+        var validator = $("#frmBiometrico").data("kendoValidator");
+
+        if (!validator.validate()) {
+            MostrarMensaje("El formulario está incompleto, por favor ingrese la información requerida.", "Error", "Error", 6000);
+
+        };
+    };
+
+
+
+    var onComplete = function (context) {
+        $("#btncargar").prop("disabled", false);
+
+    };
+
+    var onSuccess = function (context) {
+        //alert(context);
+        console.log(context);
+        MostrarMensaje("Datos guardados correctamente.", "sucess", "Satisfactorio", 6000);
+        
+
+    };
+
+    var onFailed = function (context) {
+        // alert(context);
+        debugger;
+        console.log(context);
+        MostrarMensaje("Ha ocurrido un error al crear al empleado.", "Error", "Error", 6000);
+        $("#btnEmployees").prop("disabled", false);
+
+    };
+
+    //$(document).ready(function () {
+    //    $("#frmBiometrico").submit(function (event) {
+    //        event.preventDefault(); // Evitar que el formulario se envíe de inmediato
+    //        $.ajax({
+    //            url: '@Url.Action("GuardarBiometrico", "Biometrico")',
+    //            method: 'POST',
+    //            data: new FormData(this), // Enviar los datos del formulario
+    //            processData: false,
+    //            contentType: false,
+    //            success: function (result) {
+    //                // Manejo exitoso
+    //                console.log("Guardado exitoso:", result);
+    //            },
+    //            error: function (XMLHttpRequest, textStatus, errorThrown) {
+    //                if (XMLHttpRequest.status === 400) {
+    //                debugger;
+    //                    errorMessage = "Error: " + TempData["Errores"];                    
+    //                    $("#error-container").text(errorMessage);
+    //                } else {
+    //                    // Manejar otros errores
+    //                    console.error("Otro tipo de error:", textStatus, errorThrown);
+    //                }
+    //            }
+    //        });
+    //    });
+    //});
+</script>
 
 
 <div class="row">
@@ -68,58 +147,14 @@
 
 <script>
 
-
-    function CrearGrid() {
-        $("#grdConfiguracion").kendoGrid({
-            dataSource: {
-                transport: {
-                    read: "@Url.Action("GetBiometricos", "Biometrico")"
-                },
-                schema: {
-                    model: {
-                        id:"Id",
-                        fields: {
-                            Id: { type: "number", editable: false },
-                            Fecha: { type: "date", editable: false },
-                            Observacion: { type:"string", editable: false },
-                            IdEstado: { type: "number", editable: false },
-                            Estado: { defaultValue: {IdEstado:0,NombreEstado:""}, editable: false }
-                        }
-                    }
-                }
-            },
-            columns: [
-                {
-                    command: [
-                        PermisoVerDetalle(),
-                        PermisoAprobar(),
-                        PermisoRechazar()
-                    ],
-                    width:150
-                },
-                { field: "Id", title: "Id. ", width: 80 },
-                { field: "Fecha", title: "Fecha", width: 150, template: '#= kendo.toString(Fecha,"dd/MM/yyyy")#' },
-                { field: "Observacion", title: "Observacion",widh : 150},
-                { field: "Estado", title: "Estado", width: 100, template: "#= Estado.NombreEstado #"}
-            ],
-            noRecords: {
-                template:"No archivos biometricos cargados"
-            },
-            //height: 400,
-            scrollable: true,
-            editable: false
-        });
+    function dataBound(e) {
+        $.each(this.dataSource.data(), function () {
+            if (this.Estado.NombreEstado != 'Cargado') {
+                $('[data-uid=' + this.uid + ']').find('.k-grid-Aprobar').hide();
+            }
+        })
     }
 
-    //function EditorFecha() {
-    //    $("#Fecha").kendoDatePicker({ dateInput: true, format: "dd/MM/yyyy" });
-    //}
-
-    function EditorArchivo() {
-        $("#Archivo").kendoUpload({
-            multiple:false
-        });
-    }
 
     function VerDetalle(e) {
         e.preventDefault();
@@ -147,6 +182,7 @@
 
     function Aprobar(e) {
         e.preventDefault();
+        if (!confirm('Esta seguro de aprobar este biometrico?')) return;
         var registro = this.dataItem($(e.currentTarget).closest('tr'));
         var parametros = {
             IdBiometrico: registro.Id
@@ -188,6 +224,7 @@
 
     function Rechazar(e) {
         e.preventDefault();
+        if (!confirm('Esta seguro de rechazar este biometrico?')) return;
         var registro = this.dataItem($(e.currentTarget).closest('tr'));
         var parametros = {
             IdBiometrico: registro.Id
@@ -212,7 +249,6 @@
                 RefreshBiometrico();
             },
             error: function (XMLHttpRequest, textStatus, errorThrown) {
-                debugger;
                 $.toast({
                     heading: 'Error',
                     text: textStatus + ": " + XMLHttpRequest.responseText,
@@ -228,52 +264,98 @@
     }
 
     function RefreshBiometrico() {
-        $("#grdConfiguracion").getKendoGrid().dataSource.read();
-    }
-
-    $(document).ready(function () {
-        // debugger;
-        if ('@errores' !== '') {
-            $.toast({
-                heading: 'Error',
-                text: ' @errores',
-                position: 'top-right',
-                loaderBg: '#ff6849',
-                icon: 'error',
-                hideAfter: 3000,
-                stack: 6
-            });
-        }
-        //EditorFecha();
-        CrearGrid();
-    });
-</script>
-<script type="text/javascript">
-    function PermisoVerDetalle() {
-        var permisos = '@ViewData["permisos"]';
-
-            Detalle = {
-                name: "ver", iconClass: "fa fa-eye", text: "", click: VerDetalle
-            }
-            return Detalle
-
-    }
-    function PermisoAprobar() {
-        var permisos = '@ViewData["permisos"]';
-
-            AprobarArchivoBiometrico = {
-                name: "aprobar", iconClass: "fa fa-thumbs-up", text: "", click: Aprobar, visible: function (dataItem) { return dataItem.Estado.IdEstado === 60 }
-            }
-            return AprobarArchivoBiometrico
-
-    }
-    function PermisoRechazar() {
-        var permisos = '@ViewData["permisos"]';
-
-            RechazarArchivoBiometrico = {
-                name: "rechazar", iconClass: "fa fa-thumbs-down", text: "", click: Rechazar, visible: function (dataItem) { return dataItem.Estado.IdEstado === 60 }
-            }
-            return RechazarArchivoBiometrico
-
+        var grid = $("#grdConfiguracion").getKendoGrid();
+        grid.dataSource.read();
     }
 </script>
+
+@(Html.Kendo().Grid<ERPMVC.Models.Biometrico>()
+                                      .Name("grdConfiguracion").NoRecords()
+
+                                      .Columns(columns =>
+                                      {
+                                          {
+                                              columns.Command(command =>
+                                              {
+                                                  command.Custom("Detalle").Text(" ").IconClass("fa fa-eye").Click("VerDetalle");
+                                                  command.Custom("Aprobar").Text(" ").IconClass("fa fa-thumbs-up").Click("Aprobar");
+                                              }).Width(200).Title("Acciones");
+                                          }
+                                          columns.Bound(p => p.Id).Title("No.").Width(80);
+                                          columns.Bound(p => p.Fecha)
+                                              .Title("Fecha")
+                                              .Width(130)
+                                              .Format("{0:dd/MM/yyyy}");
+                                          columns.Bound(p => p.Observacion).Title("Observación").Width(130);
+                                          columns.Bound(p => p.Estado.NombreEstado).Title("Estado").Width(150);
+                                      }).Filterable(f => f.Operators(o => o.ForString(s => s
+                                                             .Clear()
+                                                             .Contains("Contiene")
+                                                             .DoesNotContain("No contiene")
+                                                             .EndsWith("Termina con")
+                                                             .IsEqualTo("Es igual a")
+                                                             .IsNotEqualTo("No es igual a")
+                                                             .IsNull("Es nulo")
+                                                             .StartsWith("Inicia con")
+                                                       )
+                                                         .ForNumber(n => n
+                                                         .Clear()
+                                                         .IsEqualTo("Es igual a")
+                                                         .IsGreaterThan("Es mayor que")
+                                                         .IsLessThan("Es menor que")
+                                                         .IsNull("Es nulo")
+                                                         .IsLessThanOrEqualTo("Es menor o igual que")
+                                                         .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                                       )
+                                                       .ForDate(d => d
+                                                       .Clear()
+                                                       .IsEqualTo("Es igual que")
+                                                       .IsGreaterThan("Es mayor que")
+                                                       .IsLessThan("Es menor que")
+                                                       .IsLessThanOrEqualTo("Es menor o igual que")
+                                                       .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                                       .IsNotEqualTo("No es igual que")
+                                                        )
+                                                     ))
+
+                                        .Editable(e => e.Mode(GridEditMode.PopUp))
+                                        .Sortable()
+                                        .AutoBind(true)
+                                        .Pageable(p => p.Input(true))
+                                        .Resizable(s => s.Columns(true))
+                                        .Filterable()
+                                        .Scrollable()
+                                        .DataSource(dataSource =>
+                                       dataSource
+                                       //.Ajax()
+                                       .WebApi()
+                                        .ServerOperation(true)
+                                        .Model(model =>
+                                        {
+                                            model.Id(p => p.Id);
+                                        })
+                                        .Events(events =>
+                                        {
+                                            events.Error("error_handler");
+                                        })
+                                        .Read(read => read.Action("GetBiometricos", "Biometrico"))
+                                  ).Events(e => e.DataBound("dataBound"))
+)
+
+<script>
+    function setRowButtonTooltip(btn_cl, btn_tooltip) {
+        $("#grdConfiguracion").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+
+    setRowButtonTooltip(".k-grid-Aprobar", "Aprobar");
+    setRowButtonTooltip(".k-grid-Detalle", "Ver Detalle");
+</script>
+<style>
+    /* Estilo personalizado para el botón */
+    .custom-button {
+        border-radius: 10%; /* Aplica un borde redondeado para hacerlo más estético */
+    }
+</style>

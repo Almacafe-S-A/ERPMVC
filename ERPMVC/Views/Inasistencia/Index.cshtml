@@ -1,6 +1,7 @@
 ﻿@using Kendo.Mvc.UI
 @using System.Security.Claims
 @{
+    ViewData["Title"] = "Inasistencias";
     DateTime fecha = DateTime.Today;
     bool todo = false;
     if (TempData.ContainsKey("Fecha"))
@@ -16,15 +17,15 @@
 <h3 class="text-themecolor">Revisión y Aprobación de Inasistencias</h3>
 <div class="container-fluid">
     <div class="row">
-        <div class="col">
+        <div class="col-md-2">
             <div class="row">
                 <form id="frmBiometrico" kendo-validator="true" method="post" action="@Url.Action("PostFecha","Inasistencia")">
                     <div class="form-group">
-                        <label for="Fecha">Fecha:</label>
-                        <input id="Fecha" name="Fecha" />
-                    </div>
-                    <div class="form-group">
-                        <input type="submit" value="Cargar" />
+                        <div class="input-group">
+                                <label class="form-control">Fecha:</label>
+                                <input class="form-control" id="Fecha" name="Fecha" value=@fecha />
+                                <input type="submit" value="Cargar" />
+                        </div>
                     </div>
                 </form>
             </div>
@@ -48,7 +49,7 @@
                         <div class="row">
                             <div class="col">
                                 <label for="txtObservacion">Observación:</label>
-                                <input type="text" id="txtObservacion" value="" />
+                                <input type="text" id="txtObservacion" value="" required />
                             </div>
                         </div>
                         <div class="row">
@@ -70,9 +71,9 @@
 </div>
 
 <script>
-
-
     function CrearGrid() {
+        var fechaActual = new Date();
+        var fechaFormateada = fechaActual.getFullYear() + "-" + (fechaActual.getMonth() + 1) + "-" + fechaActual.getDate();
         $("#grdConfiguracion").kendoGrid({
             dataSource: {
                 transport: {
@@ -90,26 +91,43 @@
                             Id: { type: "number", editable: false },
                             Fecha: {type:"date", editable: false},
                             Empleado: { defaultValue: {IdEmpleado:0,NombreEmpleado:''}, editable: false },
+                            NombreEmpleado: { type: "string" , editable: false},
+                            TipoNombre: { type: "string", editable: false },
+                            NombreEstado: { type: "string", editable: false },
+                            HoraLlegada: { type: "string", editable: false },
                             Tipo: { defaultValue: { Id: 0, Nomnbre: "" }, editable: false },
-                            Comentario: {type:"string", editable:false},
+                            Observacion: { type: "string", editable: false },
                             Estado: { defaultValue: {IdEstado:0,NombreEstado:""}, editable: false }
                         }
                     }
                 }
             },
+            toolbar: [
+                { name: "excel", text: "Exportar a Excel" } // Cambio aquí
+
+            ],
+            excel: {
+                fileName: "InasistenciasReport_" + fechaFormateada + ".xlsx", // Cambio aquí
+                proxyURL: '@Url.Action("Export", "Home")',
+                allPages: true
+            },
             columns: [
                 {
                     command: [
                         PermisoAprobar(),
-                        PermisoRechazar()
                     ],
-                    width:150
+                    width:80
                 },
-                { field: "Id", title: "Id. ", width: 80, hidden: true },
-                { field: "Empleado", title: "Empleado", width: 200, template: '#= Empleado.NombreEmpleado #' },
-                { field: "Tipo", title: "Tipo Inasistencia", width: 100, template: '#= Tipo.Nombre #' },
-                { field: "Comentario", title: "Comentario", width: 200},
-                { field: "Estado", title: "Estado", width: 100, template: "#= Estado.NombreEstado #"}
+                { field: "Id", title: "Id. ", width: 50, hidden: true },
+                { field: "IdEmpleado", title: "Codigo", width: 80, template: '#= Empleado.IdEmpleado #', attributes: { style: "text-align: center;" } },
+                { field: "Empleado", title: "Empleado", width: 200, template: '#= Empleado.NombreEmpleado #', hidden: true},
+                { field: "NombreEmpleado", title: "Empleado", width: 200 },
+                { field: "HoraLlegada", title: "Hora Llegada", width: 110, attributes: { style: "text-align: right;" }},
+                { field: "Tipo", title: "Tipo Inasistencia", width: 100, template: '#= Tipo.Nombre #', hidden: true },
+                { field: "TipoNombre", title: "Tipo Inasistencia", width: 200 },
+                { field: "Observacion", title: "Observación", width: 200 },
+                { field: "NombreEstado", title: "Estado", width: 200 },
+                { field: "Estado", title: "Estado", width: 100, template: "#= Estado.NombreEstado#", hidden: true }
             ],
             noRecords: {
                 template:"No hay inasistencias para la fecha estipulada."
@@ -135,7 +153,7 @@
                     transport: {
                         read: {
                             type:"GET",
-                            url: '@Url.Action("GetElementoByGrupoConfiguracionV2", "ElementoConfiguracion")?GrupoConfiguracionId=120',
+                            url: '@Url.Action("GetElementoByGrupoConfiguracionV2", "ElementoConfiguracion")?GrupoConfiguracionId=31',
                             dataType: "json"
                         }
                     },
@@ -151,99 +169,14 @@
             });
     }
 
-    function Aprobar(e) {
-        e.preventDefault();
-        var registro = this.dataItem($(e.currentTarget).closest('tr'));
-        $("#txtObservacion").val("");
-        $("#modalAceptarRechazar").modal('show');
-        $('#btnGuardarInasistencia').click(function() {
-            var parametros = {
-                idInasistencia: registro.Id,
-                idTipo: $("#cmbTipoInasistencia").val(),
-                comentario: $("#txtObservacion").val()
-            };
-            debugger;
-            $.ajax({
-                url: '@Url.Action("AprobarInasistencia", "Inasistencia")',
-                method: 'POST',
-                datatype: "json",
-                async: false,
-                data: parametros,
-                success: function (result) {
-                    $.toast({
-                        heading: 'Satisfactorio',
-                        text: 'Datos guardados correctamente.',
-                        position: 'top-right',
-                        loaderBg: '#ff6849',
-                        icon: 'success',
-                        hideAfter: 3000,
-                        stack: 6
-                    });
-                    RefreshGrid();
-                    $("#modalAceptarRechazar").modal('hide');
-                },
-                error: function (XMLHttpRequest, textStatus, errorThrown) {
-                    $.toast({
-                        heading: 'Error',
-                        text: ' ' + textStatus + ": " + XMLHttpRequest.responseText,
-                        position: 'top-right',
-                        loaderBg: '#ff6849',
-                        icon: 'error',
-                        hideAfter: 3000,
-                        stack: 6
-                    });
-                    RefreshGrid();
-                }
-            });
-        });
-        @*debugger;
-        *@
-    }
-
-    function Rechazar(e) {
-        e.preventDefault();
-        var registro = this.dataItem($(e.currentTarget).closest('tr'));
-        var parametros = {
-            idInasistencia : registro.Id,
-            idTipo: registro.Tipo.id,
-            comentario: registro.Comentario
-        };
-        @*debugger;
-        $.ajax({
-            url: '@Url.Action("RechazarInasistencia", "Inasistencia")',
-            method: 'POST',
-            datatype: "json",
-            async: false,
-            data: parametros,
-            success: function (result) {
-                $.toast({
-                    heading: 'Satisfactorio',
-                    text: 'Datos guardados correctamente.',
-                    position: 'top-right',
-                    loaderBg: '#ff6849',
-                    icon: 'success',
-                    hideAfter: 3000,
-                    stack: 6
-                });
-                RefreshGrid();
-            },
-            error: function (XMLHttpRequest, textStatus, errorThrown) {
-                $.toast({
-                    heading: 'Error',
-                    text: ' ' + textStatus + ": " + XMLHttpRequest.responseText,
-                    position: 'top-right',
-                    loaderBg: '#ff6849',
-                    icon: 'error',
-                    hideAfter: 3000,
-                    stack: 6
-                });
-                RefreshGrid();
-            }
-        });*@
-    }
-
     function RefreshGrid() {
         $("#grdConfiguracion").getKendoGrid().dataSource.read();
+    }
+    // Función para exportar a Excel
+    function exportToExcel() {
+        debugger;
+        var grid = $("#grdConfiguracion").data("kendoGrid");
+        grid.saveAsExcel();
     }
 
     $(document).ready(function () {
@@ -255,20 +188,58 @@
 <script type="text/javascript">
     function PermisoAprobar() {
         var permisos = '@ViewData["permisos"]';
-       
-            AprobarInasistencias = {
-                name: "aprobar", iconClass: "fa fa-thumbs-up", text: "", click: Aprobar, visible: function (dataItem) { return dataItem.Estado.IdEstado === 80 }
-            }
-            return AprobarInasistencias
-        
+
+        function Aprobar(e) {
+            e.preventDefault();
+            var registro = this.dataItem($(e.currentTarget).closest('tr'));
+            $("#txtObservacion").val("");
+            $("#modalAceptarRechazar").modal('show');
+            $('#btnGuardarInasistencia').off('click').on('click', function () {
+                var parametros = {
+                    idInasistencia: registro.Id,
+                    idTipo: $("#cmbTipoInasistencia").val(),
+                    comentario: $("#txtObservacion").val()
+                };
+                $.ajax({
+                    url: '@Url.Action("AprobarInasistencia", "Inasistencia")',
+                    method: 'POST',
+                    datatype: "json",
+                    async: false,
+                    data: parametros,
+                    success: function (result) {
+                        $.toast({
+                            heading: 'Satisfactorio',
+                            text: 'Datos guardados correctamente.',
+                            position: 'top-right',
+                            loaderBg: '#ff6849',
+                            icon: 'success',
+                            hideAfter: 3000,
+                            stack: 6
+                        });
+                        RefreshGrid();
+                        $("#modalAceptarRechazar").modal('hide');
+                    },
+                    error: function (XMLHttpRequest, textStatus, errorThrown) {
+                        $.toast({
+                            heading: 'Error',
+                            text: 'Los Datos están incompletos.',
+                            position: 'top-right',
+                            loaderBg: '#ff6849',
+                            icon: 'error',
+                            hideAfter: 3000,
+                            stack: 6
+                        });
+                        RefreshGrid();
+                    }
+                });
+            });
+        }
+
+        var AprobarInasistencias = {
+            name: "aprobar", iconClass: "fa fa-thumbs-up", text: "", click: Aprobar, visible: function (dataItem) { return dataItem.Estado.IdEstado === 97 }
+        };
+
+        return AprobarInasistencias;
     }
-    function PermisoRechazar() {
-        var permisos = '@ViewData["permisos"]';
-     
-            RechazarInasistencias = {
-                name: "rechazar", iconClass: "fa fa-thumbs-down", text: "", click: Rechazar, visible: function (dataItem) { return dataItem.Estado.IdEstado === 80 }
-            }
-            return RechazarInasistencias
-      
-    }
+
 </script>

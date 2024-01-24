@@ -58,11 +58,10 @@ namespace ERPMVC.Controllers
                 }
                 if (_CreditNote == null)
                 {
-                    _CreditNote = new CreditNoteDTO {CreditNoteDate = DateTime.Now.AddDays(30), editar = 1, BranchId = Convert.ToInt32(HttpContext.Session.GetString("BranchId")) };
-                }
-                else
-                {
-                    _CreditNote.NumeroDEIString = $"{_CreditNote.Sucursal}-{_CreditNote.Caja}-{_CreditNote.TipoDocumento}-{_CreditNote.NúmeroDEI.ToString().PadLeft(8, '0')} ";
+                    _CreditNote = new CreditNoteDTO {
+                        CreditNoteDate = DateTime.Now, editar = 1, 
+                        BranchId = Convert.ToInt32(HttpContext.Session.GetString("BranchId")) 
+                    };
                 }
                 ViewData["permisos"] = _principal;
             }
@@ -95,10 +94,6 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _CreditNote = JsonConvert.DeserializeObject<List<CreditNote>>(valorrespuesta);
-                    foreach (var item in _CreditNote)
-                    {
-                        item.NoSAG = $"{item.Sucursal}-{item.Caja}-{item.TipoDocumento}-{item.NúmeroDEI.ToString().PadLeft(8, '0')} ";
-                    }
                 }
 
 
@@ -114,8 +109,41 @@ namespace ERPMVC.Controllers
 
         }
 
+        public async Task<ActionResult> Anular([FromBody] CreditNote invoice)
+        //public async Task<ActionResult> GetGoodsDeliveredById([FromBody]dynamic dto)
+        {
+            CreditNote _Invoice = new CreditNote();
+            try
+            {
 
-        public async Task<ActionResult<GoodsDeliveryAuthorization>> Aprobar([FromBody] CreditNote creditnote)
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + $"api/CreditNote/Anular/{invoice.CreditNoteId}");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _Invoice = JsonConvert.DeserializeObject<CreditNote>(valorrespuesta);
+
+                }
+                else
+                {
+                    throw new Exception(await (result.Content.ReadAsStringAsync()));
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: {ex.ToString()}");
+                return BadRequest(ex.Message);
+            }
+
+            return Json(_Invoice);
+        }
+
+
+
+        public async Task<ActionResult<CreditNote>> Aprobar([FromBody] CreditNote creditnote)
         {
             try
             {
@@ -147,7 +175,7 @@ namespace ERPMVC.Controllers
 
         }
 
-        public async Task<ActionResult<GoodsDeliveryAuthorization>> Revisar([FromBody] CreditNote creditnote)
+        public async Task<ActionResult<CreditNote>> Revisar([FromBody] CreditNote creditnote)
         {
             try
             {
@@ -184,7 +212,7 @@ namespace ERPMVC.Controllers
         public async Task<ActionResult> Generar([FromBody] CreditNoteDTO creditnote)
         //public async Task<ActionResult> GetGoodsDeliveredById([FromBody]dynamic dto)
         {
-            Invoice _Invoice = new Invoice();
+            CreditNote _Invoice = new CreditNote();
             try
             {
 
@@ -196,7 +224,7 @@ namespace ERPMVC.Controllers
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _Invoice = JsonConvert.DeserializeObject<Invoice>(valorrespuesta);
+                    _Invoice = JsonConvert.DeserializeObject<CreditNote>(valorrespuesta);
 
                 }
                 else
@@ -244,6 +272,10 @@ namespace ERPMVC.Controllers
                    
                     var insertresult = await Insert(_CreditNote);
                     var value = (insertresult.Result as ObjectResult).Value;
+                    if ((insertresult.Result is BadRequestObjectResult))
+                    {
+                        return await Task.Run(() => BadRequest(insertresult.Result));
+                    }
                     CreditNote resultado = ((CreditNote)(value));
                 }
                 else
@@ -439,6 +471,11 @@ namespace ERPMVC.Controllers
                 throw ex;
             }
             return await Task.Run(() => Ok(_creditNote));
+        }
+
+        public ActionResult SFReporteNC()
+        {
+            return View();
         }
     }
 }

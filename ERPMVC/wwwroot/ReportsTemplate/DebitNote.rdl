@@ -6,7 +6,7 @@
     <DataSource Name="ERP">
       <ConnectionProperties>
         <DataProvider>SQL</DataProvider>
-        <ConnectString>Data Source=(local);Initial Catalog=ERP-qa</ConnectString>
+        <ConnectString>Data Source=192.168.0.5;Initial Catalog=ERP-PRODUCCION</ConnectString>
         <IntegratedSecurity>true</IntegratedSecurity>
       </ConnectionProperties>
       <rd:SecurityType>Integrated</rd:SecurityType>
@@ -58,8 +58,12 @@
   ,DebitNote.UsuarioCreacion
   ,DebitNote.UsuarioModificacion
   ,DebitNote.RangoAutorizado
-FROM
-  DebitNote
+  ,DebitNote.NumeroDEIString
+  ,Invoice.NumeroDEI AS INVOICEDEI
+  ,Invoice.InvoiceDate AS INVOICEDATE
+  ,Invoice.CAI AS INVOICECAI
+FROM DebitNote
+INNER JOIN INVOICE ON DEBITNOTE.NumeroDEIString = INVOICE.NumeroDEI
 WHERE DEbitNoteId = @ID</CommandText>
         <rd:DesignerState>
           <QueryDefinition xmlns="http://schemas.microsoft.com/ReportingServices/QueryDefinition/Relational">
@@ -271,6 +275,22 @@ WHERE DEbitNoteId = @ID</CommandText>
           <DataField>RangoAutorizado</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
+        <Field Name="NumeroDEIString">
+          <DataField>NumeroDEIString</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="INVOICEDEI">
+          <DataField>INVOICEDEI</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="InvoiceDate">
+          <DataField>INVOICEDATE</DataField>
+          <rd:TypeName>System.DateTime</rd:TypeName>
+        </Field>
+        <Field Name="INVOICECAI">
+          <DataField>INVOICECAI</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
       </Fields>
     </DataSet>
     <DataSet Name="DebitNoteLine">
@@ -455,6 +475,7 @@ WHERE DebitNoteId = @ID</CommandText>
   ,CompanyInfo.Fax
   ,CompanyInfo.Email
   ,CompanyInfo.RTN
+ ,CompanyInfo.Tax_Id
   ,CompanyInfo.image
   ,CompanyInfo.CompanyInfoId
   ,CompanyInfo.WebPage
@@ -507,6 +528,10 @@ FROM
         </Field>
         <Field Name="RTN">
           <DataField>RTN</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="Tax_Id">
+          <DataField>Tax_Id</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
         <Field Name="image">
@@ -921,14 +946,14 @@ FROM
       <Body>
         <ReportItems>
           <Textbox Name="DebitNoteName">
-            <CanGrow>true</CanGrow>
             <KeepTogether>true</KeepTogether>
             <Paragraphs>
               <Paragraph>
                 <TextRuns>
                   <TextRun>
-                    <Value>=First(Fields!DebitNoteName.Value, "DebitNote")</Value>
+                    <Value>NOTA DE DEBITO No.</Value>
                     <Style>
+                      <FontSize>12pt</FontSize>
                       <FontWeight>Bold</FontWeight>
                     </Style>
                   </TextRun>
@@ -937,14 +962,15 @@ FROM
               </Paragraph>
             </Paragraphs>
             <rd:DefaultName>DebitNoteName</rd:DefaultName>
-            <Top>0.18in</Top>
-            <Left>4.275in</Left>
+            <Top>0.1675in</Top>
+            <Left>3.8375in</Left>
             <Height>0.25in</Height>
-            <Width>3.50835in</Width>
+            <Width>1.81194in</Width>
             <Style>
               <Border>
                 <Style>None</Style>
               </Border>
+              <VerticalAlign>Middle</VerticalAlign>
               <PaddingLeft>2pt</PaddingLeft>
               <PaddingRight>2pt</PaddingRight>
               <PaddingTop>2pt</PaddingTop>
@@ -952,35 +978,32 @@ FROM
             </Style>
           </Textbox>
           <Textbox Name="DebitNoteId">
-            <CanGrow>true</CanGrow>
             <KeepTogether>true</KeepTogether>
             <Paragraphs>
               <Paragraph>
                 <TextRuns>
                   <TextRun>
-                    <Value>No. </Value>
+                    <Value>=First(Fields!NumeroDEI.Value, "DebitNote")</Value>
                     <Style>
+                      <FontSize>11pt</FontSize>
                       <FontWeight>Bold</FontWeight>
                     </Style>
-                  </TextRun>
-                  <TextRun>
-                    <Value>=First(Fields!NumeroDEI.Value, "DebitNote")</Value>
-                    <Style />
                   </TextRun>
                 </TextRuns>
                 <Style />
               </Paragraph>
             </Paragraphs>
             <rd:DefaultName>DebitNoteId</rd:DefaultName>
-            <Top>0.44389in</Top>
-            <Left>4.275in</Left>
+            <Top>0.18in</Top>
+            <Left>5.98404in</Left>
             <Height>0.25in</Height>
-            <Width>2.04167in</Width>
+            <Width>1.99027in</Width>
             <ZIndex>1</ZIndex>
             <Style>
               <Border>
                 <Style>None</Style>
               </Border>
+              <VerticalAlign>Middle</VerticalAlign>
               <PaddingLeft>2pt</PaddingLeft>
               <PaddingRight>2pt</PaddingRight>
               <PaddingTop>2pt</PaddingTop>
@@ -988,7 +1011,6 @@ FROM
             </Style>
           </Textbox>
           <Textbox Name="DebitNoteDate">
-            <CanGrow>true</CanGrow>
             <KeepTogether>true</KeepTogether>
             <Paragraphs>
               <Paragraph>
@@ -1008,8 +1030,8 @@ FROM
               </Paragraph>
             </Paragraphs>
             <rd:DefaultName>DebitNoteDate</rd:DefaultName>
-            <Top>0.70778in</Top>
-            <Left>4.275in</Left>
+            <Top>0.45778in</Top>
+            <Left>3.8375in</Left>
             <Height>0.25in</Height>
             <Width>2.04167in</Width>
             <ZIndex>2</ZIndex>
@@ -1024,31 +1046,42 @@ FROM
             </Style>
           </Textbox>
           <Textbox Name="CAI">
-            <CanGrow>true</CanGrow>
             <KeepTogether>true</KeepTogether>
             <Paragraphs>
               <Paragraph>
                 <TextRuns>
                   <TextRun>
-                    <Value>CAI: </Value>
+                    <Value>CAI:</Value>
                     <Style>
+                      <FontSize>9pt</FontSize>
                       <FontWeight>Bold</FontWeight>
                     </Style>
                   </TextRun>
                   <TextRun>
+                    <Value xml:space="preserve"> </Value>
+                    <Style>
+                      <FontSize>9pt</FontSize>
+                    </Style>
+                  </TextRun>
+                  <TextRun>
                     <Value>=First(Fields!CAI.Value, "DebitNote")</Value>
-                    <Style />
+                    <Style>
+                      <FontSize>9pt</FontSize>
+                    </Style>
                   </TextRun>
                 </TextRuns>
                 <Style />
               </Paragraph>
             </Paragraphs>
             <rd:DefaultName>CAI</rd:DefaultName>
-            <Top>0.97167in</Top>
-            <Left>4.275in</Left>
-            <Height>0.25in</Height>
-            <Width>3.50834in</Width>
+            <Top>0.76334in</Top>
+            <Left>3.8375in</Left>
+            <Height>0.22in</Height>
+            <Width>3.93543in</Width>
             <ZIndex>3</ZIndex>
+            <Visibility>
+              <Hidden>=First(Fields!NumeroDEI.Value, "DebitNote")="Interna"</Hidden>
+            </Visibility>
             <Style>
               <Border>
                 <Style>None</Style>
@@ -1060,31 +1093,43 @@ FROM
             </Style>
           </Textbox>
           <Textbox Name="DebitNoteDueDate">
-            <CanGrow>true</CanGrow>
             <KeepTogether>true</KeepTogether>
             <Paragraphs>
               <Paragraph>
                 <TextRuns>
                   <TextRun>
-                    <Value>Fecha Limite de Emision: </Value>
+                    <Value>Fecha Limite de Emision:</Value>
                     <Style>
+                      <FontSize>9pt</FontSize>
                       <FontWeight>Bold</FontWeight>
                     </Style>
                   </TextRun>
                   <TextRun>
-                    <Value>=Format(First(Fields!DebitNoteDueDate.Value, "DebitNote"), "dd/MM/yyyy")</Value>
-                    <Style />
+                    <Value xml:space="preserve"> </Value>
+                    <Style>
+                      <FontSize>9pt</FontSize>
+                    </Style>
+                  </TextRun>
+                  <TextRun>
+                    <Value>=First(Fields!DebitNoteDueDate.Value, "DebitNote")</Value>
+                    <Style>
+                      <FontSize>9pt</FontSize>
+                      <Format>d/M/yyyy</Format>
+                    </Style>
                   </TextRun>
                 </TextRuns>
                 <Style />
               </Paragraph>
             </Paragraphs>
             <rd:DefaultName>DebitNoteDueDate</rd:DefaultName>
-            <Top>1.23556in</Top>
-            <Left>4.275in</Left>
-            <Height>0.25in</Height>
-            <Width>3.50834in</Width>
+            <Top>0.97306in</Top>
+            <Left>3.8375in</Left>
+            <Height>0.22in</Height>
+            <Width>3.93543in</Width>
             <ZIndex>4</ZIndex>
+            <Visibility>
+              <Hidden>=First(Fields!NumeroDEI.Value, "DebitNote")="Interna"</Hidden>
+            </Visibility>
             <Style>
               <Border>
                 <Style>None</Style>
@@ -1108,14 +1153,16 @@ FROM
                     </Style>
                   </TextRun>
                 </TextRuns>
-                <Style />
+                <Style>
+                  <TextAlign>Center</TextAlign>
+                </Style>
               </Paragraph>
             </Paragraphs>
             <rd:DefaultName>Textbox12</rd:DefaultName>
-            <Top>5.18055in</Top>
-            <Left>5.91888in</Left>
+            <Top>4.74305in</Top>
+            <Left>5.78138in</Left>
             <Height>0.25in</Height>
-            <Width>0.86625in</Width>
+            <Width>0.74125in</Width>
             <ZIndex>5</ZIndex>
             <Style>
               <Border>
@@ -1128,10 +1175,10 @@ FROM
             </Style>
           </Textbox>
           <Line Name="Line3">
-            <Top>5.1111in</Top>
-            <Left>5.22978in</Left>
+            <Top>4.6736in</Top>
+            <Left>4.91728in</Left>
             <Height>0in</Height>
-            <Width>1.88244in</Width>
+            <Width>2.29911in</Width>
             <ZIndex>6</ZIndex>
             <Style>
               <Border>
@@ -1146,8 +1193,16 @@ FROM
               <Paragraph>
                 <TextRuns>
                   <TextRun>
-                    <Value>Son:   </Value>
+                    <Value>Son:  </Value>
                     <Style>
+                      <FontSize>9pt</FontSize>
+                      <FontWeight>Bold</FontWeight>
+                    </Style>
+                  </TextRun>
+                  <TextRun>
+                    <Value xml:space="preserve"> </Value>
+                    <Style>
+                      <FontSize>9pt</FontSize>
                       <FontWeight>Normal</FontWeight>
                     </Style>
                   </TextRun>
@@ -1155,7 +1210,27 @@ FROM
                     <Value>  : : : : : : : : : : : </Value>
                     <Style>
                       <FontStyle>Italic</FontStyle>
+                      <FontSize>9pt</FontSize>
                       <FontWeight>Normal</FontWeight>
+                    </Style>
+                  </TextRun>
+                  <TextRun>
+                    <Value>=First(Fields!TotalLetras.Value, "DebitNote")</Value>
+                    <Style>
+                      <FontSize>9pt</FontSize>
+                    </Style>
+                  </TextRun>
+                  <TextRun>
+                    <Value xml:space="preserve">    </Value>
+                    <Style>
+                      <FontSize>9pt</FontSize>
+                    </Style>
+                  </TextRun>
+                  <TextRun>
+                    <Value>: : : : : : : : : : :</Value>
+                    <Style>
+                      <FontStyle>Italic</FontStyle>
+                      <FontSize>9pt</FontSize>
                     </Style>
                   </TextRun>
                 </TextRuns>
@@ -1163,10 +1238,10 @@ FROM
               </Paragraph>
             </Paragraphs>
             <rd:DefaultName>Textbox12</rd:DefaultName>
-            <Top>4.38278in</Top>
-            <Left>0.41333in</Left>
+            <Top>4.00778in</Top>
+            <Left>0.10083in</Left>
             <Height>0.25556in</Height>
-            <Width>1.42in</Width>
+            <Width>7.87348in</Width>
             <ZIndex>7</ZIndex>
             <Style>
               <Border>
@@ -1178,52 +1253,7 @@ FROM
               <PaddingBottom>2pt</PaddingBottom>
             </Style>
           </Textbox>
-          <Textbox Name="TotalLetras">
-            <CanGrow>true</CanGrow>
-            <KeepTogether>true</KeepTogether>
-            <Paragraphs>
-              <Paragraph>
-                <TextRuns>
-                  <TextRun>
-                    <Value>=First(Fields!TotalLetras.Value, "DebitNote")</Value>
-                    <Style>
-                      <FontFamily>Arial Rounded MT Bold</FontFamily>
-                      <FontWeight>Bold</FontWeight>
-                    </Style>
-                  </TextRun>
-                  <TextRun>
-                    <Value xml:space="preserve">    </Value>
-                    <Style />
-                  </TextRun>
-                  <TextRun>
-                    <Value>: : : : : : : : : : :</Value>
-                    <Style>
-                      <FontStyle>Italic</FontStyle>
-                      <FontWeight>Normal</FontWeight>
-                    </Style>
-                  </TextRun>
-                </TextRuns>
-                <Style />
-              </Paragraph>
-            </Paragraphs>
-            <rd:DefaultName>TotalLetras</rd:DefaultName>
-            <Top>4.38834in</Top>
-            <Left>1.84722in</Left>
-            <Height>0.25in</Height>
-            <Width>5.39167in</Width>
-            <ZIndex>8</ZIndex>
-            <Style>
-              <Border>
-                <Style>None</Style>
-              </Border>
-              <PaddingLeft>2pt</PaddingLeft>
-              <PaddingRight>2pt</PaddingRight>
-              <PaddingTop>2pt</PaddingTop>
-              <PaddingBottom>2pt</PaddingBottom>
-            </Style>
-          </Textbox>
           <Textbox Name="Textbox12">
-            <CanGrow>true</CanGrow>
             <KeepTogether>true</KeepTogether>
             <Paragraphs>
               <Paragraph>
@@ -1239,11 +1269,11 @@ FROM
               </Paragraph>
             </Paragraphs>
             <rd:DefaultName>Textbox12</rd:DefaultName>
-            <Top>1.44055in</Top>
-            <Left>0.41333in</Left>
-            <Height>0.25in</Height>
+            <Top>1.67805in</Top>
+            <Left>0.10083in</Left>
+            <Height>0.22in</Height>
             <Width>0.56667in</Width>
-            <ZIndex>9</ZIndex>
+            <ZIndex>8</ZIndex>
             <Style>
               <Border>
                 <Style>None</Style>
@@ -1255,7 +1285,6 @@ FROM
             </Style>
           </Textbox>
           <Textbox Name="Textbox13">
-            <CanGrow>true</CanGrow>
             <KeepTogether>true</KeepTogether>
             <Paragraphs>
               <Paragraph>
@@ -1271,11 +1300,11 @@ FROM
               </Paragraph>
             </Paragraphs>
             <rd:DefaultName>Textbox12</rd:DefaultName>
-            <Top>1.71833in</Top>
-            <Left>0.41333in</Left>
-            <Height>0.25001in</Height>
+            <Top>1.89333in</Top>
+            <Left>0.10083in</Left>
+            <Height>0.22001in</Height>
             <Width>0.56667in</Width>
-            <ZIndex>10</ZIndex>
+            <ZIndex>9</ZIndex>
             <Style>
               <Border>
                 <Style>None</Style>
@@ -1287,7 +1316,6 @@ FROM
             </Style>
           </Textbox>
           <Textbox Name="Textbox14">
-            <CanGrow>true</CanGrow>
             <KeepTogether>true</KeepTogether>
             <Paragraphs>
               <Paragraph>
@@ -1304,11 +1332,11 @@ FROM
               </Paragraph>
             </Paragraphs>
             <rd:DefaultName>Textbox12</rd:DefaultName>
-            <Top>2.02389in</Top>
-            <Left>0.41333in</Left>
-            <Height>0.22277in</Height>
-            <Width>3.60834in</Width>
-            <ZIndex>11</ZIndex>
+            <Top>2.21139in</Top>
+            <Left>0.10083in</Left>
+            <Height>0.22in</Height>
+            <Width>4.8132in</Width>
+            <ZIndex>10</ZIndex>
             <Style>
               <Border>
                 <Style>None</Style>
@@ -1320,7 +1348,6 @@ FROM
             </Style>
           </Textbox>
           <Textbox Name="Textbox15">
-            <CanGrow>true</CanGrow>
             <KeepTogether>true</KeepTogether>
             <Paragraphs>
               <Paragraph>
@@ -1332,7 +1359,7 @@ FROM
                     </Style>
                   </TextRun>
                   <TextRun>
-                    <Value>=First(Fields!CAI.Value, "Invoice")</Value>
+                    <Value>=First(Fields!INVOICECAI.Value, "DebitNote")</Value>
                     <Style />
                   </TextRun>
                 </TextRuns>
@@ -1340,15 +1367,20 @@ FROM
               </Paragraph>
             </Paragraphs>
             <rd:DefaultName>Textbox12</rd:DefaultName>
-            <Top>2.52444in</Top>
-            <Left>0.41333in</Left>
-            <Height>0.25in</Height>
+            <Top>2.69944in</Top>
+            <Left>0.10083in</Left>
+            <Height>0.22in</Height>
             <Width>3.60834in</Width>
-            <ZIndex>12</ZIndex>
+            <ZIndex>11</ZIndex>
             <Style>
               <Border>
                 <Style>None</Style>
               </Border>
+              <BottomBorder>
+                <Color>Black</Color>
+                <Style>Solid</Style>
+                <Width>1pt</Width>
+              </BottomBorder>
               <PaddingLeft>2pt</PaddingLeft>
               <PaddingRight>2pt</PaddingRight>
               <PaddingTop>2pt</PaddingTop>
@@ -1356,19 +1388,18 @@ FROM
             </Style>
           </Textbox>
           <Textbox Name="Textbox16">
-            <CanGrow>true</CanGrow>
             <KeepTogether>true</KeepTogether>
             <Paragraphs>
               <Paragraph>
                 <TextRuns>
                   <TextRun>
-                    <Value>No.correlativo: </Value>
+                    <Value>No. Correlativo: </Value>
                     <Style>
                       <FontWeight>Bold</FontWeight>
                     </Style>
                   </TextRun>
                   <TextRun>
-                    <Value>=First(Fields!NumeroDEI.Value, "Invoice")</Value>
+                    <Value>=First(Fields!INVOICEDEI.Value, "DebitNote")</Value>
                     <Style />
                   </TextRun>
                 </TextRuns>
@@ -1376,15 +1407,20 @@ FROM
               </Paragraph>
             </Paragraphs>
             <rd:DefaultName>Textbox12</rd:DefaultName>
-            <Top>2.26055in</Top>
-            <Left>0.41333in</Left>
-            <Height>0.25in</Height>
+            <Top>2.46055in</Top>
+            <Left>0.10083in</Left>
+            <Height>0.22in</Height>
             <Width>3.60834in</Width>
-            <ZIndex>13</ZIndex>
+            <ZIndex>12</ZIndex>
             <Style>
               <Border>
                 <Style>None</Style>
               </Border>
+              <BottomBorder>
+                <Color>Black</Color>
+                <Style>Solid</Style>
+                <Width>1pt</Width>
+              </BottomBorder>
               <PaddingLeft>2pt</PaddingLeft>
               <PaddingRight>2pt</PaddingRight>
               <PaddingTop>2pt</PaddingTop>
@@ -1392,7 +1428,6 @@ FROM
             </Style>
           </Textbox>
           <Textbox Name="Textbox20">
-            <CanGrow>true</CanGrow>
             <KeepTogether>true</KeepTogether>
             <Paragraphs>
               <Paragraph>
@@ -1404,7 +1439,7 @@ FROM
                     </Style>
                   </TextRun>
                   <TextRun>
-                    <Value>=Format(First(Fields!InvoiceDate.Value, "Invoice"), "dd/MM/yyyy")</Value>
+                    <Value>=Format(First(Fields!InvoiceDate.Value, "DebitNote"), "dd/MM/yyyy")</Value>
                     <Style>
                       <FontWeight>Normal</FontWeight>
                     </Style>
@@ -1414,15 +1449,20 @@ FROM
               </Paragraph>
             </Paragraphs>
             <rd:DefaultName>Textbox12</rd:DefaultName>
-            <Top>2.78833in</Top>
-            <Left>0.41333in</Left>
-            <Height>0.25556in</Height>
+            <Top>2.93833in</Top>
+            <Left>0.10083in</Left>
+            <Height>0.22in</Height>
             <Width>3.60834in</Width>
-            <ZIndex>14</ZIndex>
+            <ZIndex>13</ZIndex>
             <Style>
               <Border>
                 <Style>None</Style>
               </Border>
+              <BottomBorder>
+                <Color>Black</Color>
+                <Style>Solid</Style>
+                <Width>1pt</Width>
+              </BottomBorder>
               <PaddingLeft>2pt</PaddingLeft>
               <PaddingRight>2pt</PaddingRight>
               <PaddingTop>2pt</PaddingTop>
@@ -1430,7 +1470,6 @@ FROM
             </Style>
           </Textbox>
           <Textbox Name="CustomerName">
-            <CanGrow>true</CanGrow>
             <KeepTogether>true</KeepTogether>
             <Paragraphs>
               <Paragraph>
@@ -1444,15 +1483,20 @@ FROM
               </Paragraph>
             </Paragraphs>
             <rd:DefaultName>CustomerName</rd:DefaultName>
-            <Top>1.44055in</Top>
-            <Left>1.00778in</Left>
-            <Height>0.25in</Height>
-            <Width>2.08333in</Width>
-            <ZIndex>15</ZIndex>
+            <Top>1.67805in</Top>
+            <Left>0.69528in</Left>
+            <Height>0.22in</Height>
+            <Width>4.21875in</Width>
+            <ZIndex>14</ZIndex>
             <Style>
               <Border>
                 <Style>None</Style>
               </Border>
+              <BottomBorder>
+                <Color>Black</Color>
+                <Style>Solid</Style>
+                <Width>1pt</Width>
+              </BottomBorder>
               <PaddingLeft>2pt</PaddingLeft>
               <PaddingRight>2pt</PaddingRight>
               <PaddingTop>2pt</PaddingTop>
@@ -1460,7 +1504,6 @@ FROM
             </Style>
           </Textbox>
           <Textbox Name="RTN">
-            <CanGrow>true</CanGrow>
             <KeepTogether>true</KeepTogether>
             <Paragraphs>
               <Paragraph>
@@ -1474,15 +1517,20 @@ FROM
               </Paragraph>
             </Paragraphs>
             <rd:DefaultName>RTN</rd:DefaultName>
-            <Top>1.71833in</Top>
-            <Left>1.00778in</Left>
-            <Height>0.25in</Height>
-            <Width>2.08333in</Width>
-            <ZIndex>16</ZIndex>
+            <Top>1.89333in</Top>
+            <Left>0.69528in</Left>
+            <Height>0.22in</Height>
+            <Width>4.21875in</Width>
+            <ZIndex>15</ZIndex>
             <Style>
               <Border>
                 <Style>None</Style>
               </Border>
+              <BottomBorder>
+                <Color>Black</Color>
+                <Style>Solid</Style>
+                <Width>1pt</Width>
+              </BottomBorder>
               <PaddingLeft>2pt</PaddingLeft>
               <PaddingRight>2pt</PaddingRight>
               <PaddingTop>2pt</PaddingTop>
@@ -1493,15 +1541,15 @@ FROM
             <TablixBody>
               <TablixColumns>
                 <TablixColumn>
-                  <Width>5.43112in</Width>
+                  <Width>5.93875in</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>1.93056in</Width>
+                  <Width>1.93473in</Width>
                 </TablixColumn>
               </TablixColumns>
               <TablixRows>
                 <TablixRow>
-                  <Height>0.26042in</Height>
+                  <Height>0.24306in</Height>
                   <TablixCells>
                     <TablixCell>
                       <CellContents>
@@ -1526,7 +1574,7 @@ FROM
                           <rd:DefaultName>Textbox8</rd:DefaultName>
                           <Style>
                             <Border>
-                              <Style>None</Style>
+                              <Style>Solid</Style>
                             </Border>
                             <TopBorder>
                               <Color>Black</Color>
@@ -1543,7 +1591,11 @@ FROM
                               <Style>Solid</Style>
                               <Width>1pt</Width>
                             </LeftBorder>
-                            <VerticalAlign>Middle</VerticalAlign>
+                            <RightBorder>
+                              <Color>Black</Color>
+                              <Style>Solid</Style>
+                              <Width>1pt</Width>
+                            </RightBorder>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -1575,7 +1627,6 @@ FROM
                           <rd:DefaultName>Textbox10</rd:DefaultName>
                           <Style>
                             <Border>
-                              <Color>LightGrey</Color>
                               <Style>Solid</Style>
                             </Border>
                             <TopBorder>
@@ -1588,12 +1639,16 @@ FROM
                               <Style>Solid</Style>
                               <Width>1pt</Width>
                             </BottomBorder>
+                            <LeftBorder>
+                              <Color>Black</Color>
+                              <Style>Solid</Style>
+                              <Width>1pt</Width>
+                            </LeftBorder>
                             <RightBorder>
                               <Color>Black</Color>
                               <Style>Solid</Style>
                               <Width>1pt</Width>
                             </RightBorder>
-                            <VerticalAlign>Middle</VerticalAlign>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -1605,7 +1660,7 @@ FROM
                   </TablixCells>
                 </TablixRow>
                 <TablixRow>
-                  <Height>0.66667in</Height>
+                  <Height>0.26389in</Height>
                   <TablixCells>
                     <TablixCell>
                       <CellContents>
@@ -1617,7 +1672,9 @@ FROM
                               <TextRuns>
                                 <TextRun>
                                   <Value>=Fields!Remarks.Value</Value>
-                                  <Style />
+                                  <Style>
+                                    <FontSize>9pt</FontSize>
+                                  </Style>
                                 </TextRun>
                               </TextRuns>
                               <Style />
@@ -1626,7 +1683,6 @@ FROM
                           <rd:DefaultName>Remarks</rd:DefaultName>
                           <Style>
                             <Border>
-                              <Color>LightGrey</Color>
                               <Style>Solid</Style>
                             </Border>
                             <TopBorder>
@@ -1639,6 +1695,16 @@ FROM
                               <Style>Solid</Style>
                               <Width>1pt</Width>
                             </BottomBorder>
+                            <LeftBorder>
+                              <Color>Black</Color>
+                              <Style>Solid</Style>
+                              <Width>1pt</Width>
+                            </LeftBorder>
+                            <RightBorder>
+                              <Color>Black</Color>
+                              <Style>Solid</Style>
+                              <Width>1pt</Width>
+                            </RightBorder>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -1657,16 +1723,21 @@ FROM
                               <TextRuns>
                                 <TextRun>
                                   <Value>=Fields!Amount.Value</Value>
-                                  <Style />
+                                  <Style>
+                                    <FontSize>9pt</FontSize>
+                                    <Format>'L'#,0.00;('L'#,0.00)</Format>
+                                    <rd:FormatSymbolCulture>es-HN</rd:FormatSymbolCulture>
+                                  </Style>
                                 </TextRun>
                               </TextRuns>
-                              <Style />
+                              <Style>
+                                <TextAlign>Right</TextAlign>
+                              </Style>
                             </Paragraph>
                           </Paragraphs>
                           <rd:DefaultName>Amount</rd:DefaultName>
                           <Style>
                             <Border>
-                              <Color>LightGrey</Color>
                               <Style>Solid</Style>
                             </Border>
                             <TopBorder>
@@ -1679,6 +1750,16 @@ FROM
                               <Style>Solid</Style>
                               <Width>1pt</Width>
                             </BottomBorder>
+                            <LeftBorder>
+                              <Color>Black</Color>
+                              <Style>Solid</Style>
+                              <Width>1pt</Width>
+                            </LeftBorder>
+                            <RightBorder>
+                              <Color>Black</Color>
+                              <Style>Solid</Style>
+                              <Width>1pt</Width>
+                            </RightBorder>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -1690,7 +1771,7 @@ FROM
                   </TablixCells>
                 </TablixRow>
                 <TablixRow>
-                  <Height>0.25in</Height>
+                  <Height>0.23264in</Height>
                   <TablixCells>
                     <TablixCell>
                       <CellContents>
@@ -1704,7 +1785,6 @@ FROM
                                   <Value>:::::::::::::::ÚLTIMA LÍNEA:::::::::::::::</Value>
                                   <Style>
                                     <FontSize>9pt</FontSize>
-                                    <FontWeight>Bold</FontWeight>
                                   </Style>
                                 </TextRun>
                               </TextRuns>
@@ -1716,7 +1796,6 @@ FROM
                           <rd:DefaultName>Textbox29</rd:DefaultName>
                           <Style>
                             <Border>
-                              <Color>LightGrey</Color>
                               <Style>Solid</Style>
                             </Border>
                             <TopBorder>
@@ -1729,7 +1808,16 @@ FROM
                               <Style>Solid</Style>
                               <Width>1pt</Width>
                             </BottomBorder>
-                            <VerticalAlign>Middle</VerticalAlign>
+                            <LeftBorder>
+                              <Color>Black</Color>
+                              <Style>Solid</Style>
+                              <Width>1pt</Width>
+                            </LeftBorder>
+                            <RightBorder>
+                              <Color>Black</Color>
+                              <Style>Solid</Style>
+                              <Width>1pt</Width>
+                            </RightBorder>
                             <PaddingLeft>2pt</PaddingLeft>
                             <PaddingRight>2pt</PaddingRight>
                             <PaddingTop>2pt</PaddingTop>
@@ -1764,11 +1852,11 @@ FROM
               </TablixMembers>
             </TablixRowHierarchy>
             <DataSetName>DebitNote</DataSetName>
-            <Top>3.14667in</Top>
-            <Left>0.42167in</Left>
-            <Height>1.17709in</Height>
-            <Width>7.36168in</Width>
-            <ZIndex>17</ZIndex>
+            <Top>3.22167in</Top>
+            <Left>0.10083in</Left>
+            <Height>0.73959in</Height>
+            <Width>7.87348in</Width>
+            <ZIndex>16</ZIndex>
             <Style>
               <Border>
                 <Style>None</Style>
@@ -1776,31 +1864,42 @@ FROM
             </Style>
           </Tablix>
           <Textbox Name="DebitNoteDueDate2">
-            <CanGrow>true</CanGrow>
             <KeepTogether>true</KeepTogether>
             <Paragraphs>
               <Paragraph>
                 <TextRuns>
                   <TextRun>
-                    <Value>Rango Autorizado: </Value>
+                    <Value>Rango Autorizado:</Value>
                     <Style>
+                      <FontSize>9pt</FontSize>
                       <FontWeight>Bold</FontWeight>
                     </Style>
                   </TextRun>
                   <TextRun>
+                    <Value xml:space="preserve"> </Value>
+                    <Style>
+                      <FontSize>9pt</FontSize>
+                    </Style>
+                  </TextRun>
+                  <TextRun>
                     <Value>=First(Fields!RangoAutorizado.Value, "DebitNote")</Value>
-                    <Style />
+                    <Style>
+                      <FontSize>9pt</FontSize>
+                    </Style>
                   </TextRun>
                 </TextRuns>
                 <Style />
               </Paragraph>
             </Paragraphs>
             <rd:DefaultName>DebitNoteDueDate</rd:DefaultName>
-            <Top>1.48556in</Top>
-            <Left>4.275in</Left>
-            <Height>0.25in</Height>
-            <Width>3.50834in</Width>
-            <ZIndex>18</ZIndex>
+            <Top>1.18556in</Top>
+            <Left>3.8375in</Left>
+            <Height>0.22in</Height>
+            <Width>3.93543in</Width>
+            <ZIndex>17</ZIndex>
+            <Visibility>
+              <Hidden>=First(Fields!NumeroDEI.Value, "DebitNote")="Interna"</Hidden>
+            </Visibility>
             <Style>
               <Border>
                 <Style>None</Style>
@@ -1816,16 +1915,15 @@ FROM
             <Value>=First(Fields!imageDir.Value,"CompanyInfo")</Value>
             <Sizing>FitProportional</Sizing>
             <Top>0.02419in</Top>
-            <Left>0.42167in</Left>
+            <Left>0.10917in</Left>
             <Height>0.6697in</Height>
             <Width>1.0656in</Width>
-            <ZIndex>19</ZIndex>
+            <ZIndex>18</ZIndex>
             <Style>
               <Border />
             </Style>
           </Image>
           <Textbox Name="Address">
-            <CanGrow>true</CanGrow>
             <KeepTogether>true</KeepTogether>
             <Paragraphs>
               <Paragraph>
@@ -1918,7 +2016,7 @@ FROM
                     </Style>
                   </TextRun>
                   <TextRun>
-                    <Value>=First(Fields!RTN.Value, "CompanyInfo")</Value>
+                    <Value>=First(Fields!Tax_Id.Value, "CompanyInfo")</Value>
                     <Style>
                       <FontSize>9pt</FontSize>
                     </Style>
@@ -1931,10 +2029,10 @@ FROM
             </Paragraphs>
             <rd:DefaultName>Address</rd:DefaultName>
             <Top>0.73555in</Top>
-            <Left>1.07104cm</Left>
-            <Height>0.69445in</Height>
+            <Left>0.27729cm</Left>
+            <Height>0.87306in</Height>
             <Width>3.6in</Width>
-            <ZIndex>20</ZIndex>
+            <ZIndex>19</ZIndex>
             <Style>
               <Border>
                 <Style>None</Style>
@@ -1946,19 +2044,103 @@ FROM
               <PaddingBottom>2pt</PaddingBottom>
             </Style>
           </Textbox>
+          <Textbox Name="DebitNoteId2">
+            <KeepTogether>true</KeepTogether>
+            <Paragraphs>
+              <Paragraph>
+                <TextRuns>
+                  <TextRun>
+                    <Value>=Sum(Fields!DebitNoteId.Value, "DebitNote")</Value>
+                    <Style>
+                      <FontSize>11pt</FontSize>
+                      <FontWeight>Bold</FontWeight>
+                    </Style>
+                  </TextRun>
+                </TextRuns>
+                <Style>
+                  <TextAlign>Left</TextAlign>
+                </Style>
+              </Paragraph>
+            </Paragraphs>
+            <rd:DefaultName>DebitNoteId</rd:DefaultName>
+            <Top>0.17306in</Top>
+            <Left>5.66916in</Left>
+            <Height>0.25in</Height>
+            <Width>0.29751in</Width>
+            <ZIndex>20</ZIndex>
+            <Visibility>
+              <Hidden>=First(Fields!NumeroDEI.Value, "DebitNote")&lt;&gt;"Interna"</Hidden>
+            </Visibility>
+            <Style>
+              <Border>
+                <Style>None</Style>
+              </Border>
+              <VerticalAlign>Middle</VerticalAlign>
+              <PaddingLeft>2pt</PaddingLeft>
+              <PaddingRight>2pt</PaddingRight>
+              <PaddingTop>2pt</PaddingTop>
+              <PaddingBottom>2pt</PaddingBottom>
+            </Style>
+          </Textbox>
+          <Textbox Name="Direccion3">
+            <KeepTogether>true</KeepTogether>
+            <Paragraphs>
+              <Paragraph>
+                <TextRuns>
+                  <TextRun>
+                    <Value>Original - Cliente</Value>
+                    <Style>
+                      <FontSize>7pt</FontSize>
+                    </Style>
+                  </TextRun>
+                </TextRuns>
+                <Style>
+                  <TextAlign>Left</TextAlign>
+                </Style>
+              </Paragraph>
+              <Paragraph>
+                <TextRuns>
+                  <TextRun>
+                    <Value>Copia   - Obligado Tributario</Value>
+                    <Style>
+                      <FontSize>7pt</FontSize>
+                    </Style>
+                  </TextRun>
+                </TextRuns>
+                <Style>
+                  <TextAlign>Left</TextAlign>
+                </Style>
+              </Paragraph>
+            </Paragraphs>
+            <rd:DefaultName>Direccion</rd:DefaultName>
+            <Top>4.62786in</Top>
+            <Left>0.18699in</Left>
+            <Height>0.36519in</Height>
+            <Width>1.54479in</Width>
+            <ZIndex>21</ZIndex>
+            <Style>
+              <Border>
+                <Style>None</Style>
+              </Border>
+              <PaddingLeft>2pt</PaddingLeft>
+              <PaddingRight>2pt</PaddingRight>
+              <PaddingTop>2pt</PaddingTop>
+              <PaddingBottom>2pt</PaddingBottom>
+            </Style>
+          </Textbox>
         </ReportItems>
-        <Height>5.53888in</Height>
+        <Height>5.11179in</Height>
         <Style>
           <Border>
             <Style>None</Style>
           </Border>
         </Style>
       </Body>
-      <Width>8.13611in</Width>
+      <Width>8.16876in</Width>
       <Page>
-        <LeftMargin>0in</LeftMargin>
-        <RightMargin>0in</RightMargin>
-        <TopMargin>0.5in</TopMargin>
+        <LeftMargin>0.2in</LeftMargin>
+        <RightMargin>0.2in</RightMargin>
+        <TopMargin>0.25in</TopMargin>
         <BottomMargin>0.25in</BottomMargin>
         <Style />
       </Page>

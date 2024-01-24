@@ -3,115 +3,236 @@
 @{
     DateTime fecha = DateTime.Today;
     bool todo = false;
-    if (TempData.ContainsKey("Fecha"))
-    {
-        fecha = (DateTime)TempData["Fecha"];
-    }
-    else if (ViewData.ContainsKey("Fecha"))
-    {
-        fecha = (DateTime)ViewData["Fecha"];
-    }
-    if (TempData.ContainsKey("Todos"))
-    {
-        todo = (bool)TempData["Todos"];
-    }
-    else if (ViewData.ContainsKey("Todos"))
-    {
-        todo = (bool)TempData["Todos"];
-    }
-    ClaimsPrincipal permisos = (ClaimsPrincipal)ViewData["permisos"];
+    ViewData["Title"] = "Horas Extra";
 }
 <h3 class="text-themecolor">Revisión y Aprobación de Horas Extra</h3>
-<div class="container-fluid">
-    <div class="row">
-        <div class="col">
-            <div class="row">
-                <form id="frmBiometrico" kendo-validator="true" method="post" action="@Url.Action("PostFecha","HoraExtra")">
+
+ <div class="card" id="divClasificacionCuentas">
+        <div class="card-body">
+        <div class="row">
+            <div class="col-md-12">
+                <form id="frmBiometrico" kendo-validator="true">
                     <div class="form-group">
-                        <label for="Fecha">Fecha:</label>
-                        <input id="Fecha" name="Fecha" />
+                        <label class="form-control-label">Fecha:</label>
+                        <kendo-datepicker id="Fecha" name="Fecha" format="dd/MM/yyyy"
+                                          value="fecha" />
+                        
                     </div>
-                    <div class="form-group">
-                        <label for="Todos">Mostrar Todos los Estados:</label>
-                        <input type="checkbox" id="Todos" name="Todos" value="true" style="position: relative; left: 0px; opacity: 100;" />
-                    </div>
-                    <div class="form-group">
-                        <input type="submit" value="Cargar" />
-                    </div>
+                    <button type="submit" value="Cargar" onclick="RefrescarGridDetalle()"
+                            class="btn btn-primary">
+                        Cargar
+                    </button>
                 </form>
             </div>
-            <div class="row">
-                <h4>Horas Extra de @fecha.ToString("dd/MM/yyyy")</h4>
+            
+        </div>
+        <hr />
+        <div class="row">
+            <div class="col-md-12">
+                <h4 id="titulo">Horas Extra de @fecha.ToString("dd/M/yyyy")</h4>
                 <div id="grdConfiguracion"></div>
             </div>
+            
         </div>
-    </div>
-</div>
+
+
+
+
+        </div>
+ </div>
+
+
+@(Html.Kendo().Grid<ERPMVC.Models.HoraExtra>()
+                                      .Name("grdConfiguracion").NoRecords().Events(e => e.DataBound("dataBound"))
+
+                                      .Columns(columns =>
+                                      {
+                                          {
+                                              columns.Command(command =>
+                                              {
+                                                  command.Edit().Text(" ").IconClass("fa fa-edit").UpdateText(" ").CancelText(" ");
+                                                  command.Custom("Revisar").Text(" ").IconClass("fa fa-check").Click("Revisar");
+                                                  command.Custom("Aprobar").Text(" ").IconClass("fa fa-thumbs-up").Click("Aprobar");
+                                                  command.Custom("Rechazar").Text(" ").IconClass("fa fa-thumbs-down").Click("Rechazar");
+
+                                              }).Width(140).Title("Acciones");
+                                          }
+                                          columns.Bound(p => p.Id).Width(80).Visible(false);
+                                          columns.Bound(p => p.IdEmpleado).Title("Id").Width(80);
+                                          columns.Bound(p => p.Empleado.NombreEmpleado).Title("Empleado").Width(130);
+                                          columns.Bound(p => p.HoraEntrada).Title("Entrada").Width(100).HtmlAttributes(new { style = "text-align: right;" });
+                                          columns.Bound(p => p.HoraSalida).Title("Salida").Width(100).HtmlAttributes(new { style = "text-align: right;" });
+                                          columns.Bound(p => p.HorasTrabajadas).Title("Horas Trabajadas").Width(100).Format("{0:N2}").HtmlAttributes(new { style = "text-align: right;" });
+                                          columns.Bound(p => p.Horas).Title("Horas Extra").Width(100).HtmlAttributes(new { style = "text-align: right;" });
+                                          columns.Bound(p => p.Minutos).Title("Minutos Extra").Width(100).HtmlAttributes(new { style = "text-align: right;" });
+                                          columns.Bound(p => p.HoraAlumerzo).Title("Almuerzo").Width(100).HtmlAttributes(new { style = "text-align: right;" });
+                                          columns.Bound(p => p.HorasExtras).Width(150).Title("Total Horas Extra").HtmlAttributes(new { style = "text-align: right;" }).Format("{0:N2}");
+                                          columns.Bound(p => p.Observaciones).Width(135).Title("Observación");
+                                          columns.Bound(p => p.Estados).Title("Estado").Width(150);
+                                      }).Filterable(f => f.Operators(o => o.ForString(s => s
+                                                             .Clear()
+                                                             .Contains("Contiene")
+                                                             .DoesNotContain("No contiene")
+                                                             .EndsWith("Termina con")
+                                                             .IsEqualTo("Es igual a")
+                                                             .IsNotEqualTo("No es igual a")
+                                                             .IsNull("Es nulo")
+                                                             .StartsWith("Inicia con")
+                                                       )
+                                                       .ForNumber(n => n
+                                                         .Clear()
+                                                         .IsEqualTo("Es igual a")
+                                                         .IsGreaterThan("Es mayor que")
+                                                         .IsLessThan("Es menor que")
+                                                         .IsNull("Es nulo")
+                                                         .IsLessThanOrEqualTo("Es menor o igual que")
+                                                         .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                                       )
+                                                       .ForDate(d => d
+                                                       .Clear()
+                                                       .IsEqualTo("Es igual que")
+                                                       .IsGreaterThan("Es mayor que")
+                                                       .IsLessThan("Es menor que")
+                                                       .IsLessThanOrEqualTo("Es menor o igual que")
+                                                       .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                                       .IsNotEqualTo("No es igual que")
+                                                        )
+                                                     ))
+                                        .ToolBar(tools =>
+                                        {
+                                            tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
+                                            tools.Custom().Text("Reporte Horas Extras").IconClass("k-icon k-i-file")
+                                                .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "ImprimirReporteHorasExtras();" });
+                                        })
+                                        .Editable(e => e.Mode(GridEditMode.InLine))
+                                        .Sortable()
+                                        .AutoBind(true)
+                                        .Pageable(p => p.Input(true))
+                                        .Resizable(s => s.Columns(true))
+                                        .Filterable()
+                                        .Scrollable(s => s.Height("auto"))
+                                        .ClientDetailTemplateId("template")
+                                        .Excel(excel => excel
+                                            .AllPages(true)
+                                            .Filterable(true)
+                                        )
+                                        .DataSource(dataSource =>
+                                       dataSource
+                                       //.Ajax()
+                                       .WebApi()
+                                        .ServerOperation(true)
+                                        .Model(model =>
+                                        {
+                                            model.Id(p => p.Id);
+                                            model.Field(p => p.Id).Editable(false);
+                                            model.Field(p => p.IdEmpleado).Editable(false);
+                                            model.Field(p => p.HoraEntrada).Editable(true);
+                                            model.Field(p => p.HoraSalida).Editable(true);
+                                            model.Field(p => p.Empleado.NombreEmpleado).Editable(false);
+                                            model.Field(p => p.Horas).Editable(false);
+                                            model.Field(p => p.Minutos).Editable(false);
+                                            model.Field(p => p.HoraAlumerzo).Editable(true);
+                                            model.Field(p => p.Estados).Editable(false);
+                                            model.Field(p => p.HorasTrabajadas).Editable(false);
+                                            model.Field(p => p.HorasExtras).Editable(false);
+                                        })
+                                        .Events(events =>
+                                        {
+                                            events.Error("error_handler");
+                                            events.RequestEnd("checkResult");
+                                        })
+                                        .Read(read => read.Action("GetHorasExtra", "HoraExtra").Data("GetData"))
+                                        .Update(update => update.Action("Update", "HoraExtra", new { id = "{0}" }).Type(HttpVerbs.Post))
+                                  ).Events(e => e.DataBound("dataBound").ExcelExport("fechaexcel").Cancel("RefrescarGridDetalle"))
+)
+
+
+
+<script id="template" type="text/kendo-tmpl">
+    @(Html.Kendo().TabStrip()
+                                .Name("tabStrip_#=Id#")
+                        .SelectedIndex(0)
+                        .Animation(animation => animation.Open(open => open.Fade(FadeDirection.In)))
+                        .Items(items =>
+                        {
+                            items.Add().Text("Cálculo sobre Tiempo").Content(@<text>
+                                @(
+                        Html.Kendo().Grid<ERPMVC.Models.HorasExtrasDistribucion>()
+                                        .Name("grid_#=Id#") // template expression, to be evaluated in the master context
+                                        .Columns(columns =>
+                                        {
+                                            columns.Bound(o => o.CantidadHoras).Title("Cantidad Horas").Width(100).Format("{0:N2}")
+                                .HtmlAttributes(new { style = "text-align: right;" });
+                                            columns.Bound(o => o.FactorHora).Title("Factor").Width(100).Format("{0:N2}")
+                                .HtmlAttributes(new { style = "text-align: right;" }); ;
+                                            columns.Bound(o => o.ValorHoraExtra).Width(150).Title("Valor Hora Extra").Format("{0:N2}")
+                                .HtmlAttributes(new { style = "text-align: right;" }); ;
+                                            columns.Bound(o => o.TotalaAPagar).Title("Total a Pagar").Width(100).Format("{0:N2}")
+                                            .HtmlAttributes(new { style = "text-align: right;" });
+                                            //.ClientFooterTemplate(" Totals:  #=sum#");
+                                            // columns.Bound(o => o.Pagado).Width(150).Title("Pagado");
+
+
+                                        })
+                                .DataSource(dataSource => dataSource
+                                    .Ajax()
+                                    .PageSize(5)
+                                    .Aggregates(aggregates =>
+                                    {
+                                        aggregates.Add(p => p.TotalaAPagar).Sum();
+                                    })
+                                    .Read(read => read.Action("GetHorasExtraDistribucion", "HoraExtra", new { IdHoraExtra = "#=Id#" }))
+                                )
+                                .Pageable()
+                                .Sortable()
+
+                                .ToClientTemplate()
+                )
+                                </text>
+                            );
+
+                        })
+                        .ToClientTemplate())
+</script>
+
 
 <script>
 
+    function ImprimirReporteHorasExtras(e) {
+        var url = '@Url.Action("SFReporteHorasExtras", "HoraExtra")/';
+        var win = window.open(url, '_blank');
+        win.focus();
+    }
 
-    function CrearGrid() {
-        $("#grdConfiguracion").kendoGrid({
-            dataSource: {
-                transport: {
-                    read: {
-                        url: "@Url.Action("GetHorasExtra", "HoraExtra")",
-                        data: {
-                            fecha: '@fecha.ToString("yyyy-MM-dd")',
-                            todos: @todo.ToString().ToLower()
-                        }
-                    }
-                },
-                schema: {
-                    model: {
-                        id:"Id",
-                        fields: {
-                            Id: { type: "number", editable: false },
-                            Empleado: { defaultValue: {IdEmpleado:0,NombreEmpleado:''}, editable: false },
-                            Horas: { type: "number", editable: false },
-                            Minutos: { type: "number", editable: false },
-                            Estado: { defaultValue: {IdEstado:0,NombreEstado:""}, editable: false }
-                        }
-                    }
-                }
-            },
-            columns: [
-                {
-                    command: [
-                        PermisoAprobar(),
-                        PermisoRechazar()
-                    ],
-                    width:150
-                },
-                { field: "Id", title: "Id. ", width: 80, hidden: true },
-                { field: "Empleado", title: "Empleado", width: 200, template: '#= Empleado.NombreEmpleado #' },
-                { field: "Horas", title: "Horas", width: 100},
-                { field: "Minutos", title: "Minutos"},
-                { field: "Estado", title: "Estado", width: 100, template: "#= Estado.NombreEstado #"}
-            ],
-            noRecords: {
-                template:"No hay llegadas horas extra disponibles"
-            },
-            //height: 400,
-            scrollable: true,
-            editable: false
+
+    $(document).ready(function () {
+        $("#frmBiometrico").submit(function (event) {
+            event.preventDefault(); // Evita la acción de envío por defecto
+            debugger;
+            var fechaHoraExtra = $("#Fecha").data("kendoDatePicker").value();
+            var fechaFormateada = fechaHoraExtra.toLocaleDateString("es-ES", {
+                day: "2-digit",
+                month: "2-digit",
+                year: "numeric"
+            });
+            if (fechaHoraExtra) {
+                $("#fechaHoraExtra").val(kendo.toString(fechaFormateada, "dd/MM/yyyy"));
+            }
+            $("#titulo").text("Horas Extra de " + fechaFormateada);
+            GetData(); // Llama a GetData cuando se envía el formulario
         });
-    }
+    });
 
-    function EditorFecha() {
-        $("#Fecha").kendoDatePicker({ dateInput: true, format: "dd/MM/yyyy" });
-    }
-
-    function Aprobar(e) {
-        e.preventDefault();
+    function Revisar(e) {
+        debugger;
+        if (!confirm('Esta seguro de marcar como revisada esta Hora Extra?')) return;
         var registro = this.dataItem($(e.currentTarget).closest('tr'));
         var parametros = {
             idHoraExtra: registro.Id
         };
         debugger;
         $.ajax({
-            url: '@Url.Action("AprobarHorasExtra", "HoraExtra")',
+            url: '@Url.Action("Revisar", "HoraExtra")',
             method: 'POST',
             datatype: "json",
             async: false,
@@ -119,39 +240,93 @@
             success: function (result) {
                 $.toast({
                     heading: 'Satisfactorio',
-                    text: 'Datos guardados correctamente.',
+                    text: 'La Hora Extra se ha revisado correctamente.',
+                    position: 'top-right',
+                    loaderBg: '#ff6849',
+                    icon: 'success',
+                    hideAfter: 7000,
+                    stack: 6
+                });
+                RefrescarGridDetalle();
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                notification.show({
+                    title: "Validación",
+                    message: textStatus + ": " + XMLHttpRequest.responseText
+                }, "error");
+                alert(textStatus + ": " + XMLHttpRequest.responseText);
+            }
+        });
+    }
+
+    function RefrescarGridDetalle() {
+        debugger;
+        var grid = $("#grdConfiguracion").getKendoGrid();
+        grid.dataSource.read();
+
+    }
+
+    function GetData() {
+        debugger;
+        var fechaHoraExtra = $("#Fecha").data("kendoDatePicker").value();
+        var checked = $("#Todos").prop("checked");
+        var data = {
+
+            fecha: fechaHoraExtra.toJSON(),
+            todos: checked
+        };
+        return data;
+    }
+
+    function Aprobar(e) {
+        if (!confirm('Esta seguro de aprobar esta Hora Extra?')) return;
+        var registro = this.dataItem($(e.currentTarget).closest('tr'));
+        var parametros = {
+            idHoraExtra: registro.Id
+        };
+        debugger;
+        $.ajax({
+            url: '@Url.Action("Aprobar", "HoraExtra")',
+            method: 'POST',
+            datatype: "json",
+            async: false,
+            data: parametros,
+            success: function (result) {
+                $.toast({
+                    heading: 'Satisfactorio',
+                    text: 'Datos aprobados correctamente.',
                     position: 'top-right',
                     loaderBg: '#ff6849',
                     icon: 'success',
                     hideAfter: 3000,
                     stack: 6
                 });
-                RefreshGrid();
+                RefrescarGridDetalle();
             },
             error: function (XMLHttpRequest, textStatus, errorThrown) {
                 $.toast({
                     heading: 'Error',
-                    text:  textStatus + ": " + XMLHttpRequest.responseText,
+                    text: textStatus + ": " + XMLHttpRequest.responseText,
                     position: 'top-right',
                     loaderBg: '#ff6849',
                     icon: 'error',
                     hideAfter: 3000,
                     stack: 6
                 });
-                RefreshGrid();
+                RefrescarGridDetalle();
             }
         });
     }
 
     function Rechazar(e) {
-        e.preventDefault();
+        if (!confirm('Esta seguro de rechazar esta Hora Extra?')) return;
         var registro = this.dataItem($(e.currentTarget).closest('tr'));
         var parametros = {
             idHoraExtra: registro.Id
         };
         debugger;
         $.ajax({
-            url: '@Url.Action("RechazarHoraExtra", "HoraExtra")',
+            url: '@Url.Action("Rechazar", "HoraExtra")',
             method: 'POST',
             datatype: "json",
             async: false,
@@ -159,56 +334,154 @@
             success: function (result) {
                 $.toast({
                     heading: 'Satisfactorio',
-                    text: 'Datos guardados correctamente.',
+                    text: 'Datos rechazados correctamente.',
                     position: 'top-right',
                     loaderBg: '#ff6849',
                     icon: 'success',
                     hideAfter: 3000,
                     stack: 6
                 });
-                RefreshGrid();
+                RefrescarGridDetalle();
             },
             error: function (XMLHttpRequest, textStatus, errorThrown) {
                 $.toast({
                     heading: 'Error',
-                    text:  textStatus + ": " + XMLHttpRequest.responseText,
+                    text: textStatus + ": " + XMLHttpRequest.responseText,
                     position: 'top-right',
                     loaderBg: '#ff6849',
                     icon: 'error',
                     hideAfter: 3000,
                     stack: 6
                 });
-                RefreshGrid();
+                RefrescarGridDetalle();
             }
         });
     }
 
-    function RefreshGrid() {
-        $("#grdConfiguracion").getKendoGrid().dataSource.read();
+    function dataBound(e) {
+        var grid = this;
+        var data = grid.dataSource.data();
+        $.each(data, function (index, item) {
+            var estado = item.Estados;
+            var row = grid.tbody.find("tr[data-uid='" + item.uid + "']");
+            // Ocultar todos los botones por defecto
+            row.find(".k-grid-Revisar, .k-grid-Aprobar, .k-grid-edit, .k-grid-Rechazar").hide();
+            // Mostrar botones según el estado
+            if (estado === "Pendiente") {
+                row.find(".k-grid-Revisar, .k-grid-Rechazar").show();
+            } else if (estado === "Revisado") {
+                row.find(".k-grid-Aprobar,  .k-grid-edit").show();
+            }
+        });
     }
 
-    $(document).ready(function () {
-        EditorFecha();
-        CrearGrid();
-    });
-</script>
-<script type="text/javascript">
-    function PermisoAprobar() {
-        var permisos = '@ViewData["permisos"]';
-       // if ("@permisos.HasClaim("RRHH.Horas Extras.Aprobar Horas Extras", "true")" == "True") {
-            AprobarHorasExtras = {
-                name: "aprobar", iconClass: "fa fa-thumbs-up", text: "", click: Aprobar, visible: function (dataItem) { return dataItem.Estado.IdEstado === 70 }
-            }
-            return AprobarHorasExtras
-       //}
+
+
+    function totalColumnas(e, tiporesultado, moneda) {
+        debugger;
+        var id = e.tmpl0.arguments[0].Id
+        var grid = "grid_" + id
+        var data = $(grid).getKendoGrid().dataSource.data();
+        var total = 0;
+
+        switch (tiporesultado) {
+            case 1:
+                data.forEach(r => total += r.MontoBruto);
+                break;
+            case 2: /// Calcular el total CIB
+                data.forEach(r => total += r.MontoQuincenal);
+                break;
+            case 3: ////Calcular el total CIF LPS
+                data.forEach(r => total += r.Otros);
+                break;
+            case 4://///Calcular el total de Valor de derechos importacion
+                data.forEach(r => total += r.TotalaAPagar);
+                break;
+            case 5:
+                data.forEach(r => total += r.TotalBonificaciones);
+                break;
+            case 6:
+                data.forEach(r => total += r.MontoNeto);
+                break;
+
+
+
+
+
+
+
+            default:
+                break;
+        }
+        var formatter = new Intl.NumberFormat('es-HN', {
+            style: 'currency',
+            currency: 'LPS',
+            minimumFractionDigits: 2
+        });
+        if (moneda == 1) {
+            return formatter.format(total);
+        }
+        if (moneda == 2) {
+            formatter = new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD',
+                minimumFractionDigits: 2
+            });
+            return formatter.format(total);
+        }
+        if (moneda == 0) {
+            formatter = new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'LPS',
+                minimumFractionDigits: 2
+            });
+            return formatter.format(total).replace(/[a-z]{3}/i, "").trim();
+        }
+        return total;
     }
-    function PermisoRechazar() {
-        var permisos = '@ViewData["permisos"]';
-       /// if ("@permisos.HasClaim("RRHH.Horas Extras.Rechazar Horas Extras", "true")" == "True") {
-            RechazarHorasExtras = {
-                name: "rechazar", iconClass: "fa fa-thumbs-down", text: "", click: Rechazar, visible: function (dataItem) { return dataItem.Estado.IdEstado === 70 }
-            }
-            return RechazarHorasExtras
-       // }
+    function error_handler(e) {
+        $.toast({
+            heading: 'Error',
+            text: e.xhr.responseText,
+            position: 'top-right',
+            loaderBg: '#ff6849',
+            icon: 'error',
+            hideAfter: 30000,
+            stack: 6
+        });
+        RefrescarGridDetalle();
+
     }
+    function fechaexcel(e) {
+       debugger;
+        var fechaHoraExtra = $("#Fecha").data("kendoDatePicker").value();
+        e.workbook.fileName = kendo.toString(fechaHoraExtra, "d") + "_HorasExtraReport.xlsx";
+    }
+    function checkResult(e) {
+         if ((e.type == "update" && e.response.Errors == null)) {
+                $.toast({
+                    heading: 'Éxito',
+                    text: '¡Datos actualizados correctamente!',
+                    position: 'top-right',
+                    loaderBg: '#00ff00',
+                    icon: 'success',
+                    hideAfter: 30000,
+                    stack: 6
+                });
+            RefrescarGridDetalle();
+        }
+    }
+    function setRowButtonTooltip(btn_cl, btn_tooltip) {
+        $("#grdConfiguracion").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+
+    setRowButtonTooltip(".k-grid-edit", "Editar");
+    setRowButtonTooltip(".k-grid-Revisar", "Revisar");
+    setRowButtonTooltip(".k-grid-Aprobar", "Aprobar");
+    setRowButtonTooltip(".k-grid-Rechazar", "Rechazar");
+    setRowButtonTooltip(".k-grid-cancel", "Cancelar");
+    setRowButtonTooltip(".k-grid-update", "Guardar");
 </script>
